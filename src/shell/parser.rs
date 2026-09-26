@@ -22,6 +22,7 @@ pub struct Segment {
 pub struct Pipeline {
     pub commands: Vec<ParsedCommand>,
     pub redirect: Option<Redirection>,
+    pub input_redirect: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -41,6 +42,7 @@ enum Token {
     Pipe,
     Redirect,
     Append,
+    Input,
     And,
     Or,
     Semicolon,
@@ -52,6 +54,7 @@ pub fn parse(line: &str) -> Result<ParsedLine> {
     let mut gate = None;
     let mut commands = vec![ParsedCommand { argv: Vec::new() }];
     let mut redirect = None;
+    let mut input_redirect = None;
     let mut index = 0;
 
     while index < tokens.len() {
@@ -74,8 +77,21 @@ pub fn parse(line: &str) -> Result<ParsedLine> {
                     append,
                 });
             }
+            Token::Input => {
+                index += 1;
+                let Some(Token::Word(path)) = tokens.get(index) else {
+                    bail!("falta archivo después de <");
+                };
+                input_redirect = Some(path.clone());
+            }
             Token::And | Token::Or | Token::Semicolon => {
-                push_segment(&mut segments, gate, &mut commands, redirect.take())?;
+                push_segment(
+                    &mut segments,
+                    gate,
+                    &mut commands,
+                    redirect.take(),
+                    input_redirect.take(),
+                )?;
                 gate = Some(match tokens[index] {
                     Token::And => ChainOp::And,
                     Token::Or => ChainOp::Or,
@@ -88,7 +104,13 @@ pub fn parse(line: &str) -> Result<ParsedLine> {
         index += 1;
     }
 
-    push_segment(&mut segments, gate, &mut commands, redirect)?;
+    push_segment(
+        &mut segments,
+        gate,
+        &mut commands,
+        redirect,
+        input_redirect,
+    )?;
     Ok(ParsedLine { segments })
 }
 
@@ -97,6 +119,7 @@ fn push_segment(
     gate: Option<ChainOp>,
     commands: &mut Vec<ParsedCommand>,
     redirect: Option<Redirection>,
+    input_redirect: Option<String>,
 ) -> Result<()> {
     commands.retain(|command| !command.argv.is_empty());
     if commands.is_empty() {
@@ -108,6 +131,7 @@ fn push_segment(
         pipeline: Pipeline {
             commands: std::mem::take(commands),
             redirect,
+            input_redirect,
         },
     });
 
@@ -162,6 +186,7 @@ fn tokenize(line: &str) -> Result<Vec<Token>> {
                 Some(Token::Append)
             }
             '>' => Some(Token::Redirect),
+            '<' => Some(Token::Input),
             ';' => Some(Token::Semicolon),
             _ => None,
         };
