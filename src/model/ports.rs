@@ -4,8 +4,9 @@ use anyhow::Result;
 
 use crate::model::{
     device::Device,
+    domain::DomainStatus,
     network::{NetworkProvider, PresenceRecord},
-    switch::SwitchProfile,
+    switch::{LocatedPort, SwitchProfile},
 };
 
 pub trait DeviceRepository: Send + Sync {
@@ -46,4 +47,25 @@ pub trait SwitchRepository: Send + Sync {
     fn all(&self) -> Result<Vec<SwitchProfile>>;
     fn replace_all(&self, switches: &[SwitchProfile]) -> Result<()>;
     fn path(&self) -> PathBuf;
+}
+
+pub trait DomainProbe: Send + Sync {
+    fn local_status(&self) -> Result<DomainStatus>;
+    fn remote_status(&self, host: &str, verify: bool) -> Result<DomainStatus>;
+}
+
+pub trait SwitchLocator: Send + Sync {
+    fn locate(
+        &self,
+        profile: &SwitchProfile,
+        mac: [u8; 6],
+        mac_text: &str,
+        vlan: Option<u32>,
+    ) -> Result<Option<LocatedPort>>;
+
+    fn capabilities(&self) -> &'static str;
+}
+
+pub trait WakeOnLanSender: Send + Sync {
+    fn send(&self, mac: [u8; 6], broadcast: &str) -> Result<()>;
 }
