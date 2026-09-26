@@ -189,6 +189,8 @@ impl Shell {
             .build()
             .context("No se pudo inicializar el runtime de la shell")?;
 
+        ensure_portable_config()?;
+
         let mut engine = runtime.block_on(build_brush_engine())?;
         runtime.block_on(install_adm_bootstrap(&mut engine))?;
 
@@ -376,6 +378,35 @@ pub fn resolve_path(cwd: &Path, raw: &str) -> PathBuf {
     } else {
         cwd.join(path)
     }
+}
+
+fn ensure_portable_config() -> Result<()> {
+    let path = portable_config_path();
+
+    if path.exists() {
+        return Ok(());
+    }
+
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    let default_config = r#"# ADM Toolbox portable shell configuration
+# Bash-compatible syntax.
+
+alias ll='ls -la'
+alias la='ls -a'
+alias cls='clear'
+
+# Ejemplos:
+# export ADM_SITE='laboratorio'
+# alias scanlab='net scan 192.168.1.0/24'
+"#;
+
+    fs::write(&path, default_config)
+        .with_context(|| format!("No se pudo crear {}", path.display()))?;
+
+    Ok(())
 }
 
 pub(crate) fn portable_config_path() -> PathBuf {
