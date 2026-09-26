@@ -42,6 +42,8 @@ pub fn is_internal(name: &str) -> bool {
             | "man"
             | "pwd"
             | "echo"
+            | "env"
+            | "clear"
             | "ls"
             | "cat"
             | "head"
@@ -105,7 +107,7 @@ pub fn run(
 
     match name {
         "help" | "man" => Ok(help(args)),
-        "pwd" | "echo" | "ls" | "cat" | "head" | "tail" | "grep" | "wc" | "sort"
+        "pwd" | "echo" | "env" | "clear" | "ls" | "cat" | "head" | "tail" | "grep" | "wc" | "sort"
         | "uniq" | "cut" | "tee" | "less" | "more" | "sed" | "awk" | "diff"
         | "sha256sum" | "base64" | "find" | "printf" | "basename" | "dirname"
         | "realpath" | "date" | "sleep" | "true" | "false" | "touch" | "mkdir" | "rm"
