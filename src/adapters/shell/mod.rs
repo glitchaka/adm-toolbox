@@ -1,5 +1,3 @@
-mod bootstrap;
-mod brush_bridge;
-mod brush_engine;
+mod native_engine;
 
-pub use brush_engine::BrushShellEngine;
+pub use native_engine::NativeShellEngine;
