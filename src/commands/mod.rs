@@ -99,6 +99,10 @@ pub fn run(
     input: Option<&[u8]>,
     cwd: &Path,
 ) -> Result<CommandOutput> {
+    if args.first().is_some_and(|arg| arg == "--help" || arg == "-h") {
+        return Ok(help(&[name.to_owned()]));
+    }
+
     match name {
         "help" | "man" => Ok(help(args)),
         "pwd" | "echo" | "ls" | "cat" | "head" | "tail" | "grep" | "wc" | "sort"
