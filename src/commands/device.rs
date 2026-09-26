@@ -1,23 +1,32 @@
-use std::{env, fs, path::PathBuf};
+use std::{
+    collections::{HashMap, HashSet},
+    env, fs,
+    path::PathBuf,
+};
 
 use serde::{Deserialize, Serialize};
 
 use super::CommandOutput;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Device {
-    mac: String,
-    name: String,
-    notes: Option<String>,
+pub struct Device {
+    pub mac: String,
+    pub name: String,
+    pub notes: Option<String>,
 }
 
 pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     let sub = args.first().map(String::as_str).unwrap_or("list");
 
     match sub {
-        "list" => list(),
+        "list" => list(&args[1..]),
+        "show" => show(&args[1..]),
         "add" => add(&args[1..]),
         "remove" => remove(&args[1..]),
+        "path" => Ok(CommandOutput::ok(format!(
+            "{}\n",
+            database_path().display()
+        ))),
         _ => Ok(CommandOutput::error(
             format!("device: subcomando desconocido: {sub}"),
             2,
@@ -25,21 +34,80 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     }
 }
 
-fn list() -> anyhow::Result<CommandOutput> {
+fn list(args: &[String]) -> anyhow::Result<CommandOutput> {
     let devices = load()?;
-    let mut out = String::from("MAC                 NAME\n");
+
+    if args.iter().any(|arg| arg == "--json") {
+        return Ok(CommandOutput::ok(format!(
+            "{}\n",
+            serde_json::to_string_pretty(&devices)?
+        )));
+    }
+
+    if args.iter().any(|arg| arg == "--csv") {
+        let mut out = String::from("mac,name,notes\n");
+        for device in devices {
+            out.push_str(&format!(
+                "{},{},{}\n",
+                csv_escape(&device.mac),
+                csv_escape(&device.name),
+                csv_escape(device.notes.as_deref().unwrap_or(""))
+            ));
+        }
+        return Ok(CommandOutput::ok(out));
+    }
+
+    let mut out = String::from("MAC                 NAME                           NOTES\n");
 
     for device in devices {
-        out.push_str(&format!("{:<19} {}\n", device.mac, device.name));
+        out.push_str(&format!(
+            "{:<19} {:<30} {}\n",
+            device.mac,
+            device.name,
+            device.notes.unwrap_or_default()
+        ));
     }
 
     Ok(CommandOutput::ok(out))
 }
 
+fn show(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let Some(query) = args.first() else {
+        return Ok(CommandOutput::error(
+            "device show: uso: device show MAC|NOMBRE",
+            2,
+        ));
+    };
+
+    let devices = load()?;
+    let normalized = normalize_mac(query).ok();
+
+    let found = devices.iter().find(|device| {
+        normalized
+            .as_ref()
+            .is_some_and(|mac| device.mac.eq_ignore_ascii_case(mac))
+            || device.name.eq_ignore_ascii_case(query)
+    });
+
+    let Some(device) = found else {
+        return Ok(CommandOutput::error(
+            format!("device: no se encontró {query}"),
+            1,
+        ));
+    };
+
+    Ok(CommandOutput::ok(format!(
+        "name: {}\nmac: {}\nnotes: {}\n",
+        device.name,
+        device.mac,
+        device.notes.as_deref().unwrap_or("-")
+    )))
+}
+
 fn add(args: &[String]) -> anyhow::Result<CommandOutput> {
     let Some(mac) = args.first() else {
         return Ok(CommandOutput::error(
-            "device add: uso: device add MAC NOMBRE",
+            "device add: uso: device add MAC NOMBRE [--note TEXTO]",
             2,
         ));
     };
@@ -49,20 +117,43 @@ fn add(args: &[String]) -> anyhow::Result<CommandOutput> {
     }
 
     let mac = normalize_mac(mac)?;
-    let name = args[1..].join(" ");
+    let mut name_parts = Vec::new();
+    let mut note = None;
+    let mut index = 1;
+
+    while index < args.len() {
+        if args[index] == "--note" {
+            note = Some(args[index + 1..].join(" "));
+            break;
+        }
+
+        name_parts.push(args[index].clone());
+        index += 1;
+    }
+
+    let name = name_parts.join(" ");
+    if name.trim().is_empty() {
+        return Ok(CommandOutput::error("device add: falta nombre", 2));
+    }
+
     let mut devices = load()?;
 
     if let Some(existing) = devices.iter_mut().find(|device| device.mac == mac) {
         existing.name = name.clone();
+        if note.is_some() {
+            existing.notes = note.clone();
+        }
     } else {
         devices.push(Device {
             mac: mac.clone(),
             name: name.clone(),
-            notes: None,
+            notes: note,
         });
     }
 
+    devices.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
     save(&devices)?;
+
     Ok(CommandOutput::ok(format!("device saved: {mac} {name}\n")))
 }
 
@@ -89,6 +180,17 @@ fn remove(args: &[String]) -> anyhow::Result<CommandOutput> {
 
     save(&devices)?;
     Ok(CommandOutput::ok(format!("device removed: {mac}\n")))
+}
+
+pub fn known_macs() -> anyhow::Result<HashSet<String>> {
+    Ok(load()?.into_iter().map(|device| device.mac).collect())
+}
+
+pub fn known_names() -> anyhow::Result<HashMap<String, String>> {
+    Ok(load()?
+        .into_iter()
+        .map(|device| (device.mac, device.name))
+        .collect())
 }
 
 fn load() -> anyhow::Result<Vec<Device>> {
@@ -134,4 +236,12 @@ fn normalize_mac(value: &str) -> anyhow::Result<String> {
     }
 
     Ok(normalized)
+}
+
+fn csv_escape(value: &str) -> String {
+    if value.contains([',', '"', '\n', '\r']) {
+        format!("\"{}\"", value.replace('"', "\"\""))
+    } else {
+        value.to_owned()
+    }
 }
