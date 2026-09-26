@@ -1,10 +1,18 @@
 use std::{
     collections::HashMap,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs, UdpSocket},
+    io::{Write, stdout},
     process::Command,
     sync::{Arc, Mutex},
     thread,
     time::{Duration, Instant},
+};
+
+use crossterm::{
+    cursor,
+    event::{self, Event, KeyCode},
+    execute,
+    terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
 
 use dns_lookup::lookup_addr;
@@ -19,7 +27,12 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     match sub {
         "interfaces" => interfaces(),
         "connections" => connections(),
+        "routes" => routes(),
+        "dns" => dns(&args[1..]),
+        "ping" => ping(&args[1..]),
+        "trace" | "traceroute" => trace(&args[1..]),
         "scan" => scan(&args[1..]),
+        "monitor" => monitor(&args[1..]),
         "neighbors" | "arp" => arp_table(),
         "ports" => ports(&args[1..]),
         "traffic" => traffic(&args[1..]),
@@ -49,6 +62,67 @@ fn interfaces() -> anyhow::Result<CommandOutput> {
 
 fn connections() -> anyhow::Result<CommandOutput> {
     command_output("netstat", &["-ano"])
+}
+
+fn routes() -> anyhow::Result<CommandOutput> {
+    command_output("route", &["print"])
+}
+
+fn dns(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let Some(target) = args.first() else {
+        return Ok(CommandOutput::error("net dns: uso: net dns HOST|IP", 2));
+    };
+
+    if let Ok(ip) = target.parse::<IpAddr>() {
+        let name = lookup_addr(&ip).unwrap_or_else(|_| "-".to_owned());
+        return Ok(CommandOutput::ok(format!(
+            "address: {ip}\nname: {name}\n"
+        )));
+    }
+
+    let mut addresses: Vec<IpAddr> = (target.as_str(), 0)
+        .to_socket_addrs()?
+        .map(|socket| socket.ip())
+        .collect();
+
+    addresses.sort();
+    addresses.dedup();
+
+    if addresses.is_empty() {
+        return Ok(CommandOutput::error(
+            format!("net dns: no se pudo resolver {target}"),
+            1,
+        ));
+    }
+
+    let mut out = format!("name: {target}\n");
+    for address in addresses {
+        out.push_str(&format!("address: {address}\n"));
+    }
+
+    Ok(CommandOutput::ok(out))
+}
+
+fn ping(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let Some(target) = args.first() else {
+        return Ok(CommandOutput::error("net ping: uso: net ping HOST", 2));
+    };
+
+    let count = args
+        .windows(2)
+        .find(|pair| pair[0] == "-c")
+        .map(|pair| pair[1].as_str())
+        .unwrap_or("4");
+
+    command_output("ping", &["-n", count, target])
+}
+
+fn trace(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let Some(target) = args.first() else {
+        return Ok(CommandOutput::error("net trace: uso: net trace HOST", 2));
+    };
+
+    command_output("tracert", &["-d", target])
 }
 
 fn scan(args: &[String]) -> anyhow::Result<CommandOutput> {
@@ -227,7 +301,15 @@ fn ports(args: &[String]) -> anyhow::Result<CommandOutput> {
     Ok(CommandOutput::ok(out))
 }
 
-fn traffic(_args: &[String]) -> anyhow::Result<CommandOutput> {
+fn traffic(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.iter().any(|arg| arg == "--watch" || arg == "-w") {
+        return traffic_watch();
+    }
+
+    Ok(CommandOutput::ok(traffic_snapshot()?))
+}
+
+fn traffic_snapshot() -> anyhow::Result<String> {
     let mut system = System::new_all();
     system.refresh_all();
 
@@ -261,7 +343,12 @@ fn traffic(_args: &[String]) -> anyhow::Result<CommandOutput> {
         ));
     }
 
-    rows.sort_by(|a, b| b.4.cmp(&a.4));
+    rows.sort_by(|a, b| {
+        b.4.cmp(&a.4).then_with(|| {
+            b.2.partial_cmp(&a.2)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+    });
 
     let mut out = String::from(
         "PID      PROCESS                          CPU%     RAM MiB   CONNECTIONS\n",
@@ -274,12 +361,86 @@ fn traffic(_args: &[String]) -> anyhow::Result<CommandOutput> {
         ));
     }
 
-    out.push_str(
-        "\nFase actual: correlación proceso/conexión/CPU/RAM.\n\
-         Bytes/s por PID se añadirá con TrafficMonitorService basado en ETW.\n",
-    );
+    Ok(out)
+}
 
-    Ok(CommandOutput::ok(out))
+fn traffic_watch() -> anyhow::Result<CommandOutput> {
+    let _guard = NetTerminalGuard::enter()?;
+
+    loop {
+        execute!(
+            stdout(),
+            cursor::MoveTo(0, 0),
+            Clear(ClearType::All)
+        )?;
+
+        println!("ADM net traffic --watch   [q] salir");
+        println!();
+        print!("{}", traffic_snapshot()?);
+        println!();
+        println!("La medición exacta de bytes/s por PID se incorporará mediante ETW.");
+        stdout().flush()?;
+
+        if event::poll(Duration::from_millis(1000))? {
+            if let Event::Key(key) = event::read()? {
+                if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
+                    break;
+                }
+            }
+        }
+    }
+
+    Ok(CommandOutput::ok(""))
+}
+
+fn monitor(_args: &[String]) -> anyhow::Result<CommandOutput> {
+    let _guard = NetTerminalGuard::enter()?;
+
+    loop {
+        execute!(
+            stdout(),
+            cursor::MoveTo(0, 0),
+            Clear(ClearType::All)
+        )?;
+
+        println!("ADM net monitor   red local /24   [q] salir");
+        println!();
+
+        match scan(&[]) {
+            Ok(output) => print!("{}", output.stdout),
+            Err(error) => println!("error: {error}"),
+        }
+
+        stdout().flush()?;
+
+        let started = Instant::now();
+        while started.elapsed() < Duration::from_secs(3) {
+            if event::poll(Duration::from_millis(150))? {
+                if let Event::Key(key) = event::read()? {
+                    if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
+                        return Ok(CommandOutput::ok(""));
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct NetTerminalGuard;
+
+impl NetTerminalGuard {
+    fn enter() -> anyhow::Result<Self> {
+        terminal::enable_raw_mode()?;
+        execute!(stdout(), EnterAlternateScreen, cursor::Hide)?;
+        Ok(Self)
+    }
+}
+
+impl Drop for NetTerminalGuard {
+    fn drop(&mut self) {
+        let _ = execute!(stdout(), cursor::Show, LeaveAlternateScreen);
+        let _ = terminal::disable_raw_mode();
+    }
 }
 
 fn usage(_args: &[String]) -> anyhow::Result<CommandOutput> {
