@@ -32,6 +32,8 @@ pub fn run(
     match name {
         "pwd" => Ok(CommandOutput::ok(format!("{}\n", display_unix_path(cwd)))),
         "echo" => Ok(CommandOutput::ok(format!("{}\n", args.join(" ")))),
+        "env" => env_cmd(),
+        "clear" => Ok(CommandOutput::ok("\x1b[2J\x1b[H")),
         "ls" => ls(args, cwd),
         "cat" => cat(args, input, cwd),
         "head" => head_tail(args, input, cwd, true),
@@ -69,6 +71,21 @@ pub fn run(
         "which" | "type" => which(args),
         _ => Ok(CommandOutput::error("comando Unix no implementado", 127)),
     }
+}
+
+fn env_cmd() -> Result<CommandOutput> {
+    let mut vars: Vec<_> = env::vars().collect();
+    vars.sort_by(|a, b| a.0.cmp(&b.0));
+
+    let mut out = String::new();
+    for (name, value) in vars {
+        out.push_str(&name);
+        out.push('=');
+        out.push_str(&value);
+        out.push('\n');
+    }
+
+    Ok(CommandOutput::ok(out))
 }
 
 fn ls(args: &[String], cwd: &Path) -> Result<CommandOutput> {
