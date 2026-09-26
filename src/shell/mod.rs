@@ -43,7 +43,7 @@ impl ShellHelper {
         let segment_start = before
             .char_indices()
             .rev()
-            .find(|(_, ch)| matches!(ch, ';' | '|' | '&'))
+            .find(|(_, ch)| *ch == ';' || *ch == '|' || *ch == '&')
             .map(|(index, ch)| index + ch.len_utf8())
             .unwrap_or(0);
 
@@ -760,24 +760,49 @@ fn expand_arg(raw: &str, cwd: &Path, last_status: i32) -> String {
 }
 
 fn display_path(path: &Path) -> String {
+    let home = home_dir();
+
     #[cfg(target_os = "windows")]
     {
-        let text = path.to_string_lossy();
-        let bytes = text.as_bytes();
-        if bytes.len() >= 3 && bytes[1] == b':' && (bytes[2] == b'\\' || bytes[2] == b'/') {
+        let path_text = path.to_string_lossy().replace('\\', "/");
+        let home_text = home.to_string_lossy().replace('\\', "/");
+
+        let path_lower = path_text.to_ascii_lowercase();
+        let home_lower = home_text.to_ascii_lowercase();
+
+        if path_lower == home_lower {
+            return "~".to_owned();
+        }
+
+        if path_lower.starts_with(&(home_lower.clone() + "/")) {
+            let relative = &path_text[home_text.len() + 1..];
+            return format!("~/{relative}");
+        }
+
+        let bytes = path_text.as_bytes();
+        if bytes.len() >= 3 && bytes[1] == b':' && bytes[2] == b'/' {
             let drive = (bytes[0] as char).to_ascii_lowercase();
-            let rest = text[3..].replace('\\', "/");
+            let rest = &path_text[3..];
+
             if rest.is_empty() {
                 return format!("/{drive}");
             }
+
             return format!("/{drive}/{rest}");
         }
-        text.replace('\\', "/")
+
+        path_text
     }
 
     #[cfg(not(target_os = "windows"))]
     {
-        path.to_string_lossy().into_owned()
+        if path == home {
+            "~".to_owned()
+        } else if let Ok(relative) = path.strip_prefix(&home) {
+            format!("~/{}", relative.display())
+        } else {
+            path.to_string_lossy().into_owned()
+        }
     }
 }
 
