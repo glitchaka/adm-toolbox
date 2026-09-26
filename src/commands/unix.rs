@@ -515,7 +515,7 @@ fn parse_awk_print_fields(program: &str) -> Result<Vec<String>> {
         .unwrap_or(trimmed);
 
     let Some(rest) = body.strip_prefix("print") else {
-        anyhow::bail!("awk: esta versión soporta expresiones {print ...}");
+        anyhow::bail!("awk: esta versión soporta expresiones {{print ...}}");
     };
 
     let fields: Vec<String> = rest
