@@ -1,64 +1,140 @@
 use std::{
     env,
-    io::{Write, stdout},
-    thread,
+    fmt::Write as _,
+    sync::Arc,
     time::Duration,
 };
 
-use crossterm::{
-    cursor,
-    event::{self, Event, KeyCode},
-    execute,
-    terminal::{self, Clear, ClearType},
-};
 use sysinfo::{Disks, Pid, System};
 
-use crate::{adapters::terminal::guard::AlternateScreenGuard, core::CommandOutput};
+use crate::core::{
+    CommandOutput,
+    ports::{TerminalFactory, TerminalKey},
+};
 
-pub struct SystemService;
+pub struct SystemService {
+    terminal: Arc<dyn TerminalFactory>,
+}
 
 impl SystemService {
-    pub fn execute(&self, args: &[String]) -> anyhow::Result<CommandOutput> {
-    let sub = args.first().map(String::as_str).unwrap_or("info");
-
-    match sub {
-        "info" => info(),
-        "processes" | "ps" => processes(),
-        "top" => top(),
-        "disks" | "df" => disks(),
-        "memory" | "free" => memory(),
-        "hostname" => hostname(),
-        "whoami" => whoami(),
-        "uname" => uname(&args[1..]),
-        "kill" => kill_process(&args[1..]),
-        "services" => Ok(CommandOutput::error(
-            "sys services: usa 'sc query' por ahora; proveedor Rust pendiente",
-            2,
-        )),
-        _ => Ok(CommandOutput::error(
-            format!("sys: subcomando desconocido: {sub}"),
-            2,
-        )),
+    pub fn new(terminal: Arc<dyn TerminalFactory>) -> Self {
+        Self { terminal }
     }
-}
+
+    pub fn execute(&self, args: &[String]) -> anyhow::Result<CommandOutput> {
+        let sub = args.first().map(String::as_str).unwrap_or("info");
+
+        match sub {
+            "info" => info(),
+            "processes" | "ps" => processes(),
+            "top" => self.top(),
+            "disks" | "df" => disks(),
+            "memory" | "free" => memory(),
+            "hostname" => hostname(),
+            "whoami" => whoami(),
+            "uname" => uname(&args[1..]),
+            "kill" => kill_process(&args[1..]),
+            "services" => Ok(CommandOutput::error(
+                "sys services: usa 'sc query' por ahora; proveedor Rust pendiente",
+                2,
+            )),
+            _ => Ok(CommandOutput::error(
+                format!("sys: subcomando desconocido: {sub}"),
+                2,
+            )),
+        }
+    }
 
     pub fn execute_alias(&self, name: &str, args: &[String]) -> anyhow::Result<CommandOutput> {
-    match name {
-        "ps" => processes(),
-        "top" => top(),
-        "df" => disks(),
-        "free" => memory(),
-        "hostname" => hostname(),
-        "whoami" => whoami(),
-        "uname" => uname(args),
-        "kill" => kill_process(args),
-        _ => Ok(CommandOutput::error(
-            format!("comando de sistema desconocido: {name}"),
-            127,
-        )),
+        match name {
+            "ps" => processes(),
+            "top" => self.top(),
+            "df" => disks(),
+            "free" => memory(),
+            "hostname" => hostname(),
+            "whoami" => whoami(),
+            "uname" => uname(args),
+            "kill" => kill_process(args),
+            _ => Ok(CommandOutput::error(
+                format!("comando de sistema desconocido: {name}"),
+                127,
+            )),
+        }
     }
-}
 
+    fn top(&self) -> anyhow::Result<CommandOutput> {
+        let mut terminal = self.terminal.alternate_screen()?;
+        let mut sort_cpu = true;
+
+        loop {
+            let mut system = System::new_all();
+            system.refresh_all();
+
+            let mut rows: Vec<_> = system.processes().iter().collect();
+
+            if sort_cpu {
+                rows.sort_by(|a, b| {
+                    b.1.cpu_usage()
+                        .partial_cmp(&a.1.cpu_usage())
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
+            } else {
+                rows.sort_by_key(|(_, process)| std::cmp::Reverse(process.memory()));
+            }
+
+            let (width, height) = terminal.size()?;
+            let max_rows = height.saturating_sub(6) as usize;
+            let mut screen = String::new();
+
+            writeln!(
+                screen,
+                "ADM top  uptime {}s  CPU {} cores  Mem {} / {} MiB",
+                System::uptime(),
+                system.cpus().len(),
+                system.used_memory() / 1024 / 1024,
+                system.total_memory() / 1024 / 1024
+            )?;
+            writeln!(
+                screen,
+                "orden: {}   [c] CPU  [m] memoria  [q] salir",
+                if sort_cpu { "CPU" } else { "MEM" }
+            )?;
+            writeln!(screen)?;
+            writeln!(screen, "PID      CPU%     RAM MiB   PROCESS")?;
+
+            for (pid, process) in rows.into_iter().take(max_rows) {
+                let mut name = process.name().to_string_lossy().into_owned();
+                let name_width = width.saturating_sub(32) as usize;
+
+                if name.chars().count() > name_width && name_width > 3 {
+                    name = name.chars().take(name_width - 3).collect();
+                    name.push_str("...");
+                }
+
+                writeln!(
+                    screen,
+                    "{:<8} {:>6.1} {:>10.1}   {}",
+                    pid,
+                    process.cpu_usage(),
+                    process.memory() as f64 / 1024.0 / 1024.0,
+                    name
+                )?;
+            }
+
+            terminal.clear()?;
+            terminal.write(&screen)?;
+            terminal.flush()?;
+
+            match terminal.poll_key(Duration::from_millis(900))? {
+                Some(TerminalKey::Char('q') | TerminalKey::Escape) => break,
+                Some(TerminalKey::Char('c')) => sort_cpu = true,
+                Some(TerminalKey::Char('m')) => sort_cpu = false,
+                _ => {}
+            }
+        }
+
+        Ok(CommandOutput::ok(""))
+    }
 }
 
 fn info() -> anyhow::Result<CommandOutput> {
@@ -212,83 +288,4 @@ fn kill_process(args: &[String]) -> anyhow::Result<CommandOutput> {
             1,
         ))
     }
-}
-
-fn top() -> anyhow::Result<CommandOutput> {
-    let _guard = AlternateScreenGuard::enter()?;
-    let mut sort_cpu = true;
-
-    loop {
-        let mut system = System::new_all();
-        system.refresh_all();
-
-        let mut rows: Vec<_> = system.processes().iter().collect();
-
-        if sort_cpu {
-            rows.sort_by(|a, b| {
-                b.1.cpu_usage()
-                    .partial_cmp(&a.1.cpu_usage())
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            });
-        } else {
-            rows.sort_by_key(|(_, process)| std::cmp::Reverse(process.memory()));
-        }
-
-        let (width, height) = terminal::size()?;
-        let max_rows = height.saturating_sub(6) as usize;
-
-        execute!(
-            stdout(),
-            cursor::MoveTo(0, 0),
-            Clear(ClearType::All)
-        )?;
-
-        println!(
-            "ADM top  uptime {}s  CPU {} cores  Mem {} / {} MiB",
-            System::uptime(),
-            system.cpus().len(),
-            system.used_memory() / 1024 / 1024,
-            system.total_memory() / 1024 / 1024
-        );
-        println!(
-            "orden: {}   [c] CPU  [m] memoria  [q] salir",
-            if sort_cpu { "CPU" } else { "MEM" }
-        );
-        println!();
-        println!("PID      CPU%     RAM MiB   PROCESS");
-
-        for (pid, process) in rows.into_iter().take(max_rows) {
-            let mut name = process.name().to_string_lossy().into_owned();
-            let name_width = width.saturating_sub(32) as usize;
-            if name.len() > name_width && name_width > 3 {
-                name.truncate(name_width.saturating_sub(3));
-                name.push_str("...");
-            }
-
-            println!(
-                "{:<8} {:>6.1} {:>10.1}   {}",
-                pid,
-                process.cpu_usage(),
-                process.memory() as f64 / 1024.0 / 1024.0,
-                name
-            );
-        }
-
-        stdout().flush()?;
-
-        if event::poll(Duration::from_millis(900))? {
-            if let Event::Key(key) = event::read()? {
-                match key.code {
-                    KeyCode::Char('q') | KeyCode::Esc => break,
-                    KeyCode::Char('c') => sort_cpu = true,
-                    KeyCode::Char('m') => sort_cpu = false,
-                    _ => {}
-                }
-            }
-        } else {
-            thread::sleep(Duration::from_millis(100));
-        }
-    }
-
-    Ok(CommandOutput::ok(""))
 }
