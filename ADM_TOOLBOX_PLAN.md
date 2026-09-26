@@ -194,7 +194,7 @@ Reglas de diseño:
 Ejemplo:
 
 ```bash
-net net scan --unknown --json | jq '.[] | .hostname'
+net scan --unknown --json | jq '.[] | .hostname'
 ```
 
 ### 2.4 TUI opcional, no GUI obligatoria
@@ -260,29 +260,30 @@ C:\Users\usuario\Desktop
 ### 4.1 Información local
 
 ```bash
-sysinfo
-interfaces
-routes
-connections
-processes
-services
-disks
-memory
-users
-drivers
-events
-uptime
-hostname
+sys info
+sys processes
+sys services
+sys disks
+sys memory
+sys users
+sys drivers
+sys events
+sys uptime
+sys hostname
+
+net interfaces
+net routes
+net connections
 ```
 
 ### 4.2 Diagnóstico
 
 ```bash
-diagnose
-diagnose network
-diagnose dns
-diagnose hardware
-diagnose storage
+diag
+diag network
+diag dns
+diag hardware
+diag storage
 ```
 
 La salida debe poder mostrarse en consola y exportarse a TXT, CSV o JSON.
@@ -298,10 +299,10 @@ El objetivo no es inspeccionar contenido de equipos ajenos, sino saber qué disp
 Comandos previstos:
 
 ```bash
-scan
-scan 192.168.1.0/24
-scan --alive
-scan --details
+net scan
+net scan 192.168.1.0/24
+net scan --alive
+net scan --details
 net scan --unknown
 ```
 
@@ -460,8 +461,8 @@ Estados sugeridos:
 Modo periódico:
 
 ```bash
-watch-net
-watch-net --unknown
+net monitor
+net monitor --unknown
 ```
 
 Eventos:
@@ -512,30 +513,175 @@ Características:
 Comandos propios o aliases para:
 
 ```bash
-ping
-trace
-dns
-arp
-neighbors
-ports
-interfaces
-routes
-connections
+net ping
+net trace
+net dns
+net arp
+net neighbors
+net ports
+net interfaces
+net routes
+net connections
 ```
 
 Ejemplos:
 
 ```bash
-ports 10.10.20.15 22,80,443,3389
-dns LAB-PC-01
-neighbors
+net ports 10.10.20.15 22,80,443,3389
+net dns LAB-PC-01
+net neighbors
 ```
 
 El escaneo de puertos debe ser acotado y orientado a diagnóstico, no un escáner agresivo por defecto.
 
 ---
 
-## 12. Switches y credenciales
+## 12. Tráfico local y consumo por proceso
+
+ADM Toolbox debe incluir una herramienta equivalente, en espíritu, a combinar `nethogs`, `iftop`, `ss` y `top`, pero adaptada a Windows y manteniendo el flujo de una consola Linux.
+
+Comando base:
+
+```bash
+net traffic
+```
+
+Debe mostrar qué procesos del equipo local están usando la red y cuánto consumen.
+
+### 12.1 Vista por proceso
+
+Salida esperada:
+
+```text
+PID    PROCESO        SUBIDA      BAJADA      CPU    RAM      DESTINOS
+4120   chrome.exe     42 KB/s     310 KB/s    3.8%   684 MB   8
+1884   OneDrive.exe   1.2 MB/s    95 KB/s     5.1%   221 MB   4
+7316   updater.exe    180 KB/s    12 KB/s     9.4%   96 MB    2
+```
+
+Datos por proceso, cuando estén disponibles:
+
+- PID;
+- nombre del proceso;
+- ruta completa del ejecutable;
+- usuario que lo ejecuta;
+- proceso padre;
+- bytes enviados;
+- bytes recibidos;
+- velocidad actual de subida y bajada;
+- total transferido durante la sesión;
+- CPU;
+- RAM;
+- número de conexiones;
+- IP y puerto local;
+- IP y puerto remoto;
+- protocolo;
+- hostname remoto cuando pueda resolverse;
+- estado de la conexión;
+- firma digital del ejecutable cuando Windows pueda verificarla.
+
+### 12.2 Modos de uso
+
+```bash
+net traffic
+net traffic --watch
+net traffic --top 20
+net traffic --process chrome.exe
+net traffic --pid 4120
+net traffic --background
+net traffic --external
+net traffic --connections
+net traffic --json
+net traffic --csv
+```
+
+`net traffic --watch` debe comportarse como una herramienta Linux interactiva dentro de la terminal: actualización periódica, ordenación por uso y salida al prompt al cerrarla.
+
+### 12.3 Detección de actividad anómala
+
+La herramienta debe ayudar a detectar procesos que consumen recursos o transmiten datos sin que el usuario los esté utilizando activamente.
+
+Puede señalar hechos observables como:
+
+- tráfico sostenido en segundo plano;
+- proceso con alto uso de red;
+- CPU o RAM elevadas junto con actividad de red;
+- conexiones a muchos destinos;
+- ejecutable sin firma verificable;
+- ejecutable corriendo desde una ruta inusual;
+- proceso desconocido para el inventario local;
+- transferencia continua durante largos periodos.
+
+No debe afirmar automáticamente que un proceso es malware solo por presentar alguno de esos indicadores.
+
+Comandos previstos:
+
+```bash
+net traffic --background
+net traffic --unsigned
+net traffic --high-usage
+diag traffic
+```
+
+Ejemplo:
+
+```text
+PROCESO       RED            CPU    RAM     OBSERVACIONES
+updater.exe   2.4 MB/s ↑     11%    96 MB   sin firma; actividad sostenida
+Teams.exe     18 KB/s ↑      2%     410 MB  tráfico en segundo plano
+svchost.exe   3 KB/s ↓       1%     54 MB   firmado por Microsoft
+```
+
+### 12.4 Destinos y privacidad
+
+Para investigar telemetría o aplicaciones que envían información en segundo plano:
+
+```bash
+net traffic --process updater.exe --connections
+```
+
+Salida esperada:
+
+```text
+REMOTE                  PORT   PROTO   SENT       RECEIVED
+telemetry.example.com   443    TCP     84.2 MB    1.8 MB
+203.0.113.44            443    TCP     12.6 MB    620 KB
+```
+
+Por defecto se analizarán metadatos de conexión y volumen, no el contenido de los paquetes.
+
+Una captura de paquetes completa será una capacidad separada y opcional si posteriormente se decide incorporar un proveedor como Npcap.
+
+### 12.5 Implementación en Windows
+
+La primera implementación debe evitar depender de drivers externos para las funciones básicas.
+
+Fuentes previstas:
+
+- ETW para atribución de tráfico por proceso;
+- IP Helper API para conexiones TCP/UDP;
+- APIs de procesos de Windows para PID, ruta, usuario, CPU y memoria;
+- verificación Authenticode para firma digital;
+- resolución DNS para destinos;
+- contadores de rendimiento cuando aporten datos complementarios.
+
+Cuando una métrica requiera privilegios elevados, la salida debe indicarlo claramente en vez de ocultar el dato o inventarlo.
+
+### 12.6 Integración Unix
+
+La salida debe poder encadenarse:
+
+```bash
+net traffic --json | jq '.[] | select(.upload_bps > 100000)'
+net traffic --csv > trafico.csv
+net traffic --background | grep -i unsigned
+```
+
+La TUI es opcional; la salida textual y procesable por pipes es obligatoria.
+
+---
+
+## 13. Switches y credenciales
 
 La herramienta debe soportar perfiles de infraestructura sin incrustar contraseñas en scripts.
 
@@ -555,7 +701,7 @@ Inicialmente, la integración con switches debe ser de solo lectura.
 
 ---
 
-## 13. Inventario
+## 14. Inventario
 
 Posibilidad de mantener:
 
@@ -581,7 +727,7 @@ Importación/exportación:
 
 ---
 
-## 14. Seguridad operacional
+## 15. Seguridad operacional
 
 ADM Toolbox debe:
 
@@ -595,7 +741,7 @@ ADM Toolbox debe:
 
 ---
 
-## 15. Lo que ADM Toolbox no debe convertirse en
+## 16. Lo que ADM Toolbox no debe convertirse en
 
 - No debe convertirse en un dashboard de administración.
 - No debe convertirse en una colección de ventanas.
@@ -615,7 +761,7 @@ Solo después de resolver su interfaz de línea de comandos se considerará una 
 
 ---
 
-## 16. Portabilidad
+## 17. Portabilidad
 
 Estructura prevista:
 
@@ -640,7 +786,7 @@ No requerir instalación tradicional para la consola base.
 
 ---
 
-## 17. Arquitectura
+## 18. Arquitectura
 
 Principios:
 
@@ -666,13 +812,15 @@ Command Dispatcher
         ├── DomainResolver
         ├── SwitchPortResolver
         ├── WakeOnLanService
+        ├── TrafficMonitorService
+        ├── ProcessResourceService
         ├── InventoryService
         └── DiagnosticService
 ```
 
 ---
 
-## 18. Prioridad inicial
+## 19. Prioridad inicial
 
 Primera versión funcional, manteniendo siempre la shell como producto principal:
 
@@ -686,8 +834,9 @@ Primera versión funcional, manteniendo siempre la shell como producto principal
 8. `wol`;
 9. familia `device`: inventario local y equipos desconocidos;
 10. `net scan --unknown`;
-11. familia `switch`: resolución switch/puerto mediante proveedor configurable;
-12. exportación CSV/JSON;
-13. TUI opcionales solo donde realmente aporten valor.
+11. `net traffic`: tráfico por proceso, destinos y consumo de CPU/RAM;
+12. familia `switch`: resolución switch/puerto mediante proveedor configurable;
+13. exportación CSV/JSON;
+14. TUI opcionales solo donde realmente aporten valor.
 
 Las capacidades de cambio de configuración de switches quedan fuera de la primera etapa.
