@@ -1,25 +1,20 @@
 use std::{
     collections::HashMap,
-    io::{Write, stdout},
     sync::Arc,
     time::{Duration, Instant},
 };
 
 use anyhow::Result;
-use crossterm::{
-    cursor,
-    event::{self, Event, KeyCode},
-    execute,
-    terminal::{Clear, ClearType},
-};
 use sysinfo::System;
 
 use crate::{
-    adapters::terminal::guard::AlternateScreenGuard,
     core::{
         CommandOutput,
         models::network::{ByteCounters, ConnectionRow, TrafficRow},
-        ports::{ForegroundProcessProvider, ProcessRunner, TrafficMonitorFactory},
+        ports::{
+            ForegroundProcessProvider, ProcessRunner, TerminalFactory, TerminalKey,
+            TrafficMonitorFactory,
+        },
     },
     support::{csv, options},
 };
@@ -28,6 +23,7 @@ pub struct NetworkTrafficService {
     process: Arc<dyn ProcessRunner>,
     foreground: Arc<dyn ForegroundProcessProvider>,
     monitor_factory: Arc<dyn TrafficMonitorFactory>,
+    terminal: Arc<dyn TerminalFactory>,
 }
 
 impl NetworkTrafficService {
@@ -35,11 +31,13 @@ impl NetworkTrafficService {
         process: Arc<dyn ProcessRunner>,
         foreground: Arc<dyn ForegroundProcessProvider>,
         monitor_factory: Arc<dyn TrafficMonitorFactory>,
+        terminal: Arc<dyn TerminalFactory>,
     ) -> Self {
         Self {
             process,
             foreground,
             monitor_factory,
+            terminal,
         }
     }
 
@@ -349,7 +347,7 @@ impl NetworkTrafficService {
     }
 
     fn watch(&self, args: &[String]) -> Result<CommandOutput> {
-        let _guard = AlternateScreenGuard::enter()?;
+        let mut terminal = self.terminal.alternate_screen()?;
         let filtered_args: Vec<String> = args
             .iter()
             .filter(|arg| arg.as_str() != "--watch" && arg.as_str() != "-w")
@@ -367,7 +365,10 @@ impl NetworkTrafficService {
         loop {
             let started = Instant::now();
 
-            if wait_for_refresh_or_quit(Duration::from_secs(1))? {
+            if wait_for_refresh_or_quit(
+                terminal.as_mut(),
+                Duration::from_secs(1),
+            )? {
                 break;
             }
 
@@ -382,42 +383,43 @@ impl NetworkTrafficService {
                 None
             };
 
-            execute!(
-                stdout(),
-                cursor::MoveTo(0, 0),
-                Clear(ClearType::All)
-            )?;
-
-            println!("ADM net traffic --watch   [q] salir");
-            println!();
-
             let telemetry_note = telemetry_error
                 .as_ref()
                 .map(|error| format!("ETW no disponible: {error}"))
                 .unwrap_or_else(|| "ETW".to_owned());
 
+            let mut screen = String::from("ADM net traffic --watch   [q] salir\n\n");
+
             match self.output(&filtered_args, rates.as_ref(), Some(&telemetry_note)) {
-                Ok(output) => print!("{}", output.stdout),
-                Err(error) => println!("error: {error}"),
+                Ok(output) => screen.push_str(&output.stdout),
+                Err(error) => {
+                    screen.push_str("error: ");
+                    screen.push_str(&error.to_string());
+                    screen.push('\n');
+                }
             }
 
-            stdout().flush()?;
+            terminal.clear()?;
+            terminal.write(&screen)?;
+            terminal.flush()?;
         }
 
         Ok(CommandOutput::ok(""))
     }
 }
 
-fn wait_for_refresh_or_quit(duration: Duration) -> Result<bool> {
+fn wait_for_refresh_or_quit(
+    terminal: &mut dyn crate::core::ports::TerminalSession,
+    duration: Duration,
+) -> Result<bool> {
     let started = Instant::now();
 
     while started.elapsed() < duration {
-        if event::poll(Duration::from_millis(100))? {
-            if let Event::Key(key) = event::read()? {
-                if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
-                    return Ok(true);
-                }
-            }
+        if matches!(
+            terminal.poll_key(Duration::from_millis(100))?,
+            Some(TerminalKey::Char('q') | TerminalKey::Escape)
+        ) {
+            return Ok(true);
         }
     }
 
