@@ -1,6 +1,5 @@
 use std::{
     collections::{HashMap, HashSet},
-    io::{Write, stdout},
     net::{IpAddr, Ipv4Addr},
     sync::{Arc, Mutex},
     thread,
@@ -9,21 +8,14 @@ use std::{
 
 use anyhow::Result;
 use chrono::Utc;
-use crossterm::{
-    cursor,
-    event::{self, Event, KeyCode},
-    execute,
-    terminal::{self, Clear, ClearType},
-};
 use dns_lookup::lookup_addr;
 use ipnet::Ipv4Net;
 
 use crate::{
-    adapters::terminal::guard::AlternateScreenGuard,
     core::{
         CommandOutput,
         models::network::{PresenceRecord, ScanRow},
-        ports::{DeviceRepository, PresenceRepository},
+        ports::{DeviceRepository, PresenceRepository, TerminalFactory, TerminalKey},
     },
     support::csv,
 };
@@ -34,6 +26,7 @@ pub struct NetworkDiscoveryService {
     diagnostics: Arc<NetworkDiagnosticsService>,
     devices: Arc<dyn DeviceRepository>,
     presence: Arc<dyn PresenceRepository>,
+    terminal: Arc<dyn TerminalFactory>,
 }
 
 impl NetworkDiscoveryService {
@@ -41,11 +34,13 @@ impl NetworkDiscoveryService {
         diagnostics: Arc<NetworkDiagnosticsService>,
         devices: Arc<dyn DeviceRepository>,
         presence: Arc<dyn PresenceRepository>,
+        terminal: Arc<dyn TerminalFactory>,
     ) -> Self {
         Self {
             diagnostics,
             devices,
             presence,
+            terminal,
         }
     }
 
@@ -93,8 +88,7 @@ impl NetworkDiscoveryService {
     pub fn monitor(&self, args: &[String]) -> Result<CommandOutput> {
         let network = self.network_from_args(args, "net monitor")?;
         let only_unknown = args.iter().any(|arg| arg == "--unknown");
-
-        let _guard = AlternateScreenGuard::enter()?;
+        let mut terminal = self.terminal.alternate_screen()?;
         let mut previous_online: HashMap<String, String> = HashMap::new();
         let mut history: HashMap<String, PresenceRecord> = self
             .presence
@@ -172,34 +166,30 @@ impl NetworkDiscoveryService {
             let records: Vec<_> = history.values().cloned().collect();
             self.presence.replace_all(&records)?;
 
-            execute!(
-                stdout(),
-                cursor::MoveTo(0, 0),
-                Clear(ClearType::All)
-            )?;
-
-            println!(
-                "ADM net monitor {}{}   [q] salir",
+            let mut screen = format!(
+                "ADM net monitor {}{}   [q] salir\n\n",
                 network,
                 if only_unknown { " --unknown" } else { "" }
             );
-            println!();
-            print!("{}", render_scan_rows(&rows));
-            println!();
-            println!("Eventos recientes:");
+            screen.push_str(&render_scan_rows(&rows));
+            screen.push_str("\nEventos recientes:\n");
+
             for event_line in &events {
-                println!("{event_line}");
+                screen.push_str(event_line);
+                screen.push('\n');
             }
-            stdout().flush()?;
+
+            terminal.clear()?;
+            terminal.write(&screen)?;
+            terminal.flush()?;
 
             let started = Instant::now();
             while started.elapsed() < Duration::from_secs(3) {
-                if event::poll(Duration::from_millis(150))? {
-                    if let Event::Key(key) = event::read()? {
-                        if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
-                            return Ok(CommandOutput::ok(""));
-                        }
-                    }
+                if matches!(
+                    terminal.poll_key(Duration::from_millis(150))?,
+                    Some(TerminalKey::Char('q') | TerminalKey::Escape)
+                ) {
+                    return Ok(CommandOutput::ok(""));
                 }
             }
         }
