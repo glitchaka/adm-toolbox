@@ -1,4 +1,18 @@
-use std::{env, path::PathBuf};
+use std::{env, fs, path::PathBuf};
+
+use anyhow::Result;
+
+const DEFAULT_CONFIG: &str = r#"# ADM Toolbox portable shell configuration
+# Bash-compatible syntax.
+
+alias ll='ls -la'
+alias la='ls -a'
+alias cls='clear'
+
+# Ejemplos:
+# export ADM_SITE='laboratorio'
+# alias scanlab='net scan 192.168.1.0/24'
+"#;
 
 #[derive(Debug, Clone)]
 pub struct AppPaths {
@@ -12,6 +26,18 @@ impl AppPaths {
             .and_then(|path| path.parent().map(|parent| parent.to_path_buf()))
             .unwrap_or_else(|| PathBuf::from("."));
         Self { root }
+    }
+
+    pub fn ensure_layout(&self) -> Result<()> {
+        fs::create_dir_all(self.config_dir())?;
+        fs::create_dir_all(self.data_dir())?;
+
+        let config = self.config_file();
+        if !config.exists() {
+            fs::write(config, DEFAULT_CONFIG)?;
+        }
+
+        Ok(())
     }
 
     pub fn root(&self) -> &PathBuf { &self.root }
