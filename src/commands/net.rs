@@ -26,6 +26,8 @@ use sysinfo::System;
 use super::{CommandOutput, device};
 #[cfg(windows)]
 use super::traffic_etw::{ByteCounters, TrafficEtwMonitor, rates as etw_rates};
+#[cfg(windows)]
+use super::win_process;
 
 #[cfg(not(windows))]
 #[derive(Debug, Clone, Copy, Default)]
@@ -402,6 +404,8 @@ struct TrafficRow {
     connections: usize,
     upload_bps: u64,
     download_bps: u64,
+    ppid: Option<u32>,
+    foreground: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -468,13 +472,9 @@ fn traffic_output(
     let json = args.iter().any(|arg| arg == "--json");
     let csv = args.iter().any(|arg| arg == "--csv");
     let show_connections = args.iter().any(|arg| arg == "--connections");
-
-    if args.iter().any(|arg| arg == "--background") {
-        return Ok(CommandOutput::error(
-            "net traffic --background: la detección fiable de foreground/background todavía requiere el proveedor Win32 de ventanas",
-            2,
-        ));
-    }
+    let background_only = args.iter().any(|arg| arg == "--background");
+    let high_usage_only = args.iter().any(|arg| arg == "--high-usage");
+    let foreground_pid = current_foreground_pid();
 
     let process_name_by_pid: HashMap<u32, String> = system
         .processes()
@@ -582,6 +582,19 @@ fn traffic_output(
             continue;
         }
 
+        let foreground = foreground_pid == Some(pid_u32);
+
+        if background_only && foreground {
+            continue;
+        }
+
+        if high_usage_only
+            && rate.sent.saturating_add(rate.received) < 100 * 1024
+            && process.cpu_usage() < 10.0
+        {
+            continue;
+        }
+
         rows.push(TrafficRow {
             pid: pid_u32,
             process: name,
@@ -594,6 +607,8 @@ fn traffic_output(
             connections: count,
             upload_bps: rate.sent,
             download_bps: rate.received,
+            ppid: process.parent().map(|pid| pid.as_u32()),
+            foreground,
         });
     }
 
@@ -622,14 +637,16 @@ fn traffic_output(
 
     if csv {
         let mut out = String::from(
-            "pid,process,upload_bps,download_bps,cpu_percent,memory_mib,connections,path\n",
+            "pid,ppid,process,foreground,upload_bps,download_bps,cpu_percent,memory_mib,connections,path\n",
         );
 
         for row in rows {
             out.push_str(&format!(
-                "{},{},{},{},{:.2},{:.2},{},{}\n",
+                "{},{},{},{},{},{},{:.2},{:.2},{},{}\n",
                 row.pid,
+                row.ppid.map(|pid| pid.to_string()).unwrap_or_default(),
                 csv_escape(&row.process),
+                row.foreground,
                 row.upload_bps,
                 row.download_bps,
                 row.cpu_percent,
@@ -643,14 +660,16 @@ fn traffic_output(
     }
 
     let mut out = String::from(
-        "PID      PROCESS                    UP/s         DOWN/s       CPU%    RAM MiB   CONN\n",
+        "PID      PPID     FG  PROCESS                 UP/s         DOWN/s       CPU%    RAM MiB   CONN\n",
     );
 
     for row in rows {
         out.push_str(&format!(
-            "{:<8} {:<26} {:>11} {:>12} {:>6.1} {:>10.1} {:>6}\n",
+            "{:<8} {:<8} {:<3} {:<23} {:>11} {:>12} {:>6.1} {:>10.1} {:>6}\n",
             row.pid,
-            truncate_text(&row.process, 26),
+            row.ppid.map(|pid| pid.to_string()).unwrap_or_else(|| "-".to_owned()),
+            if row.foreground { "yes" } else { "no" },
+            truncate_text(&row.process, 23),
             format_rate(row.upload_bps),
             format_rate(row.download_bps),
             row.cpu_percent,
@@ -809,6 +828,16 @@ fn wait_for_refresh_or_quit(duration: Duration) -> anyhow::Result<bool> {
     }
 
     Ok(false)
+}
+
+#[cfg(windows)]
+fn current_foreground_pid() -> Option<u32> {
+    win_process::foreground_pid()
+}
+
+#[cfg(not(windows))]
+fn current_foreground_pid() -> Option<u32> {
+    None
 }
 
 fn format_rate(bytes_per_second: u64) -> String {
