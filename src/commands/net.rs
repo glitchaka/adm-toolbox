@@ -10,6 +10,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use chrono::Utc;
 use crossterm::{
     cursor,
     event::{self, Event, KeyCode},
@@ -36,6 +37,7 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
         "trace" | "traceroute" => trace(&args[1..]),
         "scan" => scan(&args[1..]),
         "monitor" => monitor(&args[1..]),
+        "presence" => presence(&args[1..]),
         "neighbors" | "arp" => arp_table(),
         "ports" => ports(&args[1..]),
         "traffic" => traffic(&args[1..]),
@@ -680,22 +682,136 @@ fn traffic_watch(args: &[String]) -> anyhow::Result<CommandOutput> {
     Ok(CommandOutput::ok(""))
 }
 
-fn monitor(_args: &[String]) -> anyhow::Result<CommandOutput> {
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct PresenceRecord {
+    id: String,
+    mac: String,
+    ip: String,
+    hostname: String,
+    first_seen: String,
+    last_seen: String,
+}
+
+fn monitor(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let network = if let Some(value) = args.iter().find(|arg| !arg.starts_with('-')) {
+        value.parse::<Ipv4Net>()?
+    } else {
+        default_ipv4_network()?
+    };
+
+    if network.prefix_len() < 20 {
+        return Ok(CommandOutput::error(
+            "net monitor: la primera versión limita el monitoreo a /20 o redes más pequeñas",
+            2,
+        ));
+    }
+
+    let only_unknown = args.iter().any(|arg| arg == "--unknown");
     let _guard = NetTerminalGuard::enter()?;
+    let mut previous_online: HashMap<String, String> = HashMap::new();
+    let mut history: HashMap<String, PresenceRecord> = load_presence()?
+        .into_iter()
+        .map(|record| (record.id.clone(), record))
+        .collect();
+    let mut events: Vec<String> = Vec::new();
 
     loop {
+        let mut rows = scan_rows(network)?;
+        if only_unknown {
+            rows.retain(|row| !row.known);
+        }
+
+        let now = Utc::now().to_rfc3339();
+        let mut current_online: HashMap<String, String> = HashMap::new();
+
+        for row in &rows {
+            let id = scan_identity(row);
+            current_online.insert(id.clone(), row.ip.to_string());
+
+            match previous_online.get(&id) {
+                None => push_event(
+                    &mut events,
+                    format!(
+                        "{} + {} {} {}",
+                        timestamp_short(),
+                        row.ip,
+                        row.mac,
+                        row.hostname
+                    ),
+                ),
+                Some(previous_ip) if previous_ip != &row.ip.to_string() => push_event(
+                    &mut events,
+                    format!(
+                        "{} ~ {} cambió IP {} -> {}",
+                        timestamp_short(),
+                        row.mac,
+                        previous_ip,
+                        row.ip
+                    ),
+                ),
+                _ => {}
+            }
+
+            history
+                .entry(id.clone())
+                .and_modify(|record| {
+                    record.mac = row.mac.clone();
+                    record.ip = row.ip.to_string();
+                    record.hostname = row.hostname.clone();
+                    record.last_seen = now.clone();
+                })
+                .or_insert_with(|| PresenceRecord {
+                    id,
+                    mac: row.mac.clone(),
+                    ip: row.ip.to_string(),
+                    hostname: row.hostname.clone(),
+                    first_seen: now.clone(),
+                    last_seen: now.clone(),
+                });
+        }
+
+        for (id, ip) in &previous_online {
+            if !current_online.contains_key(id) {
+                push_event(
+                    &mut events,
+                    format!("{} - {} {}", timestamp_short(), ip, id),
+                );
+            }
+        }
+
+        previous_online = current_online;
+        save_presence(&history.values().cloned().collect::<Vec<_>>())?;
+
         execute!(
             stdout(),
             cursor::MoveTo(0, 0),
             Clear(ClearType::All)
         )?;
 
-        println!("ADM net monitor   red local /24   [q] salir");
+        println!(
+            "ADM net monitor {}{}   [q] salir",
+            network,
+            if only_unknown { " --unknown" } else { "" }
+        );
         println!();
+        println!("IP               MAC                 HOSTNAME                         INVENTORY");
 
-        match scan(&[]) {
-            Ok(output) => print!("{}", output.stdout),
-            Err(error) => println!("error: {error}"),
+        for row in &rows {
+            println!(
+                "{:<16} {:<19} {:<32} {}",
+                row.ip,
+                row.mac,
+                row.hostname,
+                row.inventory_name
+                    .as_deref()
+                    .unwrap_or(if row.known { "known" } else { "unknown" })
+            );
+        }
+
+        println!();
+        println!("Eventos recientes:");
+        for event_line in &events {
+            println!("{event_line}");
         }
 
         stdout().flush()?;
@@ -711,6 +827,89 @@ fn monitor(_args: &[String]) -> anyhow::Result<CommandOutput> {
             }
         }
     }
+}
+
+fn presence(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let mut records = load_presence()?;
+    records.sort_by(|a, b| b.last_seen.cmp(&a.last_seen));
+
+    if args.iter().any(|arg| arg == "--json") {
+        return Ok(CommandOutput::ok(format!(
+            "{}\n",
+            serde_json::to_string_pretty(&records)?
+        )));
+    }
+
+    if args.iter().any(|arg| arg == "--csv") {
+        let mut out = String::from("mac,ip,hostname,first_seen,last_seen\n");
+        for record in records {
+            out.push_str(&format!(
+                "{},{},{},{},{}\n",
+                csv_escape(&record.mac),
+                csv_escape(&record.ip),
+                csv_escape(&record.hostname),
+                csv_escape(&record.first_seen),
+                csv_escape(&record.last_seen)
+            ));
+        }
+        return Ok(CommandOutput::ok(out));
+    }
+
+    let mut out =
+        String::from("MAC                 IP               HOSTNAME                         LAST SEEN\n");
+    for record in records {
+        out.push_str(&format!(
+            "{:<19} {:<16} {:<32} {}\n",
+            record.mac, record.ip, record.hostname, record.last_seen
+        ));
+    }
+
+    Ok(CommandOutput::ok(out))
+}
+
+fn scan_identity(row: &ScanRow) -> String {
+    if row.mac.starts_with("??") {
+        format!("ip:{}", row.ip)
+    } else {
+        row.mac.clone()
+    }
+}
+
+fn push_event(events: &mut Vec<String>, event: String) {
+    events.push(event);
+    if events.len() > 12 {
+        events.remove(0);
+    }
+}
+
+fn timestamp_short() -> String {
+    Utc::now().format("[%H:%M:%S]").to_string()
+}
+
+fn load_presence() -> anyhow::Result<Vec<PresenceRecord>> {
+    let path = presence_database_path();
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    Ok(serde_json::from_str(&fs::read_to_string(path)?)?)
+}
+
+fn save_presence(records: &[PresenceRecord]) -> anyhow::Result<()> {
+    let path = presence_database_path();
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(path, serde_json::to_string_pretty(records)?)?;
+    Ok(())
+}
+
+fn presence_database_path() -> PathBuf {
+    env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(|parent| parent.to_path_buf()))
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("data")
+        .join("network_presence.json")
 }
 
 struct NetTerminalGuard;
