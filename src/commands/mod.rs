@@ -5,6 +5,8 @@ mod net;
 mod switch;
 #[cfg(windows)]
 mod traffic_etw;
+#[cfg(windows)]
+mod win_process;
 mod sys;
 mod unix;
 mod wol;
