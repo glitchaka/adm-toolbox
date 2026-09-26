@@ -4,7 +4,57 @@ ADM Toolbox será una consola portable de soporte técnico para Windows, con exp
 
 El foco es administración y diagnóstico de equipos y redes autorizadas. La consola será el centro del producto; la GUI, si existe, será complementaria.
 
+## Principio rector: primero una consola Linux, después las herramientas
+
+ADM Toolbox no debe sentirse como una colección de utilidades pegadas alrededor de una consola. Debe sentirse, desde que abre hasta que cierra, como trabajar en una shell Linux/Bash coherente.
+
+Esto implica:
+
+- el prompt y la navegación son siempre el centro de la experiencia;
+- no habrá un dashboard principal que sustituya a la terminal;
+- no habrá botones, paneles o ventanas obligatorias para usar las funciones de soporte;
+- todas las funciones importantes deben poder invocarse como comandos;
+- los comandos propios deben comportarse como utilidades Unix: entrada simple, salida predecible, códigos de retorno y posibilidad de encadenarse;
+- cualquier vista más rica será TUI opcional iniciada desde la propia shell, nunca una aplicación separada que rompa el flujo;
+- los comandos deben agruparse por una taxonomía coherente y no crecer como nombres inconexos;
+- `--help`, autocompletado y documentación deben hacer que descubrir funciones se sienta como usar herramientas Linux reales.
+
+Ejemplo de sesión objetivo:
+
+```bash
+manuel@soporte ~
+$ net scan --alive
+10.10.20.15   00:11:22:33:44:55   LAB-PC-01
+10.10.20.37   A4:C3:F0:11:93:02   NOTEBOOK-ALU
+
+manuel@soporte ~
+$ net locate 10.10.20.37
+switch: SW-PISO2
+port:   Gi1/0/27
+vlan:   20
+
+manuel@soporte ~
+$ domain status 10.10.20.37
+hostname: NOTEBOOK-ALU
+domain:   WORKGROUP
+joined:   no
+
+manuel@soporte ~
+$ wol LAB-PC-01
+magic packet sent to 00:11:22:33:44:55
+```
+
+La experiencia debe ser coherente incluso al ejecutar programas nativos:
+
+```bash
+ipconfig /all | grep -i dns
+tasklist | grep -i chrome
+netstat -ano | grep LISTENING
+```
+
 ---
+
+
 
 ## 1. Objetivos
 
@@ -44,6 +94,8 @@ El foco es administración y diagnóstico de equipos y redes autorizadas. La con
 
 ### 2.2 Comportamiento tipo Bash
 
+La shell base debe conservar la semántica y sensación de una terminal Linux. Los comandos ADM no deben introducir un sistema de interacción paralelo.
+
 Debe soportar, directamente o mediante runtime integrado:
 
 - `cd`
@@ -81,10 +133,91 @@ Ejemplo:
 ```bash
 ipconfig /all | grep -i dns
 tasklist | grep -i chrome
-scan --alive | sort
+net scan --alive | sort
 ```
 
+### 2.3 Convención de comandos ADM
+
+Para evitar que el proyecto termine convertido en un pegote de comandos independientes, las capacidades propias se organizan por familias, igual que una buena CLI Unix moderna.
+
+Estructura propuesta:
+
+```text
+net      red y descubrimiento
+domain   dominio / Active Directory
+switch   switches y puertos
+device   inventario de equipos
+wol      Wake-on-LAN
+diag     diagnóstico
+sys      información local
+```
+
+Ejemplos:
+
+```bash
+net scan
+net scan 10.10.20.0/24
+net neighbors
+net ports 10.10.20.15 22,80,443
+
+domain status LAB-PC-01
+domain status 10.10.20.37
+
+switch locate 00:11:22:33:44:55
+switch show SW-PISO2
+
+device list
+device add 00:11:22:33:44:55 LAB-PC-01
+device unknown
+
+diag network
+diag dns
+diag storage
+
+sys info
+sys disks
+sys services
+```
+
+Reglas de diseño:
+
+- verbo y sustantivo consistentes;
+- salida legible en terminal por defecto;
+- `--json`, `--csv` o salida simple cuando corresponda;
+- posibilidad de usar pipes;
+- códigos de salida útiles para scripts;
+- `--quiet` para scripts;
+- `--help` en cada comando y subcomando;
+- alias cortos solo cuando sean naturales;
+- no duplicar comandos nativos de Windows o Unix sin una razón clara.
+
+Ejemplo:
+
+```bash
+net net scan --unknown --json | jq '.[] | .hostname'
+```
+
+### 2.4 TUI opcional, no GUI obligatoria
+
+Cuando una operación se beneficie de una vista interactiva, podrá abrirse una TUI dentro de la terminal, por ejemplo:
+
+```bash
+net monitor
+device tui
+switch map
+```
+
+Estas vistas deben:
+
+- ejecutarse dentro de la terminal;
+- cerrarse y devolver al prompt;
+- respetar teclado;
+- no ser necesarias para acceder a ninguna función;
+- no cambiar el modelo mental de Bash.
+
 ---
+
+
 
 ## 3. Integración con Windows
 
@@ -169,7 +302,7 @@ scan
 scan 192.168.1.0/24
 scan --alive
 scan --details
-scan --unknown
+net scan --unknown
 ```
 
 Datos por equipo, cuando estén disponibles:
@@ -303,8 +436,8 @@ Comandos previstos:
 device add <MAC> <nombre>
 device remove <MAC>
 device list
-scan --unknown
-scan --authorized
+net scan --unknown
+net scan --authorized
 ```
 
 Objetivo:
@@ -462,7 +595,27 @@ ADM Toolbox debe:
 
 ---
 
-## 15. Portabilidad
+## 15. Lo que ADM Toolbox no debe convertirse en
+
+- No debe convertirse en un dashboard de administración.
+- No debe convertirse en una colección de ventanas.
+- No debe esconder comandos detrás de botones.
+- No debe tener una interfaz distinta para cada herramienta.
+- No debe reemplazar Bash por un menú de opciones.
+- No debe obligar a usar mouse.
+- No debe introducir nombres arbitrarios cuando existe una convención Unix comprensible.
+- No debe mezclar salida decorativa con salida pensada para scripts.
+- No debe sacrificar pipes, redirecciones o automatización por una presentación visual.
+
+La pregunta de diseño para cada nueva característica será:
+
+> ¿Cómo se usaría esto si fuera una utilidad nativa de Linux instalada en `/usr/bin`?
+
+Solo después de resolver su interfaz de línea de comandos se considerará una TUI o representación visual opcional.
+
+---
+
+## 16. Portabilidad
 
 Estructura prevista:
 
@@ -487,7 +640,7 @@ No requerir instalación tradicional para la consola base.
 
 ---
 
-## 16. Arquitectura
+## 17. Arquitectura
 
 Principios:
 
@@ -519,21 +672,22 @@ Command Dispatcher
 
 ---
 
-## 17. Prioridad inicial
+## 18. Prioridad inicial
 
-Primera versión funcional:
+Primera versión funcional, manteniendo siempre la shell como producto principal:
 
-1. terminal portable;
-2. ejecución de comandos Windows;
+1. terminal portable con experiencia Bash/Linux;
+2. ejecución de comandos Windows sin abandonar la shell;
 3. utilidades Unix básicas;
-4. pipes/redirecciones;
-5. `scan`;
-6. listado IP/MAC/hostname;
-7. detección de dominio;
-8. Wake-on-LAN;
-9. inventario local;
-10. `scan --unknown`;
-11. soporte de resolución switch/puerto mediante proveedor configurable;
-12. exportación CSV/JSON.
+4. pipes, redirecciones, aliases y scripts;
+5. autocompletado y `--help` coherentes;
+6. familia `net`: descubrimiento y listado IP/MAC/hostname;
+7. familia `domain`: estado y dominio de cada equipo;
+8. `wol`;
+9. familia `device`: inventario local y equipos desconocidos;
+10. `net scan --unknown`;
+11. familia `switch`: resolución switch/puerto mediante proveedor configurable;
+12. exportación CSV/JSON;
+13. TUI opcionales solo donde realmente aporten valor.
 
 Las capacidades de cambio de configuración de switches quedan fuera de la primera etapa.
