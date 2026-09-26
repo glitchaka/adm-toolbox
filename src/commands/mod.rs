@@ -39,6 +39,7 @@ pub fn is_internal(name: &str) -> bool {
     matches!(
         name,
         "help"
+            | "man"
             | "pwd"
             | "echo"
             | "ls"
@@ -66,6 +67,7 @@ pub fn is_internal(name: &str) -> bool {
             | "cp"
             | "mv"
             | "which"
+            | "type"
             | "sys"
             | "net"
             | "domain"
@@ -91,11 +93,11 @@ pub fn run(
     cwd: &Path,
 ) -> Result<CommandOutput> {
     match name {
-        "help" => Ok(help()),
+        "help" | "man" => Ok(help(args)),
         "pwd" | "echo" | "ls" | "cat" | "head" | "tail" | "grep" | "wc" | "sort"
         | "uniq" | "cut" | "tee" | "find" | "printf" | "basename" | "dirname"
         | "realpath" | "date" | "sleep" | "true" | "false" | "touch" | "mkdir" | "rm"
-        | "cp" | "mv" | "which" => unix::run(name, args, input, cwd),
+        | "cp" | "mv" | "which" | "type" => unix::run(name, args, input, cwd),
         "sys" => sys::run(args),
         "net" => net::run(args),
         "domain" => domain::run(args),
@@ -113,9 +115,62 @@ pub fn run(
     }
 }
 
-fn help() -> CommandOutput {
-    CommandOutput::ok(
-        "ADM Toolbox\n\n\
+fn help(args: &[String]) -> CommandOutput {
+    match args.first().map(String::as_str) {
+        Some("net") => CommandOutput::ok(
+            "net — red y diagnóstico\n\n\
+net interfaces                 configuración de interfaces\n\
+net connections                conexiones TCP/UDP\n\
+net routes                     tabla de rutas\n\
+net neighbors                  vecinos ARP\n\
+net dns HOST|IP                resolución directa/inversa\n\
+net ping HOST [-c N]            ping\n\
+net trace HOST                 traceroute\n\
+net scan [CIDR]                descubre equipos\n\
+net monitor                    monitor interactivo de la LAN\n\
+net ports HOST [LISTA]         puertos TCP acotados\n\
+net traffic [--watch]          procesos con conexiones de red\n\
+net usage                      uso por cliente mediante proveedor de gateway\n\
+net provider capabilities      capacidades del proveedor\n"
+        ),
+        Some("sys") => CommandOutput::ok(
+            "sys — información y procesos\n\n\
+sys info                       resumen del equipo\n\
+sys processes                  procesos\n\
+sys top                        monitor interactivo\n\
+sys disks                      discos\n\
+sys memory                     memoria\n\
+sys hostname                   nombre del equipo\n\
+sys whoami                     usuario actual\n\
+sys uname [-a]                 información de sistema\n\
+sys kill PID                   termina un proceso\n\n\
+Aliases: ps, top, df, free, hostname, whoami, uname, kill\n"
+        ),
+        Some("vim") | Some("edit") => CommandOutput::ok(
+            "vim FILE — editor modal Rust\n\n\
+Normal: h j k l, w, b, 0, $, gg, G, i, a, o, O, x, dd, yy, p, u, Ctrl-R\n\
+Visual línea: V, j/k, y, d\n\
+Buscar: /texto, n, N\n\
+Ex: :w, :q, :q!, :wq, :x, :set number, :set nonumber, :%s/a/b/g\n"
+        ),
+        Some("device") => CommandOutput::ok(
+            "device — inventario local\n\n\
+device list\n\
+device add MAC NOMBRE\n\
+device remove MAC\n"
+        ),
+        Some("domain") => CommandOutput::ok(
+            "domain — pertenencia a dominio\n\n\
+domain status [HOST]\n"
+        ),
+        Some("switch") => CommandOutput::ok(
+            "switch — resolución de infraestructura\n\n\
+switch capabilities\n\
+switch locate MAC\n"
+        ),
+        Some(topic) => CommandOutput::error(format!("help: tema desconocido: {topic}"), 1),
+        None => CommandOutput::ok(
+            "ADM Toolbox\n\n\
 Shell:\n\
   cd PATH                    cambia de directorio\n\
   pwd                        muestra el directorio actual\n\
@@ -130,53 +185,28 @@ Shell:\n\
   vim FILE                   editor modal Rust\n\
   edit FILE                  alias de vim\n\n\
 Unix:\n\
-  ls [-la] [PATH]\n\
-  cat FILE...\n\
-  head [-n N] [FILE]\n\
-  tail [-n N] [FILE]\n\
-  grep [-in] PATTERN [FILE]\n\
-  wc [FILE]\n\
-  sort [FILE]\n\
-  uniq [FILE]\n\
-  cut -d DELIM -f N [FILE]\n\
-  tee [-a] FILE\n\
-  find [PATH] [-name PATRON]\n\
-  printf FORMATO [ARG...]\n\
-  basename PATH\n\
-  dirname PATH\n\
-  realpath PATH\n\
-  date [+FORMATO]\n\
-  sleep SEGUNDOS\n\
-  true | false\n\
-  touch FILE...\n\
-  mkdir [-p] DIR...\n\
-  rm [-r] PATH...\n\
-  cp SOURCE TARGET\n\
-  mv SOURCE TARGET\n\
-  which COMMAND\n\
-  echo TEXT...\n\n\
+  ls, cat, head, tail, grep, wc, sort, uniq, cut, tee, find\n\
+  printf, basename, dirname, realpath, date, sleep, true, false\n\
+  touch, mkdir, rm, cp, mv, which, type\n\n\
+Sistema:\n\
+  ps, top, df, free, hostname, whoami, uname, kill\n\n\
 Administración:\n\
-  sys info\n\
-  sys processes\n\
-  sys disks\n\
-  sys memory\n\
-  ps | top\n\
-  df | free\n\
-  hostname | whoami | uname -a\n\
-  kill PID\n\
-  net interfaces\n\
-  net connections\n\
-  net neighbors\n\
-  net scan [CIDR]\n\
-  net ports HOST PORTS\n\
-  net traffic\n\
-  net usage\n\
-  net provider capabilities\n\
-  domain status [HOST]\n\
+  sys ...                    usa 'help sys'\n\
+  net ...                    usa 'help net'\n\
+  domain ...                 usa 'help domain'\n\
+  device ...                 usa 'help device'\n\
+  switch ...                 usa 'help switch'\n\
   wol MAC [BROADCAST]\n\
-  diag network\n\
-  device list|add|remove\n\
-  switch capabilities|locate\n\n\
-También ejecuta directamente programas de Windows como ipconfig, ping, netstat, tasklist y powershell.\n"
-    )
+  diag network|traffic\n\n\
+Operadores:\n\
+  cmd1 | cmd2\n\
+  cmd < archivo\n\
+  cmd > archivo\n\
+  cmd >> archivo\n\
+  cmd1 && cmd2\n\
+  cmd1 || cmd2\n\
+  cmd1 ; cmd2\n\n\
+Usa 'man TEMA' o 'help TEMA' para ayuda detallada.\n"
+        ),
+    }
 }
