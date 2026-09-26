@@ -27,6 +27,13 @@ use super::{CommandOutput, device};
 #[cfg(windows)]
 use super::traffic_etw::{ByteCounters, TrafficEtwMonitor, rates as etw_rates};
 
+#[cfg(not(windows))]
+#[derive(Debug, Clone, Copy, Default)]
+struct ByteCounters {
+    sent: u64,
+    received: u64,
+}
+
 pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     let sub = args.first().map(String::as_str).unwrap_or("interfaces");
 
@@ -757,15 +764,18 @@ fn traffic_watch(args: &[String]) -> anyhow::Result<CommandOutput> {
         println!();
 
         #[cfg(windows)]
-        let output = traffic_output(
-            &filtered_args,
-            rates.as_ref(),
-            telemetry_error
-                .as_deref()
+        let output = {
+            let telemetry_note = telemetry_error
+                .as_ref()
                 .map(|error| format!("ETW no disponible: {error}"))
-                .as_deref()
-                .or(Some("ETW")),
-        );
+                .unwrap_or_else(|| "ETW".to_owned());
+
+            traffic_output(
+                &filtered_args,
+                rates.as_ref(),
+                Some(&telemetry_note),
+            )
+        };
 
         #[cfg(not(windows))]
         let output = traffic_output(
