@@ -19,6 +19,7 @@ enum Mode {
     Insert,
     Command,
     Search,
+    VisualLine,
 }
 
 struct TerminalGuard;
@@ -54,6 +55,9 @@ struct VimEditor {
     register: Vec<Vec<char>>,
     undo: Vec<Vec<Vec<char>>>,
     redo: Vec<Vec<Vec<char>>>,
+    visual_anchor: Option<usize>,
+    line_numbers: bool,
+    message: String,
 }
 
 pub fn run(path: &Path) -> Result<()> {
@@ -80,6 +84,9 @@ pub fn run(path: &Path) -> Result<()> {
         register: Vec::new(),
         undo: Vec::new(),
         redo: Vec::new(),
+        visual_anchor: None,
+        line_numbers: true,
+        message: String::new(),
     };
 
     loop {
@@ -114,21 +121,41 @@ impl VimEditor {
             queue!(out, cursor::MoveTo(0, screen_row as u16))?;
 
             if let Some(line) = self.lines.get(line_index) {
-                queue!(
-                    out,
-                    SetForegroundColor(Color::DarkGrey),
-                    Print(format!("{:>5} ", line_index + 1)),
-                    ResetColor
-                )?;
+                let selected = self.visual_line_contains(line_index);
 
-                let available = width.saturating_sub(6) as usize;
+                if selected {
+                    queue!(out, SetBackgroundColor(Color::DarkGrey))?;
+                }
+
+                if self.line_numbers {
+                    queue!(
+                        out,
+                        SetForegroundColor(Color::DarkGrey),
+                        Print(format!("{:>5} ", line_index + 1)),
+                        ResetColor
+                    )?;
+
+                    if selected {
+                        queue!(out, SetBackgroundColor(Color::DarkGrey))?;
+                    }
+                }
+
+                let gutter = if self.line_numbers { 6 } else { 0 };
+                let available = width.saturating_sub(gutter) as usize;
                 let visible: String = line.iter().copied().take(available).collect();
-                queue!(out, Print(visible))?;
-            } else {
+                queue!(out, Print(visible), ResetColor)?;
+            } else if self.line_numbers {
                 queue!(
                     out,
                     SetForegroundColor(Color::DarkGrey),
                     Print("    ~ "),
+                    ResetColor
+                )?;
+            } else {
+                queue!(
+                    out,
+                    SetForegroundColor(Color::DarkGrey),
+                    Print("~"),
                     ResetColor
                 )?;
             }
@@ -139,6 +166,7 @@ impl VimEditor {
             Mode::Insert => " INSERT ",
             Mode::Command => " COMMAND ",
             Mode::Search => " SEARCH ",
+            Mode::VisualLine => " VISUAL LINE ",
         };
 
         queue!(
@@ -162,10 +190,18 @@ impl VimEditor {
         match self.mode {
             Mode::Command => queue!(out, Print(":"), Print(&self.command))?,
             Mode::Search => queue!(out, Print("/"), Print(&self.search))?,
+            _ if !self.message.is_empty() => {
+                queue!(
+                    out,
+                    SetForegroundColor(Color::Yellow),
+                    Print(&self.message),
+                    ResetColor
+                )?
+            }
             _ => queue!(
                 out,
                 SetForegroundColor(Color::DarkGrey),
-                Print("Esc normal · i insertar · / buscar · :w guardar · :q salir"),
+                Print("Esc normal · i insertar · V visual línea · / buscar · :w guardar · :q salir"),
                 ResetColor
             )?,
         }
@@ -180,7 +216,8 @@ impl VimEditor {
                 height.saturating_sub(1),
             ),
             _ => (
-                6_u16.saturating_add(self.col as u16),
+                (if self.line_numbers { 6_u16 } else { 0_u16 })
+                    .saturating_add(self.col as u16),
                 self.row.saturating_sub(self.offset) as u16,
             ),
         };
@@ -198,8 +235,13 @@ impl VimEditor {
             self.mode = Mode::Normal;
             self.command.clear();
             self.search.clear();
+            self.visual_anchor = None;
             self.reset_pending();
             return Ok(false);
+        }
+
+        if !matches!(self.mode, Mode::Command | Mode::Search) {
+            self.message.clear();
         }
 
         match self.mode {
@@ -207,6 +249,7 @@ impl VimEditor {
             Mode::Insert => self.insert_key(key),
             Mode::Command => return self.command_key(key, path),
             Mode::Search => self.search_key(key),
+            Mode::VisualLine => self.visual_line_key(key),
         }
 
         Ok(false)
@@ -269,6 +312,10 @@ impl VimEditor {
             }
             KeyCode::Char('p') => self.paste_after(),
             KeyCode::Char('u') => self.undo(),
+            KeyCode::Char('V') => {
+                self.mode = Mode::VisualLine;
+                self.visual_anchor = Some(self.row);
+            },
             KeyCode::Char('g') => {
                 if self.pending_g {
                     self.row = 0;
@@ -372,18 +419,34 @@ impl VimEditor {
                 self.mode = Mode::Normal;
 
                 match command.as_str() {
-                    "w" => self.save(path)?,
+                    "w" => {
+                        self.save(path)?;
+                        self.message = format!("{} líneas escritas", self.lines.len());
+                    }
                     "q" => {
                         if !self.dirty {
                             return Ok(true);
                         }
+                        self.message =
+                            "E37: hay cambios sin guardar; usa :q! o :wq".to_owned();
                     }
                     "q!" => return Ok(true),
                     "wq" | "x" => {
                         self.save(path)?;
                         return Ok(true);
                     }
-                    _ => {}
+                    "set number" | "set nu" => {
+                        self.line_numbers = true;
+                    }
+                    "set nonumber" | "set nonu" => {
+                        self.line_numbers = false;
+                    }
+                    _ if command.starts_with("%s/") => {
+                        self.substitute_all(&command)?;
+                    }
+                    _ => {
+                        self.message = format!("No es un comando del editor: {command}");
+                    }
                 }
             }
             _ => {}
@@ -413,6 +476,136 @@ impl VimEditor {
             }
             _ => {}
         }
+    }
+
+    fn visual_line_key(&mut self, key: KeyEvent) {
+        match key.code {
+            KeyCode::Esc | KeyCode::Char('V') => {
+                self.mode = Mode::Normal;
+                self.visual_anchor = None;
+            }
+            KeyCode::Char('j') | KeyCode::Down => self.move_down(),
+            KeyCode::Char('k') | KeyCode::Up => self.move_up(),
+            KeyCode::Char('g') => {
+                self.row = 0;
+                self.clamp_col();
+            }
+            KeyCode::Char('G') => {
+                self.row = self.lines.len().saturating_sub(1);
+                self.clamp_col();
+            }
+            KeyCode::Char('y') => {
+                self.yank_visual_lines();
+                self.mode = Mode::Normal;
+                self.visual_anchor = None;
+            }
+            KeyCode::Char('d') | KeyCode::Char('x') => {
+                self.delete_visual_lines();
+                self.mode = Mode::Normal;
+                self.visual_anchor = None;
+            }
+            _ => {}
+        }
+    }
+
+    fn visual_line_contains(&self, row: usize) -> bool {
+        if self.mode != Mode::VisualLine {
+            return false;
+        }
+
+        let Some(anchor) = self.visual_anchor else {
+            return false;
+        };
+
+        let start = anchor.min(self.row);
+        let end = anchor.max(self.row);
+        (start..=end).contains(&row)
+    }
+
+    fn visual_line_range(&self) -> Option<(usize, usize)> {
+        let anchor = self.visual_anchor?;
+        Some((anchor.min(self.row), anchor.max(self.row)))
+    }
+
+    fn yank_visual_lines(&mut self) {
+        let Some((start, end)) = self.visual_line_range() else {
+            return;
+        };
+
+        self.register = self.lines[start..=end].to_vec();
+        self.message = format!("{} línea(s) copiada(s)", end - start + 1);
+    }
+
+    fn delete_visual_lines(&mut self) {
+        let Some((start, end)) = self.visual_line_range() else {
+            return;
+        };
+
+        self.snapshot();
+        self.register = self.lines[start..=end].to_vec();
+        self.lines.drain(start..=end);
+
+        if self.lines.is_empty() {
+            self.lines.push(Vec::new());
+        }
+
+        self.row = start.min(self.lines.len().saturating_sub(1));
+        self.col = 0;
+        self.dirty = true;
+        self.message = format!("{} línea(s) eliminada(s)", end - start + 1);
+    }
+
+    fn substitute_all(&mut self, command: &str) -> Result<()> {
+        let body = command.trim_start_matches("%s/");
+        let mut parts = body.split('/');
+
+        let Some(pattern) = parts.next() else {
+            return Ok(());
+        };
+        let Some(replacement) = parts.next() else {
+            self.message = "uso: :%s/antiguo/nuevo/g".to_owned();
+            return Ok(());
+        };
+
+        if pattern.is_empty() {
+            self.message = "patrón vacío".to_owned();
+            return Ok(());
+        }
+
+        let flags = parts.next().unwrap_or("");
+        let replace_all = flags.contains('g');
+        self.snapshot();
+
+        let mut count = 0_usize;
+
+        for line in &mut self.lines {
+            let source: String = line.iter().copied().collect();
+            let occurrences = source.matches(pattern).count();
+
+            if occurrences == 0 {
+                continue;
+            }
+
+            let replaced = if replace_all {
+                count += occurrences;
+                source.replace(pattern, replacement)
+            } else {
+                count += 1;
+                source.replacen(pattern, replacement, 1)
+            };
+
+            *line = replaced.chars().collect();
+        }
+
+        if count > 0 {
+            self.dirty = true;
+            self.message = format!("{count} sustitución(es)");
+            self.clamp_col();
+        } else {
+            self.message = format!("E486: patrón no encontrado: {pattern}");
+        }
+
+        Ok(())
     }
 
     fn save(&mut self, path: &Path) -> Result<()> {
