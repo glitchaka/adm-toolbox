@@ -54,13 +54,6 @@ impl TerminalSession for CrosstermTerminalSession {
         }
     }
 
-    fn read_key(&mut self) -> Result<TerminalKey> {
-        loop {
-            if let Event::Key(key) = event::read()? {
-                return Ok(map_key(key.code));
-            }
-        }
-    }
 }
 
 impl Drop for CrosstermTerminalSession {
