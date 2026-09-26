@@ -185,6 +185,8 @@ pub fn builtin_names() -> &'static [&'static str] {
         "wol",
         "diag",
         "man",
+        "env",
+        "clear",
         "ls",
         "cat",
         "head",
