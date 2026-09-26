@@ -23,12 +23,16 @@ use anyhow::{Context, Result};
 use crate::core::CommandOutput;
 use crate::support::path::resolve as resolve_path;
 
-pub fn run(
-    name: &str,
-    args: &[String],
-    input: Option<&[u8]>,
-    cwd: &Path,
-) -> Result<CommandOutput> {
+pub struct UnixService;
+
+impl UnixService {
+    pub fn execute(
+        &self,
+        name: &str,
+        args: &[String],
+        input: Option<&[u8]>,
+        cwd: &Path,
+    ) -> Result<CommandOutput> {
     match name {
         "pwd" => Ok(CommandOutput::ok(format!("{}\n", display_unix_path(cwd)))),
         "echo" => Ok(CommandOutput::ok(format!("{}\n", args.join(" ")))),
@@ -71,6 +75,8 @@ pub fn run(
         "which" | "type" => which(args),
         _ => Ok(CommandOutput::error("comando Unix no implementado", 127)),
     }
+}
+
 }
 
 fn env_cmd() -> Result<CommandOutput> {

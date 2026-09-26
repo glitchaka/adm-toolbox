@@ -3,12 +3,12 @@ use std::sync::Arc;
 use anyhow::Result;
 
 use crate::{
-    model::{
+    core::{
         CommandOutput,
         ports::{DeviceRepository, SwitchLocator, SwitchRepository},
-        switch::SwitchProfile,
+        models::switch::SwitchProfile,
     },
-    service::device::{normalize_mac, parse_mac},
+    application::device::{normalize_mac, parse_mac},
     support::options,
 };
 

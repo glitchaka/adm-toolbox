@@ -9,13 +9,16 @@ use crossterm::{
     cursor,
     event::{self, Event, KeyCode},
     execute,
-    terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{self, Clear, ClearType},
 };
 use sysinfo::{Disks, Pid, System};
 
 use crate::{adapters::terminal::guard::AlternateScreenGuard, core::CommandOutput};
 
-pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
+pub struct SystemService;
+
+impl SystemService {
+    pub fn execute(&self, args: &[String]) -> anyhow::Result<CommandOutput> {
     let sub = args.first().map(String::as_str).unwrap_or("info");
 
     match sub {
@@ -39,7 +42,7 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     }
 }
 
-pub fn run_alias(name: &str, args: &[String]) -> anyhow::Result<CommandOutput> {
+    pub fn execute_alias(&self, name: &str, args: &[String]) -> anyhow::Result<CommandOutput> {
     match name {
         "ps" => processes(),
         "top" => top(),
@@ -54,6 +57,8 @@ pub fn run_alias(name: &str, args: &[String]) -> anyhow::Result<CommandOutput> {
             127,
         )),
     }
+}
+
 }
 
 fn info() -> anyhow::Result<CommandOutput> {
