@@ -1,7 +1,7 @@
 mod parser;
 
 use std::{
-    collections::HashMap,
+    collections::{BTreeSet, HashMap},
     env,
     fs::{self, OpenOptions},
     io::Write,
@@ -10,13 +10,149 @@ use std::{
 };
 
 use anyhow::{Context, Result};
-use rustyline::{DefaultEditor, error::ReadlineError};
+use rustyline::{
+    Context as RustylineContext, Editor, Helper,
+    completion::{Completer, FilenameCompleter, Pair},
+    error::ReadlineError,
+    highlight::Highlighter,
+    hint::{Hinter, HistoryHinter},
+    history::DefaultHistory,
+    validate::Validator,
+};
 
 use crate::{commands, editor};
 use parser::{ChainOp, ParsedCommand, Pipeline};
 
+struct ShellHelper {
+    files: FilenameCompleter,
+    hinter: HistoryHinter,
+    commands: Vec<String>,
+}
+
+impl ShellHelper {
+    fn new() -> Self {
+        Self {
+            files: FilenameCompleter::new(),
+            hinter: HistoryHinter::new(),
+            commands: completion_commands(),
+        }
+    }
+
+    fn candidates_for(&self, line: &str, pos: usize) -> Option<(usize, Vec<Pair>)> {
+        let before = &line[..pos];
+        let segment_start = before
+            .char_indices()
+            .rev()
+            .find(|(_, ch)| matches!(ch, ';' | '|' | '&'))
+            .map(|(index, ch)| index + ch.len_utf8())
+            .unwrap_or(0);
+
+        let segment = &before[segment_start..];
+        let leading = segment.len() - segment.trim_start().len();
+        let content_start = segment_start + leading;
+        let trimmed = segment.trim_start();
+        let words: Vec<&str> = trimmed.split_whitespace().collect();
+        let ends_with_space = trimmed.chars().last().is_some_and(char::is_whitespace);
+
+        if words.is_empty() || (words.len() == 1 && !ends_with_space) {
+            let typed = words.first().copied().unwrap_or("");
+            let mut pairs: Vec<Pair> = self
+                .commands
+                .iter()
+                .filter(|command| command.starts_with(typed))
+                .map(|command| Pair {
+                    display: command.clone(),
+                    replacement: command.clone(),
+                })
+                .collect();
+
+            pairs.sort_by(|a, b| a.display.cmp(&b.display));
+            return Some((content_start, pairs));
+        }
+
+        let command = words.first().copied().unwrap_or("");
+        let subcommands: &[&str] = match command {
+            "net" => &[
+                "interfaces", "connections", "routes", "dns", "ping", "trace", "scan",
+                "monitor", "neighbors", "ports", "traffic", "usage", "provider",
+            ],
+            "sys" => &[
+                "info", "processes", "top", "disks", "memory", "hostname", "whoami",
+                "uname", "kill", "services",
+            ],
+            "device" => &["list", "show", "add", "remove", "path"],
+            "domain" => &["status"],
+            "switch" => &["capabilities", "locate"],
+            "diag" => &["network", "traffic"],
+            "config" => &["path", "edit", "reload"],
+            _ => &[],
+        };
+
+        let currently_second = words.len() == 1 && ends_with_space
+            || words.len() == 2 && !ends_with_space;
+
+        if currently_second && !subcommands.is_empty() {
+            let typed = if words.len() >= 2 { words[1] } else { "" };
+            let start = if words.len() >= 2 {
+                pos.saturating_sub(typed.len())
+            } else {
+                pos
+            };
+
+            let pairs = subcommands
+                .iter()
+                .filter(|candidate| candidate.starts_with(typed))
+                .map(|candidate| Pair {
+                    display: (*candidate).to_owned(),
+                    replacement: (*candidate).to_owned(),
+                })
+                .collect();
+
+            return Some((start, pairs));
+        }
+
+        None
+    }
+}
+
+impl Completer for ShellHelper {
+    type Candidate = Pair;
+
+    fn complete(
+        &self,
+        line: &str,
+        pos: usize,
+        context: &RustylineContext<'_>,
+    ) -> rustyline::Result<(usize, Vec<Pair>)> {
+        if let Some(result) = self.candidates_for(line, pos) {
+            if !result.1.is_empty() {
+                return Ok(result);
+            }
+        }
+
+        self.files.complete(line, pos, context)
+    }
+}
+
+impl Hinter for ShellHelper {
+    type Hint = String;
+
+    fn hint(
+        &self,
+        line: &str,
+        pos: usize,
+        context: &RustylineContext<'_>,
+    ) -> Option<Self::Hint> {
+        self.hinter.hint(line, pos, context)
+    }
+}
+
+impl Highlighter for ShellHelper {}
+impl Validator for ShellHelper {}
+impl Helper for ShellHelper {}
+
 pub struct Shell {
-    editor: DefaultEditor,
+    editor: Editor<ShellHelper, DefaultHistory>,
     cwd: PathBuf,
     running: bool,
     last_status: i32,
@@ -31,7 +167,8 @@ impl Shell {
         let cwd = env::current_dir().context("No se pudo obtener el directorio actual")?;
         let history_file = home_dir().join(".adm_toolbox_history");
         let config_file = portable_config_path();
-        let mut editor = DefaultEditor::new()?;
+        let mut editor = Editor::<ShellHelper, DefaultHistory>::new()?;
+        editor.set_helper(Some(ShellHelper::new()));
         let _ = editor.load_history(&history_file);
 
         let mut aliases = HashMap::new();
@@ -486,6 +623,57 @@ impl Shell {
         }
         Ok(self.last_status)
     }
+}
+
+fn completion_commands() -> Vec<String> {
+    let builtins = [
+        "help", "man", "cd", "pwd", "clear", "history", "alias", "unalias", "export",
+        "env", "source", "config", "exit", "logout", "vim", "edit", "ls", "cat", "head",
+        "tail", "grep", "wc", "sort", "uniq", "cut", "tee", "less", "more", "sed", "awk",
+        "diff", "sha256sum", "base64", "find", "printf", "basename", "dirname", "realpath",
+        "date", "sleep", "true", "false", "touch", "mkdir", "rm", "cp", "mv", "which",
+        "type", "ps", "top", "df", "free", "hostname", "whoami", "uname", "kill", "sys",
+        "net", "domain", "device", "switch", "wol", "diag",
+    ];
+
+    let mut commands: BTreeSet<String> = builtins.iter().map(|value| (*value).to_owned()).collect();
+
+    if let Some(path) = env::var_os("PATH") {
+        let extensions: Vec<String> = env::var("PATHEXT")
+            .unwrap_or_else(|_| ".EXE;.CMD;.BAT;.COM".to_owned())
+            .split(';')
+            .map(|value| value.to_ascii_lowercase())
+            .collect();
+
+        for directory in env::split_paths(&path) {
+            let Ok(entries) = fs::read_dir(directory) else {
+                continue;
+            };
+
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if !path.is_file() {
+                    continue;
+                }
+
+                let extension = path
+                    .extension()
+                    .and_then(|value| value.to_str())
+                    .map(|value| format!(".{}", value.to_ascii_lowercase()));
+
+                if extension
+                    .as_ref()
+                    .is_some_and(|extension| extensions.contains(extension))
+                {
+                    if let Some(stem) = path.file_stem().and_then(|value| value.to_str()) {
+                        commands.insert(stem.to_owned());
+                    }
+                }
+            }
+        }
+    }
+
+    commands.into_iter().collect()
 }
 
 fn portable_config_path() -> PathBuf {
