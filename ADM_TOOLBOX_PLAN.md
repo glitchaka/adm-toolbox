@@ -747,7 +747,51 @@ Las credenciales se almacenarán mediante el mecanismo seguro definido para prov
 
 Si el router no expone estadísticas por cliente, el comando debe indicarlo explícitamente y no inventar consumo por dispositivo.
 
+### 12.8 Cuando el router del ISP no entrega tráfico por cliente
+
+ADM Toolbox no puede reconstruir de forma fiable el consumo individual de toda la LAN desde un PC cualquiera si el gateway no expone esas estadísticas. Para disponer de `net usage` por dispositivo, todo el tráfico debe atravesar o ser visible desde un punto de observación controlado.
+
+Topologías admitidas:
+
+1. **Router propio como gateway principal**  
+   El equipo del ISP queda en bridge/monopuesto cuando sea posible y un router propio compatible con OpenWrt, OPNsense, pfSense u otro proveedor soportado gestiona la LAN.
+
+2. **Router propio detrás del router del ISP**  
+   Si bridge no es viable, todos los clientes se conectan al router propio. Puede existir doble NAT, pero ADM Toolbox obtiene estadísticas por cliente desde ese segundo router.
+
+3. **AP/controlador Wi-Fi administrable**  
+   Si el punto de acceso expone bytes por estación, ADM Toolbox consulta el controlador/AP aunque el router del ISP no entregue esa información.
+
+4. **Port mirroring/SPAN**  
+   Para segmentos cableados, un switch administrable puede duplicar el tráfico hacia una interfaz de captura autorizada.
+
+5. **Agente local opcional**  
+   Para equipos administrados, un agente puede reportar tráfico por proceso y consumo local. Esto complementa, pero no reemplaza, la visibilidad del gateway para dispositivos desconocidos.
+
+No se considerará fiable estimar consumo por dispositivo mediante ARP, ping, intensidad Wi-Fi o frecuencia de paquetes observados desde una estación cliente.
+
+El proveedor de tráfico debe declarar capacidades:
+
+```bash
+net provider capabilities
+```
+
+Ejemplo:
+
+```text
+provider: movistar-hgu
+device-discovery: yes
+per-device-traffic: no
+connection-table: limited
+snmp: no
+
+net usage: unavailable with current provider
+reason: gateway does not expose per-device counters
+```
+
 ---
+
+
 
 ## 13. Switches y credenciales
 
