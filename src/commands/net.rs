@@ -379,71 +379,275 @@ fn ports(args: &[String]) -> anyhow::Result<CommandOutput> {
     Ok(CommandOutput::ok(out))
 }
 
-fn traffic(args: &[String]) -> anyhow::Result<CommandOutput> {
-    if args.iter().any(|arg| arg == "--watch" || arg == "-w") {
-        return traffic_watch();
-    }
-
-    Ok(CommandOutput::ok(traffic_snapshot()?))
+#[derive(Debug, Clone, Serialize)]
+struct TrafficRow {
+    pid: u32,
+    process: String,
+    path: String,
+    cpu_percent: f32,
+    memory_mib: f64,
+    connections: usize,
 }
 
-fn traffic_snapshot() -> anyhow::Result<String> {
+#[derive(Debug, Clone, Serialize)]
+struct ConnectionRow {
+    protocol: String,
+    local: String,
+    remote: String,
+    state: String,
+    pid: u32,
+    process: String,
+}
+
+fn traffic(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.iter().any(|arg| arg == "--watch" || arg == "-w") {
+        return traffic_watch(args);
+    }
+
+    traffic_output(args)
+}
+
+fn traffic_output(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let connections = collect_connections()?;
     let mut system = System::new_all();
     system.refresh_all();
 
-    let netstat = Command::new("netstat").arg("-ano").output()?;
-    let text = String::from_utf8_lossy(&netstat.stdout);
-    let mut pids: HashMap<u32, usize> = HashMap::new();
+    let pid_filter = option_value(args, "--pid").and_then(|value| value.parse::<u32>().ok());
+    let process_filter = option_value(args, "--process").map(str::to_ascii_lowercase);
+    let top = option_value(args, "--top")
+        .and_then(|value| value.parse::<usize>().ok())
+        .unwrap_or(50);
+    let json = args.iter().any(|arg| arg == "--json");
+    let csv = args.iter().any(|arg| arg == "--csv");
+    let show_connections = args.iter().any(|arg| arg == "--connections");
 
-    for line in text.lines() {
-        let columns: Vec<&str> = line.split_whitespace().collect();
-        if let Some(pid) = columns.last().and_then(|value| value.parse::<u32>().ok()) {
-            *pids.entry(pid).or_insert(0) += 1;
+    if args.iter().any(|arg| arg == "--background") {
+        return Ok(CommandOutput::error(
+            "net traffic --background: la detección fiable de foreground/background se añadirá con el proveedor Win32 de ventanas",
+            2,
+        ));
+    }
+
+    let process_name_by_pid: HashMap<u32, String> = system
+        .processes()
+        .iter()
+        .map(|(pid, process)| {
+            (
+                pid.as_u32(),
+                process.name().to_string_lossy().into_owned(),
+            )
+        })
+        .collect();
+
+    if show_connections {
+        let mut rows: Vec<ConnectionRow> = connections
+            .into_iter()
+            .map(|mut row| {
+                row.process = process_name_by_pid
+                    .get(&row.pid)
+                    .cloned()
+                    .unwrap_or_else(|| "-".to_owned());
+                row
+            })
+            .filter(|row| {
+                pid_filter.is_none_or(|pid| row.pid == pid)
+                    && process_filter.as_ref().is_none_or(|needle| {
+                        row.process.to_ascii_lowercase().contains(needle)
+                    })
+            })
+            .collect();
+
+        rows.sort_by(|a, b| {
+            a.process
+                .to_ascii_lowercase()
+                .cmp(&b.process.to_ascii_lowercase())
+                .then(a.pid.cmp(&b.pid))
+        });
+
+        if json {
+            return Ok(CommandOutput::ok(format!(
+                "{}\n",
+                serde_json::to_string_pretty(&rows)?
+            )));
         }
+
+        if csv {
+            let mut out =
+                String::from("protocol,local,remote,state,pid,process\n");
+            for row in rows {
+                out.push_str(&format!(
+                    "{},{},{},{},{},{}\n",
+                    csv_escape(&row.protocol),
+                    csv_escape(&row.local),
+                    csv_escape(&row.remote),
+                    csv_escape(&row.state),
+                    row.pid,
+                    csv_escape(&row.process)
+                ));
+            }
+            return Ok(CommandOutput::ok(out));
+        }
+
+        let mut out = String::from(
+            "PROTO  LOCAL                         REMOTE                        STATE          PID      PROCESS\n",
+        );
+
+        for row in rows.into_iter().take(top) {
+            out.push_str(&format!(
+                "{:<6} {:<29} {:<29} {:<14} {:<8} {}\n",
+                row.protocol, row.local, row.remote, row.state, row.pid, row.process
+            ));
+        }
+
+        return Ok(CommandOutput::ok(out));
+    }
+
+    let mut connection_counts: HashMap<u32, usize> = HashMap::new();
+    for row in &connections {
+        *connection_counts.entry(row.pid).or_insert(0) += 1;
     }
 
     let mut rows = Vec::new();
 
     for (pid, process) in system.processes() {
         let pid_u32 = pid.as_u32();
-        let connections = pids.get(&pid_u32).copied().unwrap_or(0);
+        let count = connection_counts.get(&pid_u32).copied().unwrap_or(0);
 
-        if connections == 0 {
+        if count == 0 {
             continue;
         }
 
-        rows.push((
-            pid_u32,
-            process.name().to_string_lossy().into_owned(),
-            process.cpu_usage(),
-            process.memory() as f64 / 1024.0 / 1024.0,
-            connections,
-        ));
+        if pid_filter.is_some_and(|wanted| wanted != pid_u32) {
+            continue;
+        }
+
+        let name = process.name().to_string_lossy().into_owned();
+
+        if process_filter
+            .as_ref()
+            .is_some_and(|needle| !name.to_ascii_lowercase().contains(needle))
+        {
+            continue;
+        }
+
+        rows.push(TrafficRow {
+            pid: pid_u32,
+            process: name,
+            path: process
+                .exe()
+                .map(|path| path.display().to_string())
+                .unwrap_or_default(),
+            cpu_percent: process.cpu_usage(),
+            memory_mib: process.memory() as f64 / 1024.0 / 1024.0,
+            connections: count,
+        });
     }
 
     rows.sort_by(|a, b| {
-        b.4.cmp(&a.4).then_with(|| {
-            b.2.partial_cmp(&a.2)
+        b.connections.cmp(&a.connections).then_with(|| {
+            b.cpu_percent
+                .partial_cmp(&a.cpu_percent)
                 .unwrap_or(std::cmp::Ordering::Equal)
         })
     });
+    rows.truncate(top);
 
-    let mut out = String::from(
-        "PID      PROCESS                          CPU%     RAM MiB   CONNECTIONS\n",
-    );
+    if json {
+        return Ok(CommandOutput::ok(format!(
+            "{}\n",
+            serde_json::to_string_pretty(&rows)?
+        )));
+    }
 
-    for (pid, name, cpu, memory, connections) in rows {
+    if csv {
+        let mut out =
+            String::from("pid,process,cpu_percent,memory_mib,connections,path\n");
+        for row in rows {
+            out.push_str(&format!(
+                "{},{},{:.2},{:.2},{},{}\n",
+                row.pid,
+                csv_escape(&row.process),
+                row.cpu_percent,
+                row.memory_mib,
+                row.connections,
+                csv_escape(&row.path)
+            ));
+        }
+        return Ok(CommandOutput::ok(out));
+    }
+
+    let mut out =
+        String::from("PID      PROCESS                          CPU%     RAM MiB   CONNECTIONS\n");
+
+    for row in rows {
         out.push_str(&format!(
             "{:<8} {:<32} {:>6.1} {:>10.1} {:>12}\n",
-            pid, name, cpu, memory, connections
+            row.pid, row.process, row.cpu_percent, row.memory_mib, row.connections
         ));
     }
 
-    Ok(out)
+    out.push_str(
+        "\nUsa --connections para ver destinos. Bytes/s por PID se añadirá con ETW.\n",
+    );
+
+    Ok(CommandOutput::ok(out))
 }
 
-fn traffic_watch() -> anyhow::Result<CommandOutput> {
+fn collect_connections() -> anyhow::Result<Vec<ConnectionRow>> {
+    let output = Command::new("netstat").arg("-ano").output()?;
+    let text = String::from_utf8_lossy(&output.stdout);
+    let mut rows = Vec::new();
+
+    for line in text.lines() {
+        let columns: Vec<&str> = line.split_whitespace().collect();
+
+        if columns.first().is_some_and(|value| value.eq_ignore_ascii_case("TCP"))
+            && columns.len() >= 5
+        {
+            if let Ok(pid) = columns[4].parse::<u32>() {
+                rows.push(ConnectionRow {
+                    protocol: "TCP".to_owned(),
+                    local: columns[1].to_owned(),
+                    remote: columns[2].to_owned(),
+                    state: columns[3].to_owned(),
+                    pid,
+                    process: String::new(),
+                });
+            }
+        } else if columns
+            .first()
+            .is_some_and(|value| value.eq_ignore_ascii_case("UDP"))
+            && columns.len() >= 4
+        {
+            if let Ok(pid) = columns[3].parse::<u32>() {
+                rows.push(ConnectionRow {
+                    protocol: "UDP".to_owned(),
+                    local: columns[1].to_owned(),
+                    remote: columns[2].to_owned(),
+                    state: "-".to_owned(),
+                    pid,
+                    process: String::new(),
+                });
+            }
+        }
+    }
+
+    Ok(rows)
+}
+
+fn option_value<'a>(args: &'a [String], name: &str) -> Option<&'a str> {
+    args.windows(2)
+        .find(|pair| pair[0] == name)
+        .map(|pair| pair[1].as_str())
+}
+
+fn traffic_watch(args: &[String]) -> anyhow::Result<CommandOutput> {
     let _guard = NetTerminalGuard::enter()?;
+    let filtered_args: Vec<String> = args
+        .iter()
+        .filter(|arg| arg.as_str() != "--watch" && arg.as_str() != "-w")
+        .cloned()
+        .collect();
 
     loop {
         execute!(
@@ -454,9 +658,12 @@ fn traffic_watch() -> anyhow::Result<CommandOutput> {
 
         println!("ADM net traffic --watch   [q] salir");
         println!();
-        print!("{}", traffic_snapshot()?);
-        println!();
-        println!("La medición exacta de bytes/s por PID se incorporará mediante ETW.");
+
+        match traffic_output(&filtered_args) {
+            Ok(output) => print!("{}", output.stdout),
+            Err(error) => println!("error: {error}"),
+        }
+
         stdout().flush()?;
 
         if event::poll(Duration::from_millis(1000))? {
