@@ -5,7 +5,7 @@ use anyhow::Result;
 use crate::{
     adapters::{
         network::{SnmpSwitchLocator, UdpWakeOnLanSender},
-        shell::BrushShellEngine,
+        shell::NativeShellEngine,
         terminal::CrosstermTerminalFactory,
         persistence::{
             AppPaths,
@@ -165,9 +165,8 @@ pub fn build_shell() -> Result<ShellSession> {
 
     let registry = Arc::new(registry);
     let command_names = registry.names();
-    let engine = BrushShellEngine::new(
+    let engine = NativeShellEngine::new(
         Arc::clone(&registry),
-        &command_names,
         paths.config_file(),
     )?;
 
