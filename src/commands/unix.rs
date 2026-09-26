@@ -470,6 +470,7 @@ fn awk(args: &[String], input: Option<&[u8]>, cwd: &Path) -> Result<CommandOutpu
     let fields = parse_awk_print_fields(program)?;
 
     let mut out = String::new();
+
     for (line_no, line) in text.lines().enumerate() {
         let columns: Vec<&str> = if let Some(delimiter) = delimiter {
             line.split(delimiter).collect()
@@ -478,11 +479,145 @@ fn awk(args: &[String], input: Option<&[u8]>, cwd: &Path) -> Result<CommandOutpu
         };
 
         let mut values = Vec::new();
+
         for field in &fields {
             match field.as_str() {
                 "$0" => values.push(line.to_owned()),
                 "NR" => values.push((line_no + 1).to_string()),
-                value if value.starts_with('
+                value if value.starts_with('$') => {
+                    let field_index = value[1..].parse::<usize>().unwrap_or(0);
+                    values.push(
+                        field_index
+                            .checked_sub(1)
+                            .and_then(|column_index| columns.get(column_index))
+                            .copied()
+                            .unwrap_or("")
+                            .to_owned(),
+                    );
+                }
+                literal => values.push(literal.trim_matches('"').to_owned()),
+            }
+        }
+
+        out.push_str(&values.join(" "));
+        out.push('\n');
+    }
+
+    Ok(CommandOutput::ok(out))
+}
+
+fn parse_awk_print_fields(program: &str) -> Result<Vec<String>> {
+    let trimmed = program.trim();
+    let body = trimmed
+        .strip_prefix('{')
+        .and_then(|value| value.strip_suffix('}'))
+        .map(str::trim)
+        .unwrap_or(trimmed);
+
+    let Some(rest) = body.strip_prefix("print") else {
+        anyhow::bail!("awk: esta versión soporta expresiones {print ...}");
+    };
+
+    let fields: Vec<String> = rest
+        .trim()
+        .split(',')
+        .flat_map(|chunk| chunk.split_whitespace())
+        .map(str::to_owned)
+        .collect();
+
+    if fields.is_empty() {
+        anyhow::bail!("awk: print sin campos");
+    }
+
+    Ok(fields)
+}
+
+fn diff(args: &[String], cwd: &Path) -> Result<CommandOutput> {
+    if args.len() != 2 {
+        return Ok(CommandOutput::error(
+            "diff: uso: diff ARCHIVO1 ARCHIVO2",
+            2,
+        ));
+    }
+
+    let left_path = resolve_path(cwd, &args[0]);
+    let right_path = resolve_path(cwd, &args[1]);
+    let left = fs::read_to_string(&left_path)?;
+    let right = fs::read_to_string(&right_path)?;
+
+    if left == right {
+        return Ok(CommandOutput::ok(""));
+    }
+
+    let diff = TextDiff::from_lines(&left, &right);
+    let mut out = format!(
+        "--- {}\n+++ {}\n",
+        display_unix_path(&left_path),
+        display_unix_path(&right_path)
+    );
+
+    for change in diff.iter_all_changes() {
+        let sign = match change.tag() {
+            ChangeTag::Delete => "-",
+            ChangeTag::Insert => "+",
+            ChangeTag::Equal => " ",
+        };
+
+        out.push_str(sign);
+        out.push_str(change.value());
+
+        if !change.value().ends_with('\n') {
+            out.push('\n');
+        }
+    }
+
+    Ok(CommandOutput {
+        stdout: out,
+        stderr: String::new(),
+        status: 1,
+    })
+}
+
+fn sha256sum(args: &[String], input: Option<&[u8]>, cwd: &Path) -> Result<CommandOutput> {
+    let data = if let Some(file) = args.first() {
+        fs::read(resolve_path(cwd, file))?
+    } else {
+        input.unwrap_or_default().to_vec()
+    };
+
+    let mut hasher = Sha256::new();
+    hasher.update(&data);
+    let digest = hasher.finalize();
+
+    let label = args.first().map(String::as_str).unwrap_or("-");
+    Ok(CommandOutput::ok(format!("{:x}  {label}\n", digest)))
+}
+
+fn base64_cmd(args: &[String], input: Option<&[u8]>, cwd: &Path) -> Result<CommandOutput> {
+    let decode = args.iter().any(|arg| arg == "-d" || arg == "--decode");
+    let file = args
+        .iter()
+        .find(|arg| !arg.starts_with('-'))
+        .map(String::as_str);
+
+    let data = if let Some(file) = file {
+        fs::read(resolve_path(cwd, file))?
+    } else {
+        input.unwrap_or_default().to_vec()
+    };
+
+    if decode {
+        let text = String::from_utf8_lossy(&data);
+        let decoded = BASE64.decode(text.trim().as_bytes())?;
+        Ok(CommandOutput::ok(
+            String::from_utf8_lossy(&decoded).into_owned(),
+        ))
+    } else {
+        Ok(CommandOutput::ok(format!("{}\n", BASE64.encode(data))))
+    }
+}
+
+fn find(args: &[String], cwd: &Path) -> Result<CommandOutput> {
     let root = args
         .first()
         .filter(|arg| !arg.starts_with('-'))
@@ -491,6 +626,7 @@ fn awk(args: &[String], input: Option<&[u8]>, cwd: &Path) -> Result<CommandOutpu
 
     let mut pattern: Option<&str> = None;
     let mut index = 0;
+
     while index < args.len() {
         if args[index] == "-name" {
             pattern = args.get(index + 1).map(String::as_str);
