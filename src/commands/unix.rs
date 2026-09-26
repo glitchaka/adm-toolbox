@@ -51,7 +51,7 @@ pub fn run(
         "rm" => rm(args, cwd),
         "cp" => cp(args, cwd),
         "mv" => mv(args, cwd),
-        "which" => which(args),
+        "which" | "type" => which(args),
         _ => Ok(CommandOutput::error("comando Unix no implementado", 127)),
     }
 }
@@ -604,7 +604,7 @@ fn which(args: &[String]) -> Result<CommandOutput> {
     if super::is_internal(name)
         || matches!(
             name.as_str(),
-            "cd" | "clear" | "exit" | "vim" | "edit" | "alias" | "export" | "history" | "config"
+            "cd" | "clear" | "exit" | "vim" | "edit" | "alias" | "export" | "history" | "config" | "help" | "man"
         )
     {
         return Ok(CommandOutput::ok(format!(
