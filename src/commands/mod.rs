@@ -52,6 +52,14 @@ pub fn is_internal(name: &str) -> bool {
             | "cut"
             | "tee"
             | "find"
+            | "printf"
+            | "basename"
+            | "dirname"
+            | "realpath"
+            | "date"
+            | "sleep"
+            | "true"
+            | "false"
             | "touch"
             | "mkdir"
             | "rm"
@@ -77,8 +85,9 @@ pub fn run(
     match name {
         "help" => Ok(help()),
         "pwd" | "echo" | "ls" | "cat" | "head" | "tail" | "grep" | "wc" | "sort"
-        | "uniq" | "cut" | "tee" | "find" | "touch" | "mkdir" | "rm" | "cp" | "mv"
-        | "which" => unix::run(name, args, input, cwd),
+        | "uniq" | "cut" | "tee" | "find" | "printf" | "basename" | "dirname"
+        | "realpath" | "date" | "sleep" | "true" | "false" | "touch" | "mkdir" | "rm"
+        | "cp" | "mv" | "which" => unix::run(name, args, input, cwd),
         "sys" => sys::run(args),
         "net" => net::run(args),
         "domain" => domain::run(args),
@@ -105,6 +114,7 @@ Shell:\n\
   unalias N                  elimina un alias\n\
   export N=VALOR             define variable de entorno\n\
   source FILE                ejecuta un script\n\
+  config path|edit|reload     configuración portable admrc\n\
   exit                       sale de ADM Toolbox\n\
   vim FILE                   editor modal Rust\n\
   edit FILE                  alias de vim\n\n\
@@ -120,6 +130,13 @@ Unix:\n\
   cut -d DELIM -f N [FILE]\n\
   tee [-a] FILE\n\
   find [PATH] [-name PATRON]\n\
+  printf FORMATO [ARG...]\n\
+  basename PATH\n\
+  dirname PATH\n\
+  realpath PATH\n\
+  date [+FORMATO]\n\
+  sleep SEGUNDOS\n\
+  true | false\n\
   touch FILE...\n\
   mkdir [-p] DIR...\n\
   rm [-r] PATH...\n\
