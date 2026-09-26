@@ -1,12 +1,18 @@
-use std::{collections::HashMap, path::{Path, PathBuf}};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+};
 
 use anyhow::Result;
 
-use crate::core::models::{
-    device::Device,
-    domain::DomainStatus,
-    network::{ByteCounters, NetworkProvider, PresenceRecord},
-    switch::{LocatedPort, SwitchProfile},
+use crate::core::{
+    ShellExecution,
+    models::{
+        device::Device,
+        domain::DomainStatus,
+        network::{ByteCounters, NetworkProvider, PresenceRecord},
+        switch::{LocatedPort, SwitchProfile},
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -34,6 +40,11 @@ pub trait HistoryStore: Send + Sync {
 
 pub trait TextEditor: Send + Sync {
     fn edit(&self, path: &Path) -> Result<()>;
+}
+
+pub trait ShellEngine: Send {
+    fn working_dir(&self) -> &Path;
+    fn execute(&mut self, line: &str) -> Result<ShellExecution>;
 }
 
 pub trait DeviceRepository: Send + Sync {
@@ -114,7 +125,6 @@ pub trait TrafficMonitorFactory: Send + Sync {
         elapsed: std::time::Duration,
     ) -> HashMap<u32, ByteCounters>;
 }
-
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalKey {
