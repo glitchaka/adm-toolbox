@@ -40,7 +40,6 @@ impl AppPaths {
         Ok(())
     }
 
-    pub fn root(&self) -> &PathBuf { &self.root }
     pub fn data_dir(&self) -> PathBuf { self.root.join("data") }
     pub fn config_dir(&self) -> PathBuf { self.root.join("config") }
     pub fn config_file(&self) -> PathBuf { self.config_dir().join("admrc") }
