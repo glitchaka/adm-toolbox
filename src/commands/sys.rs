@@ -1,4 +1,17 @@
-use sysinfo::{Disks, System};
+use std::{
+    env,
+    io::{Write, stdout},
+    thread,
+    time::Duration,
+};
+
+use crossterm::{
+    cursor,
+    event::{self, Event, KeyCode},
+    execute,
+    terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use sysinfo::{Disks, Pid, System};
 
 use super::CommandOutput;
 
@@ -7,9 +20,14 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
 
     match sub {
         "info" => info(),
-        "processes" => processes(),
-        "disks" => disks(),
-        "memory" => memory(),
+        "processes" | "ps" => processes(),
+        "top" => top(),
+        "disks" | "df" => disks(),
+        "memory" | "free" => memory(),
+        "hostname" => hostname(),
+        "whoami" => whoami(),
+        "uname" => uname(&args[1..]),
+        "kill" => kill_process(&args[1..]),
         "services" => Ok(CommandOutput::error(
             "sys services: usa 'sc query' por ahora; proveedor Rust pendiente",
             2,
@@ -17,6 +35,23 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
         _ => Ok(CommandOutput::error(
             format!("sys: subcomando desconocido: {sub}"),
             2,
+        )),
+    }
+}
+
+pub fn run_alias(name: &str, args: &[String]) -> anyhow::Result<CommandOutput> {
+    match name {
+        "ps" => processes(),
+        "top" => top(),
+        "df" => disks(),
+        "free" => memory(),
+        "hostname" => hostname(),
+        "whoami" => whoami(),
+        "uname" => uname(args),
+        "kill" => kill_process(args),
+        _ => Ok(CommandOutput::error(
+            format!("comando de sistema desconocido: {name}"),
+            127,
         )),
     }
 }
@@ -49,6 +84,7 @@ fn processes() -> anyhow::Result<CommandOutput> {
     });
 
     let mut out = String::from("PID      CPU%     RAM MiB   PROCESS\n");
+
     for (pid, process) in rows.into_iter().take(80) {
         out.push_str(&format!(
             "{:<8} {:>6.1} {:>10.1}   {}\n",
@@ -64,14 +100,25 @@ fn processes() -> anyhow::Result<CommandOutput> {
 
 fn disks() -> anyhow::Result<CommandOutput> {
     let disks = Disks::new_with_refreshed_list();
-    let mut out = String::from("MOUNT                 TOTAL GiB   FREE GiB   FS\n");
+    let mut out = String::from("MOUNT                 TOTAL GiB   USED GiB   FREE GiB   USE%   FS\n");
 
     for disk in disks.list() {
+        let total = disk.total_space();
+        let free = disk.available_space();
+        let used = total.saturating_sub(free);
+        let percent = if total == 0 {
+            0.0
+        } else {
+            used as f64 * 100.0 / total as f64
+        };
+
         out.push_str(&format!(
-            "{:<20} {:>9.1} {:>10.1}   {}\n",
+            "{:<20} {:>9.1} {:>9.1} {:>10.1} {:>5.1}%   {}\n",
             disk.mount_point().display(),
-            disk.total_space() as f64 / 1024.0 / 1024.0 / 1024.0,
-            disk.available_space() as f64 / 1024.0 / 1024.0 / 1024.0,
+            total as f64 / 1024.0 / 1024.0 / 1024.0,
+            used as f64 / 1024.0 / 1024.0 / 1024.0,
+            free as f64 / 1024.0 / 1024.0 / 1024.0,
+            percent,
             disk.file_system().to_string_lossy()
         ));
     }
@@ -84,11 +131,176 @@ fn memory() -> anyhow::Result<CommandOutput> {
     system.refresh_memory();
 
     Ok(CommandOutput::ok(format!(
-        "total: {} MiB\nused: {} MiB\navailable: {} MiB\nswap_total: {} MiB\nswap_used: {} MiB\n",
+        "              total        used        free\nMem:      {:>10}  {:>10}  {:>10} MiB\nSwap:     {:>10}  {:>10}  {:>10} MiB\n",
         system.total_memory() / 1024 / 1024,
         system.used_memory() / 1024 / 1024,
         system.available_memory() / 1024 / 1024,
         system.total_swap() / 1024 / 1024,
         system.used_swap() / 1024 / 1024,
+        system.total_swap().saturating_sub(system.used_swap()) / 1024 / 1024,
     )))
+}
+
+fn hostname() -> anyhow::Result<CommandOutput> {
+    Ok(CommandOutput::ok(format!(
+        "{}\n",
+        System::host_name().unwrap_or_else(|| "desconocido".to_owned())
+    )))
+}
+
+fn whoami() -> anyhow::Result<CommandOutput> {
+    let user = env::var("USERNAME").unwrap_or_else(|_| "desconocido".to_owned());
+    let domain = env::var("USERDOMAIN").unwrap_or_default();
+
+    if domain.is_empty() || domain.eq_ignore_ascii_case(&user) {
+        Ok(CommandOutput::ok(format!("{user}\n")))
+    } else {
+        Ok(CommandOutput::ok(format!(
+            "{}\\{}\n",
+            domain.to_ascii_lowercase(),
+            user.to_ascii_lowercase()
+        )))
+    }
+}
+
+fn uname(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let all = args.iter().any(|arg| arg == "-a");
+    let kernel = System::kernel_version().unwrap_or_else(|| "unknown".to_owned());
+    let host = System::host_name().unwrap_or_else(|| "unknown".to_owned());
+    let os = System::name().unwrap_or_else(|| "Windows".to_owned());
+    let arch = env::consts::ARCH;
+
+    if all {
+        Ok(CommandOutput::ok(format!(
+            "ADM-Windows {host} {kernel} {arch} {os}\n"
+        )))
+    } else {
+        Ok(CommandOutput::ok("ADM-Windows\n"))
+    }
+}
+
+fn kill_process(args: &[String]) -> anyhow::Result<CommandOutput> {
+    let Some(pid_text) = args.first() else {
+        return Ok(CommandOutput::error("kill: uso: kill PID", 2));
+    };
+
+    let pid_value = pid_text
+        .trim_start_matches('-')
+        .parse::<u32>()
+        .map_err(|_| anyhow::anyhow!("kill: PID inválido: {pid_text}"))?;
+
+    let system = System::new_all();
+    let pid = Pid::from_u32(pid_value);
+
+    let Some(process) = system.process(pid) else {
+        return Ok(CommandOutput::error(
+            format!("kill: no existe el proceso {pid_value}"),
+            1,
+        ));
+    };
+
+    if process.kill() {
+        Ok(CommandOutput::ok(""))
+    } else {
+        Ok(CommandOutput::error(
+            format!("kill: no se pudo terminar {pid_value}"),
+            1,
+        ))
+    }
+}
+
+struct TerminalGuard;
+
+impl TerminalGuard {
+    fn enter() -> anyhow::Result<Self> {
+        terminal::enable_raw_mode()?;
+        execute!(stdout(), EnterAlternateScreen, cursor::Hide)?;
+        Ok(Self)
+    }
+}
+
+impl Drop for TerminalGuard {
+    fn drop(&mut self) {
+        let _ = execute!(stdout(), cursor::Show, LeaveAlternateScreen);
+        let _ = terminal::disable_raw_mode();
+    }
+}
+
+fn top() -> anyhow::Result<CommandOutput> {
+    let _guard = TerminalGuard::enter()?;
+    let mut sort_cpu = true;
+
+    loop {
+        let mut system = System::new_all();
+        system.refresh_all();
+
+        let mut rows: Vec<_> = system.processes().iter().collect();
+
+        if sort_cpu {
+            rows.sort_by(|a, b| {
+                b.1.cpu_usage()
+                    .partial_cmp(&a.1.cpu_usage())
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
+        } else {
+            rows.sort_by_key(|(_, process)| std::cmp::Reverse(process.memory()));
+        }
+
+        let (width, height) = terminal::size()?;
+        let max_rows = height.saturating_sub(6) as usize;
+
+        execute!(
+            stdout(),
+            cursor::MoveTo(0, 0),
+            Clear(ClearType::All)
+        )?;
+
+        println!(
+            "ADM top  uptime {}s  CPU {} cores  Mem {} / {} MiB",
+            System::uptime(),
+            system.cpus().len(),
+            system.used_memory() / 1024 / 1024,
+            system.total_memory() / 1024 / 1024
+        );
+        println!(
+            "orden: {}   [c] CPU  [m] memoria  [q] salir",
+            if sort_cpu { "CPU" } else { "MEM" }
+        );
+        println!();
+        println!("PID      CPU%     RAM MiB   PROCESS");
+
+        for (pid, process) in rows.into_iter().take(max_rows) {
+            let mut name = process.name().to_string_lossy().into_owned();
+            let name_width = width.saturating_sub(32) as usize;
+            if name.len() > name_width && name_width > 3 {
+                name.truncate(name_width.saturating_sub(3));
+                name.push_str("...");
+            }
+
+            println!(
+                "{:<8} {:>6.1} {:>10.1}   {}",
+                pid,
+                process.cpu_usage(),
+                process.memory() as f64 / 1024.0 / 1024.0,
+                name
+            );
+        }
+
+        stdout().flush()?;
+
+        if event::poll(Duration::from_millis(900))? {
+            if let Event::Key(key) = event::read()? {
+                match key.code {
+                    KeyCode::Char('q') | KeyCode::Esc => break,
+                    KeyCode::Char('c') => sort_cpu = true,
+                    KeyCode::Char('m') => sort_cpu = false,
+                    _ => {}
+                }
+            }
+        } else {
+            thread::sleep(Duration::from_millis(100));
+        }
+    }
+
+    Ok(CommandOutput::ok(""))
 }
