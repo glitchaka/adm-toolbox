@@ -74,6 +74,7 @@ use crate::{
 
 pub fn build_shell() -> Result<ShellSession> {
     let paths = AppPaths::detect();
+    paths.ensure_layout()?;
 
     let process: Arc<dyn ProcessRunner> = Arc::new(WindowsProcessRunner);
     let terminal: Arc<dyn TerminalFactory> = Arc::new(CrosstermTerminalFactory);
