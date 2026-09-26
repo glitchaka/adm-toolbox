@@ -1,3 +1,4 @@
+pub mod bash;
 pub mod command;
 pub mod models;
 pub mod ports;
