@@ -114,3 +114,36 @@ pub trait TrafficMonitorFactory: Send + Sync {
         elapsed: std::time::Duration,
     ) -> HashMap<u32, ByteCounters>;
 }
+
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TerminalKey {
+    Char(char),
+    Escape,
+    Up,
+    Down,
+    Left,
+    Right,
+    PageUp,
+    PageDown,
+    Home,
+    End,
+    Enter,
+    Backspace,
+    Delete,
+    Space,
+    Other,
+}
+
+pub trait TerminalSession: Send {
+    fn size(&self) -> Result<(u16, u16)>;
+    fn clear(&mut self) -> Result<()>;
+    fn write(&mut self, text: &str) -> Result<()>;
+    fn flush(&mut self) -> Result<()>;
+    fn poll_key(&mut self, timeout: std::time::Duration) -> Result<Option<TerminalKey>>;
+    fn read_key(&mut self) -> Result<TerminalKey>;
+}
+
+pub trait TerminalFactory: Send + Sync {
+    fn alternate_screen(&self) -> Result<Box<dyn TerminalSession>>;
+}
