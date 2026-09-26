@@ -16,11 +16,10 @@ rustyline = "17.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 sha2 = "0.10"
-shell-words = "1.1"
 similar = "2.7"
 snmp2 = "0.5.2"
 sysinfo = "0.37"
-tokio = { version = "1.52", features = ["rt-multi-thread", "sync", "time", "process"] }
+vt100 = "0.16"
 
 [profile.release]
 lto = "thin"
@@ -31,4 +30,12 @@ opt-level = 3
 
 [target.'cfg(windows)'.dependencies]
 ferrisetw = "1.2"
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_UI_Controls",
+    "Win32_UI_Input_KeyboardAndMouse", "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader", "Win32_System_Console", "Win32_System_Threading",
+    "Win32_System_Pipes", "Win32_System_IO", "Win32_System_DataExchange",
+    "Win32_System_Memory", "Win32_Security", "Win32_Storage_FileSystem",
+    "Win32_NetworkManagement_IpHelper", "Win32_NetworkManagement_Ndis",
+    "Win32_NetworkManagement_NetManagement", "Win32_Networking_WinSock",
+] }

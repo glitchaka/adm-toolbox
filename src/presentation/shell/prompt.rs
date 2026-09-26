@@ -13,5 +13,5 @@ pub fn render(cwd: &Path) -> String {
 }
 
 pub fn banner() -> &'static str {
-    "\x1b[38;5;42mADM Toolbox 0.3.0\x1b[0m\nBash-compatible Rust administration shell\n"
+    "\x1b[38;5;114mADM Toolbox\x1b[0m\nAdministración de Windows · terminal propia\nEscribe help para ver los comandos.\n"
 }

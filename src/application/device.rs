@@ -18,10 +18,10 @@ impl DeviceService {
 
     pub fn execute(&self, args: &[String]) -> Result<CommandOutput> {
         match args.first().map(String::as_str).unwrap_or("list") {
-            "list" => self.list(&args[1..]),
-            "show" => self.show(&args[1..]),
-            "add" => self.add(&args[1..]),
-            "remove" => self.remove(&args[1..]),
+            "list" => self.list(args.get(1..).unwrap_or_default()),
+            "show" => self.show(args.get(1..).unwrap_or_default()),
+            "add" => self.add(args.get(1..).unwrap_or_default()),
+            "remove" => self.remove(args.get(1..).unwrap_or_default()),
             "path" => Ok(CommandOutput::ok(format!("{}\n", self.repository.path().display()))),
             other => Ok(CommandOutput::error(
                 format!("device: subcomando desconocido: {other}"),

@@ -1,7 +1,9 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ShellExecution {
     pub exit_requested: bool,
     pub status: i32,
+    pub stdout: String,
+    pub stderr: String,
 }
 
 impl ShellExecution {
@@ -9,6 +11,8 @@ impl ShellExecution {
         Self {
             exit_requested: false,
             status,
+            stdout: String::new(),
+            stderr: String::new(),
         }
     }
 
@@ -16,6 +20,8 @@ impl ShellExecution {
         Self {
             exit_requested: true,
             status,
+            stdout: String::new(),
+            stderr: String::new(),
         }
     }
 }

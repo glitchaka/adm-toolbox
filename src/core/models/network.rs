@@ -1,5 +1,12 @@
 use std::net::Ipv4Addr;
 
+#[derive(Debug, Clone, Copy)]
+pub struct EchoReply {
+    pub address: Ipv4Addr,
+    pub status: u32,
+    pub elapsed_ms: u32,
+}
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize)]

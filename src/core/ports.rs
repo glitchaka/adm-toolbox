@@ -10,20 +10,17 @@ use crate::core::{
     models::{
         device::Device,
         domain::DomainStatus,
-        network::{ByteCounters, NetworkProvider, PresenceRecord},
+        network::{ByteCounters, ConnectionRow, EchoReply, NetworkProvider, PresenceRecord},
         switch::{LocatedPort, SwitchProfile},
     },
 };
 
-#[derive(Debug, Clone)]
-pub struct ProcessOutput {
-    pub stdout: String,
-    pub stderr: String,
-    pub status: i32,
-}
-
-pub trait ProcessRunner: Send + Sync {
-    fn run(&self, program: &str, args: &[&str]) -> Result<ProcessOutput>;
+pub trait NetworkProbe: Send + Sync {
+    fn interfaces(&self) -> Result<String>;
+    fn connections(&self) -> Result<Vec<ConnectionRow>>;
+    fn routes(&self) -> Result<String>;
+    fn neighbors(&self) -> Result<HashMap<std::net::Ipv4Addr, String>>;
+    fn echo(&self, address: std::net::Ipv4Addr, ttl: u8, timeout: std::time::Duration) -> Result<EchoReply>;
 }
 
 pub trait TextEditor: Send + Sync {
@@ -33,6 +30,7 @@ pub trait TextEditor: Send + Sync {
 pub trait ShellEngine: Send {
     fn working_dir(&self) -> &Path;
     fn execute(&mut self, line: &str) -> Result<ShellExecution>;
+    fn set_arguments(&mut self, name: &str, args: &[String]);
 }
 
 pub trait DeviceRepository: Send + Sync {

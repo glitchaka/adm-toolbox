@@ -1,22 +1,29 @@
 use std::{
     fs,
-    io::{Write, stdout},
+    io::Write,
     path::Path,
 };
 
 use anyhow::Result;
 use crossterm::{
     cursor,
-    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
-    queue,
+    event::{Event, KeyCode, KeyEvent, KeyModifiers},
     style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
-    terminal::{self, Clear, ClearType},
+    terminal::{Clear, ClearType},
 };
 
 use crate::{
     adapters::terminal::guard::AlternateScreenGuard,
     core::ports::TextEditor,
 };
+use crate::adapters::terminal::io as terminal_io;
+
+// Display writes ANSI directly, avoiding crossterm's Windows-console fallback.
+macro_rules! queue {
+    ($out:expr, $($command:expr),+ $(,)?) => {{
+        (|| -> std::io::Result<()> { $(write!($out, "{}", $command)?;)+ Ok(()) })()
+    }};
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Mode {
@@ -88,7 +95,7 @@ fn run_editor(path: &Path) -> Result<()> {
     loop {
         editor.render(path)?;
 
-        if let Event::Key(key) = event::read()? {
+        if let Event::Key(key) = terminal_io::read()? {
             if editor.handle_key(key, path)? {
                 break;
             }
@@ -100,7 +107,7 @@ fn run_editor(path: &Path) -> Result<()> {
 
 impl VimEditor {
     fn render(&mut self, path: &Path) -> Result<()> {
-        let (width, height) = terminal::size()?;
+        let (width, height) = terminal_io::size()?;
         let body_height = height.saturating_sub(2) as usize;
 
         if self.row < self.offset {
@@ -109,7 +116,7 @@ impl VimEditor {
             self.offset = self.row.saturating_sub(body_height.saturating_sub(1));
         }
 
-        let mut out = stdout();
+        let mut out = Vec::new();
         queue!(out, cursor::MoveTo(0, 0), Clear(ClearType::All))?;
 
         for screen_row in 0..body_height {
@@ -222,7 +229,7 @@ impl VimEditor {
             queue!(out, cursor::MoveTo(cursor_x, cursor_y), cursor::Show)?;
         }
 
-        out.flush()?;
+        terminal_io::write(&out)?;
         Ok(())
     }
 

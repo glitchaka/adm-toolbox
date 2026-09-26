@@ -11,16 +11,16 @@ use ipnet::Ipv4Net;
 
 use crate::core::{
     CommandOutput,
-    ports::ProcessRunner,
+    ports::NetworkProbe,
 };
 
 pub struct NetworkDiagnosticsService {
-    process: Arc<dyn ProcessRunner>,
+    probe: Arc<dyn NetworkProbe>,
 }
 
 impl NetworkDiagnosticsService {
-    pub fn new(process: Arc<dyn ProcessRunner>) -> Self {
-        Self { process }
+    pub fn new(probe: Arc<dyn NetworkProbe>) -> Self {
+        Self { probe }
     }
 
     pub fn diagnose(&self) -> Result<CommandOutput> {
@@ -35,15 +35,19 @@ impl NetworkDiagnosticsService {
     }
 
     pub fn interfaces(&self) -> Result<CommandOutput> {
-        self.run_command("ipconfig", &["/all"])
+        Ok(CommandOutput::ok(self.probe.interfaces()?))
     }
 
     pub fn connections(&self) -> Result<CommandOutput> {
-        self.run_command("netstat", &["-ano"])
+        let mut output = String::from("PROTO LOCAL                         REMOTE                        STATE          PID\n");
+        for row in self.probe.connections()? {
+            output.push_str(&format!("{:<5} {:<29} {:<29} {:<14} {}\n", row.protocol, row.local, row.remote, row.state, row.pid));
+        }
+        Ok(CommandOutput::ok(output))
     }
 
     pub fn routes(&self) -> Result<CommandOutput> {
-        self.run_command("route", &["print"])
+        Ok(CommandOutput::ok(self.probe.routes()?))
     }
 
     pub fn dns(&self, args: &[String]) -> Result<CommandOutput> {
@@ -92,7 +96,20 @@ impl NetworkDiagnosticsService {
             .map(|pair| pair[1].as_str())
             .unwrap_or("4");
 
-        self.run_command("ping", &["-n", count, target])
+        let count: u32 = count.parse()?;
+        if count == 0 || count > 100 { return Ok(CommandOutput::error("net ping: -c debe estar entre 1 y 100", 2)); }
+        let ip = resolve_ipv4(target)?;
+        let mut output = format!("PING {target} ({ip})\n");
+        let mut received = 0;
+        for _ in 0..count {
+            let reply = self.probe.echo(ip, 128, Duration::from_secs(1))?;
+            if reply.status == 0 {
+                received += 1;
+                output.push_str(&format!("{}: {} ms\n", reply.address, reply.elapsed_ms));
+            } else { output.push_str(&format!("{ip}: sin respuesta (estado {})\n", reply.status)); }
+        }
+        output.push_str(&format!("Enviados: {count}; recibidos: {received}\n"));
+        Ok(CommandOutput { stdout: output, stderr: String::new(), status: if received > 0 { 0 } else { 1 } })
     }
 
     pub fn trace(&self, args: &[String]) -> Result<CommandOutput> {
@@ -100,26 +117,21 @@ impl NetworkDiagnosticsService {
             return Ok(CommandOutput::error("net trace: uso: net trace HOST", 2));
         };
 
-        self.run_command("tracert", &["-d", target])
+        let ip = resolve_ipv4(target)?;
+        let mut output = format!("TRACE {target} ({ip}), máximo 30 saltos\n");
+        let mut reached = false;
+        for ttl in 1..=30 {
+            let reply = self.probe.echo(ip, ttl, Duration::from_millis(700))?;
+            if reply.status == 0 || reply.status == 11013 {
+                output.push_str(&format!("{ttl:<3} {:<16} {} ms\n", reply.address, reply.elapsed_ms));
+            } else { output.push_str(&format!("{ttl:<3} * (estado {})\n", reply.status)); }
+            if reply.status == 0 { reached = true; break; }
+        }
+        Ok(CommandOutput { stdout: output, stderr: String::new(), status: if reached { 0 } else { 1 } })
     }
 
     pub fn arp_map(&self) -> Result<HashMap<Ipv4Addr, String>> {
-        let output = self.process.run("arp", &["-a"])?;
-        let mut map = HashMap::new();
-
-        for line in output.stdout.lines() {
-            let columns: Vec<&str> = line.split_whitespace().collect();
-            if columns.len() >= 2 {
-                if let Ok(ip) = columns[0].parse::<Ipv4Addr>() {
-                    let mac = columns[1].replace('-', ":").to_ascii_uppercase();
-                    if mac.matches(':').count() == 5 {
-                        map.insert(ip, mac);
-                    }
-                }
-            }
-        }
-
-        Ok(map)
+        self.probe.neighbors()
     }
 
     pub fn arp_table(&self) -> Result<CommandOutput> {
@@ -178,11 +190,8 @@ impl NetworkDiagnosticsService {
             }
         }
 
-        let timeout_ms = timeout.as_millis().to_string();
-        let ip_text = ip.to_string();
-
-        self.process
-            .run("ping", &["-n", "1", "-w", &timeout_ms, &ip_text])
+        self.probe
+            .echo(ip, 128, timeout)
             .map(|output| output.status == 0)
             .unwrap_or(false)
     }
@@ -198,13 +207,10 @@ impl NetworkDiagnosticsService {
         Ok(Ipv4Net::new(ip, 24)?)
     }
 
-    fn run_command(&self, command: &str, args: &[&str]) -> Result<CommandOutput> {
-        let output = self.process.run(command, args)?;
+}
 
-        Ok(CommandOutput {
-            stdout: output.stdout,
-            stderr: output.stderr,
-            status: output.status,
-        })
-    }
+fn resolve_ipv4(host: &str) -> Result<Ipv4Addr> {
+    (host, 0).to_socket_addrs()?.find_map(|address| match address.ip() {
+        IpAddr::V4(ip) => Some(ip), _ => None,
+    }).ok_or_else(|| anyhow::anyhow!("No se encontró una dirección IPv4 para {host}"))
 }

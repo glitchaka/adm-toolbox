@@ -20,9 +20,11 @@ use crate::{
 
 struct WindowsShellHost {
     registry: Arc<CommandRegistry>,
+    interrupt: Arc<std::sync::atomic::AtomicBool>,
 }
 
 impl ShellCommandHost for WindowsShellHost {
+    fn interrupted(&self) -> bool { self.interrupt.load(std::sync::atomic::Ordering::SeqCst) }
     fn execute_builtin(
         &self,
         name: &str,
@@ -92,11 +94,13 @@ impl ShellCommandHost for WindowsShellHost {
 pub struct NativeShellEngine {
     interpreter: Interpreter,
     config_file: PathBuf,
+    interrupt: Arc<std::sync::atomic::AtomicBool>,
 }
 
 impl NativeShellEngine {
     pub fn new(registry: Arc<CommandRegistry>, config_file: PathBuf) -> Result<Self> {
-        let host = WindowsShellHost { registry };
+        let interrupt = crate::adapters::terminal::io::interrupt_flag();
+        let host = WindowsShellHost { registry, interrupt: interrupt.clone() };
         let mut interpreter = Interpreter::new(Box::new(host));
         interpreter.env.export(
             "ADM_CONFIG",
@@ -106,6 +110,7 @@ impl NativeShellEngine {
         let mut engine = Self {
             interpreter,
             config_file,
+            interrupt,
         };
         engine.load_config()?;
         Ok(engine)
@@ -124,26 +129,25 @@ impl NativeShellEngine {
 }
 
 impl ShellEngine for NativeShellEngine {
+    fn set_arguments(&mut self, name: &str, args: &[String]) {
+        self.interpreter.env.script_name = name.to_owned();
+        self.interpreter.env.positional = args.to_vec();
+    }
     fn working_dir(&self) -> &Path {
         &self.interpreter.env.cwd
     }
 
     fn execute(&mut self, line: &str) -> Result<ShellExecution> {
+        self.interrupt.store(false, std::sync::atomic::Ordering::SeqCst);
         let result = self.interpreter.execute_text(line)?;
 
-        if !result.stdout.is_empty() {
-            print!("{}", result.stdout);
-        }
-        if !result.stderr.is_empty() {
-            eprint!("{}", result.stderr);
-        }
-        std::io::stdout().flush()?;
-        std::io::stderr().flush()?;
-
-        Ok(if result.exit_requested {
+        let mut execution = if result.exit_requested {
             ShellExecution::exit(result.status)
         } else {
             ShellExecution::continue_running(result.status)
-        })
+        };
+        execution.stdout = result.stdout;
+        execution.stderr = result.stderr;
+        Ok(execution)
     }
 }

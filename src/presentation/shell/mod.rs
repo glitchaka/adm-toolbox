@@ -1,5 +1,5 @@
 mod completion;
-mod prompt;
-mod session;
+pub(crate) mod prompt;
+pub(crate) mod session;
 
 pub use session::ShellSession;

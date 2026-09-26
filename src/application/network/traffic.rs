@@ -12,7 +12,7 @@ use crate::{
         CommandOutput,
         models::network::{ByteCounters, ConnectionRow, TrafficRow},
         ports::{
-            ForegroundProcessProvider, ProcessRunner, TerminalFactory, TerminalKey,
+            ForegroundProcessProvider, NetworkProbe, TerminalFactory, TerminalKey,
             TrafficMonitorFactory,
         },
     },
@@ -20,7 +20,7 @@ use crate::{
 };
 
 pub struct NetworkTrafficService {
-    process: Arc<dyn ProcessRunner>,
+    probe: Arc<dyn NetworkProbe>,
     foreground: Arc<dyn ForegroundProcessProvider>,
     monitor_factory: Arc<dyn TrafficMonitorFactory>,
     terminal: Arc<dyn TerminalFactory>,
@@ -28,13 +28,13 @@ pub struct NetworkTrafficService {
 
 impl NetworkTrafficService {
     pub fn new(
-        process: Arc<dyn ProcessRunner>,
+        probe: Arc<dyn NetworkProbe>,
         foreground: Arc<dyn ForegroundProcessProvider>,
         monitor_factory: Arc<dyn TrafficMonitorFactory>,
         terminal: Arc<dyn TerminalFactory>,
     ) -> Self {
         Self {
-            process,
+            probe,
             foreground,
             monitor_factory,
             terminal,
@@ -300,46 +300,7 @@ impl NetworkTrafficService {
     }
 
     fn collect_connections(&self) -> Result<Vec<ConnectionRow>> {
-        let output = self.process.run("netstat", &["-ano"])?;
-        let mut rows = Vec::new();
-
-        for line in output.stdout.lines() {
-            let columns: Vec<&str> = line.split_whitespace().collect();
-
-            if columns
-                .first()
-                .is_some_and(|value| value.eq_ignore_ascii_case("TCP"))
-                && columns.len() >= 5
-            {
-                if let Ok(pid) = columns[4].parse::<u32>() {
-                    rows.push(ConnectionRow {
-                        protocol: "TCP".to_owned(),
-                        local: columns[1].to_owned(),
-                        remote: columns[2].to_owned(),
-                        state: columns[3].to_owned(),
-                        pid,
-                        process: String::new(),
-                    });
-                }
-            } else if columns
-                .first()
-                .is_some_and(|value| value.eq_ignore_ascii_case("UDP"))
-                && columns.len() >= 4
-            {
-                if let Ok(pid) = columns[3].parse::<u32>() {
-                    rows.push(ConnectionRow {
-                        protocol: "UDP".to_owned(),
-                        local: columns[1].to_owned(),
-                        remote: columns[2].to_owned(),
-                        state: "-".to_owned(),
-                        pid,
-                        process: String::new(),
-                    });
-                }
-            }
-        }
-
-        Ok(rows)
+        self.probe.connections()
     }
 
     fn watch(&self, args: &[String]) -> Result<CommandOutput> {

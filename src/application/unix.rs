@@ -9,12 +9,8 @@ use std::{
 
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use chrono::Local;
-use crossterm::{
-    cursor,
-    event::{self, Event, KeyCode},
-    execute,
-    terminal::{self, Clear, ClearType},
-};
+use crossterm::event::{Event, KeyCode};
+use crate::adapters::terminal::io as terminal_io;
 use sha2::{Digest, Sha256};
 use similar::{ChangeTag, TextDiff};
 
@@ -337,18 +333,14 @@ fn less(args: &[String], input: Option<&[u8]>, cwd: &Path) -> Result<CommandOutp
     let mut offset = 0_usize;
 
     loop {
-        let (width, height) = terminal::size()?;
+        let (width, height) = terminal_io::size()?;
         let body = height.saturating_sub(1) as usize;
 
-        execute!(
-            std::io::stdout(),
-            cursor::MoveTo(0, 0),
-            Clear(ClearType::All)
-        )?;
+        let mut screen = String::from("\x1b[H\x1b[2J");
 
         for line in lines.iter().skip(offset).take(body) {
             let visible: String = line.chars().take(width as usize).collect();
-            println!("{visible}");
+            screen.push_str(&format!("{visible}\n"));
         }
 
         let percent = if lines.is_empty() {
@@ -357,10 +349,10 @@ fn less(args: &[String], input: Option<&[u8]>, cwd: &Path) -> Result<CommandOutp
             (((offset + body).min(lines.len()) as f64 / lines.len() as f64) * 100.0) as usize
         };
 
-        print!("-- More -- {}%  [j/k PgUp/PgDn g/G q]", percent);
-        std::io::stdout().flush()?;
+        screen.push_str(&format!("-- More -- {}%  [j/k PgUp/PgDn g/G q]", percent));
+        terminal_io::write(screen.as_bytes())?;
 
-        if let Event::Key(key) = event::read()? {
+        if let Event::Key(key) = terminal_io::read()? {
             match key.code {
                 KeyCode::Char('q') | KeyCode::Esc => break,
                 KeyCode::Char('j') | KeyCode::Down => {

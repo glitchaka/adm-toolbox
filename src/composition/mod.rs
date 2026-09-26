@@ -14,11 +14,11 @@ use crate::{
             JsonPresenceRepository,
             JsonSwitchRepository,
         },
-        process::WindowsProcessRunner,
         windows::{
             EtwTrafficMonitorFactory,
             WindowsDomainProbe,
             WindowsForegroundProcessProvider,
+            WindowsNetworkProbe,
         },
     },
     application::{
@@ -58,7 +58,7 @@ use crate::{
         ForegroundProcessProvider,
         NetworkProviderRepository,
         PresenceRepository,
-        ProcessRunner,
+        NetworkProbe,
         SwitchLocator,
         SwitchRepository,
         TerminalFactory,
@@ -73,10 +73,15 @@ use crate::{
 };
 
 pub fn build_shell() -> Result<ShellSession> {
+    let (engine, command_names, paths) = build_engine()?;
+    ShellSession::new(engine, command_names, paths.history_file())
+}
+
+pub fn build_engine() -> Result<(Box<dyn crate::core::ports::ShellEngine>, Vec<String>, AppPaths)> {
     let paths = AppPaths::detect();
     paths.ensure_layout()?;
 
-    let process: Arc<dyn ProcessRunner> = Arc::new(WindowsProcessRunner);
+    let network_probe: Arc<dyn NetworkProbe> = Arc::new(WindowsNetworkProbe);
     let terminal: Arc<dyn TerminalFactory> = Arc::new(CrosstermTerminalFactory);
 
     let devices: Arc<dyn DeviceRepository> =
@@ -103,7 +108,7 @@ pub fn build_shell() -> Result<ShellSession> {
     let unix_service = Arc::new(UnixService);
 
     let network_diagnostics =
-        Arc::new(NetworkDiagnosticsService::new(Arc::clone(&process)));
+        Arc::new(NetworkDiagnosticsService::new(Arc::clone(&network_probe)));
     let network_discovery = Arc::new(NetworkDiscoveryService::new(
         Arc::clone(&network_diagnostics),
         Arc::clone(&devices),
@@ -111,7 +116,7 @@ pub fn build_shell() -> Result<ShellSession> {
         Arc::clone(&terminal),
     ));
     let network_traffic = Arc::new(NetworkTrafficService::new(
-        Arc::clone(&process),
+        Arc::clone(&network_probe),
         foreground,
         traffic_factory,
         Arc::clone(&terminal),
@@ -170,9 +175,5 @@ pub fn build_shell() -> Result<ShellSession> {
         paths.config_file(),
     )?;
 
-    ShellSession::new(
-        Box::new(engine),
-        command_names,
-        paths.history_file(),
-    )
+    Ok((Box::new(engine), command_names, paths))
 }

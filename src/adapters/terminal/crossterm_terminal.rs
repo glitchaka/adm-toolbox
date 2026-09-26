@@ -1,13 +1,8 @@
-use std::io::{Write, stdout};
 use std::time::Duration;
 
 use anyhow::Result;
-use crossterm::{
-    cursor,
-    event::{self, Event, KeyCode},
-    execute,
-    terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
-};
+use crossterm::event::{Event, KeyCode};
+use super::io;
 
 use crate::core::ports::{TerminalFactory, TerminalKey, TerminalSession};
 
@@ -15,8 +10,7 @@ pub struct CrosstermTerminalFactory;
 
 impl TerminalFactory for CrosstermTerminalFactory {
     fn alternate_screen(&self) -> Result<Box<dyn TerminalSession>> {
-        terminal::enable_raw_mode()?;
-        execute!(stdout(), EnterAlternateScreen, cursor::Hide)?;
+        io::enter()?;
         Ok(Box::new(CrosstermTerminalSession))
     }
 }
@@ -25,30 +19,29 @@ struct CrosstermTerminalSession;
 
 impl TerminalSession for CrosstermTerminalSession {
     fn size(&self) -> Result<(u16, u16)> {
-        Ok(terminal::size()?)
+        io::size()
     }
 
     fn clear(&mut self) -> Result<()> {
-        execute!(stdout(), cursor::MoveTo(0, 0), Clear(ClearType::All))?;
+        io::write(b"\x1b[H\x1b[2J")?;
         Ok(())
     }
 
     fn write(&mut self, text: &str) -> Result<()> {
-        stdout().write_all(text.as_bytes())?;
+        io::write(text.as_bytes())?;
         Ok(())
     }
 
     fn flush(&mut self) -> Result<()> {
-        stdout().flush()?;
         Ok(())
     }
 
     fn poll_key(&mut self, timeout: Duration) -> Result<Option<TerminalKey>> {
-        if !event::poll(timeout)? {
+        if !io::poll(timeout)? {
             return Ok(None);
         }
 
-        match event::read()? {
+        match io::read()? {
             Event::Key(key) => Ok(Some(map_key(key.code))),
             _ => Ok(None),
         }
@@ -58,8 +51,7 @@ impl TerminalSession for CrosstermTerminalSession {
 
 impl Drop for CrosstermTerminalSession {
     fn drop(&mut self) {
-        let _ = execute!(stdout(), cursor::Show, LeaveAlternateScreen);
-        let _ = terminal::disable_raw_mode();
+        io::leave();
     }
 }
 

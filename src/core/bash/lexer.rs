@@ -71,6 +71,30 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
         }
 
         match ch {
+            '$' if chars.get(i + 1) == Some(&'(') => {
+                // Keep nested command/arithmetic substitutions in the same word.
+                let start = i;
+                i += 2;
+                let mut depth = 1;
+                let mut quote = None;
+                while i < chars.len() && depth > 0 {
+                    let current = chars[i];
+                    if current == '\\' { i = (i + 2).min(chars.len()); continue; }
+                    if let Some(q) = quote {
+                        if current == q { quote = None; }
+                    } else {
+                        match current {
+                            '\'' | '"' => quote = Some(current),
+                            '(' => depth += 1,
+                            ')' => depth -= 1,
+                            _ => {},
+                        }
+                    }
+                    i += 1;
+                }
+                if depth != 0 { bail!("sustitución sin cerrar"); }
+                word.extend(&chars[start..i]);
+            }
             '\'' => { word.push(ch); single = true; i += 1; }
             '"' => { word.push(ch); double = true; i += 1; }
             '\\' => { word.push(ch); escaped = true; i += 1; }

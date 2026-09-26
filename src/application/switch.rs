@@ -29,13 +29,13 @@ impl SwitchService {
 
     pub fn execute(&self, args: &[String]) -> Result<CommandOutput> {
         match args.first().map(String::as_str).unwrap_or("list") {
-            "list" => self.list(&args[1..]),
-            "add" => self.add(&args[1..]),
-            "remove" => self.remove(&args[1..]),
-            "show" => self.show(&args[1..]),
+            "list" => self.list(args.get(1..).unwrap_or_default()),
+            "add" => self.add(args.get(1..).unwrap_or_default()),
+            "remove" => self.remove(args.get(1..).unwrap_or_default()),
+            "show" => self.show(args.get(1..).unwrap_or_default()),
             "path" => Ok(CommandOutput::ok(format!("{}\n", self.switches.path().display()))),
             "capabilities" => Ok(CommandOutput::ok(self.locator.capabilities())),
-            "locate" => self.locate(&args[1..]),
+            "locate" => self.locate(args.get(1..).unwrap_or_default()),
             other => Ok(CommandOutput::error(
                 format!("switch: subcomando desconocido: {other}"),
                 2,

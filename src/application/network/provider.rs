@@ -22,13 +22,13 @@ impl NetworkProviderService {
 
     pub fn execute(&self, args: &[String]) -> Result<CommandOutput> {
         match args.first().map(String::as_str).unwrap_or("list") {
-            "list" => self.list(&args[1..]),
-            "add" => self.add(&args[1..]),
-            "use" => self.use_provider(&args[1..]),
-            "remove" => self.remove(&args[1..]),
+            "list" => self.list(args.get(1..).unwrap_or_default()),
+            "add" => self.add(args.get(1..).unwrap_or_default()),
+            "use" => self.use_provider(args.get(1..).unwrap_or_default()),
+            "remove" => self.remove(args.get(1..).unwrap_or_default()),
             "current" => self.current(),
             "path" => Ok(CommandOutput::ok(format!("{}\n", self.repository.path().display()))),
-            "capabilities" => self.capabilities(&args[1..]),
+            "capabilities" => self.capabilities(args.get(1..).unwrap_or_default()),
             other => Ok(CommandOutput::error(
                 format!("net provider: subcomando desconocido: {other}"),
                 2,

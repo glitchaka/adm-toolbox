@@ -22,6 +22,12 @@ pub struct ExecutionResult {
 }
 
 impl ExecutionResult {
+    fn append(&mut self, next: Self) {
+        self.stdout.push_str(&next.stdout);
+        self.stderr.push_str(&next.stderr);
+        self.status = next.status;
+        self.exit_requested = next.exit_requested;
+    }
     pub fn success() -> Self {
         Self::from_parts(String::new(), String::new(), 0)
     }
@@ -32,6 +38,7 @@ impl ExecutionResult {
 }
 
 pub trait ShellCommandHost: Send + Sync {
+    fn interrupted(&self) -> bool { false }
     fn execute_builtin(
         &self,
         name: &str,
@@ -66,34 +73,41 @@ impl Interpreter {
     }
 
     pub fn execute(&mut self, node: &AstNode, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
+        if self.host.interrupted() { bail!("comando interrumpido"); }
         let result = match node {
             AstNode::Empty => ExecutionResult::success(),
             AstNode::Sequence(nodes) => {
                 let mut last = ExecutionResult::success();
                 for node in nodes {
-                    last = self.execute(node, None)?;
+                    last.append(self.execute(node, stdin)?);
                     if last.exit_requested { break; }
                 }
                 last
             }
             AstNode::And(left, right) => {
-                let left = self.execute(left, stdin)?;
-                if left.exit_requested || left.status != 0 { left } else { self.execute(right, stdin)? }
+                let mut left = self.execute(left, stdin)?;
+                if !left.exit_requested && left.status == 0 { left.append(self.execute(right, stdin)?); }
+                left
             }
             AstNode::Or(left, right) => {
-                let left = self.execute(left, stdin)?;
-                if left.exit_requested || left.status == 0 { left } else { self.execute(right, stdin)? }
+                let mut left = self.execute(left, stdin)?;
+                if !left.exit_requested && left.status != 0 { left.append(self.execute(right, stdin)?); }
+                left
             }
             AstNode::Pipeline(parts) => self.execute_pipeline(parts, stdin)?,
             AstNode::Simple(command) => self.execute_simple(command, stdin)?,
             AstNode::If { condition, then_branch, else_branch } => {
-                let condition = self.execute(condition, None)?;
-                if condition.status == 0 {
-                    self.execute(then_branch, stdin)?
+                let mut condition = self.execute(condition, stdin)?;
+                if condition.exit_requested { condition }
+                else if condition.status == 0 {
+                    condition.append(self.execute(then_branch, stdin)?);
+                    condition
                 } else if let Some(branch) = else_branch {
-                    self.execute(branch, stdin)?
+                    condition.append(self.execute(branch, stdin)?);
+                    condition
                 } else {
-                    ExecutionResult::from_parts(String::new(), String::new(), condition.status)
+                    condition.status = 0;
+                    condition
                 }
             }
             AstNode::For { name, words, body } => {
@@ -105,7 +119,7 @@ impl Interpreter {
                 let mut last = ExecutionResult::success();
                 for value in values {
                     self.env.set(name.clone(), value);
-                    last = self.execute(body, stdin)?;
+                    last.append(self.execute(body, stdin)?);
                     if last.exit_requested { break; }
                 }
                 last
@@ -116,7 +130,7 @@ impl Interpreter {
                     let condition = self.execute(condition, None)?;
                     let should_run = if *until { condition.status != 0 } else { condition.status == 0 };
                     if !should_run { break; }
-                    last = self.execute(body, stdin)?;
+                    last.append(self.execute(body, stdin)?);
                     if last.exit_requested { break; }
                 }
                 last
@@ -128,8 +142,10 @@ impl Interpreter {
             AstNode::Group(body) => self.execute(body, stdin)?,
             AstNode::Subshell(body) => {
                 let saved = self.env.clone();
-                let result = self.execute(body, stdin)?;
+                let result = self.execute(body, stdin);
                 self.env = saved;
+                let mut result = result?;
+                result.exit_requested = false;
                 result
             }
         };
@@ -144,10 +160,13 @@ impl Interpreter {
         let mut last = ExecutionResult::success();
 
         for part in parts {
-            last = self.execute(part, input.as_deref())?;
+            let saved = self.env.clone();
+            let result = self.execute(part, input.as_deref());
+            self.env = saved;
+            last = result?;
+            last.exit_requested = false;
             stderr.push_str(&last.stderr);
             input = Some(last.stdout.as_bytes().to_vec());
-            if last.exit_requested { break; }
         }
 
         last.stderr = stderr;
@@ -486,7 +505,10 @@ impl Interpreter {
                         let end = matching(&chars, i + 1, '(', ')')
                             .ok_or_else(|| anyhow!("sustitución de comando sin cerrar"))?;
                         let source: String = chars[i + 2..end].iter().collect();
-                        let result = self.execute_text(&source)?;
+                        let saved = self.env.clone();
+                        let result = self.execute_text(&source);
+                        self.env = saved;
+                        let result = result?;
                         out.push_str(result.stdout.trim_end_matches(['\r', '\n']));
                         i = end + 1;
                     } else if chars.get(i + 1) == Some(&'{') {

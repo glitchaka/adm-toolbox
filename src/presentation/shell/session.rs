@@ -52,11 +52,6 @@ impl ShellSession {
         })
     }
 
-    pub fn execute_command(&mut self, command: &str) -> Result<i32> {
-        let result = self.engine.execute(command)?;
-        Ok(result.status)
-    }
-
     pub fn run(&mut self) -> Result<()> {
         println!("{}", prompt::banner());
 
@@ -95,6 +90,8 @@ impl ShellSession {
 
                     match self.engine.execute(&command) {
                         Ok(result) => {
+                            print!("{}", result.stdout);
+                            eprint!("{}", result.stderr);
                             if result.exit_requested {
                                 self.running = false;
                             }
@@ -119,7 +116,7 @@ impl ShellSession {
     }
 }
 
-fn needs_continuation(input: &str) -> bool {
+pub(crate) fn needs_continuation(input: &str) -> bool {
     let trimmed = input.trim_end();
 
     if trimmed.ends_with('\\')

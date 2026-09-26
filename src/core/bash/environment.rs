@@ -11,6 +11,7 @@ pub struct ShellEnvironment {
     pub cwd: PathBuf,
     pub last_status: i32,
     pub positional: Vec<String>,
+    pub script_name: String,
 }
 
 impl ShellEnvironment {
@@ -25,11 +26,13 @@ impl ShellEnvironment {
             cwd: env::current_dir().unwrap_or_else(|_| PathBuf::from("C:\\")),
             last_status: 0,
             positional: Vec::new(),
+            script_name: "adm-toolbox".to_owned(),
         }
     }
 
     pub fn get(&self, name: &str) -> String {
         match name {
+            "0" => self.script_name.clone(),
             "?" => self.last_status.to_string(),
             "#" => self.positional.len().to_string(),
             "@" | "*" => self.positional.join(" "),
