@@ -26,18 +26,6 @@ pub trait ProcessRunner: Send + Sync {
     fn run(&self, program: &str, args: &[&str]) -> Result<ProcessOutput>;
 }
 
-pub trait FileSystem: Send + Sync {
-    fn read(&self, path: &Path) -> Result<Vec<u8>>;
-    fn read_to_string(&self, path: &Path) -> Result<String>;
-    fn write(&self, path: &Path, data: &[u8]) -> Result<()>;
-    fn exists(&self, path: &Path) -> bool;
-}
-
-pub trait HistoryStore: Send + Sync {
-    fn load(&self) -> Result<Vec<String>>;
-    fn append(&self, line: &str) -> Result<()>;
-}
-
 pub trait TextEditor: Send + Sync {
     fn edit(&self, path: &Path) -> Result<()>;
 }
@@ -50,15 +38,6 @@ pub trait ShellEngine: Send {
 pub trait DeviceRepository: Send + Sync {
     fn all(&self) -> Result<Vec<Device>>;
     fn replace_all(&self, devices: &[Device]) -> Result<()>;
-    fn path(&self) -> PathBuf;
-
-    fn names_by_mac(&self) -> Result<HashMap<String, String>> {
-        Ok(self
-            .all()?
-            .into_iter()
-            .map(|device| (device.mac, device.name))
-            .collect())
-    }
 
     fn resolve_name_to_mac(&self, name: &str) -> Result<Option<String>> {
         Ok(self
@@ -151,7 +130,6 @@ pub trait TerminalSession: Send {
     fn write(&mut self, text: &str) -> Result<()>;
     fn flush(&mut self) -> Result<()>;
     fn poll_key(&mut self, timeout: std::time::Duration) -> Result<Option<TerminalKey>>;
-    fn read_key(&mut self) -> Result<TerminalKey>;
 }
 
 pub trait TerminalFactory: Send + Sync {
