@@ -30,7 +30,6 @@ impl JsonPresenceRepository {
 impl PresenceRepository for JsonPresenceRepository {
     fn all(&self) -> Result<Vec<PresenceRecord>> { self.store.load() }
     fn replace_all(&self, values: &[PresenceRecord]) -> Result<()> { self.store.save(values) }
-    fn path(&self) -> PathBuf { self.store.path() }
 }
 
 pub struct JsonNetworkProviderRepository { store: JsonFileStore<NetworkProvider> }
