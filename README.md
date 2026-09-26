@@ -1,10 +1,8 @@
 # ADM Toolbox
 
-ADM Toolbox es una consola portable de soporte técnico para Windows construida en Rust.
+ADM Toolbox es una consola portable de administración y soporte técnico para Windows, construida en Rust.
 
-La consola debe sentirse como una shell Linux durante toda la sesión. El núcleo de interpretación usa **brush-core**, una implementación de semántica Bash escrita en Rust. Las herramientas administrativas de ADM Toolbox se registran dentro de esa misma shell como comandos nativos.
-
-No hay un dashboard principal ni una GUI que sustituya a la consola.
+Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de tráfico, consulta de dominio, localización de puertos de switch y herramientas de línea de comandos de uso cotidiano.
 
 ## Construcción
 
