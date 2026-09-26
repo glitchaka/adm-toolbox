@@ -1,3 +1,5 @@
+mod bootstrap;
 mod brush_bridge;
+mod brush_engine;
 
-pub use brush_bridge::{BrushBuiltinBridge, install_registry};
+pub use brush_engine::BrushShellEngine;

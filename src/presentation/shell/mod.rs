@@ -1,4 +1,3 @@
-mod bootstrap;
 mod completion;
 mod prompt;
 mod session;
