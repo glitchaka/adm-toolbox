@@ -3,7 +3,11 @@ use std::{
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
+    thread,
+    time::Duration,
 };
+
+use chrono::Local;
 
 use anyhow::{Context, Result};
 
@@ -30,6 +34,18 @@ pub fn run(
         "cut" => cut(args, input, cwd),
         "tee" => tee(args, input, cwd),
         "find" => find(args, cwd),
+        "printf" => printf(args),
+        "basename" => basename(args),
+        "dirname" => dirname(args),
+        "realpath" => realpath(args, cwd),
+        "date" => date(args),
+        "sleep" => sleep_cmd(args),
+        "true" => Ok(CommandOutput::ok("")),
+        "false" => Ok(CommandOutput {
+            stdout: String::new(),
+            stderr: String::new(),
+            status: 1,
+        }),
         "touch" => touch(args, cwd),
         "mkdir" => mkdir(args, cwd),
         "rm" => rm(args, cwd),
@@ -359,6 +375,151 @@ fn wildcard_match(pattern: &str, value: &str) -> bool {
     pattern.ends_with('*') || parts.last().is_none_or(|last| value.ends_with(last))
 }
 
+fn printf(args: &[String]) -> Result<CommandOutput> {
+    let Some(format) = args.first() else {
+        return Ok(CommandOutput::ok(""));
+    };
+
+    let mut values = args.iter().skip(1);
+    let mut out = String::new();
+    let mut chars = format.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch == '\\' {
+            match chars.next() {
+                Some('n') => out.push('\n'),
+                Some('t') => out.push('\t'),
+                Some('r') => out.push('\r'),
+                Some('\\') => out.push('\\'),
+                Some(other) => {
+                    out.push('\\');
+                    out.push(other);
+                }
+                None => out.push('\\'),
+            }
+            continue;
+        }
+
+        if ch == '%' {
+            match chars.peek().copied() {
+                Some('%') => {
+                    chars.next();
+                    out.push('%');
+                }
+                Some('s') => {
+                    chars.next();
+                    out.push_str(values.next().map(String::as_str).unwrap_or(""));
+                }
+                Some('d') => {
+                    chars.next();
+                    let value = values
+                        .next()
+                        .and_then(|value| value.parse::<i64>().ok())
+                        .unwrap_or(0);
+                    out.push_str(&value.to_string());
+                }
+                _ => out.push('%'),
+            }
+            continue;
+        }
+
+        out.push(ch);
+    }
+
+    for extra in values {
+        out.push_str(extra);
+    }
+
+    Ok(CommandOutput::ok(out))
+}
+
+fn basename(args: &[String]) -> Result<CommandOutput> {
+    let Some(raw) = args.first() else {
+        return Ok(CommandOutput::error("basename: falta ruta", 2));
+    };
+
+    let normalized = raw.trim_end_matches(['/', '\\']);
+    let name = normalized
+        .rsplit(['/', '\\'])
+        .next()
+        .unwrap_or(normalized);
+
+    Ok(CommandOutput::ok(format!("{name}\n")))
+}
+
+fn dirname(args: &[String]) -> Result<CommandOutput> {
+    let Some(raw) = args.first() else {
+        return Ok(CommandOutput::error("dirname: falta ruta", 2));
+    };
+
+    let normalized = raw.trim_end_matches(['/', '\\']);
+    let position = normalized.rfind(['/', '\\']);
+
+    let dir = match position {
+        Some(0) => &normalized[..1],
+        Some(index) => &normalized[..index],
+        None => ".",
+    };
+
+    Ok(CommandOutput::ok(format!("{dir}\n")))
+}
+
+fn realpath(args: &[String], cwd: &Path) -> Result<CommandOutput> {
+    let Some(raw) = args.first() else {
+        return Ok(CommandOutput::error("realpath: falta ruta", 2));
+    };
+
+    let path = resolve_path(cwd, raw)
+        .canonicalize()
+        .with_context(|| format!("realpath: no se pudo resolver {raw}"))?;
+
+    Ok(CommandOutput::ok(format!("{}\n", display_unix_path(&path))))
+}
+
+fn date(args: &[String]) -> Result<CommandOutput> {
+    let now = Local::now();
+    let format = args
+        .first()
+        .and_then(|value| value.strip_prefix('+'))
+        .unwrap_or("%a %b %e %H:%M:%S %Y");
+
+    Ok(CommandOutput::ok(format!("{}\n", now.format(format))))
+}
+
+fn sleep_cmd(args: &[String]) -> Result<CommandOutput> {
+    let Some(value) = args.first() else {
+        return Ok(CommandOutput::error("sleep: falta duración", 2));
+    };
+
+    let seconds = parse_duration(value)?;
+    thread::sleep(Duration::from_secs_f64(seconds));
+    Ok(CommandOutput::ok(""))
+}
+
+fn parse_duration(value: &str) -> Result<f64> {
+    let (number, multiplier) = if let Some(number) = value.strip_suffix("ms") {
+        (number, 0.001)
+    } else if let Some(number) = value.strip_suffix('s') {
+        (number, 1.0)
+    } else if let Some(number) = value.strip_suffix('m') {
+        (number, 60.0)
+    } else if let Some(number) = value.strip_suffix('h') {
+        (number, 3600.0)
+    } else {
+        (value, 1.0)
+    };
+
+    let parsed = number
+        .parse::<f64>()
+        .with_context(|| format!("sleep: duración inválida: {value}"))?;
+
+    if parsed.is_sign_negative() {
+        anyhow::bail!("sleep: la duración no puede ser negativa");
+    }
+
+    Ok(parsed * multiplier)
+}
+
 fn touch(args: &[String], cwd: &Path) -> Result<CommandOutput> {
     for arg in args {
         OpenOptions::new()
@@ -443,7 +604,7 @@ fn which(args: &[String]) -> Result<CommandOutput> {
     if super::is_internal(name)
         || matches!(
             name.as_str(),
-            "cd" | "clear" | "exit" | "vim" | "edit" | "alias" | "export" | "history"
+            "cd" | "clear" | "exit" | "vim" | "edit" | "alias" | "export" | "history" | "config"
         )
     {
         return Ok(CommandOutput::ok(format!(
