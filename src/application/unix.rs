@@ -918,12 +918,7 @@ fn which(args: &[String]) -> Result<CommandOutput> {
         return Ok(CommandOutput::error("which: falta comando", 2));
     };
 
-    if super::is_internal(name)
-        || matches!(
-            name.as_str(),
-            "cd" | "clear" | "exit" | "vim" | "edit" | "alias" | "export" | "history" | "config" | "help" | "man"
-        )
-    {
+    if is_internal_command(name) {
         return Ok(CommandOutput::ok(format!(
             "{name}: comando interno de ADM Toolbox\n"
         )));
@@ -998,4 +993,74 @@ fn display_unix_path(path: &Path) -> String {
     }
 
     text.replace('\\', "/")
+}
+
+fn is_internal_command(name: &str) -> bool {
+    matches!(
+        name,
+        "cd"
+            | "clear"
+            | "exit"
+            | "logout"
+            | "vim"
+            | "edit"
+            | "alias"
+            | "unalias"
+            | "export"
+            | "history"
+            | "config"
+            | "help"
+            | "man"
+            | "net"
+            | "sys"
+            | "domain"
+            | "device"
+            | "switch"
+            | "wol"
+            | "diag"
+            | "pwd"
+            | "echo"
+            | "env"
+            | "ls"
+            | "cat"
+            | "head"
+            | "tail"
+            | "grep"
+            | "wc"
+            | "sort"
+            | "uniq"
+            | "cut"
+            | "tee"
+            | "less"
+            | "more"
+            | "sed"
+            | "awk"
+            | "diff"
+            | "sha256sum"
+            | "base64"
+            | "find"
+            | "printf"
+            | "basename"
+            | "dirname"
+            | "realpath"
+            | "date"
+            | "sleep"
+            | "true"
+            | "false"
+            | "touch"
+            | "mkdir"
+            | "rm"
+            | "cp"
+            | "mv"
+            | "which"
+            | "type"
+            | "ps"
+            | "top"
+            | "df"
+            | "free"
+            | "hostname"
+            | "whoami"
+            | "uname"
+            | "kill"
+    )
 }

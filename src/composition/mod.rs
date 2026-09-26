@@ -4,8 +4,9 @@ use anyhow::Result;
 
 use crate::{
     adapters::{
-        filesystem::StdFileSystem,
         network::{SnmpSwitchLocator, UdpWakeOnLanSender},
+        shell::BrushShellEngine,
+        terminal::CrosstermTerminalFactory,
         persistence::{
             AppPaths,
             JsonDeviceRepository,
@@ -54,13 +55,13 @@ use crate::{
     core::ports::{
         DeviceRepository,
         DomainProbe,
-        FileSystem,
         ForegroundProcessProvider,
         NetworkProviderRepository,
         PresenceRepository,
         ProcessRunner,
         SwitchLocator,
         SwitchRepository,
+        TerminalFactory,
         TextEditor,
         TrafficMonitorFactory,
         WakeOnLanSender,
@@ -74,8 +75,8 @@ use crate::{
 pub fn build_shell() -> Result<ShellSession> {
     let paths = AppPaths::detect();
 
-    let file_system: Arc<dyn FileSystem> = Arc::new(StdFileSystem);
     let process: Arc<dyn ProcessRunner> = Arc::new(WindowsProcessRunner);
+    let terminal: Arc<dyn TerminalFactory> = Arc::new(CrosstermTerminalFactory);
 
     let devices: Arc<dyn DeviceRepository> =
         Arc::new(JsonDeviceRepository::new(&paths));
@@ -97,7 +98,7 @@ pub fn build_shell() -> Result<ShellSession> {
 
     let device_service = Arc::new(DeviceService::new(Arc::clone(&devices)));
     let domain_service = Arc::new(DomainService::new(domain_probe));
-    let system_service = Arc::new(SystemService);
+    let system_service = Arc::new(SystemService::new(Arc::clone(&terminal)));
     let unix_service = Arc::new(UnixService);
 
     let network_diagnostics =
@@ -106,11 +107,13 @@ pub fn build_shell() -> Result<ShellSession> {
         Arc::clone(&network_diagnostics),
         Arc::clone(&devices),
         presence,
+        Arc::clone(&terminal),
     ));
     let network_traffic = Arc::new(NetworkTrafficService::new(
         Arc::clone(&process),
         foreground,
         traffic_factory,
+        Arc::clone(&terminal),
     ));
     let network_provider = Arc::new(NetworkProviderService::new(providers));
     let network_service = Arc::new(NetworkService::new(
@@ -159,10 +162,17 @@ pub fn build_shell() -> Result<ShellSession> {
     )))?;
     registry.register(Arc::new(PathBuiltin))?;
 
-    ShellSession::new(
-        Arc::new(registry),
-        file_system,
+    let registry = Arc::new(registry);
+    let command_names = registry.names();
+    let engine = BrushShellEngine::new(
+        Arc::clone(&registry),
+        &command_names,
         paths.config_file(),
+    )?;
+
+    ShellSession::new(
+        Box::new(engine),
+        command_names,
         paths.history_file(),
     )
 }

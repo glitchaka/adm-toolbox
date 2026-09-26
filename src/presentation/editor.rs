@@ -27,6 +27,27 @@ enum Mode {
     VisualLine,
 }
 
+struct VimEditor {
+    lines: Vec<Vec<char>>,
+    row: usize,
+    col: usize,
+    offset: usize,
+    mode: Mode,
+    command: String,
+    search: String,
+    last_search: Option<String>,
+    dirty: bool,
+    pending_d: bool,
+    pending_y: bool,
+    pending_g: bool,
+    register: Vec<Vec<char>>,
+    undo: Vec<Vec<Vec<char>>>,
+    redo: Vec<Vec<Vec<char>>>,
+    visual_anchor: Option<usize>,
+    line_numbers: bool,
+    message: String,
+}
+
 pub struct ModalTextEditor;
 
 impl TextEditor for ModalTextEditor {
