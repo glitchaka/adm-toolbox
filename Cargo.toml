@@ -32,3 +32,4 @@ opt-level = 3
 
 [target.'cfg(windows)'.dependencies]
 ferrisetw = "1.2"
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
