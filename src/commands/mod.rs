@@ -52,6 +52,13 @@ pub fn is_internal(name: &str) -> bool {
             | "uniq"
             | "cut"
             | "tee"
+            | "less"
+            | "more"
+            | "sed"
+            | "awk"
+            | "diff"
+            | "sha256sum"
+            | "base64"
             | "find"
             | "printf"
             | "basename"
@@ -95,7 +102,8 @@ pub fn run(
     match name {
         "help" | "man" => Ok(help(args)),
         "pwd" | "echo" | "ls" | "cat" | "head" | "tail" | "grep" | "wc" | "sort"
-        | "uniq" | "cut" | "tee" | "find" | "printf" | "basename" | "dirname"
+        | "uniq" | "cut" | "tee" | "less" | "more" | "sed" | "awk" | "diff"
+        | "sha256sum" | "base64" | "find" | "printf" | "basename" | "dirname"
         | "realpath" | "date" | "sleep" | "true" | "false" | "touch" | "mkdir" | "rm"
         | "cp" | "mv" | "which" | "type" => unix::run(name, args, input, cwd),
         "sys" => sys::run(args),
@@ -186,6 +194,7 @@ Shell:\n\
   edit FILE                  alias de vim\n\n\
 Unix:\n\
   ls, cat, head, tail, grep, wc, sort, uniq, cut, tee, find\n\
+  less, sed, awk, diff, sha256sum, base64\n\
   printf, basename, dirname, realpath, date, sleep, true, false\n\
   touch, mkdir, rm, cp, mv, which, type\n\n\
 Sistema:\n\
