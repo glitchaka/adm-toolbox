@@ -38,6 +38,7 @@ pub trait ShellEngine: Send {
 pub trait DeviceRepository: Send + Sync {
     fn all(&self) -> Result<Vec<Device>>;
     fn replace_all(&self, devices: &[Device]) -> Result<()>;
+    fn path(&self) -> PathBuf;
 
     fn resolve_name_to_mac(&self, name: &str) -> Result<Option<String>> {
         Ok(self
