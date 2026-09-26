@@ -4,7 +4,6 @@ pub mod interpreter;
 pub mod lexer;
 pub mod parser;
 
-pub use environment::ShellEnvironment;
 pub use interpreter::{ExecutionResult, Interpreter, ShellCommandHost};
 
 use anyhow::Result;
