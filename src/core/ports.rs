@@ -51,7 +51,6 @@ pub trait DeviceRepository: Send + Sync {
 pub trait PresenceRepository: Send + Sync {
     fn all(&self) -> Result<Vec<PresenceRecord>>;
     fn replace_all(&self, records: &[PresenceRecord]) -> Result<()>;
-    fn path(&self) -> PathBuf;
 }
 
 pub trait NetworkProviderRepository: Send + Sync {
