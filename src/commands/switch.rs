@@ -270,12 +270,12 @@ fn locate_on_switch(
     .map_err(|error| anyhow::anyhow!("SNMP: {error}"))?;
 
     let bridge_port = if let Some(vlan) = vlan {
-        let mut oid = vec![1, 3, 6, 1, 2, 1, 17, 7, 1, 2, 2, 1, 2, vlan];
-        oid.extend(mac.iter().map(|byte| *byte as u32));
+        let mut oid = vec![1, 3, 6, 1, 2, 1, 17, 7, 1, 2, 2, 1, 2, vlan as u64];
+        oid.extend(mac.iter().map(|byte| *byte as u64));
         snmp_get_integer(&mut session, &oid)?
     } else {
         let mut oid = vec![1, 3, 6, 1, 2, 1, 17, 4, 3, 1, 2];
-        oid.extend(mac.iter().map(|byte| *byte as u32));
+        oid.extend(mac.iter().map(|byte| *byte as u64));
         snmp_get_integer(&mut session, &oid)?
     };
 
@@ -285,18 +285,18 @@ fn locate_on_switch(
 
     let if_index = snmp_get_integer(
         &mut session,
-        &[1, 3, 6, 1, 2, 1, 17, 1, 4, 1, 2, bridge_port as u32],
+        &[1, 3, 6, 1, 2, 1, 17, 1, 4, 1, 2, bridge_port as u64],
     )?
     .unwrap_or(bridge_port);
 
     let interface = snmp_get_string(
         &mut session,
-        &[1, 3, 6, 1, 2, 1, 31, 1, 1, 1, 1, if_index as u32],
+        &[1, 3, 6, 1, 2, 1, 31, 1, 1, 1, 1, if_index as u64],
     )?
     .or_else(|| {
         snmp_get_string(
             &mut session,
-            &[1, 3, 6, 1, 2, 1, 2, 2, 1, 2, if_index as u32],
+            &[1, 3, 6, 1, 2, 1, 2, 2, 1, 2, if_index as u64],
         )
         .ok()
         .flatten()
@@ -305,27 +305,27 @@ fn locate_on_switch(
 
     let alias = snmp_get_string(
         &mut session,
-        &[1, 3, 6, 1, 2, 1, 31, 1, 1, 1, 18, if_index as u32],
+        &[1, 3, 6, 1, 2, 1, 31, 1, 1, 1, 18, if_index as u64],
     )?
     .unwrap_or_default();
 
     let pvid = snmp_get_integer(
         &mut session,
-        &[1, 3, 6, 1, 2, 1, 17, 7, 1, 4, 5, 1, 1, bridge_port as u32],
+        &[1, 3, 6, 1, 2, 1, 17, 7, 1, 4, 5, 1, 1, bridge_port as u64],
     )
     .ok()
     .flatten();
 
     let speed_mbps = snmp_get_integer(
         &mut session,
-        &[1, 3, 6, 1, 2, 1, 31, 1, 1, 1, 15, if_index as u32],
+        &[1, 3, 6, 1, 2, 1, 31, 1, 1, 1, 15, if_index as u64],
     )
     .ok()
     .flatten();
 
     let oper_status = match snmp_get_integer(
         &mut session,
-        &[1, 3, 6, 1, 2, 1, 2, 2, 1, 8, if_index as u32],
+        &[1, 3, 6, 1, 2, 1, 2, 2, 1, 8, if_index as u64],
     )
     .ok()
     .flatten()
@@ -358,10 +358,10 @@ fn locate_on_switch(
 
 fn snmp_get_integer(
     session: &mut SyncSession,
-    components: &[u32],
+    components: &[u64],
 ) -> anyhow::Result<Option<i64>> {
     let oid = Oid::from(components)
-        .map_err(|error| anyhow::anyhow!("OID inválido: {error}"))?;
+        .map_err(|error| anyhow::anyhow!("OID inválido: {error:?}"))?;
     let mut response = session
         .get(&oid)
         .map_err(|error| anyhow::anyhow!("SNMP GET: {error}"))?;
@@ -383,10 +383,10 @@ fn snmp_get_integer(
 
 fn snmp_get_string(
     session: &mut SyncSession,
-    components: &[u32],
+    components: &[u64],
 ) -> anyhow::Result<Option<String>> {
     let oid = Oid::from(components)
-        .map_err(|error| anyhow::anyhow!("OID inválido: {error}"))?;
+        .map_err(|error| anyhow::anyhow!("OID inválido: {error:?}"))?;
     let mut response = session
         .get(&oid)
         .map_err(|error| anyhow::anyhow!("SNMP GET: {error}"))?;
