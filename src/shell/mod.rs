@@ -127,7 +127,15 @@ impl Shell {
     }
 
     fn execute_pipeline(&mut self, pipeline: &Pipeline) -> Result<i32> {
-        let mut input: Option<Vec<u8>> = None;
+        let mut input: Option<Vec<u8>> = if let Some(path) = &pipeline.input_redirect {
+            let source = resolve_path(&self.cwd, path);
+            Some(
+                fs::read(&source)
+                    .with_context(|| format!("no se pudo leer {}", source.display()))?,
+            )
+        } else {
+            None
+        };
         let mut status = 0;
         let mut stderr_acc = Vec::new();
 
@@ -245,6 +253,7 @@ impl Shell {
             } else {
                 let is_only_command = pipeline.commands.len() == 1
                     && pipeline.redirect.is_none()
+                    && pipeline.input_redirect.is_none()
                     && index == 0
                     && input.is_none();
 
