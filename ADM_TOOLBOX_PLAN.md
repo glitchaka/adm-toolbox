@@ -679,6 +679,74 @@ net traffic --background | grep -i unsigned
 
 La TUI es opcional; la salida textual y procesable por pipes es obligatoria.
 
+### 12.7 Uso de ancho de banda de toda la LAN
+
+ADM Toolbox debe poder mostrar, desde la propia consola, qué dispositivos de la red están consumiendo el enlace a Internet.
+
+Comando base:
+
+```bash
+net usage
+```
+
+Modos previstos:
+
+```bash
+net usage
+net usage --watch
+net usage --top
+net usage --device 192.168.1.34
+net usage --mac A4:C3:F0:11:93:02
+net usage --json
+net usage --csv
+```
+
+Salida esperada:
+
+```text
+DEVICE          IP              DOWN        UP          TOTAL
+Notebook-Juan   192.168.1.34    81.7 Mbps   4.2 Mbps    85.9 Mbps
+TV-Living       192.168.1.18    14.3 Mbps   212 Kbps    14.5 Mbps
+PC-Manuel       192.168.1.10     1.8 Mbps    83 Kbps     1.9 Mbps
+Telefono        192.168.1.25    320 Kbps     44 Kbps    364 Kbps
+```
+
+`net usage --watch` debe sentirse como `iftop` o `nethogs`, pero para toda la LAN.
+
+#### Fuente de los datos
+
+Un PC cliente no puede medir de forma fiable el tráfico total de todos los demás equipos de una red conmutada/Wi-Fi únicamente observando su propia interfaz.
+
+Por tanto, `net usage` debe usar uno de estos proveedores:
+
+- API del router/firewall;
+- SNMP;
+- controlador Wi-Fi;
+- estadísticas del gateway;
+- OpenWrt/OPNsense/pfSense u otro proveedor compatible;
+- port mirroring/SPAN cuando exista una interfaz de captura autorizada.
+
+El comando debe abstraer el proveedor. La experiencia de uso seguirá siendo siempre:
+
+```bash
+net usage --watch
+```
+
+sin obligar al técnico a entrar a la GUI del router.
+
+Configuración prevista:
+
+```bash
+net provider add home-router --type snmp --host 192.168.1.1
+net provider add firewall --type opnsense --host 10.0.0.1
+net provider list
+net provider use home-router
+```
+
+Las credenciales se almacenarán mediante el mecanismo seguro definido para proveedores y nunca en texto plano dentro de scripts.
+
+Si el router no expone estadísticas por cliente, el comando debe indicarlo explícitamente y no inventar consumo por dispositivo.
+
 ---
 
 ## 13. Switches y credenciales
