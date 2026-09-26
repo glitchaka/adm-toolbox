@@ -613,9 +613,9 @@ fn basename(args: &[String]) -> Result<CommandOutput> {
         return Ok(CommandOutput::error("basename: falta ruta", 2));
     };
 
-    let normalized = raw.trim_end_matches(['/', '\\']);
+    let normalized = raw.trim_end_matches(|ch| ch == '/' || ch == '\\');
     let name = normalized
-        .rsplit(['/', '\\'])
+        .rsplit(|ch| ch == '/' || ch == '\\')
         .next()
         .unwrap_or(normalized);
 
@@ -627,8 +627,8 @@ fn dirname(args: &[String]) -> Result<CommandOutput> {
         return Ok(CommandOutput::error("dirname: falta ruta", 2));
     };
 
-    let normalized = raw.trim_end_matches(['/', '\\']);
-    let position = normalized.rfind(['/', '\\']);
+    let normalized = raw.trim_end_matches(|ch| ch == '/' || ch == '\\');
+    let position = normalized.rfind(|ch| ch == '/' || ch == '\\');
 
     let dir = match position {
         Some(0) => &normalized[..1],
@@ -1128,9 +1128,9 @@ fn basename(args: &[String]) -> Result<CommandOutput> {
         return Ok(CommandOutput::error("basename: falta ruta", 2));
     };
 
-    let normalized = raw.trim_end_matches(['/', '\\']);
+    let normalized = raw.trim_end_matches(|ch| ch == '/' || ch == '\\');
     let name = normalized
-        .rsplit(['/', '\\'])
+        .rsplit(|ch| ch == '/' || ch == '\\')
         .next()
         .unwrap_or(normalized);
 
@@ -1142,8 +1142,8 @@ fn dirname(args: &[String]) -> Result<CommandOutput> {
         return Ok(CommandOutput::error("dirname: falta ruta", 2));
     };
 
-    let normalized = raw.trim_end_matches(['/', '\\']);
-    let position = normalized.rfind(['/', '\\']);
+    let normalized = raw.trim_end_matches(|ch| ch == '/' || ch == '\\');
+    let position = normalized.rfind(|ch| ch == '/' || ch == '\\');
 
     let dir = match position {
         Some(0) => &normalized[..1],
