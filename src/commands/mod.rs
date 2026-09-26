@@ -3,6 +3,8 @@ mod diag;
 mod domain;
 mod net;
 mod switch;
+#[cfg(windows)]
+mod traffic_etw;
 mod sys;
 mod unix;
 mod wol;
