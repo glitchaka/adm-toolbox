@@ -193,6 +193,13 @@ pub fn known_names() -> anyhow::Result<HashMap<String, String>> {
         .collect())
 }
 
+pub fn resolve_name_to_mac(name: &str) -> anyhow::Result<Option<String>> {
+    Ok(load()?
+        .into_iter()
+        .find(|device| device.name.eq_ignore_ascii_case(name))
+        .map(|device| device.mac))
+}
+
 fn load() -> anyhow::Result<Vec<Device>> {
     let path = database_path();
 
