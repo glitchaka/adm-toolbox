@@ -73,6 +73,14 @@ pub fn is_internal(name: &str) -> bool {
             | "diag"
             | "device"
             | "switch"
+            | "ps"
+            | "top"
+            | "df"
+            | "free"
+            | "hostname"
+            | "whoami"
+            | "uname"
+            | "kill"
     )
 }
 
@@ -95,6 +103,9 @@ pub fn run(
         "diag" => diag::run(args),
         "device" => device::run(args),
         "switch" => switch::run(args),
+        "ps" | "top" | "df" | "free" | "hostname" | "whoami" | "uname" | "kill" => {
+            sys::run_alias(name, args)
+        }
         _ => Ok(CommandOutput::error(
             format!("comando interno desconocido: {name}"),
             127,
@@ -149,6 +160,10 @@ Administración:\n\
   sys processes\n\
   sys disks\n\
   sys memory\n\
+  ps | top\n\
+  df | free\n\
+  hostname | whoami | uname -a\n\
+  kill PID\n\
   net interfaces\n\
   net connections\n\
   net neighbors\n\
