@@ -32,6 +32,12 @@ impl ShellSession {
             "help".to_owned(),
             "man".to_owned(),
             "config".to_owned(),
+            "cd".to_owned(),
+            "export".to_owned(),
+            "unset".to_owned(),
+            "alias".to_owned(),
+            "unalias".to_owned(),
+            "source".to_owned(),
         ]);
 
         let mut editor = Editor::<ShellHelper, DefaultHistory>::new()?;
@@ -44,6 +50,11 @@ impl ShellSession {
             history_file,
             running: true,
         })
+    }
+
+    pub fn execute_command(&mut self, command: &str) -> Result<i32> {
+        let result = self.engine.execute(command)?;
+        Ok(result.status)
     }
 
     pub fn run(&mut self) -> Result<()> {
