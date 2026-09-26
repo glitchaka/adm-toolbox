@@ -29,3 +29,6 @@ codegen-units = 1
 panic = "abort"
 strip = true
 opt-level = 3
+
+[target.'cfg(windows)'.dependencies]
+ferrisetw = "1.2"
