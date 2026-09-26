@@ -17,9 +17,10 @@ use crossterm::{
 
 use dns_lookup::lookup_addr;
 use ipnet::Ipv4Net;
+use serde::Serialize;
 use sysinfo::System;
 
-use super::CommandOutput;
+use super::{CommandOutput, device};
 
 pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     let sub = args.first().map(String::as_str).unwrap_or("interfaces");
@@ -125,6 +126,16 @@ fn trace(args: &[String]) -> anyhow::Result<CommandOutput> {
     command_output("tracert", &["-d", target])
 }
 
+#[derive(Debug, Clone, Serialize)]
+struct ScanRow {
+    ip: Ipv4Addr,
+    mac: String,
+    hostname: String,
+    latency_ms: u128,
+    known: bool,
+    inventory_name: Option<String>,
+}
+
 fn scan(args: &[String]) -> anyhow::Result<CommandOutput> {
     let network = if let Some(value) = args.iter().find(|arg| !arg.starts_with('-')) {
         value.parse::<Ipv4Net>()?
@@ -139,6 +150,62 @@ fn scan(args: &[String]) -> anyhow::Result<CommandOutput> {
         ));
     }
 
+    let only_unknown = args.iter().any(|arg| arg == "--unknown");
+    let only_known = args.iter().any(|arg| arg == "--authorized" || arg == "--known");
+    let json = args.iter().any(|arg| arg == "--json");
+    let csv = args.iter().any(|arg| arg == "--csv");
+
+    let mut rows = scan_rows(network)?;
+
+    if only_unknown {
+        rows.retain(|row| !row.known);
+    } else if only_known {
+        rows.retain(|row| row.known);
+    }
+
+    if json {
+        return Ok(CommandOutput::ok(format!(
+            "{}\n",
+            serde_json::to_string_pretty(&rows)?
+        )));
+    }
+
+    if csv {
+        let mut out = String::from("ip,mac,hostname,latency_ms,known,inventory_name\n");
+        for row in rows {
+            out.push_str(&format!(
+                "{},{},{},{},{},{}\n",
+                row.ip,
+                row.mac,
+                csv_escape(&row.hostname),
+                row.latency_ms,
+                row.known,
+                csv_escape(row.inventory_name.as_deref().unwrap_or(""))
+            ));
+        }
+        return Ok(CommandOutput::ok(out));
+    }
+
+    let mut out = String::from(
+        "IP               MAC                 HOSTNAME                         LATENCY  INVENTORY\n",
+    );
+
+    for row in rows {
+        let inventory = row
+            .inventory_name
+            .as_deref()
+            .unwrap_or(if row.known { "known" } else { "unknown" });
+
+        out.push_str(&format!(
+            "{:<16} {:<19} {:<32} {:>4} ms  {}\n",
+            row.ip, row.mac, row.hostname, row.latency_ms, inventory
+        ));
+    }
+
+    Ok(CommandOutput::ok(out))
+}
+
+fn scan_rows(network: Ipv4Net) -> anyhow::Result<Vec<ScanRow>> {
     let timeout = Duration::from_millis(300);
     let hosts: Vec<Ipv4Addr> = network.hosts().collect();
     let results: Arc<Mutex<Vec<(Ipv4Addr, Option<String>, Duration)>>> =
@@ -169,29 +236,40 @@ fn scan(args: &[String]) -> anyhow::Result<CommandOutput> {
     }
 
     let arp = parse_arp_map().unwrap_or_default();
-    let mut rows = results.lock().unwrap().clone();
-    rows.sort_by_key(|row| row.0);
+    let known_names = device::known_names().unwrap_or_default();
+    let known_macs = device::known_macs().unwrap_or_default();
+    let mut discovered = results.lock().unwrap().clone();
+    discovered.sort_by_key(|row| row.0);
 
-    let mut out = String::from(
-        "IP               MAC                 HOSTNAME                         LATENCY\n",
-    );
+    Ok(discovered
+        .into_iter()
+        .map(|(ip, hostname, latency)| {
+            let mac = arp
+                .get(&ip)
+                .cloned()
+                .unwrap_or_else(|| "??:??:??:??:??:??".to_owned());
 
-    for (ip, hostname, latency) in rows {
-        let mac = arp
-            .get(&ip)
-            .cloned()
-            .unwrap_or_else(|| "??:??:??:??:??:??".to_owned());
+            let inventory_name = known_names.get(&mac).cloned();
+            let known = known_macs.contains(&mac);
 
-        out.push_str(&format!(
-            "{:<16} {:<19} {:<32} {:>4} ms\n",
-            ip,
-            mac,
-            hostname.unwrap_or_else(|| "-".to_owned()),
-            latency.as_millis()
-        ));
+            ScanRow {
+                ip,
+                mac,
+                hostname: hostname.unwrap_or_else(|| "-".to_owned()),
+                latency_ms: latency.as_millis(),
+                known,
+                inventory_name,
+            }
+        })
+        .collect())
+}
+
+fn csv_escape(value: &str) -> String {
+    if value.contains([',', '"', '\n', '\r']) {
+        format!("\"{}\"", value.replace('"', "\"\""))
+    } else {
+        value.to_owned()
     }
-
-    Ok(CommandOutput::ok(out))
 }
 
 fn host_alive(ip: Ipv4Addr, timeout: Duration) -> bool {
