@@ -52,3 +52,30 @@ impl BuiltinCommand for ConfigBuiltin {
         }
     }
 }
+
+
+pub struct PathBuiltin;
+
+impl BuiltinCommand for PathBuiltin {
+    fn name(&self) -> &'static str {
+        "adm-path"
+    }
+
+    fn help(&self) -> &'static str {
+        "adm-path PATH — traduce rutas estilo /c/... a rutas Windows"
+    }
+
+    fn execute(
+        &self,
+        _invoked_name: &str,
+        args: &[String],
+        context: CommandContext<'_>,
+    ) -> Result<CommandOutput> {
+        let Some(raw) = args.first() else {
+            return Ok(CommandOutput::error("adm-path: falta ruta", 2));
+        };
+
+        let path = crate::support::path::resolve(context.cwd, raw);
+        Ok(CommandOutput::ok(format!("{}\n", path.display())))
+    }
+}

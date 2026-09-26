@@ -11,7 +11,7 @@ pub use admin::{
     WakeOnLanBuiltin,
 };
 pub use command::BuiltinCommand;
-pub use config::ConfigBuiltin;
+pub use config::{ConfigBuiltin, PathBuiltin};
 pub use editor::EditorBuiltin;
 pub use registry::CommandRegistry;
 pub use system::SystemBuiltin;
