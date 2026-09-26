@@ -30,10 +30,6 @@ impl DeviceService {
         }
     }
 
-    pub fn resolve_name_to_mac(&self, name: &str) -> Result<Option<String>> {
-        self.repository.resolve_name_to_mac(name)
-    }
-
     fn list(&self, args: &[String]) -> Result<CommandOutput> {
         let devices = self.repository.all()?;
 
