@@ -9,7 +9,7 @@ use std::{
 use anyhow::{Context, Result};
 use brush_builtins::{BuiltinSet, ShellBuilderExt as _};
 use brush_core::{
-    Shell as BrushEngine, SourceInfo,
+    ExecutionControlFlow, Shell as BrushEngine, SourceInfo,
     builtins,
     extensions::DefaultShellExtensions,
 };
@@ -262,7 +262,7 @@ impl Shell {
 
         match result {
             Ok(result) => {
-                if result.is_exit() {
+                if matches!(result.next_control_flow, ExecutionControlFlow::ExitShell) {
                     self.running = false;
                 }
             }
