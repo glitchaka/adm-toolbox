@@ -65,7 +65,4 @@ impl NetworkService {
         self.diagnostics.diagnose()
     }
 
-    pub fn traffic_service(&self) -> &NetworkTrafficService {
-        &self.traffic
-    }
 }
