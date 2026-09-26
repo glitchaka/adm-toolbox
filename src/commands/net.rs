@@ -24,6 +24,8 @@ use serde::{Deserialize, Serialize};
 use sysinfo::System;
 
 use super::{CommandOutput, device};
+#[cfg(windows)]
+use super::traffic_etw::{ByteCounters, TrafficEtwMonitor, rates as etw_rates};
 
 pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     let sub = args.first().map(String::as_str).unwrap_or("interfaces");
@@ -391,6 +393,8 @@ struct TrafficRow {
     cpu_percent: f32,
     memory_mib: f64,
     connections: usize,
+    upload_bps: u64,
+    download_bps: u64,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -408,10 +412,43 @@ fn traffic(args: &[String]) -> anyhow::Result<CommandOutput> {
         return traffic_watch(args);
     }
 
-    traffic_output(args)
+    if args.iter().any(|arg| arg == "--connections") {
+        return traffic_output(args, None, None);
+    }
+
+    #[cfg(windows)]
+    {
+        match TrafficEtwMonitor::start() {
+            Ok(monitor) => {
+                let before = monitor.snapshot();
+                let started = Instant::now();
+                thread::sleep(Duration::from_millis(1200));
+                let after = monitor.snapshot();
+                let rate_map = etw_rates(&before, &after, started.elapsed());
+
+                return traffic_output(args, Some(&rate_map), Some("ETW"));
+            }
+            Err(error) => {
+                return traffic_output(
+                    args,
+                    None,
+                    Some(&format!("ETW no disponible: {error}")),
+                );
+            }
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        traffic_output(args, None, Some("ETW solo está disponible en Windows"))
+    }
 }
 
-fn traffic_output(args: &[String]) -> anyhow::Result<CommandOutput> {
+fn traffic_output(
+    args: &[String],
+    rate_map: Option<&HashMap<u32, ByteCounters>>,
+    telemetry_note: Option<&str>,
+) -> anyhow::Result<CommandOutput> {
     let connections = collect_connections()?;
     let mut system = System::new_all();
     system.refresh_all();
@@ -427,7 +464,7 @@ fn traffic_output(args: &[String]) -> anyhow::Result<CommandOutput> {
 
     if args.iter().any(|arg| arg == "--background") {
         return Ok(CommandOutput::error(
-            "net traffic --background: la detección fiable de foreground/background se añadirá con el proveedor Win32 de ventanas",
+            "net traffic --background: la detección fiable de foreground/background todavía requiere el proveedor Win32 de ventanas",
             2,
         ));
     }
@@ -516,8 +553,12 @@ fn traffic_output(args: &[String]) -> anyhow::Result<CommandOutput> {
     for (pid, process) in system.processes() {
         let pid_u32 = pid.as_u32();
         let count = connection_counts.get(&pid_u32).copied().unwrap_or(0);
+        let rate = rate_map
+            .and_then(|rates| rates.get(&pid_u32))
+            .copied()
+            .unwrap_or_default();
 
-        if count == 0 {
+        if count == 0 && rate.sent == 0 && rate.received == 0 {
             continue;
         }
 
@@ -544,16 +585,25 @@ fn traffic_output(args: &[String]) -> anyhow::Result<CommandOutput> {
             cpu_percent: process.cpu_usage(),
             memory_mib: process.memory() as f64 / 1024.0 / 1024.0,
             connections: count,
+            upload_bps: rate.sent,
+            download_bps: rate.received,
         });
     }
 
     rows.sort_by(|a, b| {
-        b.connections.cmp(&a.connections).then_with(|| {
-            b.cpu_percent
-                .partial_cmp(&a.cpu_percent)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        })
+        let a_rate = a.upload_bps.saturating_add(a.download_bps);
+        let b_rate = b.upload_bps.saturating_add(b.download_bps);
+
+        b_rate
+            .cmp(&a_rate)
+            .then(b.connections.cmp(&a.connections))
+            .then_with(|| {
+                b.cpu_percent
+                    .partial_cmp(&a.cpu_percent)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            })
     });
+
     rows.truncate(top);
 
     if json {
@@ -564,35 +614,49 @@ fn traffic_output(args: &[String]) -> anyhow::Result<CommandOutput> {
     }
 
     if csv {
-        let mut out =
-            String::from("pid,process,cpu_percent,memory_mib,connections,path\n");
+        let mut out = String::from(
+            "pid,process,upload_bps,download_bps,cpu_percent,memory_mib,connections,path\n",
+        );
+
         for row in rows {
             out.push_str(&format!(
-                "{},{},{:.2},{:.2},{},{}\n",
+                "{},{},{},{},{:.2},{:.2},{},{}\n",
                 row.pid,
                 csv_escape(&row.process),
+                row.upload_bps,
+                row.download_bps,
                 row.cpu_percent,
                 row.memory_mib,
                 row.connections,
                 csv_escape(&row.path)
             ));
         }
+
         return Ok(CommandOutput::ok(out));
     }
 
-    let mut out =
-        String::from("PID      PROCESS                          CPU%     RAM MiB   CONNECTIONS\n");
+    let mut out = String::from(
+        "PID      PROCESS                    UP/s         DOWN/s       CPU%    RAM MiB   CONN\n",
+    );
 
     for row in rows {
         out.push_str(&format!(
-            "{:<8} {:<32} {:>6.1} {:>10.1} {:>12}\n",
-            row.pid, row.process, row.cpu_percent, row.memory_mib, row.connections
+            "{:<8} {:<26} {:>11} {:>12} {:>6.1} {:>10.1} {:>6}\n",
+            row.pid,
+            truncate_text(&row.process, 26),
+            format_rate(row.upload_bps),
+            format_rate(row.download_bps),
+            row.cpu_percent,
+            row.memory_mib,
+            row.connections
         ));
     }
 
-    out.push_str(
-        "\nUsa --connections para ver destinos. Bytes/s por PID se añadirá con ETW.\n",
-    );
+    if let Some(note) = telemetry_note {
+        out.push_str(&format!("\ntelemetry: {note}\n"));
+    }
+
+    out.push_str("Usa --connections para ver destinos y puertos.\n");
 
     Ok(CommandOutput::ok(out))
 }
@@ -653,7 +717,36 @@ fn traffic_watch(args: &[String]) -> anyhow::Result<CommandOutput> {
         .cloned()
         .collect();
 
+    #[cfg(windows)]
+    let monitor = TrafficEtwMonitor::start();
+
+    #[cfg(windows)]
+    let mut previous = monitor
+        .as_ref()
+        .ok()
+        .map(TrafficEtwMonitor::snapshot)
+        .unwrap_or_default();
+
+    #[cfg(windows)]
+    let telemetry_error = monitor.as_ref().err().map(ToString::to_string);
+
     loop {
+        let started = Instant::now();
+
+        if wait_for_refresh_or_quit(Duration::from_secs(1))? {
+            break;
+        }
+
+        #[cfg(windows)]
+        let rates = if let Ok(monitor) = &monitor {
+            let current = monitor.snapshot();
+            let result = etw_rates(&previous, &current, started.elapsed());
+            previous = current;
+            Some(result)
+        } else {
+            None
+        };
+
         execute!(
             stdout(),
             cursor::MoveTo(0, 0),
@@ -663,23 +756,83 @@ fn traffic_watch(args: &[String]) -> anyhow::Result<CommandOutput> {
         println!("ADM net traffic --watch   [q] salir");
         println!();
 
-        match traffic_output(&filtered_args) {
+        #[cfg(windows)]
+        let output = traffic_output(
+            &filtered_args,
+            rates.as_ref(),
+            telemetry_error
+                .as_deref()
+                .map(|error| format!("ETW no disponible: {error}"))
+                .as_deref()
+                .or(Some("ETW")),
+        );
+
+        #[cfg(not(windows))]
+        let output = traffic_output(
+            &filtered_args,
+            None,
+            Some("ETW solo está disponible en Windows"),
+        );
+
+        match output {
             Ok(output) => print!("{}", output.stdout),
             Err(error) => println!("error: {error}"),
         }
 
         stdout().flush()?;
+    }
 
-        if event::poll(Duration::from_millis(1000))? {
+    Ok(CommandOutput::ok(""))
+}
+
+fn wait_for_refresh_or_quit(duration: Duration) -> anyhow::Result<bool> {
+    let started = Instant::now();
+
+    while started.elapsed() < duration {
+        if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 if matches!(key.code, KeyCode::Char('q') | KeyCode::Esc) {
-                    break;
+                    return Ok(true);
                 }
             }
         }
     }
 
-    Ok(CommandOutput::ok(""))
+    Ok(false)
+}
+
+fn format_rate(bytes_per_second: u64) -> String {
+    const KIB: f64 = 1024.0;
+    const MIB: f64 = 1024.0 * 1024.0;
+    const GIB: f64 = 1024.0 * 1024.0 * 1024.0;
+
+    let value = bytes_per_second as f64;
+
+    if value >= GIB {
+        format!("{:.1} GiB/s", value / GIB)
+    } else if value >= MIB {
+        format!("{:.1} MiB/s", value / MIB)
+    } else if value >= KIB {
+        format!("{:.1} KiB/s", value / KIB)
+    } else {
+        format!("{} B/s", bytes_per_second)
+    }
+}
+
+fn truncate_text(value: &str, width: usize) -> String {
+    let count = value.chars().count();
+
+    if count <= width {
+        return value.to_owned();
+    }
+
+    if width <= 3 {
+        return value.chars().take(width).collect();
+    }
+
+    let mut text: String = value.chars().take(width - 3).collect();
+    text.push_str("...");
+    text
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
