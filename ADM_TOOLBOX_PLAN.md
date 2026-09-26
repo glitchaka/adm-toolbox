@@ -1,6 +1,6 @@
 # ADM Toolbox — Alcance y temas a cubrir
 
-ADM Toolbox será una consola portable de soporte técnico para Windows, con experiencia cercana a Bash/Linux, pero capaz de utilizar tanto utilidades Unix incluidas en el paquete como herramientas y capacidades nativas de Windows.
+ADM Toolbox será una consola portable de soporte técnico para Windows construida en Rust. Su shell base utiliza un motor Bash-compatible escrito en Rust y combina utilidades Unix integradas con herramientas y capacidades nativas de Windows.
 
 El foco es administración y diagnóstico de equipos y redes autorizadas. La consola será el centro del producto; la GUI, si existe, será complementaria.
 
@@ -59,6 +59,8 @@ netstat -ano | grep LISTENING
 ## 1. Objetivos
 
 - Ejecutable/carpeta portable para Windows.
+- Código de ADM Toolbox y motor de shell construidos en Rust.
+- Motor Bash-compatible embebido; no distribuir un `bash.exe` externo como núcleo de la aplicación.
 - No depender de `cmd.exe` como interfaz principal.
 - Experiencia de terminal tipo Bash/Linux.
 - Scripts, pipes, redirecciones y aliases.
@@ -92,11 +94,15 @@ netstat -ano | grep LISTENING
 - indicador de privilegios elevados;
 - pestañas o varias sesiones en una fase posterior.
 
-### 2.2 Comportamiento tipo Bash
+### 2.2 Comportamiento Bash
 
 La shell base debe conservar la semántica y sensación de una terminal Linux. Los comandos ADM no deben introducir un sistema de interacción paralelo.
 
-Debe soportar, directamente o mediante runtime integrado:
+La implementación usa `brush-core`/`brush-builtins`, un motor Bash-compatible escrito en Rust, en vez de mantener un parser Bash casero. Esto permite que aliases, funciones, variables, expansiones, sustitución de comandos, pipes, redirecciones, operadores lógicos y scripts compartan el mismo modelo de ejecución.
+
+Las herramientas ADM se registran en ese motor como comandos nativos escritos en Rust.
+
+Debe soportar:
 
 - `cd`
 - `pwd`
@@ -875,26 +881,27 @@ Solo después de resolver su interfaz de línea de comandos se considerará una 
 
 ## 17. Portabilidad
 
+La shell Bash-compatible forma parte del propio binario Rust. No se requiere distribuir `bash.exe`, MSYS2, Cygwin o Git Bash como runtime obligatorio.
+
 Estructura prevista:
 
 ```text
 adm-toolbox/
 ├── adm-toolbox.exe
-├── runtime/
-│   ├── bash.exe
-│   ├── grep.exe
-│   ├── sed.exe
-│   ├── awk.exe
-│   └── ...
+├── config/
+│   └── admrc
 ├── scripts/
 ├── data/
 │   ├── devices.json
-│   └── switches.json
-├── logs/
-└── home/
+│   ├── switches.json
+│   ├── network_providers.json
+│   └── network_presence.json
+└── logs/
 ```
 
-No requerir instalación tradicional para la consola base.
+`config/admrc` usa sintaxis Bash-compatible y se crea automáticamente en el primer arranque si no existe.
+
+No requerir instalación tradicional para la consola base. Los ejecutables Windows disponibles en el sistema pueden seguir invocándose desde la shell.
 
 ---
 
@@ -914,12 +921,20 @@ Principios:
 Posible organización:
 
 ```text
-Terminal
+Terminal / line editor
   ↓
-Command Dispatcher
-  ├── Unix runtime
-  ├── Windows command bridge
-  └── ADM commands
+Rust Bash-compatible engine
+  ├── Bash semantics
+  │     ├── aliases / functions / variables
+  │     ├── expansions / substitutions
+  │     ├── pipes / redirections
+  │     └── scripts / control flow
+  │
+  ├── Windows external-command bridge
+  │
+  ├── Unix-like Rust utilities
+  │
+  └── ADM Rust builtins
         ├── NetworkScanner
         ├── DomainResolver
         ├── SwitchPortResolver
@@ -952,3 +967,31 @@ Primera versión funcional, manteniendo siempre la shell como producto principal
 14. TUI opcionales solo donde realmente aporten valor.
 
 Las capacidades de cambio de configuración de switches quedan fuera de la primera etapa.
+
+### Estado de implementación actual
+
+Ya existe una primera implementación de:
+
+- shell Bash-compatible embebida en Rust;
+- historial y autocompletado básico de comandos/rutas/subcomandos;
+- configuración portable `admrc`;
+- utilidades Unix integradas;
+- TUI `top`, `less`, `net monitor` y `net traffic --watch`;
+- `net scan` con JSON/CSV e integración con inventario;
+- inventario persistente de dispositivos;
+- Wake-on-LAN por MAC o nombre inventariado;
+- resolución de dominio local y verificación CIM opcional;
+- perfiles de gateway para `net usage`;
+- inventario de presencia de LAN;
+- resolución MAC → switch → puerto mediante SNMP read-only;
+- editor modal tipo Vim escrito en Rust.
+
+Pendiente dentro del alcance inicial:
+
+- medición ETW de bytes/s por proceso;
+- detección fiable de proceso foreground/background;
+- verificación Authenticode;
+- proveedores reales de contadores LAN por router/AP/firewall;
+- mayor compatibilidad Vim;
+- proveedores adicionales de switch/controlador;
+- completar utilidades Unix de mayor peso cuando sean necesarias.
