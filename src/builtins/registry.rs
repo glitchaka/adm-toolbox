@@ -34,16 +34,8 @@ impl CommandRegistry {
         Ok(())
     }
 
-    pub fn contains(&self, name: &str) -> bool {
-        self.commands.contains_key(name)
-    }
-
     pub fn names(&self) -> Vec<String> {
         self.commands.keys().cloned().collect()
-    }
-
-    pub fn primary_names(&self) -> Vec<String> {
-        self.primary_names.iter().cloned().collect()
     }
 
     pub fn execute(
