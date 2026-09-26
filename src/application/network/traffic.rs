@@ -70,10 +70,6 @@ impl NetworkTrafficService {
         }
     }
 
-    pub fn snapshot(&self, args: &[String]) -> Result<CommandOutput> {
-        self.execute(args)
-    }
-
     fn output(
         &self,
         args: &[String],
