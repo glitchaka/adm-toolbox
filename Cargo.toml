@@ -2,16 +2,15 @@
 name = "adm-toolbox"
 version = "0.1.0"
 edition = "2024"
-description = "Portable Linux-like administration shell for Windows"
+description = "Portable Bash-compatible administration shell for Windows"
 
 [dependencies]
-brush-core = "0.5.0"
-brush-builtins = "0.2.0"
 anyhow = "1.0"
 chrono = "0.4"
 base64 = "0.22"
 crossterm = "0.29"
 dns-lookup = "2.0"
+glob = "0.3"
 ipnet = "2.11"
 rustyline = "17.0"
 serde = { version = "1.0", features = ["derive"] }
