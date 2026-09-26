@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 
-use super::CommandOutput;
+use super::{CommandOutput, device};
 
 pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
     let Some(mac_text) = args.first() else {
@@ -10,7 +10,20 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
         ));
     };
 
-    let mac = parse_mac(mac_text)?;
+    let resolved_mac = match parse_mac(mac_text) {
+        Ok(mac) => (mac, mac_text.to_ascii_uppercase()),
+        Err(_) => {
+            let Some(stored) = device::resolve_name_to_mac(mac_text)? else {
+                return Ok(CommandOutput::error(
+                    format!("wol: no es una MAC válida ni un equipo inventariado: {mac_text}"),
+                    2,
+                ));
+            };
+            (parse_mac(&stored)?, stored)
+        }
+    };
+    let (mac, display_mac) = resolved_mac;
+
     let broadcast = args
         .get(1)
         .map(String::as_str)
@@ -36,7 +49,7 @@ pub fn run(args: &[String]) -> anyhow::Result<CommandOutput> {
 
     Ok(CommandOutput::ok(format!(
         "magic packet sent to {} via {}\n",
-        mac_text.to_ascii_uppercase(),
+        display_mac,
         target
     )))
 }
