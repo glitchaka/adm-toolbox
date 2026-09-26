@@ -23,12 +23,14 @@ pub struct Shell {
     aliases: HashMap<String, String>,
     history: Vec<String>,
     history_file: PathBuf,
+    config_file: PathBuf,
 }
 
 impl Shell {
     pub fn new() -> Result<Self> {
         let cwd = env::current_dir().context("No se pudo obtener el directorio actual")?;
         let history_file = home_dir().join(".adm_toolbox_history");
+        let config_file = portable_config_path();
         let mut editor = DefaultEditor::new()?;
         let _ = editor.load_history(&history_file);
 
@@ -36,7 +38,7 @@ impl Shell {
         aliases.insert("ll".to_owned(), "ls -la".to_owned());
         aliases.insert("la".to_owned(), "ls -a".to_owned());
 
-        Ok(Self {
+        let mut shell = Self {
             editor,
             cwd,
             running: true,
@@ -44,7 +46,11 @@ impl Shell {
             aliases,
             history: Vec::new(),
             history_file,
-        })
+            config_file,
+        };
+
+        shell.load_startup_files()?;
+        Ok(shell)
     }
 
     pub fn run(&mut self) -> Result<()> {
@@ -196,6 +202,12 @@ impl Shell {
                     status = 0;
                     continue;
                 }
+                "config" => {
+                    let output = self.cmd_config(args)?;
+                    status = output.0;
+                    input = Some(output.1.into_bytes());
+                    continue;
+                }
                 "source" | "." => {
                     status = self.cmd_source(args)?;
                     input = Some(Vec::new());
@@ -335,6 +347,46 @@ impl Shell {
         Ok(child.wait_with_output()?)
     }
 
+    fn load_startup_files(&mut self) -> Result<()> {
+        let portable = self.config_file.clone();
+        if portable.is_file() {
+            let portable_text = portable.to_string_lossy().into_owned();
+            let _ = self.cmd_source(&[portable_text])?;
+        }
+
+        let home_rc = home_dir().join(".admrc");
+        if home_rc.is_file() && home_rc != portable {
+            let home_text = home_rc.to_string_lossy().into_owned();
+            let _ = self.cmd_source(&[home_text])?;
+        }
+
+        Ok(())
+    }
+
+    fn cmd_config(&mut self, args: &[String]) -> Result<(i32, String)> {
+        match args.first().map(String::as_str).unwrap_or("path") {
+            "path" => Ok((
+                0,
+                format!("{}\n", display_path(&self.config_file)),
+            )),
+            "edit" => {
+                if let Some(parent) = self.config_file.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+                editor::run(&self.config_file)?;
+                Ok((0, String::new()))
+            }
+            "reload" => {
+                self.load_startup_files()?;
+                Ok((0, "configuración recargada\n".to_owned()))
+            }
+            other => Ok((
+                2,
+                format!("config: subcomando desconocido: {other}\n"),
+            )),
+        }
+    }
+
     fn cmd_cd(&mut self, args: &[String]) -> Result<i32> {
         let target = if let Some(path) = args.first() {
             resolve_path(&self.cwd, path)
@@ -425,6 +477,15 @@ impl Shell {
         }
         Ok(self.last_status)
     }
+}
+
+fn portable_config_path() -> PathBuf {
+    env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(|parent| parent.to_path_buf()))
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("config")
+        .join("admrc")
 }
 
 fn home_dir() -> PathBuf {
