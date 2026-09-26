@@ -1,15 +1,18 @@
 use anyhow::Result;
 
-use crate::shell::Shell;
+use crate::{
+    composition,
+    presentation::shell::ShellSession,
+};
 
 pub struct AdmToolbox {
-    shell: Shell,
+    shell: ShellSession,
 }
 
 impl AdmToolbox {
     pub fn new() -> Result<Self> {
         Ok(Self {
-            shell: Shell::new()?,
+            shell: composition::build_shell()?,
         })
     }
 

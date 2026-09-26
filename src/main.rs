@@ -1,7 +1,11 @@
+mod adapters;
 mod app;
-mod commands;
-mod editor;
-mod shell;
+mod application;
+mod builtins;
+mod composition;
+mod core;
+mod presentation;
+mod support;
 
 use anyhow::Result;
 use app::AdmToolbox;

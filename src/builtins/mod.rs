@@ -15,4 +15,4 @@ pub use config::{ConfigBuiltin, PathBuiltin};
 pub use editor::EditorBuiltin;
 pub use registry::CommandRegistry;
 pub use system::SystemBuiltin;
-pub use unix::UnixBuiltin;
+pub use unix::{UNIX_COMMANDS, UnixBuiltin};
