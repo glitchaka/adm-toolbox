@@ -24,7 +24,7 @@ pub trait NetworkProbe: Send + Sync {
 }
 
 pub trait TextEditor: Send + Sync {
-    fn edit(&self, path: &Path) -> Result<()>;
+    fn edit(&self, args: &[String], cwd: &Path) -> Result<()>;
 }
 
 pub trait ShellEngine: Send {
