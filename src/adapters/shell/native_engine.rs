@@ -21,6 +21,7 @@ use crate::{
 struct WindowsShellHost {
     registry: Arc<CommandRegistry>,
     interrupt: Arc<std::sync::atomic::AtomicBool>,
+    force_abort: Arc<std::sync::atomic::AtomicBool>,
 }
 
 impl ShellCommandHost for WindowsShellHost {
@@ -82,12 +83,28 @@ impl ShellCommandHost for WindowsShellHost {
             writer.write_all(bytes)?;
         }
 
-        let output = child.wait_with_output()?;
-        Ok(ExecutionResult::from_parts(
-            String::from_utf8_lossy(&output.stdout).into_owned(),
-            String::from_utf8_lossy(&output.stderr).into_owned(),
-            output.status.code().unwrap_or(1),
-        ))
+        loop {
+            if self.force_abort.swap(false, std::sync::atomic::Ordering::SeqCst) {
+                let _ = child.kill();
+                let output = child.wait_with_output()?;
+                return Ok(ExecutionResult::from_parts(
+                    String::from_utf8_lossy(&output.stdout).into_owned(),
+                    String::from_utf8_lossy(&output.stderr).into_owned(),
+                    130,
+                ));
+            }
+
+            if child.try_wait()?.is_some() {
+                let output = child.wait_with_output()?;
+                return Ok(ExecutionResult::from_parts(
+                    String::from_utf8_lossy(&output.stdout).into_owned(),
+                    String::from_utf8_lossy(&output.stderr).into_owned(),
+                    output.status.code().unwrap_or(1),
+                ));
+            }
+
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
     }
 }
 
@@ -95,12 +112,18 @@ pub struct NativeShellEngine {
     interpreter: Interpreter,
     config_file: PathBuf,
     interrupt: Arc<std::sync::atomic::AtomicBool>,
+    force_abort: Arc<std::sync::atomic::AtomicBool>,
 }
 
 impl NativeShellEngine {
     pub fn new(registry: Arc<CommandRegistry>, config_file: PathBuf) -> Result<Self> {
         let interrupt = crate::adapters::terminal::io::interrupt_flag();
-        let host = WindowsShellHost { registry, interrupt: interrupt.clone() };
+        let force_abort = crate::adapters::terminal::io::force_abort_flag();
+        let host = WindowsShellHost {
+            registry,
+            interrupt: interrupt.clone(),
+            force_abort: force_abort.clone(),
+        };
         let mut interpreter = Interpreter::new(Box::new(host));
         interpreter.env.export(
             "ADM_CONFIG",
@@ -111,6 +134,7 @@ impl NativeShellEngine {
             interpreter,
             config_file,
             interrupt,
+            force_abort,
         };
         engine.load_config()?;
         Ok(engine)
@@ -139,6 +163,7 @@ impl ShellEngine for NativeShellEngine {
 
     fn execute(&mut self, line: &str) -> Result<ShellExecution> {
         self.interrupt.store(false, std::sync::atomic::Ordering::SeqCst);
+        self.force_abort.store(false, std::sync::atomic::Ordering::SeqCst);
         let result = self.interpreter.execute_text(line)?;
 
         let mut execution = if result.exit_requested {

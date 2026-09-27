@@ -13,7 +13,7 @@ use portable_pty::{CommandBuilder, PtySize, native_pty_system};
 use zip::ZipArchive;
 
 use crate::{
-    adapters::terminal::{guard::AlternateScreenGuard, io as terminal_io},
+    adapters::terminal::{guard::RawModeGuard, io as terminal_io},
     core::ports::TextEditor,
 };
 
@@ -194,7 +194,10 @@ fn find_named(root: &Path, name: &str, directory: bool) -> Option<PathBuf> {
 
 #[cfg(windows)]
 fn run_helix(install: &Install, args: &[String], cwd: &Path) -> Result<()> {
-    let _guard = AlternateScreenGuard::enter()?;
+    // Helix owns the alternate screen. SST only supplies raw key transport.
+    // Entering an alternate screen here as well produces a nested screen that
+    // leaves the outer vt100 renderer blank on Windows.
+    let _guard = RawModeGuard::enter()?;
     let (cols, rows) = terminal_io::size()?;
     let pty_system = native_pty_system();
     let pair = pty_system.openpty(PtySize {
@@ -216,6 +219,8 @@ fn run_helix(install: &Install, args: &[String], cwd: &Path) -> Result<()> {
     }
 
     let mut child = pair.slave.spawn_command(command)?;
+    let force_abort = terminal_io::force_abort_flag();
+    force_abort.store(false, std::sync::atomic::Ordering::SeqCst);
     drop(pair.slave);
 
     let mut reader = pair.master.try_clone_reader()?;
@@ -237,6 +242,13 @@ fn run_helix(install: &Install, args: &[String], cwd: &Path) -> Result<()> {
     });
 
     loop {
+        if force_abort.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            let _ = child.kill();
+            let _ = child.wait();
+            terminal_io::write(b"\r\n^Q helix-sst terminado a la fuerza\r\n")?;
+            break;
+        }
+
         while let Ok(bytes) = output_rx.try_recv() {
             terminal_io::write(&bytes)?;
         }

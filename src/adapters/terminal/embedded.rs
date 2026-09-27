@@ -8,7 +8,7 @@ pub struct EmbeddedSession {
     commands: mpsc::Sender<String>, keys: mpsc::Sender<Event>, display: mpsc::Sender<Vec<u8>>,
     pub output: mpsc::Receiver<Vec<u8>>,
     size: Arc<Mutex<(u16,u16)>>, raw: Arc<AtomicBool>, busy: Arc<AtomicBool>,
-    interrupt: Arc<AtomicBool>, exited: Arc<AtomicBool>,
+    interrupt: Arc<AtomicBool>, force_abort: Arc<AtomicBool>, exited: Arc<AtomicBool>,
     cwd: Arc<Mutex<PathBuf>>, names: Arc<Mutex<Vec<String>>>,
     line: Vec<char>, cursor: usize, history: Vec<String>, history_index: usize,
     pending: String,
@@ -22,10 +22,18 @@ impl EmbeddedSession {
         let raw = Arc::new(AtomicBool::new(false));
         let busy = Arc::new(AtomicBool::new(true));
         let interrupt = Arc::new(AtomicBool::new(false));
+        let force_abort = Arc::new(AtomicBool::new(false));
         let exited = Arc::new(AtomicBool::new(false));
         let cwd = Arc::new(Mutex::new(std::env::current_dir()?));
         let names = Arc::new(Mutex::new(Vec::new()));
-        let terminal_io = WindowIo::new(display.clone(), key_events, size.clone(), raw.clone(), interrupt.clone());
+        let terminal_io = WindowIo::new(
+            display.clone(),
+            key_events,
+            size.clone(),
+            raw.clone(),
+            interrupt.clone(),
+            force_abort.clone(),
+        );
         let worker_busy = busy.clone(); let worker_exited = exited.clone();
         let worker_cwd = cwd.clone(); let worker_names = names.clone();
         thread::spawn(move || {
@@ -63,7 +71,7 @@ impl EmbeddedSession {
         let history = fs::read_to_string(crate::adapters::persistence::AppPaths::detect().history_file())
             .unwrap_or_default().lines().filter(|line| !line.starts_with('#')).map(str::to_owned).collect::<Vec<_>>();
         let history_index = history.len();
-        Ok(Self { commands, keys, display, output, size, raw, busy, interrupt, exited, cwd, names,
+        Ok(Self { commands, keys, display, output, size, raw, busy, interrupt, force_abort, exited, cwd, names,
             line: Vec::new(), cursor: 0, history, history_index, pending: String::new() })
     }
     pub fn resize(&self, cols: u16, rows: u16) {
@@ -75,6 +83,11 @@ impl EmbeddedSession {
     pub fn send_raw_key(&self, key: KeyEvent) -> Result<()> {
         self.keys.send(Event::Key(key))?;
         Ok(())
+    }
+
+    pub fn force_abort(&self) {
+        self.force_abort.store(true, Ordering::SeqCst);
+        self.interrupt.store(true, Ordering::SeqCst);
     }
     fn emit(&self, text: &str) { let _ = self.display.send(text.as_bytes().to_vec()); }
     fn redraw(&self) {
