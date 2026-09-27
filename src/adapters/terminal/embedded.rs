@@ -108,6 +108,9 @@ impl EmbeddedSession {
                 for request in requests {
                     match request {
                         WorkerRequest::Execute(command) => {
+                            if !command.starts_with("__SST_EOF_CHECK") {
+                                let _ = engine.execute("__SST_IGNOREEOF=0");
+                            }
                             let ps0 = engine.pre_execute_prompt()?;
                             if !ps0.is_empty() { io::write(ps0.as_bytes())?; }
                             match engine.execute(&command) {
@@ -372,7 +375,10 @@ impl EmbeddedSession {
                     continue;
                 }
                 KeyCode::Char('d') if event.modifiers.contains(KeyModifiers::CONTROL) && self.line.is_empty() => {
-                    self.busy.store(true, Ordering::SeqCst); self.commands.send(WorkerRequest::Execute("exit".to_owned()))?;
+                    self.busy.store(true, Ordering::SeqCst);
+                    self.commands.send(WorkerRequest::Execute(
+                        "__SST_EOF_CHECK=:; if [[ -o ignoreeof ]]; then (( __SST_IGNOREEOF += 1 )); if (( __SST_IGNOREEOF >= 10 )); then exit; else echo 'Use "exit" to leave the shell.'; fi; else exit; fi".to_owned()
+                    ))?;
                 }
                 KeyCode::Char('l') if event.modifiers.contains(KeyModifiers::CONTROL) => self.emit("\x1b[2J\x1b[H"),
                 KeyCode::Char('u') if event.modifiers.contains(KeyModifiers::CONTROL) => { self.line.drain(..self.cursor); self.cursor = 0; }

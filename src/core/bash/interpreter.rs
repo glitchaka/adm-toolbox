@@ -458,7 +458,21 @@ impl Interpreter {
     }
 
     pub fn execute_text(&mut self, input: &str) -> Result<ExecutionResult> {
-        let (prepared, temporary) = self.prepare_heredocs(input)?;
+        let input = if self.env.option_enabled("interactive")
+            && !self.env.option_enabled("interactive_comments")
+            && !self.env.option_enabled("interactive-comments")
+        {
+            preserve_interactive_hashes(input)
+        } else {
+            input.to_owned()
+        };
+
+        if self.env.option_enabled("verbose") && self.trap_depth == 0 {
+            eprint!("{input}");
+            if !input.ends_with('\n') { eprintln!(); }
+        }
+
+        let (prepared, temporary) = self.prepare_heredocs(&input)?;
         let node = parse(&prepared)?;
 
         let result = if self.env.option_enabled("noexec") {
@@ -478,6 +492,13 @@ impl Interpreter {
             }
         }
 
+        let mut result = result;
+        if self.env.option_enabled("interactive")
+            && self.env.option_enabled("onecmd")
+            && self.trap_depth == 0
+        {
+            result.exit_requested = true;
+        }
         Ok(result)
     }
 
@@ -1187,6 +1208,17 @@ impl Interpreter {
             trace.push('\n');
         }
 
+        if self.env.option_enabled("autocd")
+            && args.is_empty()
+            && !self.shell_builtin_name(&name)
+            && !self.env.functions.contains_key(&name)
+            && !self.host.command_is_builtin(&name)
+            && self.resolve_path(&name).is_dir()
+        {
+            return Ok(self.shell_builtin("cd", &[name.clone()], local_stdin.as_deref())?
+                .unwrap_or_else(ExecutionResult::success));
+        }
+
         let mut result = if let Some(result) = self.shell_builtin(&name, args, local_stdin.as_deref())? {
             result
         } else if let Some(body) = self.env.functions.get(&name).cloned() {
@@ -1224,7 +1256,7 @@ impl Interpreter {
         )? {
             result
         } else {
-            let program = self.command_hash.get(&name).cloned().unwrap_or_else(|| name.clone());
+            let program = self.resolve_hashed_program(&name)?;
             match self.host.execute_external(
                 &program,
                 args,
@@ -1322,6 +1354,13 @@ impl Interpreter {
                             if candidate.is_dir() {
                                 target = candidate;
                             }
+                        }
+                    }
+
+                    if !target.is_dir() && self.env.option_enabled("cdspell") {
+                        if let Some(corrected) = self.correct_directory_spelling(raw) {
+                            target = corrected;
+                            print_target = true;
                         }
                     }
 
@@ -1598,7 +1637,12 @@ impl Interpreter {
             "shift" => {
                 let count = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1);
                 if count > self.env.positional.len() {
-                    ExecutionResult::from_parts(String::new(), format!("shift: {count}: cantidad fuera de rango\n"), 1)
+                    let stderr = if self.env.option_enabled("shift_verbose") {
+                        format!("shift: {count}: cantidad fuera de rango\n")
+                    } else {
+                        String::new()
+                    };
+                    ExecutionResult::from_parts(String::new(), stderr, 1)
                 } else {
                     self.env.positional.drain(..count);
                     ExecutionResult::success()
@@ -2066,7 +2110,10 @@ impl Interpreter {
             return Ok(ExecutionResult::success());
         }
         let mut result = self.execute_command_direct(&args[index], &args[index + 1..], stdin)?;
-        if result.status != 127 {
+        let failed_to_exec = matches!(result.status, 126 | 127);
+        if !failed_to_exec
+            || (!self.env.option_enabled("interactive") && !self.env.option_enabled("execfail"))
+        {
             result.exit_requested = true;
         }
         Ok(result)
@@ -2526,6 +2573,26 @@ impl Interpreter {
         ))
     }
 
+    fn correct_directory_spelling(&self, raw: &str) -> Option<PathBuf> {
+        let requested = PathBuf::from(raw);
+        let name = requested.file_name()?.to_string_lossy();
+        let parent_raw = requested.parent().filter(|path| !path.as_os_str().is_empty());
+        let parent = parent_raw
+            .map(|path| self.resolve_path(&path.to_string_lossy()))
+            .unwrap_or_else(|| self.env.cwd.clone());
+
+        let mut matches = fs::read_dir(&parent).ok()?
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry.path().is_dir())
+            .filter_map(|entry| {
+                let candidate = entry.file_name().to_string_lossy().into_owned();
+                spelling_distance_one(&name, &candidate).then(|| entry.path())
+            })
+            .collect::<Vec<_>>();
+        matches.sort();
+        (matches.len() == 1).then(|| matches.remove(0))
+    }
+
     fn install_directory_stack(&mut self, stack: Vec<PathBuf>) -> Result<()> {
         let Some(target) = stack.first().cloned() else { return Ok(()); };
         let previous = self.env.cwd.clone();
@@ -2791,7 +2858,7 @@ impl Interpreter {
 
     fn builtin_echo(&self, args: &[String]) -> ExecutionResult {
         let mut newline = true;
-        let mut escapes = false;
+        let mut escapes = self.env.option_enabled("xpg_echo");
         let mut index = 0usize;
 
         while index < args.len() {
@@ -3631,6 +3698,32 @@ impl Interpreter {
         Ok(ExecutionResult::success())
     }
 
+    fn resolve_hashed_program(&mut self, name: &str) -> Result<String> {
+        if let Some(path) = self.command_hash.get(name).cloned() {
+            if !self.env.option_enabled("checkhash") || Path::new(&path).exists() {
+                return Ok(path);
+            }
+            self.command_hash.remove(name);
+        }
+
+        if self.env.option_enabled("hashall") {
+            if let Some(found) = self.host.execute_builtin(
+                "which",
+                &[name.to_owned()],
+                &self.env.cwd,
+                None,
+            )? {
+                if found.status == 0 {
+                    if let Some(path) = found.stdout.lines().next().filter(|line| !line.is_empty()) {
+                        self.command_hash.insert(name.to_owned(), path.to_owned());
+                        return Ok(path.to_owned());
+                    }
+                }
+            }
+        }
+        Ok(name.to_owned())
+    }
+
     fn execute_command_direct(
         &mut self,
         name: &str,
@@ -3645,7 +3738,7 @@ impl Interpreter {
         if let Some(result) = self.host.execute_builtin(name, args, &self.env.cwd, stdin)? {
             return Ok(result);
         }
-        let program = self.command_hash.get(name).cloned().unwrap_or_else(|| name.to_owned());
+        let program = self.resolve_hashed_program(name)?;
         match self.host.execute_external(&program, args, &self.env.cwd, &self.env.exported, stdin) {
             Ok(result) => Ok(result),
             Err(error) => Ok(ExecutionResult::from_parts(String::new(), format!("{name}: {error}\n"), 127)),
@@ -4263,6 +4356,11 @@ impl Interpreter {
                     if end >= chars.len() { bail!("sustitución con backticks sin cerrar"); }
                     let source: String = chars[i + 1..end].iter().collect();
                     let saved = self.env.clone();
+                    if !self.env.option_enabled("inherit_errexit")
+                        && !self.env.option_enabled("posix")
+                    {
+                        self.env.shell_options.remove("errexit");
+                    }
                     let result = self.execute_text(&source);
                     self.env = saved;
                     let result = result?;
@@ -4281,6 +4379,11 @@ impl Interpreter {
                             .ok_or_else(|| anyhow!("sustitución de comando sin cerrar"))?;
                         let source: String = chars[i + 2..end].iter().collect();
                         let saved = self.env.clone();
+                        if !self.env.option_enabled("inherit_errexit")
+                            && !self.env.option_enabled("posix")
+                        {
+                            self.env.shell_options.remove("errexit");
+                        }
                         let result = self.execute_text(&source);
                         self.env = saved;
                         let result = result?;
@@ -4850,8 +4953,15 @@ fn format_shell_cpu_time(seconds: f64) -> String {
 }
 
 fn set_shell_option(env: &mut ShellEnvironment, name: &str, enabled: bool) {
-    if enabled { env.shell_options.insert(name.to_owned()); }
-    else { env.shell_options.remove(name); }
+    if enabled {
+        env.shell_options.insert(name.to_owned());
+        if name == "posix" {
+            env.shopt_options.insert("inherit_errexit".to_owned());
+            env.shopt_options.insert("expand_aliases".to_owned());
+        }
+    } else {
+        env.shell_options.remove(name);
+    }
 }
 
 fn bash_signal_names() -> &'static [&'static str] {
@@ -5903,6 +6013,89 @@ fn apply_history_modifiers(chars: &[char], event: &str) -> Result<(String, usize
     Ok((value, i))
 }
 
+
+fn preserve_interactive_hashes(input: &str) -> String {
+    let mut out = String::with_capacity(input.len());
+    let mut single = false;
+    let mut double = false;
+    let mut escaped = false;
+    let mut word_start = true;
+
+    for ch in input.chars() {
+        if escaped {
+            out.push(ch);
+            escaped = false;
+            word_start = false;
+            continue;
+        }
+        if ch == '\\' && !single {
+            out.push(ch);
+            escaped = true;
+            continue;
+        }
+        if ch == '\'' && !double {
+            single = !single;
+            out.push(ch);
+            word_start = false;
+            continue;
+        }
+        if ch == '"' && !single {
+            double = !double;
+            out.push(ch);
+            word_start = false;
+            continue;
+        }
+        if !single && !double && ch == '#' && word_start {
+            out.push('\\');
+            out.push('#');
+            word_start = false;
+            continue;
+        }
+        out.push(ch);
+        word_start = !single && !double && (ch.is_whitespace() || matches!(ch, ';' | '&' | '|'));
+    }
+    out
+}
+
+fn spelling_distance_one(left: &str, right: &str) -> bool {
+    if left.eq_ignore_ascii_case(right) { return true; }
+    let a = left.to_lowercase().chars().collect::<Vec<_>>();
+    let b = right.to_lowercase().chars().collect::<Vec<_>>();
+    if a.len().abs_diff(b.len()) > 1 { return false; }
+
+    if a.len() == b.len() {
+        let differences = a.iter().zip(&b).filter(|(x, y)| x != y).count();
+        if differences == 1 { return true; }
+        for index in 0..a.len().saturating_sub(1) {
+            if a[index] != b[index]
+                && a[index] == b[index + 1]
+                && a[index + 1] == b[index]
+                && a[..index] == b[..index]
+                && a[index + 2..] == b[index + 2..]
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    let (short, long) = if a.len() < b.len() { (&a, &b) } else { (&b, &a) };
+    let mut i = 0usize;
+    let mut j = 0usize;
+    let mut skipped = false;
+    while i < short.len() && j < long.len() {
+        if short[i] == long[j] {
+            i += 1;
+            j += 1;
+        } else if skipped {
+            return false;
+        } else {
+            skipped = true;
+            j += 1;
+        }
+    }
+    true
+}
 
 fn bash_shell_options() -> &'static [&'static str] {
     &[
