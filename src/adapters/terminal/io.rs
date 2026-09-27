@@ -9,18 +9,30 @@ pub struct WindowIo {
     pub size: Arc<Mutex<(u16, u16)>>,
     pub raw: Arc<AtomicBool>,
     pub interrupt: Arc<AtomicBool>,
+    pub force_abort: Arc<AtomicBool>,
     pending: Option<Event>,
 }
 impl WindowIo {
-    pub fn new(output: mpsc::Sender<Vec<u8>>, input: mpsc::Receiver<Event>, size: Arc<Mutex<(u16,u16)>>,
-        raw: Arc<AtomicBool>, interrupt: Arc<AtomicBool>) -> Self {
-        Self { output, input, size, raw, interrupt, pending: None }
+    pub fn new(
+        output: mpsc::Sender<Vec<u8>>,
+        input: mpsc::Receiver<Event>,
+        size: Arc<Mutex<(u16,u16)>>,
+        raw: Arc<AtomicBool>,
+        interrupt: Arc<AtomicBool>,
+        force_abort: Arc<AtomicBool>,
+    ) -> Self {
+        Self { output, input, size, raw, interrupt, force_abort, pending: None }
     }
 }
 thread_local! { static WINDOW: RefCell<Option<WindowIo>> = const { RefCell::new(None) }; }
 pub fn install(io: WindowIo) { WINDOW.with(|slot| *slot.borrow_mut() = Some(io)); }
 pub fn interrupt_flag() -> Arc<AtomicBool> {
     WINDOW.with(|slot| slot.borrow().as_ref().map(|io| Arc::clone(&io.interrupt)))
+        .unwrap_or_default()
+}
+
+pub fn force_abort_flag() -> Arc<AtomicBool> {
+    WINDOW.with(|slot| slot.borrow().as_ref().map(|io| Arc::clone(&io.force_abort)))
         .unwrap_or_default()
 }
 pub fn write(bytes: &[u8]) -> Result<()> {
