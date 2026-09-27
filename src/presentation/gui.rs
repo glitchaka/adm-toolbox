@@ -264,6 +264,14 @@ fn point_from_lparam(lp: LPARAM) -> (i32, i32) {
     (lp as i16 as i32, (lp >> 16) as i16 as i32)
 }
 
+unsafe fn screen_point_to_client(hwnd: HWND, x: i32, y: i32) -> (i32, i32) {
+    unsafe {
+        let mut point = POINT { x, y };
+        ScreenToClient(hwnd, &mut point);
+        (point.x, point.y)
+    }
+}
+
 fn title_button_at(hwnd: HWND, x: i32, y: i32) -> Option<u8> {
     if !(0..TITLE_BAR_HEIGHT).contains(&y) {
         return None;
@@ -594,13 +602,19 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
 
             WM_NCHITTEST => {
                 let (screen_x, screen_y) = point_from_lparam(lp);
-                let mut rect: RECT = std::mem::zeroed();
-                GetWindowRect(hwnd, &mut rect);
+                let (x, y) = screen_point_to_client(hwnd, screen_x, screen_y);
 
-                let x = screen_x - rect.left;
-                let y = screen_y - rect.top;
-                let width = rect.right - rect.left;
-                let height = rect.bottom - rect.top;
+                let mut client: RECT = std::mem::zeroed();
+                GetClientRect(hwnd, &mut client);
+                let width = client.right;
+                let height = client.bottom;
+
+                // Los tres controles tienen prioridad sobre el caption y el borde.
+                // Sus posiciones se dibujan en coordenadas de cliente, por lo que
+                // el hit-test debe usar exactamente el mismo espacio.
+                if title_button_at(hwnd, x, y).is_some() {
+                    return HTCLIENT as isize;
+                }
 
                 let left = x < RESIZE_BORDER;
                 let right = x >= width - RESIZE_BORDER;
@@ -632,10 +646,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     return HTBOTTOM as isize;
                 }
 
-                if y < TITLE_BAR_HEIGHT {
-                    if title_button_at(hwnd, x, y).is_some() {
-                        return HTCLIENT as isize;
-                    }
+                if (0..TITLE_BAR_HEIGHT).contains(&y) {
                     return HTCAPTION as isize;
                 }
 
