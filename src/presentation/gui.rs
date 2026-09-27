@@ -43,7 +43,6 @@ pub fn run() -> Result<()> {
             cell_width: 10, cell_height: 23, selection: None, dragging: false,
             suppress_char: false, surrogate: None, cursor_on: true, blink: Instant::now(),
             font_family });
-        let ptr = Box::into_raw(state);
         let window_title = if state.font_family.to_ascii_lowercase().contains("nerd font")
             || state.font_family.to_ascii_lowercase().ends_with(" nf")
         {
@@ -51,6 +50,7 @@ pub fn run() -> Result<()> {
         } else {
             format!("ADM Toolbox — {} (Nerd Font no instalada)", state.font_family)
         };
+        let ptr = Box::into_raw(state);
         let hwnd = CreateWindowExW(0, class.as_ptr(), wide(&window_title).as_ptr(),
             WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1080, 760,
             null_mut(), null_mut(), instance, ptr.cast());
