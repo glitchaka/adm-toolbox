@@ -422,6 +422,59 @@ impl ShellCommandHost for WindowsShellHost {
             .remove(&pid)
             .is_some())
     }
+
+    fn shell_times(&self) -> Result<(
+        std::time::Duration,
+        std::time::Duration,
+        std::time::Duration,
+        std::time::Duration,
+    )> {
+        #[cfg(windows)]
+        unsafe {
+            use windows_sys::Win32::{
+                Foundation::FILETIME,
+                System::Threading::{GetCurrentProcess, GetProcessTimes},
+            };
+
+            fn duration(value: FILETIME) -> std::time::Duration {
+                let ticks = ((value.dwHighDateTime as u64) << 32) | value.dwLowDateTime as u64;
+                std::time::Duration::from_nanos(ticks.saturating_mul(100))
+            }
+
+            let mut creation: FILETIME = std::mem::zeroed();
+            let mut exit: FILETIME = std::mem::zeroed();
+            let mut kernel: FILETIME = std::mem::zeroed();
+            let mut user: FILETIME = std::mem::zeroed();
+
+            if GetProcessTimes(
+                GetCurrentProcess(),
+                &mut creation,
+                &mut exit,
+                &mut kernel,
+                &mut user,
+            ) == 0
+            {
+                return Err(std::io::Error::last_os_error().into());
+            }
+
+            return Ok((
+                duration(user),
+                duration(kernel),
+                std::time::Duration::ZERO,
+                std::time::Duration::ZERO,
+            ));
+        }
+
+        #[cfg(not(windows))]
+        {
+            Ok((
+                std::time::Duration::ZERO,
+                std::time::Duration::ZERO,
+                std::time::Duration::ZERO,
+                std::time::Duration::ZERO,
+            ))
+        }
+    }
 }
 
 fn resolve_shell_script(program: &str, cwd: &Path) -> Option<PathBuf> {

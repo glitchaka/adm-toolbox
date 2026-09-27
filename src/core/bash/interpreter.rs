@@ -38,6 +38,13 @@ pub struct JobInfo {
     pub running: bool,
 }
 
+#[derive(Debug)]
+struct ProcessSubstitution {
+    path: PathBuf,
+    command: Option<String>,
+    stderr: String,
+}
+
 impl ExecutionResult {
     fn append(&mut self, next: Self) {
         self.stdout.push_str(&next.stdout);
@@ -130,6 +137,9 @@ pub trait ShellCommandHost: Send + Sync {
     fn wait_job(&self, _pid: Option<u32>) -> Result<i32> { Ok(127) }
     fn wait_next_job(&self) -> Result<Option<(u32, i32)>> { Ok(None) }
     fn disown_job(&self, _pid: u32) -> Result<bool> { Ok(false) }
+    fn shell_times(&self) -> Result<(Duration, Duration, Duration, Duration)> {
+        Ok((Duration::ZERO, Duration::ZERO, Duration::ZERO, Duration::ZERO))
+    }
 }
 
 pub struct Interpreter {
@@ -139,6 +149,10 @@ pub struct Interpreter {
     source_depth: usize,
     command_hash: HashMap<String, String>,
     disabled_builtins: HashSet<String>,
+    call_stack: Vec<(String, String)>,
+    source_stack: Vec<String>,
+    process_sub_counter: u64,
+    pending_process_substitutions: Vec<ProcessSubstitution>,
 }
 
 impl Interpreter {
@@ -150,6 +164,10 @@ impl Interpreter {
             source_depth: 0,
             command_hash: HashMap::new(),
             disabled_builtins: HashSet::new(),
+            call_stack: Vec::new(),
+            source_stack: Vec::new(),
+            process_sub_counter: 0,
+            pending_process_substitutions: Vec::new(),
         }
     }
 
@@ -206,6 +224,70 @@ impl Interpreter {
                 left
             }
             AstNode::Pipeline(parts) => self.execute_pipeline(parts, stdin)?,
+            AstNode::Time { body, posix } => {
+                let started = std::time::Instant::now();
+                let before = self.host.shell_times().unwrap_or((
+                    Duration::ZERO,
+                    Duration::ZERO,
+                    Duration::ZERO,
+                    Duration::ZERO,
+                ));
+                let mut result = self.execute(body, stdin)?;
+                let real = started.elapsed();
+                let after = self.host.shell_times().unwrap_or(before);
+                let user = after.0.saturating_sub(before.0);
+                let system = after.1.saturating_sub(before.1);
+
+                fn seconds(value: Duration) -> f64 {
+                    value.as_secs_f64()
+                }
+
+                let timing = if *posix {
+                    format!(
+                        "real {:.3}\nuser {:.3}\nsys {:.3}\n",
+                        seconds(real),
+                        seconds(user),
+                        seconds(system),
+                    )
+                } else if let Some(format_string) = self.env.vars.get("TIMEFORMAT").cloned() {
+                    let total_cpu = user + system;
+                    let percent = if real.is_zero() {
+                        0.0
+                    } else {
+                        total_cpu.as_secs_f64() * 100.0 / real.as_secs_f64()
+                    };
+                    let mut rendered = String::new();
+                    let mut chars = format_string.chars().peekable();
+                    while let Some(ch) = chars.next() {
+                        if ch != '%' {
+                            rendered.push(ch);
+                            continue;
+                        }
+                        match chars.next() {
+                            Some('%') => rendered.push('%'),
+                            Some('R') => rendered.push_str(&format!("{:.3}", seconds(real))),
+                            Some('U') => rendered.push_str(&format!("{:.3}", seconds(user))),
+                            Some('S') => rendered.push_str(&format!("{:.3}", seconds(system))),
+                            Some('P') => rendered.push_str(&format!("{percent:.2}")),
+                            Some(other) => {
+                                rendered.push('%');
+                                rendered.push(other);
+                            }
+                            None => rendered.push('%'),
+                        }
+                    }
+                    if rendered.is_empty() { rendered } else { format!("{rendered}\n") }
+                } else {
+                    format!(
+                        "\nreal\t0m{:.3}s\nuser\t0m{:.3}s\nsys\t0m{:.3}s\n",
+                        seconds(real),
+                        seconds(user),
+                        seconds(system),
+                    )
+                };
+                result.stderr.push_str(&timing);
+                result
+            }
             AstNode::Negate(body) => {
                 let mut result = self.execute(body, stdin)?;
                 if !result.exit_requested {
@@ -539,7 +621,9 @@ impl Interpreter {
         // still go through a child Shell Shock Tool interpreter so Bash semantics
         // remain centralized in this module.
         let pid = if let AstNode::Simple(command) = node {
-            if command.redirects.is_empty() {
+            if command.redirects.is_empty()
+                && command.words.iter().all(|word| !word.contains("<(") && !word.contains(">("))
+            {
                 let mut raw = command.words.clone();
                 if let Some(alias) = raw.first()
                     .and_then(|name| self.env.aliases.get(name))
@@ -639,6 +723,7 @@ impl Interpreter {
     }
 
     fn execute_simple(&mut self, command: &SimpleCommand, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
+        let process_sub_start = self.pending_process_substitutions.len();
         let mut local_stdin = stdin.map(ToOwned::to_owned);
 
         for redirect in &command.redirects {
@@ -704,11 +789,18 @@ impl Interpreter {
 
         let mut result = if let Some(body) = self.env.functions.get(&name).cloned() {
             let saved = self.env.positional.clone();
+            let source = self.source_stack.last()
+                .cloned()
+                .unwrap_or_else(|| self.env.script_name.clone());
+            self.call_stack.push((name.clone(), source));
+            self.sync_call_stack_vars();
             self.env.positional = args.to_vec();
             self.env.push_local_scope();
             let execution = self.execute(&body, local_stdin.as_deref());
             self.env.pop_local_scope();
             self.env.positional = saved;
+            self.call_stack.pop();
+            self.sync_call_stack_vars();
             let mut result = execution?;
             if result.flow == FlowSignal::Return {
                 result.flow = FlowSignal::None;
@@ -773,6 +865,9 @@ impl Interpreter {
             result.stderr = format!("{trace}{}", result.stderr);
         }
         self.apply_output_redirects(command, &mut result)?;
+        let process_output = self.finish_process_substitutions(process_sub_start)?;
+        result.stdout.push_str(&process_output.stdout);
+        result.stderr.push_str(&process_output.stderr);
         Ok(result)
     }
 
@@ -987,7 +1082,9 @@ impl Interpreter {
                     self.env.positional = source_args.to_vec();
                 }
                 self.source_depth += 1;
+                self.source_stack.push(resolved.to_string_lossy().into_owned());
                 let execution = self.execute_text(&source);
+                self.source_stack.pop();
                 self.source_depth = self.source_depth.saturating_sub(1);
                 self.env.positional = saved_positional;
                 self.env.script_name = saved_name;
@@ -1178,9 +1275,9 @@ impl Interpreter {
                     )
                 }
             }
-            "ulimit" => ExecutionResult::from_parts("unlimited\n".to_owned(), String::new(), 0),
-            "times" => ExecutionResult::from_parts("0m0.000s 0m0.000s\n0m0.000s 0m0.000s\n".to_owned(), String::new(), 0),
-            "caller" => ExecutionResult::from_parts(String::new(), String::new(), 1),
+            "ulimit" => self.builtin_ulimit(args),
+            "times" => self.builtin_times()?,
+            "caller" => self.builtin_caller(args),
             "xargs" => self.execute_xargs(args, stdin)?,
             "config" => {
                 match args.first().map(String::as_str).unwrap_or("path") {
@@ -1523,6 +1620,114 @@ impl Interpreter {
             }
         }
         Ok(ExecutionResult::from_parts(String::new(), stderr, status))
+    }
+
+    fn sync_call_stack_vars(&mut self) {
+        let names = self.call_stack.iter().rev()
+            .map(|(name, _)| name.clone())
+            .collect::<Vec<_>>();
+        let sources = self.call_stack.iter().rev()
+            .map(|(_, source)| source.clone())
+            .collect::<Vec<_>>();
+        let lines = vec!["0".to_owned(); self.call_stack.len()];
+        self.env.set_array("FUNCNAME", names);
+        self.env.set_array("BASH_SOURCE", sources);
+        self.env.set_array("BASH_LINENO", lines);
+    }
+
+    fn builtin_caller(&self, args: &[String]) -> ExecutionResult {
+        let frame = args.first()
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(0);
+        let Some(index) = self.call_stack.len().checked_sub(frame + 1) else {
+            return ExecutionResult::from_parts(String::new(), String::new(), 1);
+        };
+        let (function, source) = &self.call_stack[index];
+        ExecutionResult::from_parts(
+            format!("0 {function} {source}\n"),
+            String::new(),
+            0,
+        )
+    }
+
+    fn builtin_times(&self) -> Result<ExecutionResult> {
+        let (user, system, child_user, child_system) = self.host.shell_times()?;
+        fn format_cpu(value: Duration) -> String {
+            let total_millis = value.as_millis();
+            let minutes = total_millis / 60_000;
+            let seconds = (total_millis % 60_000) / 1000;
+            let millis = total_millis % 1000;
+            format!("{minutes}m{seconds}.{millis:03}s")
+        }
+        Ok(ExecutionResult::from_parts(
+            format!(
+                "{} {}\n{} {}\n",
+                format_cpu(user),
+                format_cpu(system),
+                format_cpu(child_user),
+                format_cpu(child_system),
+            ),
+            String::new(),
+            0,
+        ))
+    }
+
+    fn builtin_ulimit(&self, args: &[String]) -> ExecutionResult {
+        const RESOURCES: &[(&str, &str)] = &[
+            ("-c", "core file size"),
+            ("-d", "data seg size"),
+            ("-e", "scheduling priority"),
+            ("-f", "file size"),
+            ("-i", "pending signals"),
+            ("-l", "max locked memory"),
+            ("-m", "max memory size"),
+            ("-n", "open files"),
+            ("-p", "pipe size"),
+            ("-q", "POSIX message queues"),
+            ("-r", "real-time priority"),
+            ("-s", "stack size"),
+            ("-t", "cpu time"),
+            ("-u", "max user processes"),
+            ("-v", "virtual memory"),
+            ("-x", "file locks"),
+        ];
+
+        if args.iter().any(|arg| arg == "-a") {
+            let mut stdout = String::new();
+            for (flag, label) in RESOURCES {
+                stdout.push_str(&format!("{label:<28} ({flag}) unlimited\n"));
+            }
+            return ExecutionResult::from_parts(stdout, String::new(), 0);
+        }
+
+        let mut selected = "-f";
+        let mut value: Option<&str> = None;
+        for arg in args {
+            if arg == "-S" || arg == "-H" {
+                continue;
+            }
+            if RESOURCES.iter().any(|(flag, _)| *flag == arg) {
+                selected = arg;
+            } else if !arg.starts_with('-') {
+                value = Some(arg);
+            } else {
+                return ExecutionResult::from_parts(
+                    String::new(),
+                    format!("ulimit: opción no válida: {arg}\n"),
+                    2,
+                );
+            }
+        }
+
+        if value.is_some() {
+            return ExecutionResult::from_parts(
+                String::new(),
+                format!("ulimit: {selected}: Windows no expone un rlimit POSIX modificable para este recurso\n"),
+                1,
+            );
+        }
+
+        ExecutionResult::from_parts("unlimited\n".to_owned(), String::new(), 0)
     }
 
     fn builtin_enable(&mut self, args: &[String]) -> ExecutionResult {
@@ -2794,6 +2999,39 @@ impl Interpreter {
         Ok(())
     }
 
+    fn next_process_substitution_path(&mut self) -> PathBuf {
+        self.process_sub_counter = self.process_sub_counter.wrapping_add(1);
+        std::env::temp_dir().join(format!(
+            "shell-shock-psub-{}-{}.tmp",
+            std::process::id(),
+            self.process_sub_counter,
+        ))
+    }
+
+    fn finish_process_substitutions(&mut self, start: usize) -> Result<ExecutionResult> {
+        if start >= self.pending_process_substitutions.len() {
+            return Ok(ExecutionResult::success());
+        }
+
+        let pending = self.pending_process_substitutions.split_off(start);
+        let mut stdout = String::new();
+        let mut stderr = String::new();
+
+        for substitution in pending {
+            stderr.push_str(&substitution.stderr);
+            if let Some(command) = substitution.command {
+                let input = fs::read(&substitution.path).unwrap_or_default();
+                let node = parse(&command)?;
+                let result = self.execute(&node, Some(&input))?;
+                stdout.push_str(&result.stdout);
+                stderr.push_str(&result.stderr);
+            }
+            let _ = fs::remove_file(&substitution.path);
+        }
+
+        Ok(ExecutionResult::from_parts(stdout, stderr, 0))
+    }
+
     fn expand_words(&mut self, words: &[String]) -> Result<Vec<String>> {
         let mut result = Vec::new();
 
@@ -2860,6 +3098,42 @@ impl Interpreter {
         let mut double = false;
 
         while i < chars.len() {
+            if !single
+                && !double
+                && matches!(chars[i], '<' | '>')
+                && chars.get(i + 1) == Some(&'(')
+            {
+                let direction = chars[i];
+                let end = matching(&chars, i + 1, '(', ')')
+                    .ok_or_else(|| anyhow!("sustitución de proceso sin cerrar"))?;
+                let source: String = chars[i + 2..end].iter().collect();
+                let path = self.next_process_substitution_path();
+
+                if direction == '<' {
+                    let saved = self.env.clone();
+                    let execution = self.execute_text(&source);
+                    self.env = saved;
+                    let execution = execution?;
+                    fs::write(&path, execution.stdout.as_bytes())?;
+                    self.pending_process_substitutions.push(ProcessSubstitution {
+                        path: path.clone(),
+                        command: None,
+                        stderr: execution.stderr,
+                    });
+                } else {
+                    fs::write(&path, b"")?;
+                    self.pending_process_substitutions.push(ProcessSubstitution {
+                        path: path.clone(),
+                        command: Some(source),
+                        stderr: String::new(),
+                    });
+                }
+
+                out.push_str(&path.to_string_lossy());
+                i = end + 1;
+                continue;
+            }
+
             if !single && chars[i] == '$' && chars.get(i + 1) == Some(&'\'') {
                 let mut end = i + 2;
                 let mut escaped = false;
@@ -4168,6 +4442,11 @@ fn render_ast(node: &AstNode) -> String {
         AstNode::And(left,right) => format!("{} && {}", render_ast(left), render_ast(right)),
         AstNode::Or(left,right) => format!("{} || {}", render_ast(left), render_ast(right)),
         AstNode::Pipeline(parts) => parts.iter().map(render_ast).collect::<Vec<_>>().join(" | "),
+        AstNode::Time { body, posix } => format!(
+            "time {}{}",
+            if *posix { "-p " } else { "" },
+            render_ast(body),
+        ),
         AstNode::Negate(body) => format!("! {}", render_ast(body)),
         AstNode::Background(body) => format!("{} &", render_ast(body)),
         AstNode::Simple(command) => {

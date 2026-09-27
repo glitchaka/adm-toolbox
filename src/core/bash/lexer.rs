@@ -77,6 +77,34 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
         }
 
         match ch {
+            '<' | '>' if chars.get(i + 1) == Some(&'(') => {
+                // Process substitution is a word-like expansion, not a redirection
+                // operator. Preserve the complete construct for the Bash expander.
+                let start = i;
+                i += 2;
+                let mut depth = 1usize;
+                let mut quote = None;
+                while i < chars.len() && depth > 0 {
+                    let current = chars[i];
+                    if current == '\\' {
+                        i = (i + 2).min(chars.len());
+                        continue;
+                    }
+                    if let Some(q) = quote {
+                        if current == q { quote = None; }
+                    } else {
+                        match current {
+                            '\'' | '"' => quote = Some(current),
+                            '(' => depth += 1,
+                            ')' => depth -= 1,
+                            _ => {}
+                        }
+                    }
+                    i += 1;
+                }
+                if depth != 0 { bail!("sustitución de proceso sin cerrar"); }
+                word.extend(&chars[start..i]);
+            }
             '$' if chars.get(i + 1) == Some(&'(') => {
                 let start = i;
                 i += 2;
@@ -101,6 +129,32 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
                     i += 1;
                 }
                 if depth != 0 { bail!("sustitución sin cerrar"); }
+                word.extend(&chars[start..i]);
+            }
+            '?' | '*' | '+' | '@' | '!' if chars.get(i + 1) == Some(&'(') => {
+                let start = i;
+                i += 2;
+                let mut depth = 1usize;
+                let mut quote = None;
+                while i < chars.len() && depth > 0 {
+                    let current = chars[i];
+                    if current == '\\' {
+                        i = (i + 2).min(chars.len());
+                        continue;
+                    }
+                    if let Some(q) = quote {
+                        if current == q { quote = None; }
+                    } else {
+                        match current {
+                            '\'' | '"' => quote = Some(current),
+                            '(' => depth += 1,
+                            ')' => depth -= 1,
+                            _ => {}
+                        }
+                    }
+                    i += 1;
+                }
+                if depth != 0 { bail!("extglob sin cerrar"); }
                 word.extend(&chars[start..i]);
             }
             '$' if chars.get(i + 1) == Some(&'\'') => {

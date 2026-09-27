@@ -5,6 +5,10 @@ pub enum AstNode {
     And(Box<AstNode>, Box<AstNode>),
     Or(Box<AstNode>, Box<AstNode>),
     Pipeline(Vec<AstNode>),
+    Time {
+        body: Box<AstNode>,
+        posix: bool,
+    },
     Negate(Box<AstNode>),
     Background(Box<AstNode>),
     Simple(SimpleCommand),

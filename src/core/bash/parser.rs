@@ -66,6 +66,16 @@ impl Parser {
     }
 
     fn parse_pipeline(&mut self) -> Result<AstNode> {
+        let timed = self.word_is("time");
+        let mut posix_time = false;
+        if timed {
+            self.pos += 1;
+            if self.word_is("-p") {
+                posix_time = true;
+                self.pos += 1;
+            }
+        }
+
         let negate = self.word_is("!");
         if negate { self.pos += 1; }
 
@@ -76,8 +86,14 @@ impl Parser {
             parts.push(self.parse_command()?);
         }
 
-        let node = if parts.len() == 1 { parts.remove(0) } else { AstNode::Pipeline(parts) };
-        Ok(if negate { AstNode::Negate(Box::new(node)) } else { node })
+        let mut node = if parts.len() == 1 { parts.remove(0) } else { AstNode::Pipeline(parts) };
+        if negate {
+            node = AstNode::Negate(Box::new(node));
+        }
+        if timed {
+            node = AstNode::Time { body: Box::new(node), posix: posix_time };
+        }
+        Ok(node)
     }
 
     fn parse_command(&mut self) -> Result<AstNode> {
