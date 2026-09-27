@@ -85,124 +85,6 @@ impl ShellCommandHost for WindowsShellHost {
             }
         }
     }
-    fn read_line_with_options(
-        &self,
-        prompt: &str,
-        silent: bool,
-        initial: &str,
-        timeout: Option<std::time::Duration>,
-        delimiter: Option<char>,
-        max_chars: Option<usize>,
-        exact_chars: bool,
-    ) -> Result<Option<String>> {
-        use crossterm::event::{Event, KeyCode, KeyModifiers};
-
-        crate::adapters::terminal::io::write(prompt.as_bytes())?;
-        crate::adapters::terminal::io::enter_raw()?;
-        struct RawGuard;
-        impl Drop for RawGuard {
-            fn drop(&mut self) { crate::adapters::terminal::io::leave_raw(); }
-        }
-        let _guard = RawGuard;
-
-        let mut line = initial.to_owned();
-        if !silent && !initial.is_empty() {
-            crate::adapters::terminal::io::write(initial.as_bytes())?;
-        }
-        if max_chars == Some(0) {
-            return Ok(Some(String::new()));
-        }
-        if max_chars.is_some_and(|max| line.chars().count() >= max) {
-            return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-        }
-
-        let started = std::time::Instant::now();
-        loop {
-            if let Some(limit) = timeout {
-                let elapsed = started.elapsed();
-                if elapsed >= limit {
-                    return Ok(None);
-                }
-                if !crate::adapters::terminal::io::poll(limit - elapsed)? {
-                    return Ok(None);
-                }
-            }
-
-            match crate::adapters::terminal::io::read()? {
-                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
-                    && key.code == KeyCode::Char('d') && line.is_empty() =>
-                {
-                    return Ok(None);
-                }
-                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
-                    && key.code == KeyCode::Char('c') =>
-                {
-                    crate::adapters::terminal::io::write(b"^C\r\n")?;
-                    return Ok(None);
-                }
-                Event::Key(key) => match key.code {
-                    KeyCode::Enter => {
-                        if exact_chars {
-                            line.push('\n');
-                            if !silent {
-                                crate::adapters::terminal::io::write(b"\r\n")?;
-                            }
-                            if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                                return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-                            }
-                        } else if delimiter.is_none() || delimiter == Some('\n') {
-                            crate::adapters::terminal::io::write(b"\r\n")?;
-                            return Ok(Some(line));
-                        }
-                    }
-                    KeyCode::Backspace => {
-                        if line.pop().is_some() && !silent {
-                            crate::adapters::terminal::io::write(b"\x08 \x08")?;
-                        }
-                    }
-                    KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        if !exact_chars && delimiter == Some(ch) {
-                            if !silent {
-                                let mut buf = [0u8; 4];
-                                crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
-                                crate::adapters::terminal::io::write(b"\r\n")?;
-                            }
-                            return Ok(Some(line));
-                        }
-
-                        line.push(ch);
-                        if !silent {
-                            let mut buf = [0u8; 4];
-                            crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
-                        }
-                        if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                            return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-                        }
-                    }
-                    _ => {}
-                },
-                Event::Paste(text) => {
-                    for ch in text.chars() {
-                        if !exact_chars && delimiter == Some(ch) {
-                            return Ok(Some(line));
-                        }
-                        line.push(ch);
-                        if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                            break;
-                        }
-                    }
-                    if !silent {
-                        crate::adapters::terminal::io::write(text.as_bytes())?;
-                    }
-                    if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                        return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
-
     fn execute_builtin(
         &self,
         name: &str,
@@ -233,14 +115,6 @@ impl ShellCommandHost for WindowsShellHost {
 
     fn command_is_builtin(&self, name: &str) -> bool {
         name == "help" || name == "man" || self.registry.names().iter().any(|candidate| candidate == name)
-    }
-
-    fn command_names(&self) -> Vec<String> {
-        let mut names = self.registry.names();
-        names.extend(["help".to_owned(), "man".to_owned()]);
-        names.sort();
-        names.dedup();
-        names
     }
 
     fn execute_external(
@@ -430,59 +304,6 @@ impl ShellCommandHost for WindowsShellHost {
             .remove(&pid)
             .is_some())
     }
-
-    fn shell_times(&self) -> Result<(
-        std::time::Duration,
-        std::time::Duration,
-        std::time::Duration,
-        std::time::Duration,
-    )> {
-        #[cfg(windows)]
-        unsafe {
-            use windows_sys::Win32::{
-                Foundation::FILETIME,
-                System::Threading::{GetCurrentProcess, GetProcessTimes},
-            };
-
-            fn duration(value: FILETIME) -> std::time::Duration {
-                let ticks = ((value.dwHighDateTime as u64) << 32) | value.dwLowDateTime as u64;
-                std::time::Duration::from_nanos(ticks.saturating_mul(100))
-            }
-
-            let mut creation: FILETIME = std::mem::zeroed();
-            let mut exit: FILETIME = std::mem::zeroed();
-            let mut kernel: FILETIME = std::mem::zeroed();
-            let mut user: FILETIME = std::mem::zeroed();
-
-            if GetProcessTimes(
-                GetCurrentProcess(),
-                &mut creation,
-                &mut exit,
-                &mut kernel,
-                &mut user,
-            ) == 0
-            {
-                return Err(std::io::Error::last_os_error().into());
-            }
-
-            return Ok((
-                duration(user),
-                duration(kernel),
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-            ));
-        }
-
-        #[cfg(not(windows))]
-        {
-            Ok((
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-            ))
-        }
-    }
 }
 
 fn resolve_shell_script(program: &str, cwd: &Path) -> Option<PathBuf> {
@@ -558,10 +379,6 @@ impl ShellEngine for NativeShellEngine {
     }
     fn working_dir(&self) -> &Path {
         &self.interpreter.env.cwd
-    }
-
-    fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
-        self.interpreter.complete_line(line, cursor)
     }
 
     fn execute(&mut self, line: &str) -> Result<ShellExecution> {
