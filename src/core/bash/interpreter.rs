@@ -4033,27 +4033,73 @@ impl Interpreter {
     }
 
     fn glob(&self, value: &str) -> Result<Vec<String>> {
-        if !contains_glob_meta(value) { return Ok(Vec::new()); }
-        let pattern = if Path::new(value).is_absolute() {
+        if !contains_glob_meta(value) && !contains_extglob(value) {
+            return Ok(Vec::new());
+        }
+
+        let absolute_pattern = if Path::new(value).is_absolute() {
             value.to_owned()
         } else {
             self.env.cwd.join(value).to_string_lossy().into_owned()
         };
+
+        let use_extglob = self.env.option_enabled("extglob") && contains_extglob(value);
+        let broad_pattern = if use_extglob {
+            extglob_broad_pattern(&absolute_pattern)
+        } else {
+            absolute_pattern.clone()
+        };
+
+        let options = glob::MatchOptions {
+            case_sensitive: !self.env.option_enabled("nocaseglob"),
+            require_literal_separator: !self.env.option_enabled("globstar"),
+            require_literal_leading_dot: !self.env.option_enabled("dotglob"),
+        };
+
+        let filter = if use_extglob {
+            Some(bash_glob_regex(
+                &normalize_glob_path(&absolute_pattern),
+                self.env.option_enabled("nocaseglob"),
+            )?)
+        } else {
+            None
+        };
+
         let mut result = Vec::new();
-        for entry in glob::glob(&pattern)? {
+        for entry in glob::glob_with(&broad_pattern, options)? {
             let Ok(path) = entry else { continue };
+            let normalized = normalize_glob_path(&path.to_string_lossy());
+            if let Some(regex) = &filter {
+                if !regex.is_match(&normalized) {
+                    continue;
+                }
+                if negative_extglob_rejects(
+                    &normalize_glob_path(&absolute_pattern),
+                    &normalized,
+                    self.env.option_enabled("nocaseglob"),
+                ) {
+                    continue;
+                }
+            }
+
             if !self.env.option_enabled("dotglob") {
-                let hidden = path.file_name().and_then(|n| n.to_str()).is_some_and(|n| n.starts_with('.'));
-                let explicit_hidden = Path::new(value).file_name().and_then(|n| n.to_str()).is_some_and(|n| n.starts_with('.'));
+                let hidden = path.file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with('.'));
+                let explicit_hidden = Path::new(value).file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with('.'));
                 if hidden && !explicit_hidden { continue; }
             }
+
             if Path::new(value).is_absolute() {
                 result.push(path.to_string_lossy().into_owned());
             } else if let Ok(relative) = path.strip_prefix(&self.env.cwd) {
                 result.push(relative.to_string_lossy().into_owned());
             }
         }
-        result.sort();
+
+        sort_glob_results(&mut result, &self.env.get("GLOBSORT"), &self.env.cwd);
         Ok(result)
     }
 
@@ -5317,6 +5363,213 @@ fn bash_shopt_options() -> &'static [&'static str] {
         "promptvars", "restricted_shell", "shift_verbose", "sourcepath",
         "varredir_close", "xpg_echo",
     ]
+}
+
+
+fn normalize_glob_path(value: &str) -> String {
+    value.replace('\\', "/")
+}
+
+fn contains_extglob(value: &str) -> bool {
+    let chars: Vec<char> = value.chars().collect();
+    chars.windows(2).any(|pair| matches!(pair[0], '?' | '*' | '+' | '@' | '!') && pair[1] == '(')
+}
+
+fn extglob_broad_pattern(value: &str) -> String {
+    let chars: Vec<char> = value.chars().collect();
+    let mut out = String::new();
+    let mut index = 0usize;
+    while index < chars.len() {
+        if matches!(chars[index], '?' | '*' | '+' | '@' | '!')
+            && chars.get(index + 1) == Some(&'(')
+        {
+            let mut depth = 1usize;
+            let mut end = index + 2;
+            while end < chars.len() && depth > 0 {
+                match chars[end] {
+                    '(' => depth += 1,
+                    ')' => depth -= 1,
+                    _ => {}
+                }
+                end += 1;
+            }
+            out.push('*');
+            index = end;
+        } else {
+            out.push(chars[index]);
+            index += 1;
+        }
+    }
+    out
+}
+
+fn split_extglob_alternatives(value: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut depth = 0usize;
+    let mut escaped = false;
+    for ch in value.chars() {
+        if escaped {
+            current.push(ch);
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            current.push(ch);
+            escaped = true;
+            continue;
+        }
+        match ch {
+            '(' => { depth += 1; current.push(ch); }
+            ')' => { depth = depth.saturating_sub(1); current.push(ch); }
+            '|' if depth == 0 => parts.push(std::mem::take(&mut current)),
+            _ => current.push(ch),
+        }
+    }
+    parts.push(current);
+    parts
+}
+
+fn bash_glob_fragment(pattern: &str) -> Result<String> {
+    let chars: Vec<char> = pattern.chars().collect();
+    let mut out = String::new();
+    let mut index = 0usize;
+
+    while index < chars.len() {
+        if matches!(chars[index], '?' | '*' | '+' | '@' | '!')
+            && chars.get(index + 1) == Some(&'(')
+        {
+            let operator = chars[index];
+            let mut depth = 1usize;
+            let mut end = index + 2;
+            while end < chars.len() && depth > 0 {
+                match chars[end] {
+                    '(' => depth += 1,
+                    ')' => depth -= 1,
+                    _ => {}
+                }
+                end += 1;
+            }
+            if depth != 0 { bail!("extglob sin cerrar"); }
+            let body: String = chars[index + 2..end - 1].iter().collect();
+            let alternatives = split_extglob_alternatives(&body)
+                .into_iter()
+                .map(|part| bash_glob_fragment(&part))
+                .collect::<Result<Vec<_>>>()?
+                .join("|");
+            match operator {
+                '@' => out.push_str(&format!("(?:{alternatives})")),
+                '?' => out.push_str(&format!("(?:{alternatives})?")),
+                '+' => out.push_str(&format!("(?:{alternatives})+")),
+                '*' => out.push_str(&format!("(?:{alternatives})*")),
+                '!' => out.push_str("[^/]*"),
+                _ => {}
+            }
+            index = end;
+            continue;
+        }
+
+        match chars[index] {
+            '*' if chars.get(index + 1) == Some(&'*') => {
+                while chars.get(index + 1) == Some(&'*') { index += 1; }
+                out.push_str(".*");
+            }
+            '*' => out.push_str("[^/]*"),
+            '?' => out.push_str("[^/]"),
+            '[' => {
+                let start = index;
+                index += 1;
+                while index < chars.len() && chars[index] != ']' { index += 1; }
+                if index < chars.len() {
+                    let mut class: String = chars[start + 1..index].iter().collect();
+                    if class.starts_with('!') { class.replace_range(..1, "^"); }
+                    out.push('[');
+                    out.push_str(&class);
+                    out.push(']');
+                } else {
+                    out.push_str("\\[");
+                    index = start;
+                }
+            }
+            '/' => out.push('/'),
+            ch => {
+                if matches!(ch, '.' | '^' | '$' | '+' | '(' | ')' | '{' | '}' | '|' | '\\') {
+                    out.push('\\');
+                }
+                out.push(ch);
+            }
+        }
+        index += 1;
+    }
+    Ok(out)
+}
+
+fn bash_glob_regex(pattern: &str, nocase: bool) -> Result<regex::Regex> {
+    let fragment = bash_glob_fragment(pattern)?;
+    Ok(regex::Regex::new(&if nocase {
+        format!("(?i)^{fragment}$")
+    } else {
+        format!("^{fragment}$")
+    })?)
+}
+
+fn negative_extglob_rejects(pattern: &str, candidate: &str, nocase: bool) -> bool {
+    let pattern_parts: Vec<&str> = pattern.split('/').collect();
+    let candidate_parts: Vec<&str> = candidate.split('/').collect();
+    if pattern_parts.len() != candidate_parts.len() { return false; }
+
+    for (pattern_part, candidate_part) in pattern_parts.into_iter().zip(candidate_parts) {
+        if pattern_part.starts_with("!(") && pattern_part.ends_with(')') {
+            for alternative in split_extglob_alternatives(&pattern_part[2..pattern_part.len() - 1]) {
+                if bash_glob_regex(&alternative, nocase).is_ok_and(|regex| regex.is_match(candidate_part)) {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+fn sort_glob_results(values: &mut [String], sort: &str, cwd: &Path) {
+    let mut mode = sort.trim();
+    let mut reverse = false;
+    if let Some(rest) = mode.strip_prefix('-') {
+        reverse = true;
+        mode = rest;
+    }
+    if mode.is_empty() { mode = "name"; }
+    if mode == "none" {
+        if reverse { values.reverse(); }
+        return;
+    }
+
+    values.sort_by(|left, right| {
+        let left_path = {
+            let path = PathBuf::from(left);
+            if path.is_absolute() { path } else { cwd.join(path) }
+        };
+        let right_path = {
+            let path = PathBuf::from(right);
+            if path.is_absolute() { path } else { cwd.join(path) }
+        };
+        let left_meta = fs::metadata(left_path).ok();
+        let right_meta = fs::metadata(right_path).ok();
+
+        let ordering = match mode {
+            "size" => left_meta.as_ref().map(|m| m.len()).cmp(&right_meta.as_ref().map(|m| m.len())),
+            "blocks" => left_meta.as_ref().map(|m| (m.len() + 511) / 512)
+                .cmp(&right_meta.as_ref().map(|m| (m.len() + 511) / 512)),
+            "mtime" => left_meta.as_ref().and_then(|m| m.modified().ok())
+                .cmp(&right_meta.as_ref().and_then(|m| m.modified().ok())),
+            "atime" => left_meta.as_ref().and_then(|m| m.accessed().ok())
+                .cmp(&right_meta.as_ref().and_then(|m| m.accessed().ok())),
+            "ctime" => left_meta.as_ref().and_then(|m| m.created().ok())
+                .cmp(&right_meta.as_ref().and_then(|m| m.created().ok())),
+            _ => left.cmp(right),
+        }.then_with(|| left.cmp(right));
+
+        if reverse { ordering.reverse() } else { ordering }
+    });
 }
 
 #[cfg(test)]
