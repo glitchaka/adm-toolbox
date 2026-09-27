@@ -945,7 +945,9 @@ impl Interpreter {
         }
 
         let mut raw = command.words.clone();
-        if let Some(alias) = self.env.aliases.get(&raw[0]).cloned() {
+        if (self.env.option_enabled("interactive") || self.env.option_enabled("expand_aliases"))
+            && let Some(alias) = self.env.aliases.get(&raw[0]).cloned()
+        {
             let alias_tokens = super::lexer::lex(&alias)?;
             let mut alias_words = alias_tokens.into_iter().filter_map(|token| {
                 if let super::lexer::Token::Word(word) = token { Some(word) } else { None }
@@ -1196,19 +1198,52 @@ impl Interpreter {
                 result
             }
             "source" | "." => {
-                let Some(path) = args.first() else {
+                let mut index = 0usize;
+                let mut search_path: Option<String> = None;
+                if args.first().map(String::as_str) == Some("-p") {
+                    let Some(value) = args.get(1) else {
+                        return Ok(Some(ExecutionResult::from_parts(
+                            String::new(), format!("{name}: -p requiere PATH\n"), 2,
+                        )));
+                    };
+                    search_path = Some(value.clone());
+                    index = 2;
+                }
+                let Some(raw_path) = args.get(index) else {
                     return Ok(Some(ExecutionResult::from_parts(
-                        String::new(),
-                        format!("{name}: falta archivo\n"),
-                        2,
+                        String::new(), format!("{name}: falta archivo\n"), 2,
                     )));
                 };
-                let source = fs::read_to_string(self.resolve_path(path))?;
+
+                let direct = self.resolve_path(raw_path);
+                let path = if raw_path.contains('/') || raw_path.contains('\\') || direct.is_file() {
+                    direct
+                } else {
+                    let search = search_path
+                        .or_else(|| self.env.option_enabled("sourcepath").then(|| self.env.get("PATH")))
+                        .unwrap_or_default();
+                    std::env::split_paths(&search)
+                        .map(|directory| directory.join(raw_path))
+                        .find(|candidate| candidate.is_file())
+                        .unwrap_or_else(|| self.resolve_path(raw_path))
+                };
+
+                let source = match fs::read_to_string(&path) {
+                    Ok(source) => source,
+                    Err(error) => return Ok(Some(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("{name}: {}: {error}\n", path.display()),
+                        1,
+                    ))),
+                };
+
                 let saved_positional = self.env.positional.clone();
                 let saved_name = self.env.script_name.clone();
-                if args.len() > 1 {
-                    self.env.positional = args[1..].to_vec();
+                let source_args = &args[index + 1..];
+                if !source_args.is_empty() {
+                    self.env.positional = source_args.to_vec();
                 }
+                self.env.script_name = path.to_string_lossy().into_owned();
                 self.source_depth += 1;
                 let execution = self.execute_text(&source);
                 self.source_depth = self.source_depth.saturating_sub(1);
@@ -2716,7 +2751,16 @@ impl Interpreter {
         if args.is_empty() {
             let mut rows = self.env.vars.iter().collect::<Vec<_>>();
             rows.sort_by_key(|(name, _)| *name);
-            let stdout = rows.into_iter().map(|(name,value)| format!("{name}={}\n", shell_quote(value))).collect();
+            let mut stdout: String = rows.into_iter()
+                .map(|(name, value)| format!("{name}={}\n", shell_quote(value)))
+                .collect();
+            let mut functions = self.env.functions.keys().cloned().collect::<Vec<_>>();
+            functions.sort();
+            for name in functions {
+                if let Some(body) = self.env.functions.get(&name) {
+                    stdout.push_str(&format!("{name} () {{\n    {}\n}}\n", render_ast(body)));
+                }
+            }
             return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
         }
 
@@ -2728,35 +2772,67 @@ impl Interpreter {
                 positional_start = Some(index + 1);
                 break;
             }
+
             if arg == "-o" || arg == "+o" {
                 let enable = arg.starts_with('-');
                 if let Some(option) = args.get(index + 1) {
+                    if !bash_shell_options().contains(&option.as_str()) {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("set: {option}: opción inválida\n"),
+                            2,
+                        ));
+                    }
                     set_shell_option(&mut self.env, option, enable);
                     index += 2;
                     continue;
                 }
-                let mut options = self.env.shell_options.iter().cloned().collect::<Vec<_>>();
-                options.sort();
-                let stdout = options.into_iter().map(|option| format!("set -o {option}\n")).collect();
+
+                let mut stdout = String::new();
+                for option in bash_shell_options() {
+                    let enabled = self.env.shell_options.contains(*option);
+                    if enable {
+                        stdout.push_str(&format!("{option:<16} {}\n", if enabled { "on" } else { "off" }));
+                    } else {
+                        stdout.push_str(&format!("set {}o {option}\n", if enabled { "-" } else { "+" }));
+                    }
+                }
                 return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
             }
+
             if arg.starts_with('-') || arg.starts_with('+') {
                 let enable = arg.starts_with('-');
+                if arg == "-" || arg == "+" {
+                    index += 1;
+                    continue;
+                }
                 for flag in arg[1..].chars() {
-                    match flag {
-                        'e' => set_shell_option(&mut self.env, "errexit", enable),
-                        'u' => set_shell_option(&mut self.env, "nounset", enable),
-                        'x' => set_shell_option(&mut self.env, "xtrace", enable),
-                        'f' => set_shell_option(&mut self.env, "noglob", enable),
-                        'n' => set_shell_option(&mut self.env, "noexec", enable),
-                        'C' => set_shell_option(&mut self.env, "noclobber", enable),
-                        'a' => set_shell_option(&mut self.env, "allexport", enable),
-                        _ => {}
-                    }
+                    let option = match flag {
+                        'a' => "allexport",
+                        'b' => "notify",
+                        'e' => "errexit",
+                        'f' => "noglob",
+                        'h' => "hashall",
+                        'H' => "histexpand",
+                        'm' => "monitor",
+                        'n' => "noexec",
+                        'P' => "physical",
+                        't' => "onecmd",
+                        'u' => "nounset",
+                        'v' => "verbose",
+                        'x' => "xtrace",
+                        'B' => "braceexpand",
+                        'C' => "noclobber",
+                        'E' => "errtrace",
+                        'T' => "functrace",
+                        _ => continue,
+                    };
+                    set_shell_option(&mut self.env, option, enable);
                 }
                 index += 1;
                 continue;
             }
+
             positional_start = Some(index);
             break;
         }
@@ -2770,30 +2846,51 @@ impl Interpreter {
     fn builtin_shopt(&mut self, args: &[String]) -> ExecutionResult {
         let enable = args.iter().any(|arg| arg == "-s");
         let disable = args.iter().any(|arg| arg == "-u");
-        let print = args.is_empty() || args.iter().any(|arg| arg == "-p");
+        let quiet = args.iter().any(|arg| arg == "-q");
+        let reusable = args.iter().any(|arg| arg == "-p");
         let names: Vec<_> = args.iter().filter(|arg| !arg.starts_with('-')).cloned().collect();
 
-        if print && names.is_empty() {
-            let known = [
-                "autocd", "cdspell", "checkwinsize", "dotglob", "extglob", "failglob",
-                "globstar", "nocaseglob", "nocasematch", "nullglob", "sourcepath",
-            ];
-            let mut stdout = String::new();
-            for option in known {
-                stdout.push_str(&format!(
-                    "shopt {} {}\n",
-                    if self.env.shopt_options.contains(option) { "-s" } else { "-u" },
-                    option
-                ));
-            }
-            return ExecutionResult::from_parts(stdout, String::new(), 0);
-        }
+        let selected: Vec<String> = if names.is_empty() {
+            bash_shopt_options().iter().map(|value| (*value).to_owned()).collect()
+        } else {
+            names
+        };
 
-        for name in names {
-            if enable { self.env.shopt_options.insert(name); }
-            else if disable { self.env.shopt_options.remove(&name); }
+        let mut stdout = String::new();
+        let mut stderr = String::new();
+        let mut status = 0;
+
+        for name in selected {
+            if !bash_shopt_options().contains(&name.as_str()) {
+                stderr.push_str(&format!("shopt: {name}: nombre de opción inválido\n"));
+                status = 1;
+                continue;
+            }
+
+            if enable {
+                self.env.shopt_options.insert(name.clone());
+            } else if disable {
+                self.env.shopt_options.remove(&name);
+            } else if !self.env.shopt_options.contains(&name) {
+                status = 1;
+            }
+
+            if !quiet && !enable && !disable {
+                if reusable {
+                    stdout.push_str(&format!(
+                        "shopt {} {}\n",
+                        if self.env.shopt_options.contains(&name) { "-s" } else { "-u" },
+                        name
+                    ));
+                } else {
+                    stdout.push_str(&format!(
+                        "{name:<24}{}\n",
+                        if self.env.shopt_options.contains(&name) { "on" } else { "off" }
+                    ));
+                }
+            }
         }
-        ExecutionResult::success()
+        ExecutionResult::from_parts(stdout, stderr, status)
     }
 
     fn builtin_trap(&mut self, args: &[String]) -> ExecutionResult {
@@ -2824,41 +2921,99 @@ impl Interpreter {
     }
 
     fn builtin_mapfile(&mut self, args: &[String], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
-        let mut trim_newline = false;
+        let mut trim = false;
         let mut skip = 0usize;
         let mut count: Option<usize> = None;
+        let mut origin: Option<usize> = None;
+        let mut delimiter = '\n';
+        let mut fd = 0i32;
+        let mut callback: Option<String> = None;
+        let mut quantum = 5000usize;
         let mut name = "MAPFILE".to_owned();
         let mut index = 0usize;
+
         while index < args.len() {
             match args[index].as_str() {
-                "-t" => trim_newline = true,
+                "-t" => trim = true,
                 "-s" => { index += 1; skip = args.get(index).and_then(|v| v.parse().ok()).unwrap_or(0); }
-                "-n" => { index += 1; count = args.get(index).and_then(|v| v.parse().ok()); }
-                value if !value.starts_with('-') => name = value.to_owned(),
-                _ => {}
+                "-n" => { index += 1; count = args.get(index).and_then(|v| v.parse::<usize>().ok()); }
+                "-O" => { index += 1; origin = args.get(index).and_then(|v| v.parse::<usize>().ok()); }
+                "-d" => {
+                    index += 1;
+                    delimiter = args.get(index).and_then(|v| v.chars().next()).unwrap_or('\0');
+                }
+                "-u" => { index += 1; fd = args.get(index).and_then(|v| v.parse().ok()).unwrap_or(-1); }
+                "-C" => { index += 1; callback = args.get(index).cloned(); }
+                "-c" => {
+                    index += 1;
+                    quantum = args.get(index).and_then(|v| v.parse::<usize>().ok()).unwrap_or(5000).max(1);
+                }
+                "--" => {
+                    if let Some(value) = args.get(index + 1) { name = value.clone(); }
+                    break;
+                }
+                value if value.starts_with('-') => return Ok(ExecutionResult::from_parts(
+                    String::new(), format!("mapfile: opción no válida: {value}\n"), 2,
+                )),
+                value => name = value.to_owned(),
             }
             index += 1;
+        }
+
+        if fd != 0 && stdin.is_none() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(), format!("mapfile: {fd}: descriptor no disponible\n"), 1,
+            ));
         }
 
         let text = if let Some(bytes) = stdin {
             String::from_utf8_lossy(bytes).into_owned()
         } else {
             let mut all = String::new();
-            while let Some(line) = self.host.read_line("", false)? {
-                all.push_str(&line);
-                all.push('\n');
+            loop {
+                let Some(value) = self.host.read_input("", false, delimiter, None, None, "")? else { break };
+                all.push_str(&value);
+                all.push(delimiter);
             }
             all
         };
-        let mut lines: Vec<String> = text.split_inclusive('\n')
-            .skip(skip)
-            .map(|line| {
-                if trim_newline { line.trim_end_matches(['\r','\n']).to_owned() }
-                else { line.to_owned() }
-            })
-            .collect();
-        if let Some(count) = count { lines.truncate(count); }
-        self.env.set_array(name, lines);
+
+        let mut records = if delimiter == '\0' {
+            text.split('\0').map(str::to_owned).collect::<Vec<_>>()
+        } else {
+            text.split_inclusive(delimiter).map(str::to_owned).collect::<Vec<_>>()
+        };
+
+        if records.last().is_some_and(|value| value.is_empty()) { records.pop(); }
+        records = records.into_iter().skip(skip).collect();
+        if let Some(limit) = count {
+            if limit > 0 { records.truncate(limit); }
+        }
+        if trim {
+            for record in &mut records {
+                if record.ends_with(delimiter) { record.pop(); }
+                if delimiter == '\n' && record.ends_with('\r') { record.pop(); }
+            }
+        }
+
+        let start = origin.unwrap_or(0);
+        let mut target = if origin.is_some() { self.env.array_values(&name) } else { Vec::new() };
+        if target.len() < start { target.resize(start, String::new()); }
+
+        for (offset, record) in records.into_iter().enumerate() {
+            let array_index = start + offset;
+            if let Some(callback) = &callback {
+                if offset % quantum == 0 {
+                    let source = format!("{} {} {}", callback, array_index, shell_quote(&record));
+                    let callback_result = self.execute_text(&source)?;
+                    if callback_result.status != 0 { return Ok(callback_result); }
+                }
+            }
+            if target.len() <= array_index { target.resize(array_index + 1, String::new()); }
+            target[array_index] = record;
+        }
+
+        self.env.set_array(name, target);
         Ok(ExecutionResult::success())
     }
 
@@ -2888,47 +3043,101 @@ impl Interpreter {
 
     fn builtin_getopts(&mut self, args: &[String]) -> Result<ExecutionResult> {
         if args.len() < 2 {
-            return Ok(ExecutionResult::from_parts(String::new(), "getopts: uso: getopts optstring name [args]\n".to_owned(), 2));
+            return Ok(ExecutionResult::from_parts(
+                String::new(), "getopts: uso: getopts optstring name [args]\n".to_owned(), 2,
+            ));
         }
+
         let optstring = &args[0];
         let varname = &args[1];
-        let source: Vec<String> = if args.len() > 2 { args[2..].to_vec() } else { self.env.positional.clone() };
-        let optind = self.env.get("OPTIND").parse::<usize>().unwrap_or(1).max(1);
+        let source = if args.len() > 2 { args[2..].to_vec() } else { self.env.positional.clone() };
+        let mut optind = self.env.get("OPTIND").parse::<usize>().unwrap_or(1).max(1);
+        let mut char_index = self.env.get("__SST_GETOPTS_POS").parse::<usize>().unwrap_or(1).max(1);
+        let silent = optstring.starts_with(':');
+        let definitions = if silent { &optstring[1..] } else { optstring.as_str() };
+
         let Some(item) = source.get(optind - 1) else {
             self.env.set(varname.clone(), "?");
+            self.env.set("__SST_GETOPTS_POS", "1");
             return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         };
-        if !item.starts_with('-') || item == "-" || item == "--" {
+
+        if item == "--" {
+            optind += 1;
+            self.env.set("OPTIND", optind.to_string());
+            self.env.set("__SST_GETOPTS_POS", "1");
             self.env.set(varname.clone(), "?");
             return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         }
-        let option = item.chars().nth(1).unwrap_or('?');
-        let chars: Vec<char> = optstring.chars().collect();
-        let requires_arg = if let Some(pos) = chars.iter().position(|ch| *ch == option) {
-            chars.get(pos + 1) == Some(&':')
-        } else {
+        if !item.starts_with('-') || item == "-" {
             self.env.set(varname.clone(), "?");
-            self.env.set("OPTARG", option.to_string());
-            self.env.set("OPTIND", (optind + 1).to_string());
-            return Ok(ExecutionResult::success());
+            self.env.set("__SST_GETOPTS_POS", "1");
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
+        }
+
+        let mut option_chars: Vec<char> = item.chars().collect();
+        if char_index >= option_chars.len() {
+            optind += 1;
+            char_index = 1;
+        }
+        let Some(item) = source.get(optind - 1) else {
+            self.env.set(varname.clone(), "?");
+            self.env.set("OPTIND", optind.to_string());
+            self.env.set("__SST_GETOPTS_POS", "1");
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         };
-        self.env.set(varname.clone(), option.to_string());
-        if requires_arg {
-            if item.len() > 2 {
-                self.env.set("OPTARG", item[2..].to_owned());
-                self.env.set("OPTIND", (optind + 1).to_string());
-            } else if let Some(value) = source.get(optind) {
-                self.env.set("OPTARG", value.clone());
-                self.env.set("OPTIND", (optind + 2).to_string());
-            } else {
-                self.env.set(varname.clone(), if optstring.starts_with(':') { ":" } else { "?" });
+        option_chars = item.chars().collect();
+        let option = option_chars.get(char_index).copied().unwrap_or('?');
+
+        let definitions: Vec<char> = definitions.chars().collect();
+        let Some(position) = definitions.iter().position(|ch| *ch == option) else {
+            char_index += 1;
+            if char_index >= option_chars.len() { optind += 1; char_index = 1; }
+            self.env.set("OPTIND", optind.to_string());
+            self.env.set("__SST_GETOPTS_POS", char_index.to_string());
+            self.env.set(varname.clone(), "?");
+            if silent {
                 self.env.set("OPTARG", option.to_string());
-                self.env.set("OPTIND", (optind + 1).to_string());
+                return Ok(ExecutionResult::success());
+            }
+            self.env.unset("OPTARG");
+            let stderr = if self.env.get("OPTERR") != "0" {
+                format!("{}: opción ilegal -- {}\n", self.env.script_name, option)
+            } else { String::new() };
+            return Ok(ExecutionResult::from_parts(String::new(), stderr, 0));
+        };
+
+        let requires_arg = definitions.get(position + 1) == Some(&':');
+        self.env.set(varname.clone(), option.to_string());
+
+        if requires_arg {
+            if char_index + 1 < option_chars.len() {
+                self.env.set("OPTARG", option_chars[char_index + 1..].iter().collect::<String>());
+                optind += 1;
+                char_index = 1;
+            } else if let Some(argument) = source.get(optind) {
+                self.env.set("OPTARG", argument.clone());
+                optind += 2;
+                char_index = 1;
+            } else {
+                optind += 1;
+                self.env.set(varname.clone(), if silent { ":" } else { "?" });
+                self.env.set("OPTARG", option.to_string());
+                self.env.set("OPTIND", optind.to_string());
+                self.env.set("__SST_GETOPTS_POS", "1");
+                let stderr = if !silent && self.env.get("OPTERR") != "0" {
+                    format!("{}: la opción requiere un argumento -- {}\n", self.env.script_name, option)
+                } else { String::new() };
+                return Ok(ExecutionResult::from_parts(String::new(), stderr, 0));
             }
         } else {
-            self.env.set("OPTARG", "");
-            self.env.set("OPTIND", (optind + 1).to_string());
+            self.env.unset("OPTARG");
+            char_index += 1;
+            if char_index >= option_chars.len() { optind += 1; char_index = 1; }
         }
+
+        self.env.set("OPTIND", optind.to_string());
+        self.env.set("__SST_GETOPTS_POS", char_index.to_string());
         Ok(ExecutionResult::success())
     }
 
@@ -3424,7 +3633,12 @@ impl Interpreter {
         let mut result = Vec::new();
 
         for raw in words {
-            for braced in brace_expand(raw) {
+            let brace_values = if self.env.option_enabled("braceexpand") {
+                brace_expand(raw)
+            } else {
+                vec![raw.clone()]
+            };
+            for braced in brace_values {
                 if braced == "\"$@\"" {
                     result.extend(self.env.positional.clone());
                     continue;
@@ -4982,6 +5196,35 @@ fn apply_history_modifiers(chars: &[char], event: &str) -> Result<(String, usize
         }
     }
     Ok((value, i))
+}
+
+
+fn bash_shell_options() -> &'static [&'static str] {
+    &[
+        "allexport", "braceexpand", "emacs", "errexit", "errtrace", "functrace",
+        "hashall", "histexpand", "history", "ignoreeof", "interactive-comments",
+        "keyword", "monitor", "noclobber", "noexec", "noglob", "nolog", "notify",
+        "nounset", "onecmd", "physical", "pipefail", "posix", "privileged",
+        "verbose", "vi", "xtrace",
+    ]
+}
+
+fn bash_shopt_options() -> &'static [&'static str] {
+    &[
+        "array_expand_once", "assoc_expand_once", "autocd", "cdable_vars", "cdspell",
+        "checkhash", "checkjobs", "checkwinsize", "cmdhist", "compat31", "compat32",
+        "compat40", "compat41", "compat42", "compat43", "compat44", "compat50",
+        "compat51", "compat52", "compat53", "complete_fullquote", "direxpand",
+        "dirspell", "dotglob", "execfail", "expand_aliases", "extdebug", "extglob",
+        "extquote", "failglob", "force_fignore", "globasciiranges", "globskipdots",
+        "globstar", "gnu_errfmt", "histappend", "histreedit", "histverify",
+        "hostcomplete", "huponexit", "inherit_errexit", "interactive_comments",
+        "lastpipe", "lithist", "localvar_inherit", "localvar_unset", "login_shell",
+        "mailwarn", "no_empty_cmd_completion", "nocaseglob", "nocasematch",
+        "noexpand_translation", "patsub_replacement", "progcomp", "progcomp_alias",
+        "promptvars", "restricted_shell", "shift_verbose", "sourcepath",
+        "varredir_close", "xpg_echo",
+    ]
 }
 
 #[cfg(test)]
