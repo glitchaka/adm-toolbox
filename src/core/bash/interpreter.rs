@@ -1007,4 +1007,43 @@ mod tests {
         assert_eq!(shell.expand_scalar("$((20+22))").unwrap(), "42");
         assert_eq!(shell.expand_scalar("${missing:-fallback}").unwrap(), "fallback");
     }
+
+    struct XargsHost;
+
+    impl ShellCommandHost for XargsHost {
+        fn execute_builtin(
+            &self, _name: &str, _args: &[String], _cwd: &Path, _stdin: Option<&[u8]>,
+        ) -> Result<Option<ExecutionResult>> {
+            Ok(None)
+        }
+
+        fn execute_external(
+            &self, program: &str, args: &[String], _cwd: &Path,
+            _env: &HashMap<String, String>, _stdin: Option<&[u8]>,
+        ) -> Result<ExecutionResult> {
+            if program == "echo" {
+                Ok(ExecutionResult::from_parts(
+                    format!("{}\n", args.join(" ")),
+                    String::new(),
+                    0,
+                ))
+            } else {
+                Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("unknown:{program}\n"),
+                    127,
+                ))
+            }
+        }
+    }
+
+    #[test]
+    fn xargs_consumes_pipeline_input() {
+        let mut shell = Interpreter::new(Box::new(XargsHost));
+        let ast = parse("xargs -n 1 echo").unwrap();
+        let result = shell.execute(&ast, Some(b"uno dos tres\n")).unwrap();
+        assert_eq!(result.stdout, "uno\ndos\ntres\n");
+        assert_eq!(result.status, 0);
+    }
+
 }
