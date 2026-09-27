@@ -227,6 +227,7 @@ pub struct Interpreter {
     disabled_builtins: HashSet<String>,
     call_stack: Vec<(String, String)>,
     source_stack: Vec<String>,
+    argument_stack: Vec<Vec<String>>,
     process_sub_counter: u64,
     pending_process_substitutions: Vec<ProcessSubstitution>,
     pending_expansion_stdout: String,
@@ -243,8 +244,12 @@ pub struct Interpreter {
 
 impl Interpreter {
     pub fn new(host: Box<dyn ShellCommandHost>) -> Self {
+        let mut env = ShellEnvironment::new();
+        env.set_array("DIRSTACK", vec![env.cwd.to_string_lossy().into_owned()]);
+        env.set_array("BASH_ARGC", vec!["0".to_owned()]);
+        env.set_array("BASH_ARGV", Vec::new());
         Self {
-            env: ShellEnvironment::new(),
+            env,
             host,
             loop_depth: 0,
             source_depth: 0,
@@ -252,6 +257,7 @@ impl Interpreter {
             disabled_builtins: HashSet::new(),
             call_stack: Vec::new(),
             source_stack: Vec::new(),
+            argument_stack: Vec::new(),
             process_sub_counter: 0,
             pending_process_substitutions: Vec::new(),
             pending_expansion_stdout: String::new(),
@@ -1285,11 +1291,15 @@ impl Interpreter {
                 .unwrap_or_else(|| self.env.script_name.clone());
             self.call_stack.push((name.clone(), source));
             self.sync_call_stack_vars();
+            self.argument_stack.push(saved.clone());
             self.env.positional = args.to_vec();
+            self.sync_argument_stack_vars();
             self.env.push_local_scope();
             let execution = self.execute(&body, local_stdin.as_deref());
             self.env.pop_local_scope();
             self.env.positional = saved;
+            self.argument_stack.pop();
+            self.sync_argument_stack_vars();
             self.call_stack.pop();
             self.sync_call_stack_vars();
             let mut result = execution?;
@@ -1362,6 +1372,29 @@ impl Interpreter {
         self.finish_simple_result(checkpoint, true, result)
     }
 
+    fn sync_dirstack(&mut self) {
+        let mut values = vec![self.env.cwd.to_string_lossy().into_owned()];
+        values.extend(
+            self.env.dir_stack.iter().rev()
+                .map(|path| path.to_string_lossy().into_owned())
+        );
+        self.env.set_array("DIRSTACK", values);
+    }
+
+    fn sync_argument_stack_vars(&mut self) {
+        let mut counts = vec![self.env.positional.len().to_string()];
+        counts.extend(
+            self.argument_stack.iter().rev()
+                .map(|frame| frame.len().to_string())
+        );
+        let mut argv = self.env.positional.iter().rev().cloned().collect::<Vec<_>>();
+        for frame in self.argument_stack.iter().rev() {
+            argv.extend(frame.iter().rev().cloned());
+        }
+        self.env.set_array("BASH_ARGC", counts);
+        self.env.set_array("BASH_ARGV", argv);
+    }
+
     fn shell_builtin(
         &mut self,
         name: &str,
@@ -1371,10 +1404,54 @@ impl Interpreter {
         let result = match name {
             "cd" => {
                 let raw = args.first().map(String::as_str).unwrap_or("~");
+                if args.first().is_some_and(|value| value.is_empty()) {
+                    return Ok(Some(ExecutionResult::from_parts(
+                        String::new(),
+                        "cd: nombre de directorio vacío\n".to_owned(),
+                        1,
+                    )));
+                }
+                let mut used_cdpath = false;
                 let target = if raw == "-" {
                     self.env.oldpwd.clone().unwrap_or_else(|| self.env.cwd.clone())
                 } else {
-                    self.resolve_path(raw)
+                    let direct = self.resolve_path(raw);
+                    if direct.exists()
+                        || raw.starts_with('.')
+                        || raw.starts_with('/')
+                        || raw.starts_with('\\')
+                        || raw.chars().nth(1) == Some(':')
+                    {
+                        direct
+                    } else {
+                        let mut found = None;
+                        let cdpath = self.env.get("CDPATH");
+                        if !cdpath.is_empty() {
+                            for entry in cdpath.split(':') {
+                                let base = if entry.is_empty() {
+                                    self.env.cwd.clone()
+                                } else {
+                                    self.resolve_path(entry)
+                                };
+                                let candidate = base.join(raw);
+                                if candidate.is_dir() {
+                                    used_cdpath = true;
+                                    found = Some(candidate);
+                                    break;
+                                }
+                            }
+                        }
+                        if found.is_none() && self.env.option_enabled("cdable_vars") {
+                            let variable = self.env.get(raw);
+                            if !variable.is_empty() {
+                                let candidate = self.resolve_path(&variable);
+                                if candidate.is_dir() {
+                                    found = Some(candidate);
+                                }
+                            }
+                        }
+                        found.unwrap_or(direct)
+                    }
                 };
                 match fs::canonicalize(&target) {
                     Ok(path) if path.is_dir() => {
@@ -1383,7 +1460,12 @@ impl Interpreter {
                         self.env.oldpwd = Some(previous.clone());
                         self.env.set("OLDPWD", previous.to_string_lossy().into_owned());
                         self.env.set("PWD", path.to_string_lossy().into_owned());
-                        let stdout = if raw == "-" { format!("{}\n", path.display()) } else { String::new() };
+                        self.sync_dirstack();
+                        let stdout = if raw == "-" || used_cdpath {
+                            format!("{}\n", path.display())
+                        } else {
+                            String::new()
+                        };
                         ExecutionResult::from_parts(stdout, String::new(), 0)
                     }
                     Ok(_) => ExecutionResult::from_parts(String::new(), format!("cd: {raw}: no es un directorio\n"), 1),
@@ -1578,8 +1660,11 @@ impl Interpreter {
                 let saved_positional = self.env.positional.clone();
                 let saved_name = self.env.script_name.clone();
                 let source_args = &args[index + 1..];
-                if !source_args.is_empty() {
+                let replaced_positional = !source_args.is_empty();
+                if replaced_positional {
+                    self.argument_stack.push(saved_positional.clone());
                     self.env.positional = source_args.to_vec();
+                    self.sync_argument_stack_vars();
                 }
                 self.source_depth += 1;
                 self.source_stack.push(resolved.to_string_lossy().into_owned());
@@ -1587,6 +1672,10 @@ impl Interpreter {
                 self.source_stack.pop();
                 self.source_depth = self.source_depth.saturating_sub(1);
                 self.env.positional = saved_positional;
+                if replaced_positional {
+                    self.argument_stack.pop();
+                    self.sync_argument_stack_vars();
+                }
                 self.env.script_name = saved_name;
                 let mut result = execution?;
                 if result.flow == FlowSignal::Return { result.flow = FlowSignal::None; }
@@ -1753,6 +1842,8 @@ impl Interpreter {
                         let current = self.env.cwd.clone();
                         self.env.dir_stack.push(current);
                         self.env.cwd = fs::canonicalize(target)?;
+                        self.env.set("PWD", self.env.cwd.to_string_lossy().into_owned());
+                        self.sync_dirstack();
                         ExecutionResult::from_parts(format!("{}\n", self.env.cwd.display()), String::new(), 0)
                     } else {
                         ExecutionResult::from_parts(String::new(), "pushd: directorio inválido\n".to_owned(), 1)
@@ -1764,6 +1855,8 @@ impl Interpreter {
             "popd" => {
                 if let Some(target) = self.env.dir_stack.pop() {
                     self.env.cwd = target;
+                    self.env.set("PWD", self.env.cwd.to_string_lossy().into_owned());
+                    self.sync_dirstack();
                     ExecutionResult::from_parts(format!("{}\n", self.env.cwd.display()), String::new(), 0)
                 } else {
                     ExecutionResult::from_parts(String::new(), "popd: pila vacía\n".to_owned(), 1)

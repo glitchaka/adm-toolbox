@@ -742,6 +742,14 @@ impl ShellEngine for NativeShellEngine {
     fn set_arguments(&mut self, name: &str, args: &[String]) {
         self.interpreter.env.script_name = name.to_owned();
         self.interpreter.env.positional = args.to_vec();
+        self.interpreter.env.set_array(
+            "BASH_ARGC",
+            vec![args.len().to_string()],
+        );
+        self.interpreter.env.set_array(
+            "BASH_ARGV",
+            args.iter().rev().cloned().collect(),
+        );
     }
     fn working_dir(&self) -> &Path {
         &self.interpreter.env.cwd
