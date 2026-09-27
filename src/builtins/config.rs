@@ -33,12 +33,13 @@ impl BuiltinCommand for ConfigBuiltin {
         &self,
         _invoked_name: &str,
         args: &[String],
-        _context: CommandContext<'_>,
+        context: CommandContext<'_>,
     ) -> Result<CommandOutput> {
         match args.first().map(String::as_str).unwrap_or("path") {
             "path" => Ok(CommandOutput::ok(format!("{}\n", self.config_file.display()))),
             "edit" => {
-                self.editor.edit(&self.config_file)?;
+                let args = vec![self.config_file.to_string_lossy().into_owned()];
+                self.editor.edit(&args, context.cwd)?;
                 Ok(CommandOutput::ok(""))
             }
             "reload" => Ok(CommandOutput::error(
