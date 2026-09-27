@@ -85,6 +85,104 @@ impl ShellCommandHost for WindowsShellHost {
             }
         }
     }
+    fn read_input(
+        &self,
+        prompt: &str,
+        silent: bool,
+        delimiter: char,
+        max_chars: Option<usize>,
+        timeout: Option<std::time::Duration>,
+        initial: &str,
+    ) -> Result<Option<String>> {
+        use crossterm::event::{Event, KeyCode, KeyModifiers};
+
+        crate::adapters::terminal::io::write(prompt.as_bytes())?;
+        crate::adapters::terminal::io::enter_raw()?;
+        struct RawGuard;
+        impl Drop for RawGuard {
+            fn drop(&mut self) { crate::adapters::terminal::io::leave_raw(); }
+        }
+        let _guard = RawGuard;
+
+        let mut line = initial.to_owned();
+        if !silent && !initial.is_empty() {
+            crate::adapters::terminal::io::write(initial.as_bytes())?;
+        }
+        let started = std::time::Instant::now();
+
+        loop {
+            if let Some(limit) = max_chars {
+                if line.chars().count() >= limit {
+                    crate::adapters::terminal::io::write(b"\r\n")?;
+                    return Ok(Some(line));
+                }
+            }
+
+            if let Some(limit) = timeout {
+                let elapsed = started.elapsed();
+                if elapsed >= limit {
+                    return Ok(None);
+                }
+                if !crate::adapters::terminal::io::poll(limit - elapsed)? {
+                    return Ok(None);
+                }
+            }
+
+            match crate::adapters::terminal::io::read()? {
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('d') && line.is_empty() =>
+                {
+                    return Ok(None);
+                }
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('c') =>
+                {
+                    crate::adapters::terminal::io::write(b"^C\r\n")?;
+                    return Ok(None);
+                }
+                Event::Key(key) => match key.code {
+                    KeyCode::Enter if delimiter == '\n' => {
+                        crate::adapters::terminal::io::write(b"\r\n")?;
+                        return Ok(Some(line));
+                    }
+                    KeyCode::Backspace => {
+                        if line.pop().is_some() && !silent {
+                            crate::adapters::terminal::io::write(b"\x08 \x08")?;
+                        }
+                    }
+                    KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        if ch == delimiter {
+                            if !silent && delimiter != '\n' {
+                                let mut buf = [0u8; 4];
+                                crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                            }
+                            return Ok(Some(line));
+                        }
+                        line.push(ch);
+                        if !silent {
+                            let mut buf = [0u8; 4];
+                            crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                        }
+                    }
+                    _ => {}
+                },
+                Event::Paste(text) => {
+                    for ch in text.chars() {
+                        if ch == delimiter {
+                            return Ok(Some(line));
+                        }
+                        line.push(ch);
+                        if max_chars.is_some_and(|limit| line.chars().count() >= limit) {
+                            break;
+                        }
+                    }
+                    if !silent { crate::adapters::terminal::io::write(text.as_bytes())?; }
+                }
+                _ => {}
+            }
+        }
+    }
+
     fn execute_builtin(
         &self,
         name: &str,

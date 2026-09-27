@@ -72,6 +72,19 @@ pub trait ShellCommandHost: Send + Sync {
         Ok(Some(line))
     }
 
+    fn read_input(
+        &self,
+        prompt: &str,
+        silent: bool,
+        delimiter: char,
+        max_chars: Option<usize>,
+        timeout: Option<std::time::Duration>,
+        initial: &str,
+    ) -> Result<Option<String>> {
+        let _ = (delimiter, max_chars, timeout, initial);
+        self.read_line(prompt, silent)
+    }
+
     fn execute_builtin(
         &self,
         name: &str,
@@ -188,7 +201,11 @@ impl Interpreter {
                 }
                 left
             }
-            AstNode::Pipeline(parts) => self.execute_pipeline(parts, stdin)?,
+            AstNode::Pipeline { parts, stderr_to_pipe } => {
+                self.execute_pipeline(parts, stderr_to_pipe, stdin)?
+            }
+            AstNode::Time { body, posix } => self.execute_timed(body, *posix, stdin)?,
+            AstNode::Coproc { name, body } => self.execute_coproc(name.as_deref(), body)?,
             AstNode::Negate(body) => {
                 let mut result = self.execute(body, stdin)?;
                 if !result.exit_requested {
@@ -589,29 +606,84 @@ impl Interpreter {
         ))
     }
 
-    fn execute_pipeline(&mut self, parts: &[AstNode], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
+    fn execute_pipeline(
+        &mut self,
+        parts: &[AstNode],
+        stderr_to_pipe: &[bool],
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
         let mut input = stdin.map(ToOwned::to_owned);
-        let mut stderr = String::new();
+        let mut collected_stderr = String::new();
+        let mut statuses = Vec::new();
         let mut last = ExecutionResult::success();
-        let mut last_nonzero = 0;
 
-        for part in parts {
+        for (index, part) in parts.iter().enumerate() {
             let saved = self.env.clone();
             let result = self.execute(part, input.as_deref());
             self.env = saved;
             last = result?;
             last.exit_requested = false;
             last.flow = FlowSignal::None;
-            stderr.push_str(&last.stderr);
-            if last.status != 0 { last_nonzero = last.status; }
-            input = Some(last.stdout.as_bytes().to_vec());
+            statuses.push(last.status);
+
+            let mut pipe_bytes = last.stdout.as_bytes().to_vec();
+            if stderr_to_pipe.get(index).copied().unwrap_or(false) {
+                pipe_bytes.extend_from_slice(last.stderr.as_bytes());
+            } else {
+                collected_stderr.push_str(&last.stderr);
+            }
+            input = Some(pipe_bytes);
         }
 
-        last.stderr = stderr;
-        if self.env.option_enabled("pipefail") && last_nonzero != 0 {
-            last.status = last_nonzero;
+        self.env.set_array(
+            "PIPESTATUS",
+            statuses.iter().map(ToString::to_string).collect(),
+        );
+        last.stderr = collected_stderr;
+        if self.env.option_enabled("pipefail") {
+            if let Some(status) = statuses.iter().rev().copied().find(|status| *status != 0) {
+                last.status = status;
+            }
         }
         Ok(last)
+    }
+
+    fn execute_timed(
+        &mut self,
+        body: &AstNode,
+        posix: bool,
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
+        let started = std::time::Instant::now();
+        let mut result = self.execute(body, stdin)?;
+        let elapsed = started.elapsed();
+        let seconds = elapsed.as_secs_f64();
+
+        let timing = if posix {
+            format!("real {:.3}\nuser {:.3}\nsys {:.3}\n", seconds, 0.0, 0.0)
+        } else {
+            let format = self.env.get("TIMEFORMAT");
+            if format.is_empty() {
+                format!("\nreal\t{seconds:.3}s\nuser\t0.000s\nsys\t0.000s\n")
+            } else {
+                render_timeformat(&format, seconds)
+            }
+        };
+        result.stderr.push_str(&timing);
+        Ok(result)
+    }
+
+    fn execute_coproc(&mut self, name: Option<&str>, body: &AstNode) -> Result<ExecutionResult> {
+        let source = render_ast(body);
+        let pid = self.host.execute_shell_background(&source, &self.env.cwd, &self.env.exported)?;
+        self.env.last_background_pid = Some(pid);
+
+        let variable = name.unwrap_or("COPROC");
+        self.env.set(format!("{variable}_PID"), pid.to_string());
+        // Windows does not expose POSIX numeric pipe descriptors. Keep the Bash
+        // array present and explicit instead of inventing unusable descriptor IDs.
+        self.env.set_array(variable.to_owned(), vec![String::new(), String::new()]);
+        Ok(ExecutionResult::success())
     }
 
     fn execute_simple(&mut self, command: &SimpleCommand, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
@@ -790,9 +862,16 @@ impl Interpreter {
             "unset" => {
                 let functions_only = args.iter().any(|arg| arg == "-f");
                 let variables_only = args.iter().any(|arg| arg == "-v");
+                let nameref_only = args.iter().any(|arg| arg == "-n");
                 let mut status = 0;
                 let mut stderr = String::new();
                 for item in args.iter().filter(|arg| !arg.starts_with('-')) {
+                    if nameref_only {
+                        if !self.env.unset_nameref(item) {
+                            status = 1;
+                        }
+                        continue;
+                    }
                     if !variables_only && self.env.functions.remove(item).is_some() {
                         if functions_only { continue; }
                     }
@@ -1524,7 +1603,12 @@ impl Interpreter {
         let mut silent = false;
         let mut raw = false;
         let mut max_chars: Option<usize> = None;
+        let mut exact_chars = false;
         let mut array_name: Option<String> = None;
+        let mut delimiter = '\n';
+        let mut timeout: Option<std::time::Duration> = None;
+        let mut fd = 0i32;
+        let mut initial = String::new();
         let mut variables = Vec::new();
         let mut index = 0usize;
 
@@ -1536,7 +1620,12 @@ impl Interpreter {
                 }
                 "-s" => silent = true,
                 "-r" => raw = true,
+                "-e" | "-E" => {
+                    // Native Shell Shock Tool line editing is always available for
+                    // interactive reads; -E shares the same editing path on Bash 5.3.
+                }
                 "-n" | "-N" => {
+                    exact_chars = args[index] == "-N";
                     index += 1;
                     max_chars = args.get(index).and_then(|v| v.parse::<usize>().ok());
                 }
@@ -1544,27 +1633,79 @@ impl Interpreter {
                     index += 1;
                     array_name = args.get(index).cloned();
                 }
+                "-d" => {
+                    index += 1;
+                    delimiter = args.get(index)
+                        .and_then(|value| value.chars().next())
+                        .unwrap_or('\0');
+                }
+                "-t" => {
+                    index += 1;
+                    let seconds = args.get(index)
+                        .and_then(|value| value.parse::<f64>().ok())
+                        .unwrap_or(0.0);
+                    timeout = Some(std::time::Duration::from_secs_f64(seconds.max(0.0)));
+                }
+                "-u" => {
+                    index += 1;
+                    fd = args.get(index).and_then(|value| value.parse::<i32>().ok()).unwrap_or(-1);
+                }
+                "-i" => {
+                    index += 1;
+                    initial = args.get(index).cloned().unwrap_or_default();
+                }
                 "--" => {
                     variables.extend(args[index + 1..].iter().cloned());
                     break;
                 }
-                value if value.starts_with('-') => {}
+                value if value.starts_with('-') => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("read: opción no válida: {value}\n"),
+                        2,
+                    ));
+                }
                 value => variables.push(value.to_owned()),
             }
             index += 1;
         }
 
+        if fd != 0 && stdin.is_none() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("read: {fd}: descriptor no disponible\n"),
+                1,
+            ));
+        }
+
         let source = if let Some(bytes) = stdin {
-            Some(String::from_utf8_lossy(bytes).lines().next().unwrap_or("").to_owned())
+            let text = String::from_utf8_lossy(bytes);
+            let value = if delimiter == '\0' {
+                text.split('\0').next().unwrap_or("").to_owned()
+            } else {
+                text.split(delimiter).next().unwrap_or("").to_owned()
+            };
+            Some(value)
         } else {
-            self.host.read_line(&prompt, silent)?
+            self.host.read_input(
+                &prompt,
+                silent,
+                delimiter,
+                max_chars,
+                timeout,
+                &initial,
+            )?
         };
+
         let Some(mut value) = source else {
             return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         };
 
         if let Some(max) = max_chars {
             value = value.chars().take(max).collect();
+            if exact_chars && value.chars().count() < max {
+                return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
+            }
         }
         if !raw {
             value = collapse_read_backslashes(&value);
@@ -1599,11 +1740,22 @@ impl Interpreter {
         let mut export = false;
         let mut print = false;
         let mut integer = false;
+        let mut nameref = false;
+        let mut lowercase = false;
+        let mut uppercase = false;
+        let mut trace = false;
+        let mut global = false;
+        let mut remove_attrs = Vec::new();
         let mut names = Vec::new();
 
         for arg in args {
-            if arg.starts_with('-') && arg.len() > 1 {
+            if (arg.starts_with('-') || arg.starts_with('+')) && arg.len() > 1 {
+                let remove = arg.starts_with('+');
                 for flag in arg[1..].chars() {
+                    if remove {
+                        remove_attrs.push(flag);
+                        continue;
+                    }
                     match flag {
                         'a' => indexed = true,
                         'A' => associative = true,
@@ -1611,6 +1763,11 @@ impl Interpreter {
                         'x' => export = true,
                         'p' => print = true,
                         'i' => integer = true,
+                        'n' => nameref = true,
+                        'l' => lowercase = true,
+                        'u' => uppercase = true,
+                        't' => trace = true,
+                        'g' => global = true,
                         _ => {}
                     }
                 }
@@ -1621,10 +1778,31 @@ impl Interpreter {
 
         if print || names.is_empty() {
             let mut stdout = String::new();
-            let mut all: Vec<_> = self.env.vars.keys().cloned().collect();
+            let mut all: Vec<_> = self.env.vars.keys()
+                .chain(self.env.namerefs.keys())
+                .cloned()
+                .collect();
             all.sort();
+            all.dedup();
             for name in all {
-                stdout.push_str(&format!("declare -- {}={}\n", name, shell_quote(&self.env.get(&name))));
+                let mut flags = String::new();
+                if self.env.is_nameref(&name) { flags.push('n'); }
+                if self.env.readonly.contains(&name) { flags.push('r'); }
+                if self.env.integer_vars.contains(&name) { flags.push('i'); }
+                if self.env.uppercase_vars.contains(&name) { flags.push('u'); }
+                if self.env.lowercase_vars.contains(&name) { flags.push('l'); }
+                if self.env.exported.contains_key(&name) { flags.push('x'); }
+                let value = if self.env.is_nameref(&name) {
+                    self.env.namerefs.get(&name).cloned().unwrap_or_default()
+                } else {
+                    self.env.get(&name)
+                };
+                stdout.push_str(&format!(
+                    "declare {} {}={}\n",
+                    if flags.is_empty() { "--".to_owned() } else { format!("-{flags}") },
+                    name,
+                    shell_quote(&value)
+                ));
             }
             for (name, values) in &self.env.arrays {
                 stdout.push_str(&format!("declare -a {name}=("));
@@ -1647,16 +1825,43 @@ impl Interpreter {
             let (name, mut value) = item.split_once('=')
                 .map(|(n,v)| (n.to_owned(), Some(v.to_owned())))
                 .unwrap_or((item.clone(), None));
+            let make_local = local && !global;
 
-            if associative { self.env.declare_assoc(name.clone()); }
-            else if indexed { self.env.set_array(name.clone(), Vec::new()); }
+            for flag in &remove_attrs {
+                match flag {
+                    'n' => { self.env.unset_nameref(&name); }
+                    'i' => self.env.set_integer(&name, false),
+                    'u' => self.env.set_uppercase(&name, false),
+                    'l' => self.env.set_lowercase(&name, false),
+                    't' => self.env.set_trace(&name, false),
+                    'x' => { self.env.exported.remove(&name); }
+                    _ => {}
+                }
+            }
+
+            if nameref {
+                let target = value.take().unwrap_or_default();
+                let expanded = self.expand_scalar(&target)?;
+                if make_local {
+                    self.env.set_local_nameref(name.clone(), expanded);
+                } else {
+                    self.env.set_nameref(name.clone(), expanded);
+                }
+            } else if associative {
+                if make_local { self.env.declare_local_assoc(name.clone()); }
+                else { self.env.declare_assoc(name.clone()); }
+            } else if indexed {
+                if make_local { self.env.set_local_array(name.clone(), Vec::new()); }
+                else { self.env.set_array(name.clone(), Vec::new()); }
+            }
 
             if let Some(raw_value) = value.take() {
                 if raw_value.starts_with('(') && raw_value.ends_with(')') && (indexed || associative) {
                     let body = &raw_value[1..raw_value.len() - 1];
                     let items = split_shell_words_relaxed(body)?;
                     if associative {
-                        self.env.declare_assoc(name.clone());
+                        if make_local { self.env.declare_local_assoc(name.clone()); }
+                        else { self.env.declare_assoc(name.clone()); }
                         for item in items {
                             if let Some((key, value)) = parse_array_entry(&item) {
                                 let expanded = self.expand_scalar(&value)?;
@@ -1675,22 +1880,27 @@ impl Interpreter {
                                 values.push(self.expand_scalar(&item)?);
                             }
                         }
-                        self.env.set_array(name.clone(), values);
+                        if make_local { self.env.set_local_array(name.clone(), values); }
+                        else { self.env.set_array(name.clone(), values); }
                     }
-                } else {
+                } else if !nameref {
                     let expanded = if integer {
                         self.evaluate_arithmetic_command(&raw_value)?.to_string()
                     } else {
                         self.expand_scalar(&raw_value)?
                     };
-                    if local { self.env.set_local(name.clone(), expanded); }
+                    if make_local { self.env.set_local(name.clone(), expanded); }
                     else { self.env.set(name.clone(), expanded); }
                 }
-            } else if local {
+            } else if make_local && !nameref && !indexed && !associative {
                 let current = self.env.get(&name);
                 self.env.set_local(name.clone(), current);
             }
 
+            if integer { self.env.set_integer(&name, true); }
+            if lowercase { self.env.set_lowercase(&name, true); }
+            if uppercase { self.env.set_uppercase(&name, true); }
+            if trace { self.env.set_trace(&name, true); }
             if readonly { self.env.set_readonly(&name); }
             if export { self.env.mark_exported(&name); }
         }
@@ -2031,9 +2241,28 @@ impl Interpreter {
                             .map(|pattern| !pattern.matches(&l))
                             .unwrap_or(l != r)
                     }
-                    "=~" => regex::Regex::new(&right)
-                        .map(|pattern| pattern.is_match(&left))
-                        .unwrap_or(false),
+                    "=~" => {
+                        match regex::Regex::new(&right) {
+                            Ok(pattern) => {
+                                if let Some(captures) = pattern.captures(&left) {
+                                    let values = (0..captures.len())
+                                        .map(|index| captures.get(index)
+                                            .map(|capture| capture.as_str().to_owned())
+                                            .unwrap_or_default())
+                                        .collect();
+                                    self.env.set_array("BASH_REMATCH", values);
+                                    true
+                                } else {
+                                    self.env.set_array("BASH_REMATCH", Vec::new());
+                                    false
+                                }
+                            }
+                            Err(_) => {
+                                self.env.set_array("BASH_REMATCH", Vec::new());
+                                false
+                            }
+                        }
+                    },
                     "<" => if nocase { left.to_lowercase() < right.to_lowercase() } else { left < right },
                     ">" => if nocase { left.to_lowercase() > right.to_lowercase() } else { left > right },
                     "-eq" => eval_arithmetic(&left, &self.env)? == eval_arithmetic(&right, &self.env)?,
@@ -2535,16 +2764,7 @@ impl Interpreter {
 
     fn special_value(&self, name: &str) -> String {
         match name {
-            "RANDOM" => {
-                let nanos = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map(|d| d.subsec_nanos())
-                    .unwrap_or(0);
-                (nanos % 32768).to_string()
-            }
-            "BASH_VERSION" => "5.2-compatible-sst".to_owned(),
             "BASHPID" | "$" => std::process::id().to_string(),
-            "PPID" => std::process::id().saturating_sub(1).to_string(),
             _ => self.env.get(name),
         }
     }
@@ -2903,6 +3123,16 @@ fn split_ifs(input: &str, ifs: &str) -> Vec<String> {
     }
     if !current.is_empty() || saw_non_ws_sep { fields.push(current); }
     fields
+}
+
+fn render_timeformat(format: &str, real_seconds: f64) -> String {
+    let mut out = format.to_owned();
+    out = out.replace("%R", &format!("{real_seconds:.3}"));
+    out = out.replace("%U", "0.000");
+    out = out.replace("%S", "0.000");
+    out = out.replace("%P", "0.00");
+    out.push('\n');
+    out
 }
 
 fn set_shell_option(env: &mut ShellEnvironment, name: &str, enabled: bool) {
@@ -3673,7 +3903,21 @@ fn render_ast(node: &AstNode) -> String {
         AstNode::Sequence(nodes) => nodes.iter().map(render_ast).collect::<Vec<_>>().join("; "),
         AstNode::And(left,right) => format!("{} && {}", render_ast(left), render_ast(right)),
         AstNode::Or(left,right) => format!("{} || {}", render_ast(left), render_ast(right)),
-        AstNode::Pipeline(parts) => parts.iter().map(render_ast).collect::<Vec<_>>().join(" | "),
+        AstNode::Pipeline { parts, stderr_to_pipe } => {
+            let mut rendered = String::new();
+            for (index, part) in parts.iter().enumerate() {
+                if index > 0 {
+                    rendered.push_str(if stderr_to_pipe.get(index - 1).copied().unwrap_or(false) { " |& " } else { " | " });
+                }
+                rendered.push_str(&render_ast(part));
+            }
+            rendered
+        }
+        AstNode::Time { body, posix } => format!("time {}{}", if *posix { "-p " } else { "" }, render_ast(body)),
+        AstNode::Coproc { name, body } => match name {
+            Some(name) => format!("coproc {name} {}", render_ast(body)),
+            None => format!("coproc {}", render_ast(body)),
+        },
         AstNode::Negate(body) => format!("! {}", render_ast(body)),
         AstNode::Background(body) => format!("{} &", render_ast(body)),
         AstNode::Simple(command) => {

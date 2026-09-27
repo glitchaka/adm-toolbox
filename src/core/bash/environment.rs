@@ -206,7 +206,17 @@ impl ShellEnvironment {
                 if self.shell_options.contains("noclobber") { flags.push('C'); }
                 flags
             }
-            "$" => std::process::id().to_string(),
+            "$" | "BASHPID" => std::process::id().to_string(),
+            "PPID" => {
+                let system = sysinfo::System::new_all();
+                sysinfo::get_current_pid()
+                    .ok()
+                    .and_then(|pid| system.process(pid))
+                    .and_then(|process| process.parent())
+                    .map(|pid| pid.as_u32().to_string())
+                    .unwrap_or_else(|| "0".to_owned())
+            }
+            "UID" | "EUID" => "0".to_owned(),
             "RANDOM" => {
                 let state = self.random_state.get()
                     .wrapping_mul(1103515245)
@@ -310,10 +320,17 @@ impl ShellEnvironment {
                 self.assoc_arrays.entry(base).or_default().insert(subscript, value);
                 return true;
             }
-            if let Ok(index) = subscript.parse::<usize>() {
+            if let Ok(index) = subscript.parse::<isize>() {
                 let array = self.arrays.entry(base).or_default();
-                if array.len() <= index { array.resize(index + 1, String::new()); }
-                array[index] = value;
+                let resolved = if index < 0 {
+                    let candidate = array.len() as isize + index;
+                    if candidate < 0 { return false; }
+                    candidate as usize
+                } else {
+                    index as usize
+                };
+                if array.len() <= resolved { array.resize(resolved + 1, String::new()); }
+                array[resolved] = value;
                 return true;
             }
         }
@@ -332,8 +349,11 @@ impl ShellEnvironment {
         if let Some((base, subscript)) = split_subscript(name) {
             if self.readonly.contains(base) { return false; }
             if let Some(array) = self.arrays.get_mut(base) {
-                if let Ok(index) = subscript.parse::<usize>() {
-                    if index < array.len() { array[index].clear(); }
+                if let Ok(index) = subscript.parse::<isize>() {
+                    let resolved = if index < 0 { array.len() as isize + index } else { index };
+                    if resolved >= 0 && (resolved as usize) < array.len() {
+                        array[resolved as usize].clear();
+                    }
                     return true;
                 }
             }
@@ -402,7 +422,17 @@ impl ShellEnvironment {
             return self.array_values(base).join(&sep);
         }
         if let Some(array) = self.arrays.get(base) {
-            return subscript.parse::<usize>().ok().and_then(|i| array.get(i)).cloned().unwrap_or_default();
+            if let Ok(index) = subscript.parse::<isize>() {
+                let resolved = if index < 0 {
+                    array.len() as isize + index
+                } else {
+                    index
+                };
+                if resolved >= 0 {
+                    return array.get(resolved as usize).cloned().unwrap_or_default();
+                }
+            }
+            return String::new();
         }
         if let Some(array) = self.assoc_arrays.get(base) {
             return array.get(subscript).cloned().unwrap_or_default();
