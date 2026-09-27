@@ -85,6 +85,11 @@ pub const UNIX_COMMANDS: &[(&str, &str)] = &[
     ("rm", "rm — elimina archivos o directorios"),
     ("cp", "cp — copia archivos"),
     ("mv", "mv — mueve o renombra archivos"),
+    ("tar", "tar — crea, lista y extrae archivos tar/tar.gz"),
+    ("gzip", "gzip — comprime archivos con gzip"),
+    ("gunzip", "gunzip — descomprime archivos .gz"),
+    ("zip", "zip — crea archivos ZIP"),
+    ("unzip", "unzip — lista o extrae archivos ZIP"),
     ("which", "which — localiza un comando"),
     ("type", "type — localiza un comando"),
 ];
