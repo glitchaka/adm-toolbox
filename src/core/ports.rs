@@ -32,6 +32,10 @@ pub trait ShellEngine: Send {
     fn execute(&mut self, line: &str) -> Result<ShellExecution>;
     fn set_arguments(&mut self, name: &str, args: &[String]);
     fn set_interactive(&mut self, _interactive: bool) {}
+    fn prepare_prompt(&mut self, _continuation: bool) -> Result<(String, String, Option<String>)> {
+        Ok((String::new(), String::new(), None))
+    }
+    fn pre_execute_prompt(&mut self) -> Result<String> { Ok(String::new()) }
     fn complete(&mut self, _line: &str, _cursor: usize) -> Result<Vec<String>> {
         Ok(Vec::new())
     }

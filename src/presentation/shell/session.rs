@@ -23,10 +23,12 @@ pub struct ShellSession {
 
 impl ShellSession {
     pub fn new(
-        engine: Box<dyn ShellEngine>,
+        mut engine: Box<dyn ShellEngine>,
         command_names: Vec<String>,
         history_file: PathBuf,
     ) -> Result<Self> {
+        engine.set_interactive(true);
+
         let mut completion_names = command_names;
         completion_names.extend([
             "help".to_owned(),
@@ -62,11 +64,13 @@ impl ShellSession {
         let mut buffer = String::new();
 
         while self.running {
-            let prompt_text = if buffer.is_empty() {
-                prompt::render(self.engine.working_dir())
-            } else {
-                "> ".to_owned()
-            };
+            let continuation = !buffer.is_empty();
+            let (prompt_stdout, prompt_stderr, bash_prompt) = self.engine.prepare_prompt(continuation)?;
+            print!("{prompt_stdout}");
+            eprint!("{prompt_stderr}");
+            let prompt_text = bash_prompt.unwrap_or_else(|| {
+                if continuation { "> ".to_owned() } else { prompt::render(self.engine.working_dir()) }
+            });
 
             match self.editor.readline(&prompt_text) {
                 Ok(line) => {
@@ -91,6 +95,9 @@ impl ShellSession {
                     }
 
                     let _ = self.editor.add_history_entry(command.as_str());
+
+                    let ps0 = self.engine.pre_execute_prompt()?;
+                    print!("{ps0}");
 
                     match self.engine.execute(&command) {
                         Ok(result) => {

@@ -759,6 +759,14 @@ impl ShellEngine for NativeShellEngine {
         self.interpreter.set_interactive(interactive);
     }
 
+    fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
+        self.interpreter.prepare_prompt(continuation)
+    }
+
+    fn pre_execute_prompt(&mut self) -> Result<String> {
+        self.interpreter.pre_execute_prompt()
+    }
+
     fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
         self.interpreter.complete_line(line, cursor)
     }

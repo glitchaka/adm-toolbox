@@ -85,11 +85,17 @@ impl EmbeddedSession {
                 engine.set_interactive(true);
                 *worker_bindings.lock().unwrap_or_else(|error| error.into_inner()) = engine.readline_bindings();
                 io::write(crate::presentation::shell::prompt::banner().as_bytes())?;
-                io::write(crate::presentation::shell::prompt::render(engine.working_dir()).as_bytes())?;
+                let (prompt_stdout, prompt_stderr, bash_prompt) = engine.prepare_prompt(false)?;
+                io::write(prompt_stdout.as_bytes())?;
+                io::write(prompt_stderr.as_bytes())?;
+                let prompt = bash_prompt.unwrap_or_else(|| crate::presentation::shell::prompt::render(engine.working_dir()));
+                io::write(prompt.as_bytes())?;
                 worker_busy.store(false, Ordering::SeqCst);
                 for request in requests {
                     match request {
                         WorkerRequest::Execute(command) => {
+                            let ps0 = engine.pre_execute_prompt()?;
+                            if !ps0.is_empty() { io::write(ps0.as_bytes())?; }
                             match engine.execute(&command) {
                                 Ok(result) => {
                                     io::write(result.stdout.as_bytes())?;
@@ -99,7 +105,11 @@ impl EmbeddedSession {
                                 Err(error) => io::write(format!("adm: {error}\n").as_bytes())?,
                             }
                             *worker_bindings.lock().unwrap_or_else(|error| error.into_inner()) = engine.readline_bindings();
-                            io::write(crate::presentation::shell::prompt::render(engine.working_dir()).as_bytes())?;
+                            let (prompt_stdout, prompt_stderr, bash_prompt) = engine.prepare_prompt(false)?;
+                            io::write(prompt_stdout.as_bytes())?;
+                            io::write(prompt_stderr.as_bytes())?;
+                            let prompt = bash_prompt.unwrap_or_else(|| crate::presentation::shell::prompt::render(engine.working_dir()));
+                            io::write(prompt.as_bytes())?;
                             worker_busy.store(false, Ordering::SeqCst);
                         }
                         WorkerRequest::Complete { line, cursor, reply } => {
