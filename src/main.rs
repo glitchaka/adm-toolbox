@@ -46,7 +46,7 @@ fn main() {
 fn run_cli(args: &[String]) -> Result<i32> {
     match args.first().map(String::as_str) {
         Some("--help" | "-h") => {
-            println!("ADM Toolbox {}\n\nSin argumentos: terminal propia\n--console: terminal propia\n-c COMANDO: ejecutar un comando\nARCHIVO.sh [ARGS...]: ejecutar un script\n--version: versión\n\nTerminal: Ctrl+Shift+C copiar, Ctrl+Shift+V pegar, rueda para historial.", env!("CARGO_PKG_VERSION"));
+            println!("ADM Toolbox {}\n\nSin argumentos: terminal propia\n--console: terminal propia\n-c COMANDO: ejecutar un comando\nARCHIVO.sh [ARGS...]: ejecutar un script\n--version: versión\n\nTerminal: selecciona con el mouse y usa Ctrl+C para copiar; Ctrl+Shift+V o Shift+Insert para pegar; la rueda recorre el historial visible.", env!("CARGO_PKG_VERSION"));
             return Ok(0);
         }
         Some("--version") => { println!("ADM Toolbox {}", env!("CARGO_PKG_VERSION")); return Ok(0); }
