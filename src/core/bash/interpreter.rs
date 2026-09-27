@@ -45,6 +45,11 @@ pub struct CoprocHandles {
     pub stdin: Box<dyn Write + Send>,
 }
 
+pub struct ProcessSubstitutionHandle {
+    pub path: PathBuf,
+    pub completion: std::sync::mpsc::Receiver<ExecutionResult>,
+}
+
 #[derive(Debug, Clone, Default)]
 struct CompletionSpec {
     actions: Vec<String>,
@@ -58,11 +63,12 @@ struct CompletionSpec {
     options: HashSet<String>,
 }
 
-#[derive(Debug)]
 struct ProcessSubstitution {
     path: PathBuf,
     command: Option<String>,
     stderr: String,
+    completion: Option<std::sync::mpsc::Receiver<ExecutionResult>>,
+    remove_path: bool,
 }
 
 #[derive(Debug)]
@@ -205,6 +211,16 @@ pub trait ShellCommandHost: Send + Sync {
     ) -> Result<CoprocHandles> {
         let _ = (source, cwd, env);
         bail!("coproc no disponible en este host")
+    }
+
+    fn start_process_substitution(
+        &self,
+        _read_from_command: bool,
+        _source: &str,
+        _cwd: &Path,
+        _env: &HashMap<String, String>,
+    ) -> Result<Option<ProcessSubstitutionHandle>> {
+        Ok(None)
     }
 
     fn command_is_builtin(&self, _name: &str) -> bool { false }
@@ -5687,20 +5703,40 @@ impl Interpreter {
         let pending = self.pending_process_substitutions.split_off(start);
         let mut stdout = String::new();
         let mut stderr = String::new();
+        let mut status = 0;
 
         for substitution in pending {
             stderr.push_str(&substitution.stderr);
-            if let Some(command) = substitution.command {
+
+            if let Some(completion) = substitution.completion {
+                match completion.recv() {
+                    Ok(result) => {
+                        stdout.push_str(&result.stdout);
+                        stderr.push_str(&result.stderr);
+                        status = result.status;
+                    }
+                    Err(error) => {
+                        stderr.push_str(&format!(
+                            "process substitution: no se pudo recoger el proceso: {error}\n"
+                        ));
+                        status = 1;
+                    }
+                }
+            } else if let Some(command) = substitution.command {
                 let input = fs::read(&substitution.path).unwrap_or_default();
                 let node = parse(&command)?;
                 let result = self.execute(&node, Some(&input))?;
                 stdout.push_str(&result.stdout);
                 stderr.push_str(&result.stderr);
+                status = result.status;
             }
-            let _ = fs::remove_file(&substitution.path);
+
+            if substitution.remove_path {
+                let _ = fs::remove_file(&substitution.path);
+            }
         }
 
-        Ok(ExecutionResult::from_parts(stdout, stderr, 0))
+        Ok(ExecutionResult::from_parts(stdout, stderr, status))
     }
 
     fn expand_words(&mut self, words: &[String]) -> Result<Vec<String>> {
@@ -5780,8 +5816,29 @@ impl Interpreter {
                 let end = matching(&chars, i + 1, '(', ')')
                     .ok_or_else(|| anyhow!("sustitución de proceso sin cerrar"))?;
                 let source: String = chars[i + 2..end].iter().collect();
-                let path = self.next_process_substitution_path();
 
+                if let Some(handle) = self.host.start_process_substitution(
+                    direction == '<',
+                    &source,
+                    &self.env.cwd,
+                    &self.env.exported,
+                )? {
+                    let path = handle.path.clone();
+                    self.pending_process_substitutions.push(ProcessSubstitution {
+                        path: path.clone(),
+                        command: None,
+                        stderr: String::new(),
+                        completion: Some(handle.completion),
+                        remove_path: false,
+                    });
+                    out.push_str(&path.to_string_lossy());
+                    i = end + 1;
+                    continue;
+                }
+
+                // Portable fallback for hosts without native pipe-backed process
+                // substitution.
+                let path = self.next_process_substitution_path();
                 if direction == '<' {
                     let saved = self.env.clone();
                     if !self.env.option_enabled("inherit_errexit")
@@ -5797,6 +5854,8 @@ impl Interpreter {
                         path: path.clone(),
                         command: None,
                         stderr: execution.stderr,
+                        completion: None,
+                        remove_path: true,
                     });
                 } else {
                     fs::write(&path, b"")?;
@@ -5804,6 +5863,8 @@ impl Interpreter {
                         path: path.clone(),
                         command: Some(source),
                         stderr: String::new(),
+                        completion: None,
+                        remove_path: true,
                     });
                 }
 

@@ -13,7 +13,7 @@ use crate::{
     core::{
         CommandContext,
         ShellExecution,
-        bash::{CoprocHandles, ExecutionResult, Interpreter, JobInfo, ShellCommandHost},
+        bash::{CoprocHandles, ExecutionResult, Interpreter, JobInfo, ProcessSubstitutionHandle, ShellCommandHost},
         ports::ShellEngine,
     },
 };
@@ -447,6 +447,130 @@ impl ShellCommandHost for WindowsShellHost {
             ),
             statuses,
         )))
+    }
+
+    fn start_process_substitution(
+        &self,
+        read_from_command: bool,
+        source: &str,
+        cwd: &Path,
+        env: &HashMap<String, String>,
+    ) -> Result<Option<ProcessSubstitutionHandle>> {
+        #[cfg(windows)]
+        {
+            use std::{
+                os::windows::io::{FromRawHandle, RawHandle},
+                sync::atomic::{AtomicU64, Ordering},
+            };
+            use windows_sys::Win32::{
+                Foundation::{CloseHandle, GetLastError, INVALID_HANDLE_VALUE},
+                System::Pipes::{
+                    ConnectNamedPipe, CreateNamedPipeW, PIPE_ACCESS_INBOUND,
+                    PIPE_ACCESS_OUTBOUND, PIPE_READMODE_BYTE, PIPE_TYPE_BYTE, PIPE_WAIT,
+                },
+            };
+
+            static PIPE_COUNTER: AtomicU64 = AtomicU64::new(1);
+            const ERROR_PIPE_CONNECTED_VALUE: u32 = 535;
+
+            let sequence = PIPE_COUNTER.fetch_add(1, Ordering::Relaxed);
+            let pipe_name = format!(
+                r"\\.\pipe\shell-shock-psub-{}-{}",
+                std::process::id(),
+                sequence,
+            );
+            let wide: Vec<u16> = pipe_name.encode_utf16().chain(Some(0)).collect();
+            let access = if read_from_command {
+                PIPE_ACCESS_OUTBOUND
+            } else {
+                PIPE_ACCESS_INBOUND
+            };
+            let pipe = unsafe {
+                CreateNamedPipeW(
+                    wide.as_ptr(),
+                    access,
+                    PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
+                    1,
+                    64 * 1024,
+                    64 * 1024,
+                    0,
+                    std::ptr::null(),
+                )
+            };
+            if pipe == INVALID_HANDLE_VALUE {
+                return Err(std::io::Error::last_os_error().into());
+            }
+
+            let source = source.to_owned();
+            let cwd = cwd.to_path_buf();
+            let env = env.clone();
+            let executable = std::env::current_exe()?;
+            let (sender, receiver) = std::sync::mpsc::channel();
+
+            std::thread::spawn(move || {
+                let connected = unsafe { ConnectNamedPipe(pipe, std::ptr::null_mut()) };
+                if connected == 0 {
+                    let error = unsafe { GetLastError() };
+                    if error != ERROR_PIPE_CONNECTED_VALUE {
+                        unsafe { CloseHandle(pipe); }
+                        let _ = sender.send(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("process substitution: no se pudo conectar named pipe: {}\n",
+                                std::io::Error::from_raw_os_error(error as i32)),
+                            1,
+                        ));
+                        return;
+                    }
+                }
+
+                let file = unsafe {
+                    std::fs::File::from_raw_handle(pipe as RawHandle)
+                };
+                let mut command = Command::new(executable);
+                command
+                    .arg("-c")
+                    .arg(source)
+                    .current_dir(cwd)
+                    .envs(env);
+
+                if read_from_command {
+                    command
+                        .stdin(Stdio::null())
+                        .stdout(Stdio::from(file))
+                        .stderr(Stdio::piped());
+                } else {
+                    command
+                        .stdin(Stdio::from(file))
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::piped());
+                }
+
+                let result = match command.spawn().and_then(|child| child.wait_with_output()) {
+                    Ok(output) => ExecutionResult::from_parts(
+                        String::from_utf8_lossy(&output.stdout).into_owned(),
+                        String::from_utf8_lossy(&output.stderr).into_owned(),
+                        output.status.code().unwrap_or(1),
+                    ),
+                    Err(error) => ExecutionResult::from_parts(
+                        String::new(),
+                        format!("process substitution: {error}\n"),
+                        1,
+                    ),
+                };
+                let _ = sender.send(result);
+            });
+
+            return Ok(Some(ProcessSubstitutionHandle {
+                path: PathBuf::from(pipe_name),
+                completion: receiver,
+            }));
+        }
+
+        #[cfg(not(windows))]
+        {
+            let _ = (read_from_command, source, cwd, env);
+            Ok(None)
+        }
     }
 
     fn execute_external_background(
