@@ -12,6 +12,20 @@ use std::{
 
 use anyhow::{Context, Result};
 
+#[cfg(windows)]
+use std::os::windows::{ffi::OsStrExt, io::AsRawHandle};
+#[cfg(windows)]
+use windows_sys::Win32::{
+    Foundation::{CloseHandle, FILETIME, HANDLE, INVALID_HANDLE_VALUE},
+    Storage::FileSystem::{
+        CreateFileW, GetFileInformationByHandleEx, GetFileType, FILE_ATTRIBUTE_TAG_INFO,
+        FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_READ_ATTRIBUTES,
+        FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE, FILE_TYPE_CHAR, FILE_TYPE_PIPE,
+        FileAttributeTagInfo, OPEN_EXISTING,
+    },
+    System::Threading::{GetCurrentProcess, GetProcessTimes},
+};
+
 use crate::{
     builtins::CommandRegistry,
     core::{
@@ -46,6 +60,43 @@ struct WindowsShellHost {
     jobs: Mutex<HashMap<u32, BackgroundJob>>,
     pipes: Mutex<HashMap<i32, VirtualPipe>>,
     next_fd: AtomicI32,
+    child_cpu_100ns: Mutex<(u64, u64)>,
+}
+
+impl WindowsShellHost {
+    #[cfg(windows)]
+    fn process_cpu_100ns(handle: HANDLE) -> Option<(u64, u64)> {
+        unsafe {
+            let mut creation: FILETIME = std::mem::zeroed();
+            let mut exit: FILETIME = std::mem::zeroed();
+            let mut kernel: FILETIME = std::mem::zeroed();
+            let mut user: FILETIME = std::mem::zeroed();
+            if GetProcessTimes(handle, &mut creation, &mut exit, &mut kernel, &mut user) == 0 {
+                return None;
+            }
+            let to_u64 = |time: FILETIME| {
+                (time.dwLowDateTime as u64) | ((time.dwHighDateTime as u64) << 32)
+            };
+            Some((to_u64(user), to_u64(kernel)))
+        }
+    }
+
+    #[cfg(not(windows))]
+    fn process_cpu_100ns(_handle: *mut std::ffi::c_void) -> Option<(u64, u64)> {
+        None
+    }
+
+    fn record_child_cpu(&self, child: &Child) {
+        #[cfg(windows)]
+        {
+            let handle = child.as_raw_handle() as HANDLE;
+            if let Some((user, kernel)) = Self::process_cpu_100ns(handle) {
+                let mut total = self.child_cpu_100ns.lock().unwrap_or_else(|error| error.into_inner());
+                total.0 = total.0.saturating_add(user);
+                total.1 = total.1.saturating_add(kernel);
+            }
+        }
+    }
 }
 
 impl ShellCommandHost for WindowsShellHost {
@@ -229,6 +280,82 @@ impl ShellCommandHost for WindowsShellHost {
         )))
     }
 
+    fn process_times(&self) -> Result<(f64, f64, f64, f64)> {
+        #[cfg(windows)]
+        {
+            let (user, kernel) = Self::process_cpu_100ns(unsafe { GetCurrentProcess() })
+                .unwrap_or((0, 0));
+            let child = *self.child_cpu_100ns.lock().unwrap_or_else(|error| error.into_inner());
+            let seconds = |ticks: u64| ticks as f64 / 10_000_000.0;
+            return Ok((seconds(user), seconds(kernel), seconds(child.0), seconds(child.1)));
+        }
+        #[cfg(not(windows))]
+        {
+            Ok((0.0, 0.0, 0.0, 0.0))
+        }
+    }
+
+    fn file_type_test(&self, path: &Path, kind: char) -> Result<Option<bool>> {
+        #[cfg(windows)]
+        {
+            let raw = path.to_string_lossy().replace('/', "\\");
+            let lower = raw.to_ascii_lowercase();
+
+            if kind == 'b' {
+                return Ok(Some(
+                    lower.starts_with(r"\\.\physicaldrive")
+                        || lower.starts_with(r"\\?\volume{")
+                        || lower.starts_with(r"\\.\harddisk"),
+                ));
+            }
+            if kind == 'p' && lower.starts_with(r"\\.\pipe\") {
+                return Ok(Some(true));
+            }
+
+            let wide: Vec<u16> = path.as_os_str().encode_wide().chain(Some(0)).collect();
+            let handle = unsafe {
+                CreateFileW(
+                    wide.as_ptr(),
+                    FILE_READ_ATTRIBUTES,
+                    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                    std::ptr::null(),
+                    OPEN_EXISTING,
+                    FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS,
+                    std::ptr::null_mut(),
+                )
+            };
+            if handle == INVALID_HANDLE_VALUE {
+                return Ok(Some(false));
+            }
+
+            let file_type = unsafe { GetFileType(handle) };
+            let mut tag: FILE_ATTRIBUTE_TAG_INFO = unsafe { std::mem::zeroed() };
+            let tag_ok = unsafe {
+                GetFileInformationByHandleEx(
+                    handle,
+                    FileAttributeTagInfo,
+                    (&mut tag as *mut FILE_ATTRIBUTE_TAG_INFO).cast(),
+                    std::mem::size_of::<FILE_ATTRIBUTE_TAG_INFO>() as u32,
+                )
+            } != 0;
+            unsafe { CloseHandle(handle); }
+
+            const IO_REPARSE_TAG_AF_UNIX: u32 = 0x80000023;
+            let value = match kind {
+                'c' => file_type == FILE_TYPE_CHAR,
+                'p' => file_type == FILE_TYPE_PIPE && lower.starts_with(r"\\.\pipe\"),
+                'S' => tag_ok && tag.ReparseTag == IO_REPARSE_TAG_AF_UNIX,
+                _ => false,
+            };
+            return Ok(Some(value));
+        }
+        #[cfg(not(windows))]
+        {
+            let _ = (path, kind);
+            Ok(None)
+        }
+    }
+
     fn command_is_builtin(&self, name: &str) -> bool {
         name == "help" || name == "man" || self.registry.names().iter().any(|candidate| candidate == name)
     }
@@ -291,6 +418,7 @@ impl ShellCommandHost for WindowsShellHost {
             }
 
             if child.try_wait()?.is_some() {
+                self.record_child_cpu(&child);
                 let output = child.wait_with_output()?;
                 return Ok(ExecutionResult::from_parts(
                     String::from_utf8_lossy(&output.stdout).into_owned(),
@@ -399,6 +527,7 @@ impl ShellCommandHost for WindowsShellHost {
             for (index, child) in children.iter_mut().enumerate() {
                 if statuses[index].is_none() {
                     if let Some(status) = child.try_wait()? {
+                        self.record_child_cpu(child);
                         statuses[index] = Some(status.code().unwrap_or(1));
                     }
                 }
@@ -653,6 +782,7 @@ impl ShellCommandHost for WindowsShellHost {
             let job = self.jobs.lock().unwrap_or_else(|e| e.into_inner()).remove(&pid);
             let Some(mut job) = job else { return Ok(127); };
             let status = job.child.wait()?.code().unwrap_or(1);
+            self.record_child_cpu(&job.child);
             for fd in job.pipe_fds {
                 let _ = self.close_fd(fd)?;
             }
@@ -670,6 +800,7 @@ impl ShellCommandHost for WindowsShellHost {
             let job = self.jobs.lock().unwrap_or_else(|e| e.into_inner()).remove(&pid);
             if let Some(mut job) = job {
                 status = job.child.wait()?.code().unwrap_or(1);
+                self.record_child_cpu(&job.child);
                 for fd in job.pipe_fds {
                     let _ = self.close_fd(fd)?;
                 }
@@ -689,6 +820,7 @@ impl ShellCommandHost for WindowsShellHost {
                 let mut completed = None;
                 for (pid, job) in jobs.iter_mut() {
                     if let Some(status) = job.child.try_wait()? {
+                        self.record_child_cpu(&job.child);
                         completed = Some((*pid, status.code().unwrap_or(1)));
                         break;
                     }
@@ -790,6 +922,7 @@ impl NativeShellEngine {
             jobs: Mutex::new(HashMap::new()),
             pipes: Mutex::new(HashMap::new()),
             next_fd: AtomicI32::new(10),
+            child_cpu_100ns: Mutex::new((0, 0)),
         };
         let mut interpreter = Interpreter::new(Box::new(host));
         interpreter.env.export(

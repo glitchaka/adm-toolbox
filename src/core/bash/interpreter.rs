@@ -181,6 +181,18 @@ pub trait ShellCommandHost: Send + Sync {
     fn write_fd(&self, _fd: i32, _data: &[u8]) -> Result<bool> { Ok(false) }
     fn close_fd(&self, _fd: i32) -> Result<bool> { Ok(false) }
 
+    /// Returns shell user/system CPU seconds followed by cumulative child
+    /// user/system CPU seconds.
+    fn process_times(&self) -> Result<(f64, f64, f64, f64)> {
+        Ok((0.0, 0.0, 0.0, 0.0))
+    }
+
+    fn file_type_test(&self, _path: &Path, _kind: char) -> Result<Option<bool>> {
+        Ok(None)
+    }
+
+    fn fd_is_terminal(&self, fd: i32) -> bool { (0..=2).contains(&fd) }
+
     fn command_is_builtin(&self, _name: &str) -> bool { false }
     fn command_names(&self) -> Vec<String> { Vec::new() }
     fn jobs(&self) -> Result<Vec<JobInfo>> { Ok(Vec::new()) }
@@ -982,18 +994,22 @@ impl Interpreter {
         stdin: Option<&[u8]>,
     ) -> Result<ExecutionResult> {
         let started = std::time::Instant::now();
+        let before = self.host.process_times().unwrap_or((0.0, 0.0, 0.0, 0.0));
         let mut result = self.execute(body, stdin)?;
-        let elapsed = started.elapsed();
-        let seconds = elapsed.as_secs_f64();
+        let after = self.host.process_times().unwrap_or(before);
+        let elapsed = started.elapsed().as_secs_f64();
+
+        let user = (after.0 - before.0).max(0.0) + (after.2 - before.2).max(0.0);
+        let system = (after.1 - before.1).max(0.0) + (after.3 - before.3).max(0.0);
 
         let timing = if posix {
-            format!("real {:.3}\nuser {:.3}\nsys {:.3}\n", seconds, 0.0, 0.0)
+            format!("real {:.3}\nuser {:.3}\nsys {:.3}\n", elapsed, user, system)
         } else {
             let format = self.env.get("TIMEFORMAT");
             if format.is_empty() {
-                format!("\nreal\t{seconds:.3}s\nuser\t0.000s\nsys\t0.000s\n")
+                format!("\nreal\t{elapsed:.3}s\nuser\t{user:.3}s\nsys\t{system:.3}s\n")
             } else {
-                render_timeformat(&format, seconds)
+                render_timeformat(&format, elapsed, user, system)
             }
         };
         result.stderr.push_str(&timing);
@@ -2736,11 +2752,16 @@ impl Interpreter {
     }
 
     fn builtin_times(&self) -> ExecutionResult {
-        let elapsed = self.env.elapsed_seconds();
-        let minutes = (elapsed / 60.0).floor() as u64;
-        let seconds = elapsed - minutes as f64 * 60.0;
+        let (user, system, child_user, child_system) =
+            self.host.process_times().unwrap_or((0.0, 0.0, 0.0, 0.0));
         ExecutionResult::from_parts(
-            format!("{minutes}m{seconds:.3}s 0m0.000s\n0m0.000s 0m0.000s\n"),
+            format!(
+                "{} {}\n{} {}\n",
+                format_shell_cpu_time(user),
+                format_shell_cpu_time(system),
+                format_shell_cpu_time(child_user),
+                format_shell_cpu_time(child_system),
+            ),
             String::new(),
             0,
         )
@@ -3682,8 +3703,18 @@ impl Interpreter {
                     "-L" | "-h" => fs::symlink_metadata(&path)
                         .map(|m| m.file_type().is_symlink())
                         .unwrap_or(false),
-                    "-b" | "-c" | "-p" | "-S" => false,
-                    "-t" => value.parse::<i32>().ok().is_some_and(|fd| (0..=2).contains(&fd)),
+                    "-b" => self.host.file_type_test(&path, 'b')?.unwrap_or(false),
+                    "-c" => self.host.file_type_test(&path, 'c')?.unwrap_or(false),
+                    "-p" => self.host.file_type_test(&path, 'p')?.unwrap_or(false),
+                    "-S" => self.host.file_type_test(&path, 'S')?.unwrap_or(false),
+                    "-N" => fs::metadata(&path)
+                        .ok()
+                        .and_then(|meta| Some(meta.modified().ok()? > meta.accessed().ok()?))
+                        .unwrap_or(false),
+                    "-O" | "-G" => path.exists(),
+                    "-g" | "-k" | "-u" => false,
+                    "-R" => self.env.is_nameref(&value),
+                    "-t" => value.parse::<i32>().ok().is_some_and(|fd| self.host.fd_is_terminal(fd)),
                     "-o" => self.env.option_enabled(&value),
                     _ => false,
                 })
@@ -4780,14 +4811,22 @@ fn split_ifs(input: &str, ifs: &str) -> Vec<String> {
     fields
 }
 
-fn render_timeformat(format: &str, real_seconds: f64) -> String {
+fn render_timeformat(format: &str, real_seconds: f64, user_seconds: f64, system_seconds: f64) -> String {
     let mut out = format.to_owned();
     out = out.replace("%R", &format!("{real_seconds:.3}"));
-    out = out.replace("%U", "0.000");
-    out = out.replace("%S", "0.000");
-    out = out.replace("%P", "0.00");
+    out = out.replace("%U", &format!("{user_seconds:.3}"));
+    out = out.replace("%S", &format!("{system_seconds:.3}"));
+    let cpu = user_seconds + system_seconds;
+    let percentage = if real_seconds > 0.0 { cpu * 100.0 / real_seconds } else { 0.0 };
+    out = out.replace("%P", &format!("{percentage:.2}"));
     out.push('\n');
     out
+}
+
+fn format_shell_cpu_time(seconds: f64) -> String {
+    let minutes = (seconds / 60.0).floor() as u64;
+    let remainder = seconds - minutes as f64 * 60.0;
+    format!("{minutes}m{remainder:.3}s")
 }
 
 fn set_shell_option(env: &mut ShellEnvironment, name: &str, enabled: bool) {
