@@ -173,12 +173,14 @@ pub struct Interpreter {
     loop_depth: usize,
     source_depth: usize,
     command_hash: HashMap<String, String>,
+    function_sources: HashMap<String, String>,
     disabled_builtins: HashSet<String>,
     completion_specs: HashMap<String, CompletionSpec>,
     readline_bindings: HashMap<String, String>,
     process_substitutions: Vec<ProcessSubstitution>,
     process_substitution_counter: u64,
     call_stack: Vec<CallFrame>,
+    trap_depth: usize,
     ulimits: HashMap<char, String>,
 }
 
@@ -190,12 +192,14 @@ impl Interpreter {
             loop_depth: 0,
             source_depth: 0,
             command_hash: HashMap::new(),
+            function_sources: HashMap::new(),
             disabled_builtins: HashSet::new(),
             completion_specs: HashMap::new(),
             readline_bindings: HashMap::new(),
             process_substitutions: Vec::new(),
             process_substitution_counter: 0,
             call_stack: Vec::new(),
+            trap_depth: 0,
             ulimits: HashMap::new(),
         }
     }
@@ -391,6 +395,24 @@ impl Interpreter {
         Ok((updated, point, result.stdout, result.stderr))
     }
 
+    fn run_trap_action(&mut self, signal: &str, status: i32) -> Result<Option<ExecutionResult>> {
+        if self.trap_depth > 0 {
+            return Ok(None);
+        }
+        let Some(action) = self.env.traps.get(signal).cloned() else {
+            return Ok(None);
+        };
+        self.trap_depth += 1;
+        let previous_status = self.env.last_status;
+        self.env.last_status = status;
+        self.env.set("BASH_TRAPSIG", signal_number(signal).to_string());
+        let result = self.execute_text(&action);
+        self.env.set("BASH_TRAPSIG", "0");
+        self.env.last_status = previous_status;
+        self.trap_depth = self.trap_depth.saturating_sub(1);
+        result.map(Some)
+    }
+
     pub fn execute_text(&mut self, input: &str) -> Result<ExecutionResult> {
         let (prepared, temporary) = self.prepare_heredocs(input)?;
         let node = parse(&prepared)?;
@@ -406,8 +428,7 @@ impl Interpreter {
         }
 
         if result.status != 0 {
-            if let Some(action) = self.env.traps.get("ERR").cloned() {
-                let mut trap_result = self.execute(&parse(&action)?, None)?;
+            if let Some(mut trap_result) = self.run_trap_action("ERR", result.status)? {
                 trap_result.status = result.status;
                 return Ok(trap_result);
             }
@@ -417,7 +438,14 @@ impl Interpreter {
     }
 
     pub fn execute(&mut self, node: &AstNode, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
-        if self.host.interrupted() { bail!("comando interrumpido"); }
+        if self.host.interrupted() {
+            if let Some(mut trapped) = self.run_trap_action("INT", 130)? {
+                if trapped.status == 0 { trapped.status = 130; }
+                self.env.last_status = trapped.status;
+                return Ok(trapped);
+            }
+            bail!("comando interrumpido");
+        }
         let result = match node {
             AstNode::Empty => ExecutionResult::success(),
             AstNode::Sequence(nodes) => {
@@ -691,6 +719,7 @@ impl Interpreter {
             }
             AstNode::FunctionDef { name, body } => {
                 self.env.functions.insert(name.clone(), (**body).clone());
+                self.function_sources.insert(name.clone(), self.env.script_name.clone());
                 ExecutionResult::success()
             }
             AstNode::Group(body) => self.execute(body, stdin)?,
@@ -828,12 +857,17 @@ impl Interpreter {
             }
         } else {
             None
-        }
-        .unwrap_or(self.host.execute_shell_background(
-            &render_ast(node),
-            &self.env.cwd,
-            &self.env.exported,
-        )?);
+        };
+
+        let pid = if let Some(pid) = pid {
+            pid
+        } else {
+            self.host.execute_shell_background(
+                &render_ast(node),
+                &self.env.cwd,
+                &self.env.exported,
+            )?
+        };
 
         self.env.last_background_pid = Some(pid);
         let job_number = self.host.jobs()?
@@ -854,14 +888,18 @@ impl Interpreter {
         stderr_to_pipe: &[bool],
         stdin: Option<&[u8]>,
     ) -> Result<ExecutionResult> {
+        let use_lastpipe = self.env.option_enabled("lastpipe")
+            && !self.env.option_enabled("monitor")
+            && parts.len() > 1;
         let commands: Vec<String> = parts.iter().map(render_ast).collect();
-        if let Some((mut result, statuses)) = self.host.execute_shell_pipeline(
-            &commands,
-            stderr_to_pipe,
-            &self.env.cwd,
-            &self.env.exported,
-            stdin,
-        )? {
+        if !use_lastpipe {
+            if let Some((mut result, statuses)) = self.host.execute_shell_pipeline(
+                &commands,
+                stderr_to_pipe,
+                &self.env.cwd,
+                &self.env.exported,
+                stdin,
+            )? {
             self.env.set_array(
                 "PIPESTATUS",
                 statuses.iter().map(ToString::to_string).collect(),
@@ -871,7 +909,8 @@ impl Interpreter {
                     result.status = status;
                 }
             }
-            return Ok(result);
+                return Ok(result);
+            }
         }
 
         let mut input = stdin.map(ToOwned::to_owned);
@@ -880,10 +919,14 @@ impl Interpreter {
         let mut last = ExecutionResult::success();
 
         for (index, part) in parts.iter().enumerate() {
-            let saved = self.env.clone();
-            let result = self.execute(part, input.as_deref());
-            self.env = saved;
-            last = result?;
+            if use_lastpipe && index + 1 == parts.len() {
+                last = self.execute(part, input.as_deref())?;
+            } else {
+                let saved = self.env.clone();
+                let result = self.execute(part, input.as_deref());
+                self.env = saved;
+                last = result?;
+            }
             last.exit_requested = false;
             last.flow = FlowSignal::None;
             statuses.push(last.status);
@@ -1018,6 +1061,17 @@ impl Interpreter {
         let name = words[0].clone();
         let args = &words[1..];
 
+        let command_text = words.iter()
+            .map(|word| shell_quote(word))
+            .collect::<Vec<_>>()
+            .join(" ");
+        self.env.set("BASH_COMMAND", command_text);
+        if let Some(debug_result) = self.run_trap_action("DEBUG", self.env.last_status)? {
+            if debug_result.exit_requested || debug_result.flow != FlowSignal::None {
+                return Ok(debug_result);
+            }
+        }
+
         let mut trace = String::new();
         if self.env.option_enabled("xtrace") {
             let ps4 = self.env.vars.get("PS4").cloned().unwrap_or_else(|| "+ ".to_owned());
@@ -1034,19 +1088,26 @@ impl Interpreter {
             self.env.push_local_scope();
             self.call_stack.push(CallFrame {
                 function: name.clone(),
-                source: self.env.script_name.clone(),
+                source: self.function_sources.get(&name)
+                    .cloned()
+                    .unwrap_or_else(|| self.env.script_name.clone()),
                 line: 0,
             });
             self.sync_call_stack_arrays();
             let execution = self.execute(&body, local_stdin.as_deref());
-            self.call_stack.pop();
-            self.sync_call_stack_arrays();
-            self.env.pop_local_scope();
-            self.env.positional = saved;
             let mut result = execution?;
             if result.flow == FlowSignal::Return {
                 result.flow = FlowSignal::None;
             }
+            if let Some(return_trap) = self.run_trap_action("RETURN", result.status)? {
+                result.stdout.push_str(&return_trap.stdout);
+                result.stderr.push_str(&return_trap.stderr);
+                if return_trap.exit_requested { result.exit_requested = true; }
+            }
+            self.call_stack.pop();
+            self.sync_call_stack_arrays();
+            self.env.pop_local_scope();
+            self.env.positional = saved;
             result
         } else if let Some(result) = self.host.execute_builtin(
             &name,
@@ -1082,14 +1143,19 @@ impl Interpreter {
     }
 
     fn sync_call_stack_arrays(&mut self) {
-        let mut functions = Vec::new();
-        let mut sources = Vec::new();
-        let mut lines = Vec::new();
-        for frame in self.call_stack.iter().rev() {
-            functions.push(frame.function.clone());
-            sources.push(frame.source.clone());
-            lines.push(frame.line.to_string());
-        }
+        let mut functions = self.call_stack.iter().rev()
+            .map(|frame| frame.function.clone())
+            .collect::<Vec<_>>();
+        functions.push("main".to_owned());
+
+        let mut sources = vec![self.env.script_name.clone()];
+        sources.extend(self.call_stack.iter().rev().map(|frame| frame.source.clone()));
+
+        let mut lines = self.call_stack.iter().rev()
+            .map(|frame| frame.line.to_string())
+            .collect::<Vec<_>>();
+        lines.push("0".to_owned());
+
         self.env.set_array("FUNCNAME", functions);
         self.env.set_array("BASH_SOURCE", sources);
         self.env.set_array("BASH_LINENO", lines);
@@ -1288,12 +1354,24 @@ impl Interpreter {
                 }
                 self.env.script_name = path.to_string_lossy().into_owned();
                 self.source_depth += 1;
+                self.call_stack.push(CallFrame {
+                    function: "source".to_owned(),
+                    source: saved_name.clone(),
+                    line: 0,
+                });
+                self.sync_call_stack_arrays();
                 let execution = self.execute_text(&source);
+                let mut result = execution?;
+                if result.flow == FlowSignal::Return { result.flow = FlowSignal::None; }
+                if let Some(return_trap) = self.run_trap_action("RETURN", result.status)? {
+                    result.stdout.push_str(&return_trap.stdout);
+                    result.stderr.push_str(&return_trap.stderr);
+                }
+                self.call_stack.pop();
                 self.source_depth = self.source_depth.saturating_sub(1);
                 self.env.positional = saved_positional;
                 self.env.script_name = saved_name;
-                let mut result = execution?;
-                if result.flow == FlowSignal::Return { result.flow = FlowSignal::None; }
+                self.sync_call_stack_arrays();
                 result
             }
             "read" => self.builtin_read(args, stdin)?,
@@ -2937,6 +3015,15 @@ impl Interpreter {
     }
 
     fn builtin_trap(&mut self, args: &[String]) -> ExecutionResult {
+        if args.first().map(String::as_str) == Some("-l") {
+            let stdout = bash_signal_names()
+                .iter()
+                .enumerate()
+                .map(|(index, name)| format!("{:2}) SIG{}\n", index + 1, name))
+                .collect();
+            return ExecutionResult::from_parts(stdout, String::new(), 0);
+        }
+
         if args.is_empty() || args.first().map(String::as_str) == Some("-p") {
             let mut traps = self.env.traps.iter().collect::<Vec<_>>();
             traps.sort_by_key(|(signal, _)| *signal);
@@ -4340,16 +4427,38 @@ fn set_shell_option(env: &mut ShellEnvironment, name: &str, enabled: bool) {
     else { env.shell_options.remove(name); }
 }
 
+fn bash_signal_names() -> &'static [&'static str] {
+    &[
+        "HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT", "BUS", "FPE",
+        "KILL", "USR1", "SEGV", "USR2", "PIPE", "ALRM", "TERM",
+        "STKFLT", "CHLD", "CONT", "STOP", "TSTP", "TTIN", "TTOU",
+        "URG", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH", "IO",
+        "PWR", "SYS",
+    ]
+}
+
+fn signal_number(signal: &str) -> usize {
+    match signal {
+        "EXIT" => 0,
+        "DEBUG" | "RETURN" | "ERR" => 0,
+        other => bash_signal_names().iter()
+            .position(|name| *name == other)
+            .map(|index| index + 1)
+            .unwrap_or(0),
+    }
+}
+
 fn normalize_signal(value: &str) -> String {
     let upper = value.trim_start_matches("SIG").to_ascii_uppercase();
-    match upper.as_str() {
-        "0" => "EXIT".to_owned(),
-        "1" => "HUP".to_owned(),
-        "2" => "INT".to_owned(),
-        "3" => "QUIT".to_owned(),
-        "15" => "TERM".to_owned(),
-        other => other.to_owned(),
+    if let Ok(number) = upper.parse::<usize>() {
+        if number == 0 { return "EXIT".to_owned(); }
+        return bash_signal_names()
+            .get(number.saturating_sub(1))
+            .copied()
+            .unwrap_or("UNKNOWN")
+            .to_owned();
     }
+    upper
 }
 
 fn is_shell_quoted(value: &str) -> bool {
