@@ -45,19 +45,39 @@ pub fn size() -> Result<(u16,u16)> {
         Ok(*io.size.lock().unwrap_or_else(|e| e.into_inner()))
     } else { Ok(terminal::size()?) })
 }
-pub fn enter() -> Result<()> {
+pub fn enter_raw() -> Result<()> {
     let embedded = WINDOW.with(|slot| if let Some(io) = slot.borrow().as_ref() {
-        io.raw.store(true, Ordering::SeqCst); true
-    } else { false });
-    if !embedded { terminal::enable_raw_mode()?; }
+        io.raw.store(true, Ordering::SeqCst);
+        true
+    } else {
+        false
+    });
+    if !embedded {
+        terminal::enable_raw_mode()?;
+    }
+    Ok(())
+}
+
+pub fn leave_raw() {
+    let embedded = WINDOW.with(|slot| if let Some(io) = slot.borrow().as_ref() {
+        io.raw.store(false, Ordering::SeqCst);
+        true
+    } else {
+        false
+    });
+    if !embedded {
+        let _ = terminal::disable_raw_mode();
+    }
+}
+
+pub fn enter() -> Result<()> {
+    enter_raw()?;
     write(b"\x1b[?1049h\x1b[?25l")
 }
+
 pub fn leave() {
     let _ = write(b"\x1b[?25h\x1b[?1049l");
-    let embedded = WINDOW.with(|slot| if let Some(io) = slot.borrow().as_ref() {
-        io.raw.store(false, Ordering::SeqCst); true
-    } else { false });
-    if !embedded { let _ = terminal::disable_raw_mode(); }
+    leave_raw();
 }
 pub fn poll(timeout: Duration) -> Result<bool> {
     WINDOW.with(|slot| -> Result<bool> {
