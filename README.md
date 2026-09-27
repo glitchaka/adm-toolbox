@@ -78,7 +78,11 @@ También conserva:
 
 - aliases;
 - variables y export;
-- funciones;
+- funciones con `local` y `return`;
+- `if`, `for`, `while`, `until` y `case ... esac`;
+- `break` y `continue`, incluidos niveles de bucle;
+- condicionales `[[ ... ]]` con pruebas de cadenas, enteros y archivos;
+- comandos aritméticos `(( ... ))` con asignación, incremento/decremento y comparaciones;
 - sustitución de comandos;
 - expansión de parámetros;
 - redirecciones;
