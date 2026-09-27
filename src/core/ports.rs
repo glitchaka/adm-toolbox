@@ -36,6 +36,7 @@ pub trait ShellEngine: Send {
         Ok((String::new(), String::new(), None))
     }
     fn pre_execute_prompt(&mut self) -> Result<String> { Ok(String::new()) }
+    fn input_timeout(&self) -> Option<std::time::Duration> { None }
     fn complete(&mut self, _line: &str, _cursor: usize) -> Result<Vec<String>> {
         Ok(Vec::new())
     }

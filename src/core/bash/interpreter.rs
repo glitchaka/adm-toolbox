@@ -2097,6 +2097,13 @@ impl Interpreter {
         }
     }
 
+    pub fn interactive_timeout(&self) -> Option<Duration> {
+        if !self.interactive { return None; }
+        self.env.get("TMOUT").parse::<u64>().ok()
+            .filter(|seconds| *seconds > 0)
+            .map(Duration::from_secs)
+    }
+
     pub fn pre_execute_prompt(&mut self) -> Result<String> {
         if !self.interactive { return Ok(String::new()); }
         let ps0 = self.env.get("PS0");

@@ -1,5 +1,5 @@
 //! In-process interpreter session. The window talks to a Rust worker through channels.
-use std::{collections::HashMap, fs, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread};
+use std::{collections::HashMap, fs, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread, time::{Duration, Instant}};
 use anyhow::Result;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use super::io::{self, WindowIo};
@@ -30,6 +30,9 @@ pub struct EmbeddedSession {
     interrupt: Arc<AtomicBool>, force_abort: Arc<AtomicBool>, exited: Arc<AtomicBool>,
     line: Vec<char>, cursor: usize, history: Vec<String>, history_index: usize,
     pending: String, bindings: Arc<Mutex<HashMap<String, String>>>,
+    secondary_prompt: Arc<Mutex<String>>,
+    timeout: Arc<Mutex<Option<Duration>>>,
+    last_activity: Arc<Mutex<Instant>>,
 }
 fn readline_sequence(event: &KeyEvent) -> Option<String> {
     if event.modifiers.contains(KeyModifiers::CONTROL) {
@@ -68,6 +71,9 @@ impl EmbeddedSession {
         let force_abort = Arc::new(AtomicBool::new(false));
         let exited = Arc::new(AtomicBool::new(false));
         let bindings = Arc::new(Mutex::new(HashMap::new()));
+        let secondary_prompt = Arc::new(Mutex::new("> ".to_owned()));
+        let timeout = Arc::new(Mutex::new(None));
+        let last_activity = Arc::new(Mutex::new(Instant::now()));
         let terminal_io = WindowIo::new(
             display.clone(),
             key_events,
@@ -78,6 +84,9 @@ impl EmbeddedSession {
         );
         let worker_busy = busy.clone(); let worker_exited = exited.clone();
         let worker_bindings = bindings.clone();
+        let worker_secondary_prompt = secondary_prompt.clone();
+        let worker_timeout = timeout.clone();
+        let worker_last_activity = last_activity.clone();
         thread::spawn(move || {
             io::install(terminal_io);
             let result = (|| -> Result<()> {
@@ -90,6 +99,11 @@ impl EmbeddedSession {
                 io::write(prompt_stderr.as_bytes())?;
                 let prompt = bash_prompt.unwrap_or_else(|| crate::presentation::shell::prompt::render(engine.working_dir()));
                 io::write(prompt.as_bytes())?;
+                let (_, _, ps2) = engine.prepare_prompt(true)?;
+                *worker_secondary_prompt.lock().unwrap_or_else(|error| error.into_inner()) =
+                    ps2.unwrap_or_else(|| "> ".to_owned());
+                *worker_timeout.lock().unwrap_or_else(|error| error.into_inner()) = engine.input_timeout();
+                *worker_last_activity.lock().unwrap_or_else(|error| error.into_inner()) = Instant::now();
                 worker_busy.store(false, Ordering::SeqCst);
                 for request in requests {
                     match request {
@@ -110,6 +124,11 @@ impl EmbeddedSession {
                             io::write(prompt_stderr.as_bytes())?;
                             let prompt = bash_prompt.unwrap_or_else(|| crate::presentation::shell::prompt::render(engine.working_dir()));
                             io::write(prompt.as_bytes())?;
+                            let (_, _, ps2) = engine.prepare_prompt(true)?;
+                            *worker_secondary_prompt.lock().unwrap_or_else(|error| error.into_inner()) =
+                                ps2.unwrap_or_else(|| "> ".to_owned());
+                            *worker_timeout.lock().unwrap_or_else(|error| error.into_inner()) = engine.input_timeout();
+                            *worker_last_activity.lock().unwrap_or_else(|error| error.into_inner()) = Instant::now();
                             worker_busy.store(false, Ordering::SeqCst);
                         }
                         WorkerRequest::Complete { line, cursor, reply } => {
@@ -142,7 +161,8 @@ impl EmbeddedSession {
             .unwrap_or_default().lines().filter(|line| !line.starts_with('#')).map(str::to_owned).collect::<Vec<_>>();
         let history_index = history.len();
         Ok(Self { commands, keys, display, output, size, raw, busy, interrupt, force_abort, exited,
-            line: Vec::new(), cursor: 0, history, history_index, pending: String::new(), bindings })
+            line: Vec::new(), cursor: 0, history, history_index, pending: String::new(), bindings,
+            secondary_prompt, timeout, last_activity })
     }
     pub fn resize(&self, cols: u16, rows: u16) {
         *self.size.lock().unwrap_or_else(|e| e.into_inner()) = (cols, rows);
@@ -159,9 +179,34 @@ impl EmbeddedSession {
         self.force_abort.store(true, Ordering::SeqCst);
         self.interrupt.store(true, Ordering::SeqCst);
     }
+    pub fn check_timeout(&mut self) {
+        if self.busy.load(Ordering::SeqCst) || self.raw.load(Ordering::SeqCst) {
+            return;
+        }
+        let timeout = *self.timeout.lock().unwrap_or_else(|error| error.into_inner());
+        let Some(timeout) = timeout else { return; };
+        let elapsed = self.last_activity.lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .elapsed();
+        if elapsed < timeout {
+            return;
+        }
+
+        self.emit("\r\nbash: TMOUT: sesión terminada por inactividad\r\n");
+        self.busy.store(true, Ordering::SeqCst);
+        self.line.clear();
+        self.pending.clear();
+        let _ = self.commands.send(WorkerRequest::Execute("exit".to_owned()));
+        *self.last_activity.lock().unwrap_or_else(|error| error.into_inner()) = Instant::now();
+    }
+
     fn emit(&self, text: &str) { let _ = self.display.send(text.as_bytes().to_vec()); }
     fn redraw(&self) {
-        let prompt = if self.pending.is_empty() { "$ " } else { "> " };
+        let prompt = if self.pending.is_empty() {
+            "$ ".to_owned()
+        } else {
+            self.secondary_prompt.lock().unwrap_or_else(|error| error.into_inner()).clone()
+        };
         self.emit(&format!("\r\x1b[2K{prompt}{}", self.line.iter().collect::<String>()));
         let back = self.line.len() - self.cursor;
         if back > 0 { self.emit(&format!("\x1b[{back}D")); }
@@ -185,6 +230,7 @@ impl EmbeddedSession {
                 ch => KeyEvent::new(KeyCode::Char(ch), KeyModifiers::NONE),
             }).collect() };
         for event in events {
+            *self.last_activity.lock().unwrap_or_else(|error| error.into_inner()) = Instant::now();
             if self.raw.load(Ordering::SeqCst) { self.keys.send(Event::Key(event))?; continue; }
             if event.modifiers.contains(KeyModifiers::CONTROL) && event.code == KeyCode::Char('c') {
                 self.interrupt.store(true, Ordering::SeqCst);

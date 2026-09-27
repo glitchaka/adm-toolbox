@@ -759,6 +759,8 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     InvalidateRect(hwnd, null(), 0);
                 }
 
+                state.pty.check_timeout();
+
                 if state.pty.exited() {
                     PostMessageW(hwnd, WM_CLOSE, 0, 0);
                 }

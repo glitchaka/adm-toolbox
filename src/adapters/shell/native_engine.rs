@@ -891,6 +891,10 @@ impl ShellEngine for NativeShellEngine {
         self.interpreter.pre_execute_prompt()
     }
 
+    fn input_timeout(&self) -> Option<std::time::Duration> {
+        self.interpreter.interactive_timeout()
+    }
+
     fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
         self.interpreter.complete_line(line, cursor)
     }
