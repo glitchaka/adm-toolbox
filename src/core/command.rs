@@ -17,9 +17,13 @@ impl CommandOutput {
     }
 
     pub fn error(stderr: impl Into<String>, status: i32) -> Self {
+        let mut stderr = stderr.into();
+        if !stderr.is_empty() && !stderr.ends_with('\n') {
+            stderr.push('\n');
+        }
         Self {
             stdout: String::new(),
-            stderr: stderr.into(),
+            stderr,
             status,
         }
     }

@@ -5,13 +5,30 @@ pub enum AstNode {
     And(Box<AstNode>, Box<AstNode>),
     Or(Box<AstNode>, Box<AstNode>),
     Pipeline(Vec<AstNode>),
+    Negate(Box<AstNode>),
+    Background(Box<AstNode>),
     Simple(SimpleCommand),
+    ArrayAssign {
+        name: String,
+        words: Vec<String>,
+    },
     If {
         condition: Box<AstNode>,
         then_branch: Box<AstNode>,
         else_branch: Option<Box<AstNode>>,
     },
     For {
+        name: String,
+        words: Vec<String>,
+        body: Box<AstNode>,
+    },
+    ArithmeticFor {
+        init: String,
+        condition: String,
+        update: String,
+        body: Box<AstNode>,
+    },
+    Select {
         name: String,
         words: Vec<String>,
         body: Box<AstNode>,
@@ -35,10 +52,18 @@ pub enum AstNode {
     Subshell(Box<AstNode>),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CaseTerminator {
+    Break,
+    Fallthrough,
+    ContinueMatching,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CaseArm {
     pub patterns: Vec<String>,
     pub body: Box<AstNode>,
+    pub terminator: CaseTerminator,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -61,4 +86,8 @@ pub enum RedirectKind {
     Append,
     Dup,
     HereString,
+    ReadWrite,
+    Clobber,
+    BothWrite,
+    BothAppend,
 }

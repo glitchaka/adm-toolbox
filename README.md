@@ -1,6 +1,6 @@
 # Shell Shock Tool
 
-**Shell Shock Tool** es el nombre visual de `adm-tool` / `adm-toolbox`: una consola portable de administración y soporte técnico para Windows, construida en Rust.
+**Shell Shock Tool** es una consola portable de administración y soporte técnico para Windows, construida en Rust.
 
 Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de tráfico, consulta de dominio, localización de puertos de switch y herramientas de línea de comandos de uso cotidiano.
 
@@ -10,19 +10,13 @@ Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de t
 cargo build --release
 ```
 
-Ejecutable:
+El ejecutable se genera dentro de:
 
 ```text
-target\release\adm-toolbox.exe
+target\release\
 ```
 
-La aplicación crea su configuración portable en:
-
-```text
-config\admrc
-```
-
-junto al ejecutable. Puede editarse desde la propia shell:
+La aplicación mantiene una configuración portable local que puede editarse desde la propia shell:
 
 ```bash
 config edit
@@ -76,19 +70,20 @@ command_that_fails || echo fallo
 
 También conserva:
 
-- aliases;
-- variables y export;
+- aliases, variables, `export` y `readonly`;
 - funciones con `local` y `return`;
-- `if`, `for`, `while`, `until` y `case ... esac`;
+- `if`, `for`, `for ((...))`, `select`, `while`, `until` y `case ... esac`;
+- terminadores de `case` `;;`, `;&` y `;;&`;
 - `break` y `continue`, incluidos niveles de bucle;
-- condicionales `[[ ... ]]` con pruebas de cadenas, enteros y archivos;
-- comandos aritméticos `(( ... ))` con asignación, incremento/decremento y comparaciones;
-- sustitución de comandos;
-- expansión de parámetros;
-- redirecciones;
-- pipes;
-- operadores lógicos;
-- globbing;
+- condicionales `[[ ... ]]` con cadenas, enteros, archivos y expresiones regulares;
+- comandos y expansiones aritméticas con asignaciones, incremento/decremento y precedencia de operadores;
+- arrays indexados y asociativos, `declare`, `typeset`, `mapfile` y `readarray`;
+- sustitución de comandos, expansión de parámetros, brace expansion, IFS y globbing;
+- heredocs, here-strings y redirecciones de entrada/salida;
+- pipes, operadores lógicos y opciones como `pipefail`, `errexit`, `nounset`, `noexec`, `xtrace`, `noclobber` y `allexport`;
+- `read` interactivo con opciones de prompt, modo silencioso, modo raw, límites de caracteres y arrays;
+- traps `ERR` y `EXIT`, ejecución en segundo plano, `jobs`, `wait` y `fg`;
+- ejecución directa de scripts `.sh` y archivos con shebang Bash/sh;
 - scripts Bash/POSIX compatibles dentro de las capacidades del motor.
 
 Las rutas del prompt se presentan al estilo Unix:
@@ -102,7 +97,7 @@ Y `cd /c/...` se traduce a la ruta Windows correspondiente.
 
 ## Utilidades Unix integradas
 
-Además de los builtins Bash del motor, ADM Toolbox implementa/utiliza comandos familiares:
+Además de los builtins Bash del motor, Shell Shock Tool implementa/utiliza comandos familiares:
 
 ```bash
 ls
@@ -172,7 +167,7 @@ curl
 
 ## Sistema y administración local
 
-Las consultas administrativas habituales están disponibles como subcomandos propios de `sys`. ADM Toolbox usa las utilidades nativas de Windows como backend, manteniendo una interfaz única dentro de la shell.
+Las consultas administrativas habituales están disponibles como subcomandos propios de `sys`. Shell Shock Tool usa las utilidades nativas de Windows como backend, manteniendo una interfaz única dentro de la shell.
 
 ```bash
 sys info
@@ -384,7 +379,7 @@ Implementado actualmente:
 - shell Bash-compatible y utilidades Unix integradas;
 - terminal Win32 propia, historial, autocompletado y configuración portable;
 - información de sistema, procesos, discos, memoria y uptime;
-- consultas ADM de servicios, usuarios, drivers/PnP, Event Log, Registro y tareas programadas;
+- consultas administrativas de servicios, usuarios, drivers/PnP, Event Log, Registro y tareas programadas;
 - diagnóstico y descubrimiento de red;
 - inventario y presencia persistente de dispositivos;
 - Wake-on-LAN;
@@ -405,7 +400,7 @@ Pendiente dentro del alcance actual:
 ## Arquitectura
 
 ```text
-Shell Shock Tool (adm-tool)
+Shell Shock Tool
 │
 ├── intérprete Bash propio en Rust
 ├── terminal nativa Win32
@@ -413,7 +408,7 @@ Shell Shock Tool (adm-tool)
 │   ├── Nerd Font embebida
 │   ├── backdrop/transparencia
 │   └── branding Shell Shock Tool
-├── builtins ADM escritos en Rust
+├── builtins administrativos escritos en Rust
 ├── utilidades Unix integradas
 └── helix-sst 0.1.0 (basado en Helix 25.07.1)
 ```

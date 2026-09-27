@@ -2,8 +2,8 @@ use std::{
     collections::HashMap,
     io::Write,
     path::{Path, PathBuf},
-    process::{Command, Stdio},
-    sync::Arc,
+    process::{Child, Command, Stdio},
+    sync::{Arc, Mutex},
 };
 
 use anyhow::{Context, Result};
@@ -18,14 +18,73 @@ use crate::{
     },
 };
 
+struct BackgroundJob {
+    command: String,
+    child: Child,
+}
+
 struct WindowsShellHost {
     registry: Arc<CommandRegistry>,
     interrupt: Arc<std::sync::atomic::AtomicBool>,
     force_abort: Arc<std::sync::atomic::AtomicBool>,
+    jobs: Mutex<HashMap<u32, BackgroundJob>>,
 }
 
 impl ShellCommandHost for WindowsShellHost {
     fn interrupted(&self) -> bool { self.interrupt.load(std::sync::atomic::Ordering::SeqCst) }
+
+    fn read_line(&self, prompt: &str, silent: bool) -> Result<Option<String>> {
+        use crossterm::event::{Event, KeyCode, KeyModifiers};
+
+        crate::adapters::terminal::io::write(prompt.as_bytes())?;
+        crate::adapters::terminal::io::enter_raw()?;
+        struct RawGuard;
+        impl Drop for RawGuard {
+            fn drop(&mut self) { crate::adapters::terminal::io::leave_raw(); }
+        }
+        let _guard = RawGuard;
+
+        let mut line = String::new();
+        loop {
+            match crate::adapters::terminal::io::read()? {
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('d') && line.is_empty() =>
+                {
+                    return Ok(None);
+                }
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('c') =>
+                {
+                    crate::adapters::terminal::io::write(b"^C\r\n")?;
+                    return Ok(None);
+                }
+                Event::Key(key) => match key.code {
+                    KeyCode::Enter => {
+                        crate::adapters::terminal::io::write(b"\r\n")?;
+                        return Ok(Some(line));
+                    }
+                    KeyCode::Backspace => {
+                        if line.pop().is_some() && !silent {
+                            crate::adapters::terminal::io::write(b"\x08 \x08")?;
+                        }
+                    }
+                    KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        line.push(ch);
+                        if !silent {
+                            let mut buf = [0u8; 4];
+                            crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                        }
+                    }
+                    _ => {}
+                },
+                Event::Paste(text) => {
+                    line.push_str(&text);
+                    if !silent { crate::adapters::terminal::io::write(text.as_bytes())?; }
+                }
+                _ => {}
+            }
+        }
+    }
     fn execute_builtin(
         &self,
         name: &str,
@@ -62,7 +121,14 @@ impl ShellCommandHost for WindowsShellHost {
         env: &HashMap<String, String>,
         stdin: Option<&[u8]>,
     ) -> Result<ExecutionResult> {
-        let mut command = Command::new(program);
+        let script = resolve_shell_script(program, cwd);
+        let mut command = if let Some(script) = &script {
+            let mut command = Command::new(std::env::current_exe()?);
+            command.arg(script);
+            command
+        } else {
+            Command::new(program)
+        };
         command
             .args(args)
             .current_dir(cwd)
@@ -106,6 +172,112 @@ impl ShellCommandHost for WindowsShellHost {
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
     }
+
+    fn execute_external_background(
+        &self,
+        program: &str,
+        args: &[String],
+        cwd: &Path,
+        env: &HashMap<String, String>,
+    ) -> Result<u32> {
+        let script = resolve_shell_script(program, cwd);
+        let mut command = if let Some(script) = &script {
+            let mut command = Command::new(std::env::current_exe()?);
+            command.arg(script);
+            command
+        } else {
+            Command::new(program)
+        };
+        command
+            .args(args)
+            .current_dir(cwd)
+            .envs(env)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+
+        let child = command.spawn()
+            .with_context(|| format!("no se pudo ejecutar {program} en background"))?;
+        let pid = child.id();
+        self.jobs.lock().unwrap_or_else(|e| e.into_inner()).insert(
+            pid,
+            BackgroundJob { command: format!("{} {}", program, args.join(" ")).trim().to_owned(), child },
+        );
+        Ok(pid)
+    }
+
+    fn execute_shell_background(
+        &self,
+        source: &str,
+        cwd: &Path,
+        env: &HashMap<String, String>,
+    ) -> Result<u32> {
+        let mut command = Command::new(std::env::current_exe()?);
+        command
+            .arg("-c")
+            .arg(source)
+            .current_dir(cwd)
+            .envs(env)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        let child = command.spawn().context("no se pudo lanzar job Bash en background")?;
+        let pid = child.id();
+        self.jobs.lock().unwrap_or_else(|e| e.into_inner()).insert(
+            pid,
+            BackgroundJob { command: source.to_owned(), child },
+        );
+        Ok(pid)
+    }
+
+    fn jobs(&self) -> Result<Vec<(u32, String, bool)>> {
+        let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
+        let mut rows = Vec::new();
+        for (pid, job) in jobs.iter_mut() {
+            let running = job.child.try_wait()?.is_none();
+            rows.push((*pid, job.command.clone(), running));
+        }
+        rows.sort_by_key(|row| row.0);
+        Ok(rows)
+    }
+
+    fn wait_job(&self, pid: Option<u32>) -> Result<i32> {
+        let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(pid) = pid {
+            let Some(mut job) = jobs.remove(&pid) else { return Ok(127); };
+            return Ok(job.child.wait()?.code().unwrap_or(1));
+        }
+
+        let pids: Vec<u32> = jobs.keys().copied().collect();
+        let mut status = 0;
+        for pid in pids {
+            if let Some(mut job) = jobs.remove(&pid) {
+                status = job.child.wait()?.code().unwrap_or(1);
+            }
+        }
+        Ok(status)
+    }
+}
+
+fn resolve_shell_script(program: &str, cwd: &Path) -> Option<PathBuf> {
+    let candidate = {
+        let path = PathBuf::from(program);
+        if path.is_absolute() { path } else { cwd.join(path) }
+    };
+    if !candidate.is_file() { return None; }
+
+    if candidate.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("sh")) {
+        return Some(candidate);
+    }
+
+    let prefix = std::fs::read(&candidate).ok()?;
+    let first = prefix.split(|b| *b == b'\n').next().unwrap_or(&[]);
+    let shebang = String::from_utf8_lossy(first).to_ascii_lowercase();
+    if shebang.starts_with("#!") && (shebang.contains("bash") || shebang.contains("/sh")) {
+        Some(candidate)
+    } else {
+        None
+    }
 }
 
 pub struct NativeShellEngine {
@@ -123,6 +295,7 @@ impl NativeShellEngine {
             registry,
             interrupt: interrupt.clone(),
             force_abort: force_abort.clone(),
+            jobs: Mutex::new(HashMap::new()),
         };
         let mut interpreter = Interpreter::new(Box::new(host));
         interpreter.env.export(
