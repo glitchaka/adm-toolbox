@@ -101,6 +101,10 @@ impl Terminal {
         let row = ((y - PAD).max(0) / self.cell_height).min(rows as i32 - 1);
         (row * cols as i32 + col) as usize
     }
+    fn has_selection(&self) -> bool {
+        self.selection.is_some_and(|(a, b)| a != b)
+    }
+
     fn selected_text(&self) -> String {
         let screen = self.parser.screen();
         let (rows, cols) = screen.size();
@@ -264,8 +268,17 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
             WM_KEYDOWN => {
                 let ctrl = GetKeyState(VK_CONTROL as i32) < 0;
                 let shift = GetKeyState(VK_SHIFT as i32) < 0;
-                if ctrl && shift && wp == b'C' as usize {
-                    copy(hwnd, &state.selected_text()); state.suppress_char = true; return 0;
+                if ((ctrl && wp == b'C' as usize) || (ctrl && wp == VK_INSERT as usize))
+                    && state.has_selection()
+                {
+                    copy(hwnd, &state.selected_text());
+                    state.suppress_char = true;
+                    return 0;
+                }
+                if (ctrl && shift && wp == b'C' as usize {
+                    copy(hwnd, &state.selected_text());
+                    state.suppress_char = true;
+                    return 0;
                 }
                 if (ctrl && shift && wp == b'V' as usize) || (shift && wp == VK_INSERT as usize) {
                     paste(hwnd, state); state.suppress_char = true; return 0;
