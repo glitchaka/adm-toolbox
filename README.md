@@ -146,6 +146,7 @@ ps
 top
 df
 free
+uptime
 hostname
 whoami
 uname
@@ -168,6 +169,53 @@ powershell
 ssh
 curl
 ```
+
+## Sistema y administración local
+
+Las consultas administrativas habituales están disponibles como subcomandos propios de `sys`. ADM Toolbox usa las utilidades nativas de Windows como backend, manteniendo una interfaz única dentro de la shell.
+
+```bash
+sys info
+sys processes
+sys top
+sys disks
+sys memory
+sys uptime
+sys hostname
+sys whoami
+
+sys services
+sys services --running
+sys services Spooler
+
+sys users
+sys users Administrador
+sys users --domain
+
+sys drivers
+sys drivers --verbose
+sys drivers --signed
+sys drivers --pnp
+sys drivers --devices
+
+sys events
+sys events Application --count 50
+sys events --log Security --count 20
+sys events --logs
+
+sys registry "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
+sys registry "HKLM\\SOFTWARE\\Microsoft" --recursive
+sys registry "HKCU\\Software" --find Shell
+
+sys tasks
+sys tasks --verbose
+sys tasks "\\Microsoft\\Windows\\Defrag\\ScheduledDefrag"
+```
+
+Estas vistas son de consulta/diagnóstico. No modifican servicios, cuentas, drivers, Event Log, Registro ni tareas programadas. Las operaciones destructivas se mantendrán separadas hasta que exista una capa central de privilegios, confirmación y auditoría.
+
+Los backends utilizados son `sc.exe`, `net.exe`, `driverquery.exe`, `pnputil.exe`, `wevtutil.exe`, `reg.exe` y `schtasks.exe`; por tanto siguen disponibles también directamente desde la shell cuando se necesiten opciones avanzadas.
+
 
 ## Red
 
@@ -206,9 +254,9 @@ net traffic --json
 net traffic --csv
 ```
 
-Actualmente correlaciona procesos, PID, ejecutable, CPU, RAM y conexiones/locales/remotas.
+Actualmente correlaciona procesos, PID, ejecutable, CPU, RAM, conexiones locales/remotas y tráfico de red por proceso. La medición de subida y bajada por PID usa ETW de Windows y calcula tasas a partir de los eventos de red; si ETW no está disponible, la vista degrada de forma explícita sin fingir contadores de red.
 
-La medición exacta de bytes por segundo por PID está separada de esta primera capa y será implementada mediante telemetría ETW; ADM Toolbox no usa contadores de I/O genéricos como si fueran tráfico de red.
+La detección de proceso en primer plano también está implementada mediante `GetForegroundWindow` y `GetWindowThreadProcessId`, lo que permite distinguir el proceso activo en las vistas de tráfico.
 
 ## Uso de Internet de toda la LAN
 
@@ -328,6 +376,31 @@ Créditos: Helix contributors.
 Los avisos y la licencia correspondientes se conservan en `THIRD_PARTY_NOTICES.md` y `licenses/HELIX-MPL-2.0.txt`.
 
 Para una compilación sin Internet puede definirse `ADM_HELIX_ARCHIVE` apuntando al ZIP oficial `helix-25.07.1-x86_64-windows.zip`.
+
+## Estado actual
+
+Implementado actualmente:
+
+- shell Bash-compatible y utilidades Unix integradas;
+- terminal Win32 propia, historial, autocompletado y configuración portable;
+- información de sistema, procesos, discos, memoria y uptime;
+- consultas ADM de servicios, usuarios, drivers/PnP, Event Log, Registro y tareas programadas;
+- diagnóstico y descubrimiento de red;
+- inventario y presencia persistente de dispositivos;
+- Wake-on-LAN;
+- estado de dominio local/remoto;
+- localización MAC → switch → puerto mediante SNMP de solo lectura;
+- tráfico por proceso mediante ETW y detección del proceso foreground;
+- editor portable `helix-sst`.
+
+Pendiente dentro del alcance actual:
+
+- proveedores reales de `net usage` para obtener consumo por dispositivo desde router/AP/firewall;
+- verificación Authenticode;
+- auditoría estructurada de comandos y acciones administrativas;
+- indicador central de elevación/UAC;
+- confirmación centralizada para operaciones destructivas;
+- proveedores adicionales de infraestructura y compatibilidad Bash/Unix adicional cuando sea necesaria.
 
 ## Arquitectura
 
