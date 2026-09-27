@@ -13,7 +13,7 @@ use portable_pty::{CommandBuilder, PtySize, native_pty_system};
 use zip::ZipArchive;
 
 use crate::{
-    adapters::terminal::{guard::AlternateScreenGuard, io as terminal_io},
+    adapters::terminal::{guard::RawModeGuard, io as terminal_io},
     core::ports::TextEditor,
 };
 
@@ -194,7 +194,10 @@ fn find_named(root: &Path, name: &str, directory: bool) -> Option<PathBuf> {
 
 #[cfg(windows)]
 fn run_helix(install: &Install, args: &[String], cwd: &Path) -> Result<()> {
-    let _guard = AlternateScreenGuard::enter()?;
+    // Helix owns the alternate screen. SST only supplies raw key transport.
+    // Entering an alternate screen here as well produces a nested screen that
+    // leaves the outer vt100 renderer blank on Windows.
+    let _guard = RawModeGuard::enter()?;
     let (cols, rows) = terminal_io::size()?;
     let pty_system = native_pty_system();
     let pair = pty_system.openpty(PtySize {
