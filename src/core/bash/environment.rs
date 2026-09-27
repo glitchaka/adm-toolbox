@@ -101,7 +101,12 @@ impl ShellEnvironment {
             lowercase_vars: HashSet::new(),
             trace_vars: HashSet::new(),
             shell_options: ["braceexpand", "hashall"].into_iter().map(str::to_owned).collect(),
-            shopt_options: ["globskipdots", "patsub_replacement", "progcomp", "sourcepath"]
+            shopt_options: [
+                "checkwinsize", "cmdhist", "complete_fullquote", "extquote",
+                "force_fignore", "globasciiranges", "globskipdots", "hostcomplete",
+                "interactive_comments", "patsub_replacement", "progcomp",
+                "promptvars", "sourcepath",
+            ]
                 .into_iter()
                 .map(str::to_owned)
                 .collect(),

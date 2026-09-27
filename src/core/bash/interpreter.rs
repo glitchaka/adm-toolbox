@@ -1234,13 +1234,15 @@ impl Interpreter {
         }
 
         let mut raw = command.words.clone();
-        if let Some(alias) = self.env.aliases.get(&raw[0]).cloned() {
+        if self.env.option_enabled("expand_aliases") {
+            if let Some(alias) = self.env.aliases.get(&raw[0]).cloned() {
             let alias_tokens = super::lexer::lex(&alias)?;
             let mut alias_words = alias_tokens.into_iter().filter_map(|token| {
                 if let super::lexer::Token::Word(word) = token { Some(word) } else { None }
             }).collect::<Vec<_>>();
             alias_words.extend(raw.into_iter().skip(1));
             raw = alias_words;
+            }
         }
 
         let mut index = 0;
@@ -1324,7 +1326,7 @@ impl Interpreter {
                 self.shell_builtin("cd", &[name.clone()], None)?
                     .unwrap_or_else(ExecutionResult::success)
             } else {
-                let program = self.command_hash.get(&name).cloned().unwrap_or_else(|| name.clone());
+                let program = self.resolved_command_program(&name);
                 match self.host.execute_external(
                     &program,
                     args,
@@ -1348,7 +1350,7 @@ impl Interpreter {
         )? {
             result
         } else {
-            let program = self.command_hash.get(&name).cloned().unwrap_or_else(|| name.clone());
+            let program = self.resolved_command_program(&name);
             match self.host.execute_external(
                 &program,
                 args,
@@ -1964,6 +1966,13 @@ impl Interpreter {
     pub fn set_interactive(&mut self, interactive: bool) {
         set_shell_option(&mut self.env, "histexpand", interactive);
         set_shell_option(&mut self.env, "monitor", interactive);
+        set_shell_option(&mut self.env, "history", interactive);
+        set_shell_option(&mut self.env, "emacs", interactive);
+        if interactive {
+            self.env.shopt_options.insert("expand_aliases".to_owned());
+        } else {
+            self.env.shopt_options.remove("expand_aliases");
+        }
     }
 
     pub fn prepare_history_line(&mut self, line: &str) -> Result<(String, bool)> {
@@ -4273,10 +4282,20 @@ impl Interpreter {
     }
 
     fn builtin_set(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        const OPTIONS: &[&str] = &[
+            "allexport", "braceexpand", "emacs", "errexit", "errtrace",
+            "functrace", "hashall", "histexpand", "history", "ignoreeof",
+            "keyword", "monitor", "noclobber", "noexec", "noglob", "nolog",
+            "notify", "nounset", "onecmd", "physical", "pipefail", "posix",
+            "privileged", "verbose", "vi", "xtrace",
+        ];
+
         if args.is_empty() {
             let mut rows = self.env.vars.iter().collect::<Vec<_>>();
             rows.sort_by_key(|(name, _)| *name);
-            let stdout = rows.into_iter().map(|(name,value)| format!("{name}={}\n", shell_quote(value))).collect();
+            let stdout = rows.into_iter()
+                .map(|(name,value)| format!("{name}={}\n", shell_quote(value)))
+                .collect();
             return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
         }
 
@@ -4291,35 +4310,75 @@ impl Interpreter {
             if arg == "-o" || arg == "+o" {
                 let enable = arg.starts_with('-');
                 if let Some(option) = args.get(index + 1) {
+                    if !OPTIONS.contains(&option.as_str()) {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("set: {option}: nombre de opción inválido\n"),
+                            2,
+                        ));
+                    }
+                    if option == "emacs" && enable {
+                        set_shell_option(&mut self.env, "vi", false);
+                    } else if option == "vi" && enable {
+                        set_shell_option(&mut self.env, "emacs", false);
+                    }
                     set_shell_option(&mut self.env, option, enable);
+                    if option == "posix" && enable {
+                        self.env.shopt_options.insert("inherit_errexit".to_owned());
+                    }
                     index += 2;
                     continue;
                 }
-                let mut options = self.env.shell_options.iter().cloned().collect::<Vec<_>>();
-                options.sort();
-                let stdout = options.into_iter().map(|option| format!("set -o {option}\n")).collect();
+
+                let mut stdout = String::new();
+                for option in OPTIONS {
+                    let enabled = self.env.shell_options.contains(*option);
+                    if arg == "-o" {
+                        stdout.push_str(&format!(
+                            "{option:<16}\t{}\n",
+                            if enabled { "on" } else { "off" },
+                        ));
+                    } else {
+                        stdout.push_str(&format!(
+                            "set {}o {option}\n",
+                            if enabled { "-" } else { "+" },
+                        ));
+                    }
+                }
                 return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
             }
             if arg.starts_with('-') || arg.starts_with('+') {
                 let enable = arg.starts_with('-');
                 for flag in arg[1..].chars() {
-                    match flag {
-                        'e' => set_shell_option(&mut self.env, "errexit", enable),
-                        'u' => set_shell_option(&mut self.env, "nounset", enable),
-                        'x' => set_shell_option(&mut self.env, "xtrace", enable),
-                        'f' => set_shell_option(&mut self.env, "noglob", enable),
-                        'n' => set_shell_option(&mut self.env, "noexec", enable),
-                        'C' => set_shell_option(&mut self.env, "noclobber", enable),
-                        'a' => set_shell_option(&mut self.env, "allexport", enable),
-                        'm' => set_shell_option(&mut self.env, "monitor", enable),
-                        'b' => set_shell_option(&mut self.env, "notify", enable),
-                        'h' => set_shell_option(&mut self.env, "hashall", enable),
-                        'B' => set_shell_option(&mut self.env, "braceexpand", enable),
-                        'H' => set_shell_option(&mut self.env, "histexpand", enable),
-                        'P' => set_shell_option(&mut self.env, "physical", enable),
-                        'v' => set_shell_option(&mut self.env, "verbose", enable),
-                        _ => {}
-                    }
+                    let option = match flag {
+                        'a' => "allexport",
+                        'b' => "notify",
+                        'e' => "errexit",
+                        'f' => "noglob",
+                        'h' => "hashall",
+                        'k' => "keyword",
+                        'm' => "monitor",
+                        'n' => "noexec",
+                        'p' => "privileged",
+                        't' => "onecmd",
+                        'u' => "nounset",
+                        'v' => "verbose",
+                        'x' => "xtrace",
+                        'B' => "braceexpand",
+                        'C' => "noclobber",
+                        'E' => "errtrace",
+                        'H' => "histexpand",
+                        'P' => "physical",
+                        'T' => "functrace",
+                        _ => {
+                            return Ok(ExecutionResult::from_parts(
+                                String::new(),
+                                format!("set: -{flag}: opción inválida\n"),
+                                2,
+                            ));
+                        }
+                    };
+                    set_shell_option(&mut self.env, option, enable);
                 }
                 index += 1;
                 continue;
@@ -4330,38 +4389,132 @@ impl Interpreter {
 
         if let Some(start) = positional_start {
             self.env.positional = args[start..].to_vec();
+            self.sync_argument_stack_vars();
         }
         Ok(ExecutionResult::success())
     }
 
     fn builtin_shopt(&mut self, args: &[String]) -> ExecutionResult {
+        const OPTIONS: &[&str] = &[
+            "array_expand_once", "assoc_expand_once", "autocd",
+            "bash_source_fullpath", "cdable_vars", "cdspell", "checkhash",
+            "checkjobs", "checkwinsize", "cmdhist", "complete_fullquote",
+            "direxpand", "dirspell", "dotglob", "execfail", "expand_aliases",
+            "extdebug", "extglob", "extquote", "failglob", "force_fignore",
+            "globasciiranges", "globskipdots", "globstar", "gnu_errfmt",
+            "histappend", "histreedit", "histverify", "hostcomplete",
+            "huponexit", "inherit_errexit", "interactive_comments", "lastpipe",
+            "lithist", "localvar_inherit", "localvar_unset", "login_shell",
+            "mailwarn", "no_empty_cmd_completion", "nocaseglob", "nocasematch",
+            "noexpand_translation", "nullglob", "patsub_replacement", "progcomp",
+            "progcomp_alias", "promptvars", "restricted_shell", "shift_verbose",
+            "sourcepath", "varredir_close", "xpg_echo",
+        ];
+        const SET_OPTIONS: &[&str] = &[
+            "allexport", "braceexpand", "emacs", "errexit", "errtrace",
+            "functrace", "hashall", "histexpand", "history", "ignoreeof",
+            "keyword", "monitor", "noclobber", "noexec", "noglob", "nolog",
+            "notify", "nounset", "onecmd", "physical", "pipefail", "posix",
+            "privileged", "verbose", "vi", "xtrace",
+        ];
+
         let enable = args.iter().any(|arg| arg == "-s");
         let disable = args.iter().any(|arg| arg == "-u");
-        let print = args.is_empty() || args.iter().any(|arg| arg == "-p");
-        let names: Vec<_> = args.iter().filter(|arg| !arg.starts_with('-')).cloned().collect();
+        let quiet = args.iter().any(|arg| arg == "-q");
+        let use_set = args.iter().any(|arg| arg == "-o");
+        let print = args.is_empty() || args.iter().any(|arg| arg == "-p")
+            || ((!enable && !disable && !quiet) && args.iter().all(|arg| arg.starts_with('-')));
+        let names: Vec<_> = args.iter()
+            .filter(|arg| !arg.starts_with('-'))
+            .cloned()
+            .collect();
+        let known = if use_set { SET_OPTIONS } else { OPTIONS };
 
-        if print && names.is_empty() {
-            let known = [
-                "array_expand_once", "autocd", "cdspell", "checkwinsize", "dotglob",
-                "execfail", "expand_aliases", "extglob", "failglob", "globskipdots",
-                "globstar", "inherit_errexit", "lastpipe", "nocaseglob", "nocasematch", "nullglob",
-                "patsub_replacement", "progcomp", "sourcepath",
-            ];
-            let mut stdout = String::new();
-            for option in known {
-                stdout.push_str(&format!(
-                    "shopt {} {}\n",
-                    if self.env.shopt_options.contains(option) { "-s" } else { "-u" },
-                    option
-                ));
+        for name in &names {
+            if !known.contains(&name.as_str()) {
+                return ExecutionResult::from_parts(
+                    String::new(),
+                    format!("shopt: {name}: nombre de opción inválido\n"),
+                    1,
+                );
             }
-            return ExecutionResult::from_parts(stdout, String::new(), 0);
         }
 
-        for name in names {
-            if enable { self.env.shopt_options.insert(name); }
-            else if disable { self.env.shopt_options.remove(&name); }
+        if quiet {
+            let ok = names.iter().all(|name| {
+                if use_set {
+                    self.env.shell_options.contains(name)
+                } else {
+                    self.env.shopt_options.contains(name)
+                }
+            });
+            return ExecutionResult::from_parts(String::new(), String::new(), if ok { 0 } else { 1 });
         }
+
+        if enable || disable {
+            if names.is_empty() {
+                let mut stdout = String::new();
+                for option in known {
+                    let is_set = if use_set {
+                        self.env.shell_options.contains(*option)
+                    } else {
+                        self.env.shopt_options.contains(*option)
+                    };
+                    if (enable && is_set) || (disable && !is_set) {
+                        stdout.push_str(&format!(
+                            "shopt {} {}{}\n",
+                            if is_set { "-s" } else { "-u" },
+                            if use_set { "-o " } else { "" },
+                            option,
+                        ));
+                    }
+                }
+                return ExecutionResult::from_parts(stdout, String::new(), 0);
+            }
+
+            for name in names {
+                if use_set {
+                    set_shell_option(&mut self.env, &name, enable);
+                } else if enable {
+                    self.env.shopt_options.insert(name.clone());
+                    if name == "assoc_expand_once" {
+                        self.env.shopt_options.insert("array_expand_once".to_owned());
+                    }
+                } else {
+                    self.env.shopt_options.remove(&name);
+                    if name == "assoc_expand_once" {
+                        self.env.shopt_options.remove("array_expand_once");
+                    }
+                }
+            }
+            return ExecutionResult::success();
+        }
+
+        if print || !names.is_empty() {
+            let selected: Vec<&str> = if names.is_empty() {
+                known.to_vec()
+            } else {
+                names.iter().map(String::as_str).collect()
+            };
+            let mut stdout = String::new();
+            let mut status = 0;
+            for option in selected {
+                let is_set = if use_set {
+                    self.env.shell_options.contains(option)
+                } else {
+                    self.env.shopt_options.contains(option)
+                };
+                stdout.push_str(&format!(
+                    "shopt {} {}{}\n",
+                    if is_set { "-s" } else { "-u" },
+                    if use_set { "-o " } else { "" },
+                    option,
+                ));
+                if !is_set { status = 1; }
+            }
+            return ExecutionResult::from_parts(stdout, String::new(), status);
+        }
+
         ExecutionResult::success()
     }
 
@@ -4691,6 +4844,17 @@ impl Interpreter {
         Ok(ExecutionResult::success())
     }
 
+    fn resolved_command_program(&mut self, name: &str) -> String {
+        if let Some(path) = self.command_hash.get(name).cloned() {
+            if self.env.option_enabled("checkhash") && !Path::new(&path).exists() {
+                self.command_hash.remove(name);
+                return name.to_owned();
+            }
+            return path;
+        }
+        name.to_owned()
+    }
+
     fn execute_command_direct(
         &mut self,
         name: &str,
@@ -4705,7 +4869,7 @@ impl Interpreter {
         if let Some(result) = self.host.execute_builtin(name, args, &self.env.cwd, stdin)? {
             return Ok(result);
         }
-        let program = self.command_hash.get(name).cloned().unwrap_or_else(|| name.to_owned());
+        let program = self.resolved_command_program(name);
         match self.host.execute_external(&program, args, &self.env.cwd, &self.env.exported, stdin) {
             Ok(result) => Ok(result),
             Err(error) => Ok(ExecutionResult::from_parts(String::new(), format!("{name}: {error}\n"), 127)),
@@ -5372,7 +5536,9 @@ impl Interpreter {
 
                 if direction == '<' {
                     let saved = self.env.clone();
-                    if !self.env.option_enabled("inherit_errexit") {
+                    if !self.env.option_enabled("inherit_errexit")
+                        && !self.env.option_enabled("posix")
+                    {
                         self.env.shell_options.remove("errexit");
                     }
                     let execution = self.execute_text(&source);
@@ -5439,7 +5605,9 @@ impl Interpreter {
                     let saved_env = self.env.clone();
                     let saved_hash = self.command_hash.clone();
                     let saved_disabled = self.disabled_builtins.clone();
-                    if !self.env.option_enabled("inherit_errexit") {
+                    if !self.env.option_enabled("inherit_errexit")
+                        && !self.env.option_enabled("posix")
+                    {
                         self.env.shell_options.remove("errexit");
                     }
                     let result = self.execute_text(&source);
@@ -5466,6 +5634,11 @@ impl Interpreter {
                         let saved_env = self.env.clone();
                         let saved_hash = self.command_hash.clone();
                         let saved_disabled = self.disabled_builtins.clone();
+                        if !self.env.option_enabled("inherit_errexit")
+                            && !self.env.option_enabled("posix")
+                        {
+                            self.env.shell_options.remove("errexit");
+                        }
                         let result = self.execute_text(&source);
                         self.env = saved_env;
                         self.command_hash = saved_hash;
