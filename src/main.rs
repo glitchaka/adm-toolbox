@@ -19,7 +19,7 @@ fn main() {
     #[cfg(windows)]
     if args.is_empty() || args.first().is_some_and(|arg| matches!(arg.as_str(), "--gui" | "--console")) {
         if let Err(error) = presentation::gui::run() {
-            let message = format!("ADM Toolbox no pudo iniciarse: {error}");
+            let message = format!("Shell Shock Tool no pudo iniciarse: {error}");
             let text: Vec<u16> = message.encode_utf16().chain(Some(0)).collect();
             unsafe { windows_sys::Win32::UI::WindowsAndMessaging::MessageBoxW(
                 std::ptr::null_mut(), text.as_ptr(), text.as_ptr(),
@@ -46,10 +46,10 @@ fn main() {
 fn run_cli(args: &[String]) -> Result<i32> {
     match args.first().map(String::as_str) {
         Some("--help" | "-h") => {
-            println!("ADM Toolbox {}\n\nSin argumentos: terminal propia\n--console: terminal propia\n-c COMANDO: ejecutar un comando\nARCHIVO.sh [ARGS...]: ejecutar un script\n--version: versión\n\nTerminal: selecciona con el mouse y usa Ctrl+C para copiar; Ctrl+Shift+V o Shift+Insert para pegar; la rueda recorre el historial visible.", env!("CARGO_PKG_VERSION"));
+            println!("Shell Shock Tool {} (adm-tool)\n\nSin argumentos: terminal propia\n--console: terminal propia\n-c COMANDO: ejecutar un comando\nARCHIVO.sh [ARGS...]: ejecutar un script\n--version: versión\n\nTerminal: selecciona con el mouse y usa Ctrl+C para copiar; Ctrl+V, Ctrl+Shift+V o Shift+Insert para pegar; la rueda recorre el historial visible.", env!("CARGO_PKG_VERSION"));
             return Ok(0);
         }
-        Some("--version") => { println!("ADM Toolbox {}", env!("CARGO_PKG_VERSION")); return Ok(0); }
+        Some("--version") => { println!("Shell Shock Tool {} (adm-tool)", env!("CARGO_PKG_VERSION")); return Ok(0); }
         None => { AdmToolbox::new()?.run()?; return Ok(0); }
         #[cfg(windows)]
         Some("--verify-terminal") => { presentation::gui::verify_transport()?; return Ok(0); }
