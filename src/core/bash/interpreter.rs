@@ -1285,10 +1285,10 @@ impl Interpreter {
                     let items = split_shell_words_relaxed(body)?;
                     if associative {
                         self.env.declare_assoc(name.clone());
-                        let target = self.env.assoc_arrays.entry(name.clone()).or_default();
                         for item in items {
                             if let Some((key, value)) = parse_array_entry(&item) {
-                                target.insert(key, self.expand_scalar(&value)?);
+                                let expanded = self.expand_scalar(&value)?;
+                                self.env.assoc_arrays.entry(name.clone()).or_default().insert(key, expanded);
                             }
                         }
                     } else {
@@ -1517,16 +1517,15 @@ impl Interpreter {
             return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         }
         let option = item.chars().nth(1).unwrap_or('?');
-        let mut requires_arg = false;
         let chars: Vec<char> = optstring.chars().collect();
-        if let Some(pos) = chars.iter().position(|ch| *ch == option) {
-            requires_arg = chars.get(pos + 1) == Some(&':');
+        let requires_arg = if let Some(pos) = chars.iter().position(|ch| *ch == option) {
+            chars.get(pos + 1) == Some(&':')
         } else {
             self.env.set(varname.clone(), "?");
             self.env.set("OPTARG", option.to_string());
             self.env.set("OPTIND", (optind + 1).to_string());
             return Ok(ExecutionResult::success());
-        }
+        };
         self.env.set(varname.clone(), option.to_string());
         if requires_arg {
             if item.len() > 2 {
@@ -2093,7 +2092,7 @@ impl Interpreter {
                 '"' if !single => { double = !double; i += 1; }
                 '\\' if !single && i + 1 < chars.len() => {
                     let next = chars[i + 1];
-                    if !double || matches!(next, '$' | '\\x60' | '"' | '\\' | '\n') {
+                    if !double || matches!(next, '$' | '`' | '"' | '\\' | '\n') {
                         if next != '\n' { out.push(next); }
                         i += 2;
                     } else {
@@ -2101,9 +2100,9 @@ impl Interpreter {
                         i += 1;
                     }
                 }
-                '\\x60' if !single => {
+                '`' if !single => {
                     let mut end = i + 1;
-                    while end < chars.len() && chars[end] != '\\x60' { end += 1; }
+                    while end < chars.len() && chars[end] != '`' { end += 1; }
                     if end >= chars.len() { bail!("sustitución con backticks sin cerrar"); }
                     let source: String = chars[i + 1..end].iter().collect();
                     let saved = self.env.clone();

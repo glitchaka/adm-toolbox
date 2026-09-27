@@ -25,10 +25,11 @@ jobs:
           for notes in .release/v*.md; do
             tag="$(basename "$notes" .md)"
             if gh release view "$tag" >/dev/null 2>&1; then
-              continue
+              gh release edit "$tag" --notes-file "$notes"
+            else
+              gh release create "$tag" \
+                --target "$GITHUB_SHA" \
+                --title "Shell Shock Tool ${tag#v}" \
+                --notes-file "$notes"
             fi
-            gh release create "$tag" \
-              --target "$GITHUB_SHA" \
-              --title "Shell Shock Tool ${tag#v}" \
-              --notes-file "$notes"
           done
