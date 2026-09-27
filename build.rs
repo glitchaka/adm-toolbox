@@ -8,13 +8,21 @@ use std::{
 const FONT_URL: &str =
     "https://raw.githubusercontent.com/ryanoasis/nerd-fonts/v3.3.0/patched-fonts/JetBrainsMono/Ligatures/Regular/JetBrainsMonoNerdFontMono-Regular.ttf";
 const FONT_NAME: &str = "JetBrainsMonoNerdFontMono-Regular.ttf";
+const HELIX_VERSION: &str = "25.07.1";
+const HELIX_ARCHIVE_NAME: &str = "helix-25.07.1-x86_64-windows.zip";
+const HELIX_URL: &str =
+    "https://github.com/helix-editor/helix/releases/download/25.07.1/helix-25.07.1-x86_64-windows.zip";
 
 fn main() {
     println!("cargo:rerun-if-env-changed=ADM_NERD_FONT_FILE");
+    println!("cargo:rerun-if-env-changed=ADM_HELIX_ARCHIVE");
     println!("cargo:rerun-if-changed=assets/shell-shock-mascot.svg");
 
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR no definido"));
     ensure_nerd_font(&out_dir);
+
+    #[cfg(windows)]
+    ensure_helix_archive(&out_dir);
 
     #[cfg(windows)]
     {
@@ -63,6 +71,42 @@ fn ensure_nerd_font(out_dir: &Path) {
         .expect("La Nerd Font embebida no existe");
     if metadata.len() < 100_000 {
         panic!("La Nerd Font embebida parece incompleta");
+    }
+}
+
+
+#[cfg(windows)]
+fn ensure_helix_archive(out_dir: &Path) {
+    let destination = out_dir.join(HELIX_ARCHIVE_NAME);
+
+    if let Some(source) = env::var_os("ADM_HELIX_ARCHIVE") {
+        fs::copy(Path::new(&source), &destination)
+            .expect("No se pudo copiar ADM_HELIX_ARCHIVE");
+    } else if !destination.is_file() {
+        let status = Command::new("curl")
+            .args([
+                "-L",
+                "--fail",
+                "--silent",
+                "--show-error",
+                HELIX_URL,
+                "-o",
+            ])
+            .arg(&destination)
+            .status()
+            .expect("No se pudo ejecutar curl para obtener Helix durante la compilación");
+
+        if !status.success() {
+            panic!(
+                "No se pudo obtener Helix {HELIX_VERSION}. Compile con Internet o defina ADM_HELIX_ARCHIVE apuntando al ZIP oficial."
+            );
+        }
+    }
+
+    let metadata = fs::metadata(&destination)
+        .expect("El paquete de Helix embebido no existe");
+    if metadata.len() < 1_000_000 {
+        panic!("El paquete de Helix embebido parece incompleto");
     }
 }
 
