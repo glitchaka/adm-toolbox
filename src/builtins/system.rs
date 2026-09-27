@@ -10,7 +10,7 @@ use crate::{
 use super::BuiltinCommand;
 
 const ALIASES: &[&str] = &[
-    "ps", "top", "df", "free", "hostname", "whoami", "uname", "kill",
+    "ps", "top", "df", "free", "hostname", "whoami", "uname", "kill", "uptime",
     "fetch", "neofetch", "fastfetch",
 ];
 
@@ -34,7 +34,7 @@ impl BuiltinCommand for SystemBuiltin {
     }
 
     fn help(&self) -> &'static str {
-        "sys — información del equipo, procesos, memoria y discos"
+        "sys — sistema y administración local: procesos, servicios, usuarios, eventos, registro y tareas"
     }
 
     fn execute(
