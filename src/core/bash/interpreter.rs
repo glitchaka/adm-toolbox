@@ -1568,6 +1568,542 @@ impl Interpreter {
         Ok(ExecutionResult::from_parts(String::new(), stderr, status))
     }
 
+
+    fn builtin_exec(&mut self, args: &[String], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
+        let mut index = 0usize;
+        while index < args.len() {
+            match args[index].as_str() {
+                "-a" => index = (index + 2).min(args.len()),
+                "-c" | "-l" => index += 1,
+                _ => break,
+            }
+        }
+        if index >= args.len() {
+            return Ok(ExecutionResult::success());
+        }
+        let mut result = self.execute_command_direct(&args[index], &args[index + 1..], stdin)?;
+        if result.status != 127 {
+            result.exit_requested = true;
+        }
+        Ok(result)
+    }
+
+    fn history_path(&self) -> Option<PathBuf> {
+        let path = self.env.get("HISTFILE");
+        (!path.is_empty()).then(|| PathBuf::from(path))
+    }
+
+    fn history_lines(&self) -> Vec<String> {
+        self.history_path()
+            .and_then(|path| fs::read_to_string(path).ok())
+            .map(|text| text.lines().map(str::to_owned).collect())
+            .unwrap_or_default()
+    }
+
+    fn save_history_lines(&self, lines: &[String]) -> Result<()> {
+        let Some(path) = self.history_path() else { return Ok(()); };
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let mut text = lines.join("\n");
+        if !text.is_empty() {
+            text.push('\n');
+        }
+        fs::write(path, text)?;
+        Ok(())
+    }
+
+    fn builtin_history(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let mut lines = self.history_lines();
+
+        if args.first().map(String::as_str) == Some("-c") {
+            lines.clear();
+            self.save_history_lines(&lines)?;
+            return Ok(ExecutionResult::success());
+        }
+
+        if args.first().map(String::as_str) == Some("-d") {
+            let Some(position) = args.get(1).and_then(|value| value.parse::<usize>().ok()) else {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    "history: -d requiere posición\n".to_owned(),
+                    2,
+                ));
+            };
+            if position == 0 || position > lines.len() {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("history: {position}: posición inválida\n"),
+                    1,
+                ));
+            }
+            lines.remove(position - 1);
+            self.save_history_lines(&lines)?;
+            return Ok(ExecutionResult::success());
+        }
+
+        if matches!(args.first().map(String::as_str), Some("-a" | "-w" | "-r" | "-n")) {
+            self.save_history_lines(&lines)?;
+            return Ok(ExecutionResult::success());
+        }
+
+        let count = args.iter()
+            .find_map(|value| value.parse::<usize>().ok())
+            .unwrap_or(lines.len());
+        let start = lines.len().saturating_sub(count);
+        let mut stdout = String::new();
+        for (index, line) in lines.iter().enumerate().skip(start) {
+            stdout.push_str(&format!("{:5}  {}\n", index + 1, line));
+        }
+        Ok(ExecutionResult::from_parts(stdout, String::new(), 0))
+    }
+
+    fn builtin_fc(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let history = self.history_lines();
+        if history.is_empty() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "fc: historial vacío\n".to_owned(),
+                1,
+            ));
+        }
+
+        let list = args.iter().any(|arg| arg == "-l");
+        let substitute = args.iter().any(|arg| arg == "-s");
+        let reverse = args.iter().any(|arg| arg == "-r");
+        let number_lines = !args.iter().any(|arg| arg == "-n");
+        let operands: Vec<&String> = args.iter().filter(|arg| !arg.starts_with('-')).collect();
+
+        let resolve = |value: Option<&&String>, default: usize| -> usize {
+            let Some(value) = value else { return default; };
+            if let Ok(number) = value.parse::<isize>() {
+                if number < 0 {
+                    return history.len()
+                        .saturating_sub((-number) as usize)
+                        .saturating_add(1)
+                        .clamp(1, history.len());
+                }
+                return (number as usize).clamp(1, history.len());
+            }
+            history.iter()
+                .position(|line| line.starts_with(value.as_str()))
+                .map(|index| index + 1)
+                .unwrap_or(default)
+        };
+
+        if substitute {
+            let mut command = history.last().cloned().unwrap_or_default();
+            if let Some((from, to)) = operands.first().and_then(|value| value.split_once('=')) {
+                command = command.replacen(from, to, 1);
+            }
+            return self.execute_text(&command);
+        }
+
+        let first = resolve(operands.first(), history.len().saturating_sub(15).max(1));
+        let last = resolve(operands.get(1), history.len());
+
+        if list {
+            let mut rows: Vec<(usize, String)> = (first.min(last)..=first.max(last))
+                .filter_map(|number| history.get(number - 1).cloned().map(|line| (number, line)))
+                .collect();
+            if reverse || first > last {
+                rows.reverse();
+            }
+            let stdout = rows.into_iter()
+                .map(|(number, line)| {
+                    if number_lines { format!("{number}\t{line}\n") } else { format!("{line}\n") }
+                })
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        let command = history.get(first.saturating_sub(1)).cloned().unwrap_or_default();
+        self.execute_text(&command)
+    }
+
+    fn builtin_bind(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-p" | "-P" | "-s" | "-S")) {
+            let mut entries: Vec<_> = self.readline_bindings.iter().collect();
+            entries.sort_by_key(|(key, _)| *key);
+            let stdout = entries.into_iter()
+                .map(|(key, value)| format!("\"{}\": {}\n", key.replace('"', "\\\""), value))
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        if args.first().map(String::as_str) == Some("-r") {
+            if let Some(key) = args.get(1) {
+                self.readline_bindings.remove(key);
+            }
+            return Ok(ExecutionResult::success());
+        }
+
+        let offset = if args.first().map(String::as_str) == Some("-x") { 1 } else { 0 };
+        for binding in &args[offset..] {
+            if let Some((key, command)) = binding.split_once(':') {
+                self.readline_bindings
+                    .insert(strip_outer_quotes(key), command.trim().to_owned());
+            }
+        }
+        Ok(ExecutionResult::success())
+    }
+
+    fn builtin_enable(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let disable = args.iter().any(|arg| arg == "-n");
+
+        if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-a" | "-p")) {
+            let mut names: Vec<_> = bash_builtin_names().iter().map(|name| (*name).to_owned()).collect();
+            names.sort();
+            let mut stdout = String::new();
+            for name in names {
+                stdout.push_str(if self.disabled_builtins.contains(&name) {
+                    "enable -n "
+                } else {
+                    "enable "
+                });
+                stdout.push_str(&name);
+                stdout.push('\n');
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        for name in args.iter().filter(|arg| !arg.starts_with('-')) {
+            if !bash_builtin_names().contains(&name.as_str()) {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("enable: {name}: no es builtin\n"),
+                    1,
+                ));
+            }
+            if disable {
+                self.disabled_builtins.insert(name.clone());
+            } else {
+                self.disabled_builtins.remove(name);
+            }
+        }
+        Ok(ExecutionResult::success())
+    }
+
+    fn parse_completion_spec(&self, args: &[String]) -> Result<(CompletionSpec, Vec<String>)> {
+        let mut spec = CompletionSpec::default();
+        let mut names = Vec::new();
+        let mut index = 0usize;
+        while index < args.len() {
+            match args[index].as_str() {
+                "-W" => {
+                    index += 1;
+                    spec.words = args.get(index)
+                        .map(|value| split_shell_words_relaxed(value).unwrap_or_default())
+                        .unwrap_or_default();
+                }
+                "-A" => { index += 1; spec.action = args.get(index).cloned(); }
+                "-F" => { index += 1; spec.function = args.get(index).cloned(); }
+                "-C" => { index += 1; spec.command = args.get(index).cloned(); }
+                "-P" => { index += 1; spec.prefix = args.get(index).cloned().unwrap_or_default(); }
+                "-S" => { index += 1; spec.suffix = args.get(index).cloned().unwrap_or_default(); }
+                "-o" => {
+                    index += 1;
+                    if let Some(value) = args.get(index) {
+                        spec.options.insert(value.clone());
+                    }
+                }
+                "--" => {
+                    names.extend(args[index + 1..].iter().cloned());
+                    break;
+                }
+                value if value.starts_with('-') => {}
+                value => names.push(value.to_owned()),
+            }
+            index += 1;
+        }
+        Ok((spec, names))
+    }
+
+    fn builtin_complete(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if args.iter().any(|arg| arg == "-r") {
+            let names: Vec<_> = args.iter()
+                .filter(|arg| !arg.starts_with('-'))
+                .cloned()
+                .collect();
+            if names.is_empty() {
+                self.completion_specs.clear();
+            } else {
+                for name in names {
+                    self.completion_specs.remove(&name);
+                }
+            }
+            return Ok(ExecutionResult::success());
+        }
+
+        if args.is_empty() || args.iter().any(|arg| arg == "-p") {
+            let mut rows: Vec<_> = self.completion_specs.iter().collect();
+            rows.sort_by_key(|(name, _)| *name);
+            let stdout = rows.into_iter()
+                .map(|(name, spec)| {
+                    let mut parts = vec!["complete".to_owned()];
+                    if let Some(action) = &spec.action {
+                        parts.extend(["-A".to_owned(), shell_quote(action)]);
+                    }
+                    if !spec.words.is_empty() {
+                        parts.extend(["-W".to_owned(), shell_quote(&spec.words.join(" "))]);
+                    }
+                    if let Some(function) = &spec.function {
+                        parts.extend(["-F".to_owned(), shell_quote(function)]);
+                    }
+                    if let Some(command) = &spec.command {
+                        parts.extend(["-C".to_owned(), shell_quote(command)]);
+                    }
+                    if !spec.prefix.is_empty() {
+                        parts.extend(["-P".to_owned(), shell_quote(&spec.prefix)]);
+                    }
+                    if !spec.suffix.is_empty() {
+                        parts.extend(["-S".to_owned(), shell_quote(&spec.suffix)]);
+                    }
+                    parts.push(shell_quote(name));
+                    format!("{}\n", parts.join(" "))
+                })
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        let (spec, names) = self.parse_completion_spec(args)?;
+        if names.is_empty() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "complete: falta nombre de comando\n".to_owned(),
+                2,
+            ));
+        }
+        for name in names {
+            self.completion_specs.insert(name, spec.clone());
+        }
+        Ok(ExecutionResult::success())
+    }
+
+    fn completion_candidates_for_action(&self, action: &str, prefix: &str) -> Vec<String> {
+        let mut values: Vec<String> = match action {
+            "alias" => self.env.aliases.keys().cloned().collect(),
+            "builtin" => bash_builtin_names().iter().map(|name| (*name).to_owned()).collect(),
+            "function" => self.env.functions.keys().cloned().collect(),
+            "variable" => self.env.vars.keys()
+                .chain(self.env.arrays.keys())
+                .chain(self.env.assoc_arrays.keys())
+                .cloned()
+                .collect(),
+            "keyword" => bash_keywords().iter().map(|word| (*word).to_owned()).collect(),
+            "job" => self.host.jobs().unwrap_or_default().into_iter().enumerate()
+                .map(|(index, _)| format!("%{}", index + 1))
+                .collect(),
+            "directory" => completion_files(&self.env.cwd, prefix, true),
+            "file" => completion_files(&self.env.cwd, prefix, false),
+            "command" => {
+                let mut rows: Vec<String> = bash_builtin_names().iter()
+                    .map(|name| (*name).to_owned())
+                    .collect();
+                rows.extend(self.env.functions.keys().cloned());
+                rows.extend(self.env.aliases.keys().cloned());
+                rows.extend(self.host.command_names());
+                rows.extend(path_commands(&self.env.get("PATH")));
+                rows
+            }
+            _ => Vec::new(),
+        };
+        values.retain(|value| value.starts_with(prefix));
+        values.sort();
+        values.dedup();
+        values
+    }
+
+    fn generate_completions(
+        &mut self,
+        spec: &CompletionSpec,
+        prefix: &str,
+        line: &str,
+    ) -> Result<Vec<String>> {
+        let mut values = spec.words.clone();
+
+        if let Some(action) = &spec.action {
+            values.extend(self.completion_candidates_for_action(action, prefix));
+        }
+
+        if let Some(function) = &spec.function {
+            if let Some(body) = self.env.functions.get(function).cloned() {
+                let saved = self.env.positional.clone();
+                self.env.positional = vec![line.to_owned(), prefix.to_owned(), String::new()];
+                self.env.set_array("COMPREPLY", Vec::new());
+                let _ = self.execute(&body, None)?;
+                values.extend(self.env.array_values("COMPREPLY"));
+                self.env.positional = saved;
+            }
+        }
+
+        if let Some(command) = &spec.command {
+            let result = self.execute_text(command)?;
+            values.extend(result.stdout.lines().map(str::to_owned));
+        }
+
+        values.retain(|value| value.starts_with(prefix));
+        values = values.into_iter()
+            .map(|value| format!("{}{}{}", spec.prefix, value, spec.suffix))
+            .collect();
+        values.sort();
+        values.dedup();
+        Ok(values)
+    }
+
+    fn builtin_compgen(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let (spec, names) = self.parse_completion_spec(args)?;
+        let prefix = names.last().cloned().unwrap_or_default();
+        let values = self.generate_completions(&spec, &prefix, &prefix)?;
+        let status = if values.is_empty() { 1 } else { 0 };
+        let stdout = if values.is_empty() {
+            String::new()
+        } else {
+            format!("{}\n", values.join("\n"))
+        };
+        Ok(ExecutionResult::from_parts(stdout, String::new(), status))
+    }
+
+    fn builtin_compopt(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let mut add = Vec::new();
+        let mut remove = Vec::new();
+        let mut names = Vec::new();
+        let mut index = 0usize;
+
+        while index < args.len() {
+            match args[index].as_str() {
+                "-o" => {
+                    index += 1;
+                    if let Some(value) = args.get(index) { add.push(value.clone()); }
+                }
+                "+o" => {
+                    index += 1;
+                    if let Some(value) = args.get(index) { remove.push(value.clone()); }
+                }
+                value if value.starts_with('-') => {}
+                value => names.push(value.to_owned()),
+            }
+            index += 1;
+        }
+
+        if names.is_empty() {
+            let mut stdout = String::new();
+            for (name, spec) in &self.completion_specs {
+                for option in &spec.options {
+                    stdout.push_str(&format!("compopt -o {option} {name}\n"));
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        for name in names {
+            let spec = self.completion_specs.entry(name).or_default();
+            for option in &add { spec.options.insert(option.clone()); }
+            for option in &remove { spec.options.remove(option); }
+        }
+        Ok(ExecutionResult::success())
+    }
+
+    fn builtin_suspend(&self, args: &[String]) -> Result<ExecutionResult> {
+        if args.is_empty() || args.iter().any(|arg| arg == "-f") {
+            let _ = self.host.read_line("Shell suspendida. Pulse Enter para continuar.", true)?;
+            return Ok(ExecutionResult::success());
+        }
+        Ok(ExecutionResult::from_parts(
+            String::new(),
+            "suspend: opción inválida\n".to_owned(),
+            2,
+        ))
+    }
+
+    fn builtin_ulimit(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let labels: &[(char, &str)] = &[
+            ('c', "core file size"), ('d', "data seg size"), ('f', "file size"),
+            ('l', "max locked memory"), ('m', "max memory size"), ('n', "open files"),
+            ('p', "pipe size"), ('q', "POSIX message queues"), ('s', "stack size"),
+            ('t', "cpu time"), ('u', "max user processes"), ('v', "virtual memory"),
+            ('x', "file locks"),
+        ];
+
+        if args.iter().any(|arg| arg == "-a") {
+            let mut stdout = String::new();
+            for (flag, label) in labels {
+                let value = self.ulimits.get(flag)
+                    .cloned()
+                    .unwrap_or_else(|| "unlimited".to_owned());
+                stdout.push_str(&format!("{label} (-{flag}) {value}\n"));
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        let mut selected = 'f';
+        let mut value = None;
+        for arg in args {
+            if matches!(arg.as_str(), "-S" | "-H") {
+                continue;
+            }
+            if arg.starts_with('-') && arg.len() == 2 {
+                selected = arg.chars().nth(1).unwrap_or('f');
+            } else {
+                value = Some(arg.clone());
+            }
+        }
+
+        if !labels.iter().any(|(flag, _)| *flag == selected) {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("ulimit: -{selected}: opción inválida\n"),
+                2,
+            ));
+        }
+
+        if let Some(value) = value {
+            if value != "unlimited" && value.parse::<u64>().is_err() {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("ulimit: {value}: límite inválido\n"),
+                    2,
+                ));
+            }
+            self.ulimits.insert(selected, value);
+            Ok(ExecutionResult::success())
+        } else {
+            Ok(ExecutionResult::from_parts(
+                format!(
+                    "{}\n",
+                    self.ulimits.get(&selected)
+                        .cloned()
+                        .unwrap_or_else(|| "unlimited".to_owned())
+                ),
+                String::new(),
+                0,
+            ))
+        }
+    }
+
+    fn builtin_times(&self) -> ExecutionResult {
+        let elapsed = self.env.elapsed_seconds();
+        let minutes = (elapsed / 60.0).floor() as u64;
+        let seconds = elapsed - minutes as f64 * 60.0;
+        ExecutionResult::from_parts(
+            format!("{minutes}m{seconds:.3}s 0m0.000s\n0m0.000s 0m0.000s\n"),
+            String::new(),
+            0,
+        )
+    }
+
+    fn builtin_caller(&self, args: &[String]) -> ExecutionResult {
+        let index = args.first().and_then(|arg| arg.parse::<usize>().ok()).unwrap_or(0);
+        let Some(frame) = self.call_stack.iter().rev().nth(index) else {
+            return ExecutionResult::from_parts(String::new(), String::new(), 1);
+        };
+        ExecutionResult::from_parts(
+            format!("{} {} {}\n", frame.line, frame.function, frame.source),
+            String::new(),
+            0,
+        )
+    }
+
     fn builtin_echo(&self, args: &[String]) -> ExecutionResult {
         let mut newline = true;
         let mut escapes = false;
@@ -4064,6 +4600,94 @@ fn render_ast(node: &AstNode) -> String {
         AstNode::Group(body) => format!("{{ {}; }}", render_ast(body)),
         AstNode::Subshell(body) => format!("( {} )", render_ast(body)),
     }
+}
+
+
+fn bash_builtin_names() -> &'static [&'static str] {
+    &[
+        ":", ".", "[", "alias", "bg", "bind", "break", "builtin", "caller", "cd",
+        "command", "compgen", "complete", "compopt", "continue", "declare", "dirs",
+        "disown", "echo", "enable", "eval", "exec", "exit", "export", "false", "fc",
+        "fg", "getopts", "hash", "help", "history", "jobs", "kill", "let", "local",
+        "logout", "mapfile", "popd", "printf", "pushd", "pwd", "read", "readarray",
+        "readonly", "return", "set", "shift", "shopt", "source", "suspend", "test",
+        "times", "trap", "true", "type", "typeset", "ulimit", "umask", "unalias",
+        "unset", "wait",
+    ]
+}
+
+fn bash_keywords() -> &'static [&'static str] {
+    &[
+        "!", "[[", "]]", "case", "coproc", "do", "done", "elif", "else", "esac",
+        "fi", "for", "function", "if", "in", "select", "then", "time", "until",
+        "while", "{", "}",
+    ]
+}
+
+fn completion_files(cwd: &Path, prefix: &str, directories_only: bool) -> Vec<String> {
+    let typed = PathBuf::from(prefix);
+    let parent = typed.parent()
+        .filter(|path| !path.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let stem = typed.file_name().and_then(|name| name.to_str()).unwrap_or("");
+    let directory = if parent.is_absolute() { parent.to_path_buf() } else { cwd.join(parent) };
+    let mut values = Vec::new();
+
+    if let Ok(entries) = fs::read_dir(directory) {
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else { continue };
+            if directories_only && !file_type.is_dir() { continue; }
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if !name.starts_with(stem) { continue; }
+            let mut value = if parent == Path::new(".") {
+                name
+            } else {
+                parent.join(name).to_string_lossy().into_owned()
+            };
+            if file_type.is_dir() {
+                value.push(std::path::MAIN_SEPARATOR);
+            }
+            values.push(value);
+        }
+    }
+    values.sort();
+    values
+}
+
+fn path_commands(path_value: &str) -> Vec<String> {
+    let mut values = Vec::new();
+    for directory in std::env::split_paths(path_value) {
+        let Ok(entries) = fs::read_dir(directory) else { continue };
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else { continue };
+            if !file_type.is_file() { continue; }
+            let path = entry.path();
+            let Some(name) = path.file_name().and_then(|name| name.to_str()) else { continue };
+            #[cfg(windows)]
+            {
+                let lower = name.to_ascii_lowercase();
+                if !(lower.ends_with(".exe")
+                    || lower.ends_with(".com")
+                    || lower.ends_with(".bat")
+                    || lower.ends_with(".cmd")
+                    || lower.ends_with(".sh"))
+                {
+                    continue;
+                }
+                values.push(
+                    path.file_stem()
+                        .and_then(|stem| stem.to_str())
+                        .unwrap_or(name)
+                        .to_owned()
+                );
+            }
+            #[cfg(not(windows))]
+            values.push(name.to_owned());
+        }
+    }
+    values.sort();
+    values.dedup();
+    values
 }
 
 #[cfg(test)]

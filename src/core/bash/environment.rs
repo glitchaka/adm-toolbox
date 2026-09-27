@@ -195,6 +195,7 @@ impl ShellEnvironment {
                 if self.shell_options.contains("errexit") { flags.push('e'); }
                 if self.shell_options.contains("noglob") { flags.push('f'); }
                 if self.shell_options.contains("hashall") { flags.push('h'); }
+                if self.shell_options.contains("interactive") { flags.push('i'); }
                 if self.shell_options.contains("histexpand") { flags.push('H'); }
                 if self.shell_options.contains("monitor") { flags.push('m'); }
                 if self.shell_options.contains("noexec") { flags.push('n'); }
@@ -633,6 +634,10 @@ impl ShellEnvironment {
 
     pub fn option_enabled(&self, name: &str) -> bool {
         self.shell_options.contains(name) || self.shopt_options.contains(name)
+    }
+
+    pub fn elapsed_seconds(&self) -> f64 {
+        self.started_at.elapsed().as_secs_f64()
     }
 }
 
