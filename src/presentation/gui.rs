@@ -368,7 +368,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     state.suppress_char = true;
                     return 0;
                 }
-                if (ctrl && shift && wp == b'C' as usize {
+                if ctrl && shift && wp == b'C' as usize {
                     copy(hwnd, &state.selected_text());
                     state.suppress_char = true;
                     return 0;
