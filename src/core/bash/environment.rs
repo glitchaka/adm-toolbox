@@ -73,7 +73,7 @@ impl ShellEnvironment {
             namerefs: HashMap::new(),
             readonly,
             shell_options: ["braceexpand", "hashall"].into_iter().map(str::to_owned).collect(),
-            shopt_options: ["sourcepath"].into_iter().map(str::to_owned).collect(),
+            shopt_options: ["globskipdots", "sourcepath"].into_iter().map(str::to_owned).collect(),
             traps: HashMap::new(),
             cwd: env::current_dir().unwrap_or_else(|_| PathBuf::from("C:\\")),
             oldpwd: None,

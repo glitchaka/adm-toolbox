@@ -2293,8 +2293,8 @@ impl Interpreter {
         if print && names.is_empty() {
             let known = [
                 "array_expand_once", "autocd", "cdspell", "checkwinsize", "dotglob",
-                "execfail", "expand_aliases", "extglob", "failglob", "globstar",
-                "inherit_errexit", "lastpipe", "nocaseglob", "nocasematch", "nullglob",
+                "execfail", "expand_aliases", "extglob", "failglob", "globskipdots",
+                "globstar", "inherit_errexit", "lastpipe", "nocaseglob", "nocasematch", "nullglob",
                 "patsub_replacement", "progcomp", "sourcepath",
             ];
             let mut stdout = String::new();
@@ -3150,12 +3150,14 @@ impl Interpreter {
                         result.push(field);
                         continue;
                     }
+                    let is_pattern = contains_glob_meta(&field)
+                        || (self.env.option_enabled("extglob") && find_extglob(&field).is_some());
                     let paths = self.glob(&field)?;
                     if paths.is_empty() {
-                        if self.env.option_enabled("failglob") && contains_glob_meta(&field) {
+                        if self.env.option_enabled("failglob") && is_pattern {
                             bail!("no hay coincidencias: {field}");
                         }
-                        if !self.env.option_enabled("nullglob") || !contains_glob_meta(&field) {
+                        if !self.env.option_enabled("nullglob") || !is_pattern {
                             result.push(field);
                         }
                     } else {
@@ -3639,7 +3641,8 @@ impl Interpreter {
         };
         for entry in glob::glob_with(&pattern, options)? {
             let Ok(path) = entry else { continue };
-            if !self.env.option_enabled("dotglob") {
+            let globignore_active = !self.env.get("GLOBIGNORE").is_empty();
+            if !self.env.option_enabled("dotglob") && !globignore_active {
                 let hidden = path.file_name().and_then(|n| n.to_str()).is_some_and(|n| n.starts_with('.'));
                 let explicit_hidden = Path::new(value).file_name().and_then(|n| n.to_str()).is_some_and(|n| n.starts_with('.'));
                 if hidden && !explicit_hidden { continue; }
@@ -3650,8 +3653,7 @@ impl Interpreter {
                 result.push(relative.to_string_lossy().into_owned());
             }
         }
-        result.sort();
-        Ok(result)
+        Ok(self.finalize_glob_results(result))
     }
 
     fn glob_extglob(&self, value: &str) -> Result<Vec<String>> {
@@ -3714,7 +3716,8 @@ impl Interpreter {
                             expanded.push(base.clone());
                             descendants(
                                 base,
-                                self.env.option_enabled("dotglob"),
+                                self.env.option_enabled("dotglob")
+                                    || !self.env.get("GLOBIGNORE").is_empty(),
                                 &mut expanded,
                             );
                         }
@@ -3741,6 +3744,7 @@ impl Interpreter {
                             let name = entry.file_name().to_string_lossy().into_owned();
                             if name.starts_with('.')
                                 && !self.env.option_enabled("dotglob")
+                                && self.env.get("GLOBIGNORE").is_empty()
                                 && !pattern.starts_with('.')
                             {
                                 continue;
@@ -3772,9 +3776,126 @@ impl Interpreter {
                 }
             })
             .collect::<Vec<_>>();
-        result.sort();
         result.dedup();
-        Ok(result)
+        Ok(self.finalize_glob_results(result))
+    }
+
+    fn finalize_glob_results(&self, mut values: Vec<String>) -> Vec<String> {
+        let ignore = self.env.get("GLOBIGNORE");
+        if !ignore.is_empty() {
+            let patterns = ignore.split(':')
+                .filter(|pattern| !pattern.is_empty())
+                .collect::<Vec<_>>();
+            let extglob = self.env.option_enabled("extglob");
+            let nocase = self.env.option_enabled("nocaseglob");
+
+            values.retain(|value| {
+                let name = Path::new(value)
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or(value);
+                if name == "." || name == ".." {
+                    return false;
+                }
+                !patterns.iter().any(|pattern| {
+                    let target = if pattern.contains('/') || pattern.contains('\\') {
+                        value.as_str()
+                    } else {
+                        name
+                    };
+                    shell_pattern_matches(pattern, target, extglob, nocase)
+                })
+            });
+        }
+
+        self.sort_glob_results(&mut values);
+        values
+    }
+
+    fn sort_glob_results(&self, values: &mut [String]) {
+        let raw = self.env.get("GLOBSORT");
+        let (descending, key) = match raw.as_str() {
+            value if value.starts_with('-') => (true, &value[1..]),
+            value if value.starts_with('+') => (false, &value[1..]),
+            value => (false, value),
+        };
+        let key = if key.is_empty() { "name" } else { key };
+        if key == "nosort" {
+            return;
+        }
+
+        let valid = matches!(
+            key,
+            "name" | "numeric" | "size" | "mtime" | "atime" | "ctime" | "blocks"
+        );
+        let key = if valid { key } else { "name" };
+
+        fn numeric_name(value: &str) -> Option<(usize, String)> {
+            let name = Path::new(value).file_name()?.to_string_lossy();
+            if name.is_empty() || !name.chars().all(|ch| ch.is_ascii_digit()) {
+                return None;
+            }
+            let normalized = name.trim_start_matches('0');
+            let normalized = if normalized.is_empty() { "0" } else { normalized };
+            Some((normalized.len(), normalized.to_owned()))
+        }
+
+        fn time_key(value: std::io::Result<std::time::SystemTime>) -> (u64, u32) {
+            value.ok()
+                .and_then(|time| time.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|duration| (duration.as_secs(), duration.subsec_nanos()))
+                .unwrap_or((0, 0))
+        }
+
+        let cwd = self.env.cwd.clone();
+        values.sort_by(|left, right| {
+            let left_path = if Path::new(left).is_absolute() {
+                PathBuf::from(left)
+            } else {
+                cwd.join(left)
+            };
+            let right_path = if Path::new(right).is_absolute() {
+                PathBuf::from(right)
+            } else {
+                cwd.join(right)
+            };
+
+            let name_cmp = left.cmp(right);
+            let order = match key {
+                "numeric" => match (numeric_name(left), numeric_name(right)) {
+                    (Some((ll, lv)), Some((rl, rv))) => ll.cmp(&rl).then_with(|| lv.cmp(&rv)).then(name_cmp),
+                    (Some(_), None) => std::cmp::Ordering::Less,
+                    (None, Some(_)) => std::cmp::Ordering::Greater,
+                    (None, None) => name_cmp,
+                },
+                "size" | "blocks" => {
+                    let left_len = fs::metadata(&left_path).map(|metadata| metadata.len()).unwrap_or(0);
+                    let right_len = fs::metadata(&right_path).map(|metadata| metadata.len()).unwrap_or(0);
+                    let left_value = if key == "blocks" { (left_len + 511) / 512 } else { left_len };
+                    let right_value = if key == "blocks" { (right_len + 511) / 512 } else { right_len };
+                    left_value.cmp(&right_value).then(name_cmp)
+                }
+                "mtime" | "atime" | "ctime" => {
+                    let left_meta = fs::metadata(&left_path);
+                    let right_meta = fs::metadata(&right_path);
+                    let left_time = match key {
+                        "mtime" => left_meta.as_ref().map_err(|error| std::io::Error::new(error.kind(), error.to_string())).and_then(|metadata| metadata.modified()),
+                        "atime" => left_meta.as_ref().map_err(|error| std::io::Error::new(error.kind(), error.to_string())).and_then(|metadata| metadata.accessed()),
+                        // Windows has no POSIX inode-change time through std; creation
+                        // time is the closest stable metadata timestamp available.
+                        _ => left_meta.as_ref().map_err(|error| std::io::Error::new(error.kind(), error.to_string())).and_then(|metadata| metadata.created()),
+                    };
+                    let right_time = match key {
+                        "mtime" => right_meta.as_ref().map_err(|error| std::io::Error::new(error.kind(), error.to_string())).and_then(|metadata| metadata.modified()),
+                        "atime" => right_meta.as_ref().map_err(|error| std::io::Error::new(error.kind(), error.to_string())).and_then(|metadata| metadata.accessed()),
+                        _ => right_meta.as_ref().map_err(|error| std::io::Error::new(error.kind(), error.to_string())).and_then(|metadata| metadata.created()),
+                    };
+                    time_key(left_time).cmp(&time_key(right_time)).then(name_cmp)
+                }
+                _ => name_cmp,
+            };
+            if descending { order.reverse() } else { order }
+        });
     }
 
     fn resolve_source_path(&self, raw: &str, override_path: Option<&str>) -> PathBuf {
