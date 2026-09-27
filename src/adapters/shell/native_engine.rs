@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::{Read, Write},
+    io::Write,
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::{Arc, Mutex},
@@ -13,7 +13,7 @@ use crate::{
     core::{
         CommandContext,
         ShellExecution,
-        bash::{CoprocHandles, ExecutionResult, Interpreter, JobInfo, ProcessSubstitutionHandle, ShellCommandHost},
+        bash::{ExecutionResult, Interpreter, JobInfo, ShellCommandHost},
         ports::ShellEngine,
     },
 };
@@ -32,11 +32,6 @@ struct WindowsShellHost {
 
 impl ShellCommandHost for WindowsShellHost {
     fn interrupted(&self) -> bool { self.interrupt.load(std::sync::atomic::Ordering::SeqCst) }
-
-    fn clear_interrupt(&self) {
-        self.interrupt.store(false, std::sync::atomic::Ordering::SeqCst);
-        self.force_abort.store(false, std::sync::atomic::Ordering::SeqCst);
-    }
 
     fn read_line(&self, prompt: &str, silent: bool) -> Result<Option<String>> {
         use crossterm::event::{Event, KeyCode, KeyModifiers};
@@ -90,124 +85,6 @@ impl ShellCommandHost for WindowsShellHost {
             }
         }
     }
-    fn read_line_with_options(
-        &self,
-        prompt: &str,
-        silent: bool,
-        initial: &str,
-        timeout: Option<std::time::Duration>,
-        delimiter: Option<char>,
-        max_chars: Option<usize>,
-        exact_chars: bool,
-    ) -> Result<Option<String>> {
-        use crossterm::event::{Event, KeyCode, KeyModifiers};
-
-        crate::adapters::terminal::io::write(prompt.as_bytes())?;
-        crate::adapters::terminal::io::enter_raw()?;
-        struct RawGuard;
-        impl Drop for RawGuard {
-            fn drop(&mut self) { crate::adapters::terminal::io::leave_raw(); }
-        }
-        let _guard = RawGuard;
-
-        let mut line = initial.to_owned();
-        if !silent && !initial.is_empty() {
-            crate::adapters::terminal::io::write(initial.as_bytes())?;
-        }
-        if max_chars == Some(0) {
-            return Ok(Some(String::new()));
-        }
-        if max_chars.is_some_and(|max| line.chars().count() >= max) {
-            return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-        }
-
-        let started = std::time::Instant::now();
-        loop {
-            if let Some(limit) = timeout {
-                let elapsed = started.elapsed();
-                if elapsed >= limit {
-                    return Ok(None);
-                }
-                if !crate::adapters::terminal::io::poll(limit - elapsed)? {
-                    return Ok(None);
-                }
-            }
-
-            match crate::adapters::terminal::io::read()? {
-                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
-                    && key.code == KeyCode::Char('d') && line.is_empty() =>
-                {
-                    return Ok(None);
-                }
-                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
-                    && key.code == KeyCode::Char('c') =>
-                {
-                    crate::adapters::terminal::io::write(b"^C\r\n")?;
-                    return Ok(None);
-                }
-                Event::Key(key) => match key.code {
-                    KeyCode::Enter => {
-                        if exact_chars {
-                            line.push('\n');
-                            if !silent {
-                                crate::adapters::terminal::io::write(b"\r\n")?;
-                            }
-                            if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                                return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-                            }
-                        } else if delimiter.is_none() || delimiter == Some('\n') {
-                            crate::adapters::terminal::io::write(b"\r\n")?;
-                            return Ok(Some(line));
-                        }
-                    }
-                    KeyCode::Backspace => {
-                        if line.pop().is_some() && !silent {
-                            crate::adapters::terminal::io::write(b"\x08 \x08")?;
-                        }
-                    }
-                    KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        if !exact_chars && delimiter == Some(ch) {
-                            if !silent {
-                                let mut buf = [0u8; 4];
-                                crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
-                                crate::adapters::terminal::io::write(b"\r\n")?;
-                            }
-                            return Ok(Some(line));
-                        }
-
-                        line.push(ch);
-                        if !silent {
-                            let mut buf = [0u8; 4];
-                            crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
-                        }
-                        if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                            return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-                        }
-                    }
-                    _ => {}
-                },
-                Event::Paste(text) => {
-                    for ch in text.chars() {
-                        if !exact_chars && delimiter == Some(ch) {
-                            return Ok(Some(line));
-                        }
-                        line.push(ch);
-                        if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                            break;
-                        }
-                    }
-                    if !silent {
-                        crate::adapters::terminal::io::write(text.as_bytes())?;
-                    }
-                    if max_chars.is_some_and(|max| line.chars().count() >= max) {
-                        return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
-
     fn execute_builtin(
         &self,
         name: &str,
@@ -238,14 +115,6 @@ impl ShellCommandHost for WindowsShellHost {
 
     fn command_is_builtin(&self, name: &str) -> bool {
         name == "help" || name == "man" || self.registry.names().iter().any(|candidate| candidate == name)
-    }
-
-    fn command_names(&self) -> Vec<String> {
-        let mut names = self.registry.names();
-        names.extend(["help".to_owned(), "man".to_owned()]);
-        names.sort();
-        names.dedup();
-        names
     }
 
     fn execute_external(
@@ -308,271 +177,6 @@ impl ShellCommandHost for WindowsShellHost {
         }
     }
 
-    fn execute_shell_pipeline(
-        &self,
-        sources: &[String],
-        stderr_to_pipe: &[bool],
-        cwd: &Path,
-        env: &HashMap<String, String>,
-        stdin: Option<&[u8]>,
-    ) -> Result<Option<(ExecutionResult, Vec<i32>)>> {
-        if sources.len() < 2 {
-            return Ok(None);
-        }
-
-        fn shell_quote(value: &str) -> String {
-            format!("'{}'", value.replace('\'', "'\\''"))
-        }
-
-        let executable = std::env::current_exe()?;
-        let mut children = Vec::with_capacity(sources.len());
-        let mut previous_stdout = None;
-        let mut stderr_readers = Vec::with_capacity(sources.len());
-        let mut final_stdout_reader = None;
-        let mut stdin_writer = None;
-
-        for (index, source) in sources.iter().enumerate() {
-            let stage_source = if stderr_to_pipe.get(index).copied().unwrap_or(false) {
-                // Bash defines `cmd |& next` as `cmd 2>&1 | next`. Running the
-                // stage through eval lets the shell perform that merge before its
-                // stdout is connected to the next OS pipe.
-                format!("eval {} 2>&1", shell_quote(source))
-            } else {
-                source.clone()
-            };
-            let mut command = Command::new(&executable);
-            command
-                .arg("-c")
-                .arg(stage_source)
-                .current_dir(cwd)
-                .envs(env)
-                .stdout(Stdio::piped())
-                .stderr(Stdio::piped());
-
-            if index == 0 {
-                if stdin.is_some() {
-                    command.stdin(Stdio::piped());
-                } else {
-                    command.stdin(Stdio::inherit());
-                }
-            } else {
-                let upstream = previous_stdout.take()
-                    .ok_or_else(|| anyhow::anyhow!("pipeline: stdout upstream no disponible"))?;
-                command.stdin(Stdio::from(upstream));
-            }
-
-            let mut child = command.spawn()
-                .with_context(|| format!("no se pudo lanzar etapa {} del pipeline", index + 1))?;
-
-            if index == 0 {
-                if let (Some(bytes), Some(mut writer)) = (stdin, child.stdin.take()) {
-                    let data = bytes.to_vec();
-                    stdin_writer = Some(std::thread::spawn(move || {
-                        let _ = writer.write_all(&data);
-                    }));
-                }
-            }
-
-            if let Some(mut stderr) = child.stderr.take() {
-                stderr_readers.push(std::thread::spawn(move || {
-                    let mut bytes = Vec::new();
-                    let _ = stderr.read_to_end(&mut bytes);
-                    bytes
-                }));
-            }
-
-            let stdout = child.stdout.take()
-                .ok_or_else(|| anyhow::anyhow!("pipeline: stdout de etapa no disponible"))?;
-            if index + 1 == sources.len() {
-                final_stdout_reader = Some(std::thread::spawn(move || {
-                    let mut stdout = stdout;
-                    let mut bytes = Vec::new();
-                    let _ = stdout.read_to_end(&mut bytes);
-                    bytes
-                }));
-            } else {
-                previous_stdout = Some(stdout);
-            }
-
-            children.push(child);
-        }
-
-        let mut statuses = Vec::with_capacity(children.len());
-        let mut aborted = false;
-        for index in 0..children.len() {
-            loop {
-                if self.force_abort.swap(false, std::sync::atomic::Ordering::SeqCst) {
-                    for process in &mut children {
-                        let _ = process.kill();
-                    }
-                    statuses.resize(sources.len(), 130);
-                    aborted = true;
-                    break;
-                }
-
-                if let Some(status) = children[index].try_wait()? {
-                    statuses.push(status.code().unwrap_or(1));
-                    break;
-                }
-                std::thread::sleep(std::time::Duration::from_millis(10));
-            }
-            if aborted {
-                break;
-            }
-        }
-
-        if let Some(writer) = stdin_writer {
-            let _ = writer.join();
-        }
-
-        let stdout = final_stdout_reader
-            .and_then(|reader| reader.join().ok())
-            .unwrap_or_default();
-        let mut stderr = Vec::new();
-        for reader in stderr_readers {
-            if let Ok(mut bytes) = reader.join() {
-                stderr.append(&mut bytes);
-            }
-        }
-
-        if statuses.len() < sources.len() {
-            statuses.resize(sources.len(), 130);
-        }
-        let status = statuses.last().copied().unwrap_or(0);
-        Ok(Some((
-            ExecutionResult::from_parts(
-                String::from_utf8_lossy(&stdout).into_owned(),
-                String::from_utf8_lossy(&stderr).into_owned(),
-                status,
-            ),
-            statuses,
-        )))
-    }
-
-    fn start_process_substitution(
-        &self,
-        read_from_command: bool,
-        source: &str,
-        cwd: &Path,
-        env: &HashMap<String, String>,
-    ) -> Result<Option<ProcessSubstitutionHandle>> {
-        #[cfg(windows)]
-        {
-            use std::{
-                os::windows::io::{FromRawHandle, RawHandle},
-                sync::atomic::{AtomicU64, Ordering},
-            };
-            use windows_sys::Win32::{
-                Foundation::{CloseHandle, GetLastError, INVALID_HANDLE_VALUE},
-                System::Pipes::{
-                    ConnectNamedPipe, CreateNamedPipeW, PIPE_ACCESS_INBOUND,
-                    PIPE_ACCESS_OUTBOUND, PIPE_READMODE_BYTE, PIPE_TYPE_BYTE, PIPE_WAIT,
-                },
-            };
-
-            static PIPE_COUNTER: AtomicU64 = AtomicU64::new(1);
-            const ERROR_PIPE_CONNECTED_VALUE: u32 = 535;
-
-            let sequence = PIPE_COUNTER.fetch_add(1, Ordering::Relaxed);
-            let pipe_name = format!(
-                r"\\.\pipe\shell-shock-psub-{}-{}",
-                std::process::id(),
-                sequence,
-            );
-            let wide: Vec<u16> = pipe_name.encode_utf16().chain(Some(0)).collect();
-            let access = if read_from_command {
-                PIPE_ACCESS_OUTBOUND
-            } else {
-                PIPE_ACCESS_INBOUND
-            };
-            let pipe = unsafe {
-                CreateNamedPipeW(
-                    wide.as_ptr(),
-                    access,
-                    PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT,
-                    1,
-                    64 * 1024,
-                    64 * 1024,
-                    0,
-                    std::ptr::null(),
-                )
-            };
-            if pipe == INVALID_HANDLE_VALUE {
-                return Err(std::io::Error::last_os_error().into());
-            }
-
-            let source = source.to_owned();
-            let cwd = cwd.to_path_buf();
-            let env = env.clone();
-            let executable = std::env::current_exe()?;
-            let (sender, receiver) = std::sync::mpsc::channel();
-
-            std::thread::spawn(move || {
-                let connected = unsafe { ConnectNamedPipe(pipe, std::ptr::null_mut()) };
-                if connected == 0 {
-                    let error = unsafe { GetLastError() };
-                    if error != ERROR_PIPE_CONNECTED_VALUE {
-                        unsafe { CloseHandle(pipe); }
-                        let _ = sender.send(ExecutionResult::from_parts(
-                            String::new(),
-                            format!("process substitution: no se pudo conectar named pipe: {}\n",
-                                std::io::Error::from_raw_os_error(error as i32)),
-                            1,
-                        ));
-                        return;
-                    }
-                }
-
-                let file = unsafe {
-                    std::fs::File::from_raw_handle(pipe as RawHandle)
-                };
-                let mut command = Command::new(executable);
-                command
-                    .arg("-c")
-                    .arg(source)
-                    .current_dir(cwd)
-                    .envs(env);
-
-                if read_from_command {
-                    command
-                        .stdin(Stdio::null())
-                        .stdout(Stdio::from(file))
-                        .stderr(Stdio::piped());
-                } else {
-                    command
-                        .stdin(Stdio::from(file))
-                        .stdout(Stdio::piped())
-                        .stderr(Stdio::piped());
-                }
-
-                let result = match command.spawn().and_then(|child| child.wait_with_output()) {
-                    Ok(output) => ExecutionResult::from_parts(
-                        String::from_utf8_lossy(&output.stdout).into_owned(),
-                        String::from_utf8_lossy(&output.stderr).into_owned(),
-                        output.status.code().unwrap_or(1),
-                    ),
-                    Err(error) => ExecutionResult::from_parts(
-                        String::new(),
-                        format!("process substitution: {error}\n"),
-                        1,
-                    ),
-                };
-                let _ = sender.send(result);
-            });
-
-            return Ok(Some(ProcessSubstitutionHandle {
-                path: PathBuf::from(pipe_name),
-                completion: receiver,
-            }));
-        }
-
-        #[cfg(not(windows))]
-        {
-            let _ = (read_from_command, source, cwd, env);
-            Ok(None)
-        }
-    }
-
     fn execute_external_background(
         &self,
         program: &str,
@@ -628,41 +232,6 @@ impl ShellCommandHost for WindowsShellHost {
             BackgroundJob { command: source.to_owned(), child },
         );
         Ok(pid)
-    }
-
-    fn execute_coproc(
-        &self,
-        source: &str,
-        cwd: &Path,
-        env: &HashMap<String, String>,
-    ) -> Result<CoprocHandles> {
-        let mut command = Command::new(std::env::current_exe()?);
-        command
-            .arg("-c")
-            .arg(source)
-            .current_dir(cwd)
-            .envs(env)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::inherit());
-
-        let mut child = command.spawn().context("no se pudo lanzar coproc Bash")?;
-        let pid = child.id();
-        let stdout = child.stdout.take()
-            .ok_or_else(|| anyhow::anyhow!("coproc: no se pudo abrir stdout"))?;
-        let stdin = child.stdin.take()
-            .ok_or_else(|| anyhow::anyhow!("coproc: no se pudo abrir stdin"))?;
-
-        self.jobs.lock().unwrap_or_else(|error| error.into_inner()).insert(
-            pid,
-            BackgroundJob { command: source.to_owned(), child },
-        );
-
-        Ok(CoprocHandles {
-            pid,
-            stdout: Box::new(stdout),
-            stdin: Box::new(stdin),
-        })
     }
 
     fn jobs(&self) -> Result<Vec<JobInfo>> {
@@ -735,68 +304,6 @@ impl ShellCommandHost for WindowsShellHost {
             .remove(&pid)
             .is_some())
     }
-
-    fn terminate_jobs(&self) -> Result<()> {
-        let mut jobs = self.jobs.lock().unwrap_or_else(|error| error.into_inner());
-        for job in jobs.values_mut() {
-            let _ = job.child.kill();
-        }
-        jobs.clear();
-        Ok(())
-    }
-
-    fn shell_times(&self) -> Result<(
-        std::time::Duration,
-        std::time::Duration,
-        std::time::Duration,
-        std::time::Duration,
-    )> {
-        #[cfg(windows)]
-        unsafe {
-            use windows_sys::Win32::{
-                Foundation::FILETIME,
-                System::Threading::{GetCurrentProcess, GetProcessTimes},
-            };
-
-            fn duration(value: FILETIME) -> std::time::Duration {
-                let ticks = ((value.dwHighDateTime as u64) << 32) | value.dwLowDateTime as u64;
-                std::time::Duration::from_nanos(ticks.saturating_mul(100))
-            }
-
-            let mut creation: FILETIME = std::mem::zeroed();
-            let mut exit: FILETIME = std::mem::zeroed();
-            let mut kernel: FILETIME = std::mem::zeroed();
-            let mut user: FILETIME = std::mem::zeroed();
-
-            if GetProcessTimes(
-                GetCurrentProcess(),
-                &mut creation,
-                &mut exit,
-                &mut kernel,
-                &mut user,
-            ) == 0
-            {
-                return Err(std::io::Error::last_os_error().into());
-            }
-
-            return Ok((
-                duration(user),
-                duration(kernel),
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-            ));
-        }
-
-        #[cfg(not(windows))]
-        {
-            Ok((
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-                std::time::Duration::ZERO,
-            ))
-        }
-    }
 }
 
 fn resolve_shell_script(program: &str, cwd: &Path) -> Option<PathBuf> {
@@ -842,12 +349,6 @@ impl NativeShellEngine {
             "ADM_CONFIG",
             config_file.to_string_lossy().into_owned(),
         );
-        if let Some(root) = config_file.parent().and_then(Path::parent) {
-            interpreter.env.set(
-                "HISTFILE",
-                root.join("data").join("history").to_string_lossy().into_owned(),
-            );
-        }
 
         let mut engine = Self {
             interpreter,
@@ -875,59 +376,9 @@ impl ShellEngine for NativeShellEngine {
     fn set_arguments(&mut self, name: &str, args: &[String]) {
         self.interpreter.env.script_name = name.to_owned();
         self.interpreter.env.positional = args.to_vec();
-        self.interpreter.env.set_array(
-            "BASH_ARGC",
-            vec![args.len().to_string()],
-        );
-        self.interpreter.env.set_array(
-            "BASH_ARGV",
-            args.iter().rev().cloned().collect(),
-        );
     }
     fn working_dir(&self) -> &Path {
         &self.interpreter.env.cwd
-    }
-
-    fn set_interactive(&mut self, interactive: bool) {
-        self.interpreter.set_interactive(interactive);
-    }
-
-    fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
-        self.interpreter.prepare_prompt(continuation)
-    }
-
-    fn pre_execute_prompt(&mut self) -> Result<String> {
-        self.interpreter.pre_execute_prompt()
-    }
-
-    fn input_timeout(&self) -> Option<std::time::Duration> {
-        self.interpreter.interactive_timeout()
-    }
-
-    fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
-        self.interpreter.complete_line(line, cursor)
-    }
-
-    fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
-        self.interpreter.prepare_history_line(line)
-    }
-
-    fn record_history(&mut self, line: &str) -> Result<()> {
-        self.interpreter.record_history_line(line)
-    }
-
-    fn readline_bindings(&self) -> HashMap<String, String> {
-        self.interpreter.readline_bindings()
-    }
-
-    fn run_readline_binding(
-        &mut self,
-        command: &str,
-        line: &str,
-        cursor: usize,
-    ) -> Result<(String, usize, String, String)> {
-        let (line, cursor, result) = self.interpreter.run_readline_shell_binding(command, line, cursor)?;
-        Ok((line, cursor, result.stdout, result.stderr))
     }
 
     fn execute(&mut self, line: &str) -> Result<ShellExecution> {
