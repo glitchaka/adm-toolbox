@@ -60,7 +60,11 @@ impl CommandRegistry {
                 return CommandOutput::error(format!("help: tema desconocido: {topic}"), 1);
             };
 
-            return CommandOutput::ok(command.help());
+            let mut help = command.help().to_owned();
+            if !help.ends_with('\n') {
+                help.push('\n');
+            }
+            return CommandOutput::ok(help);
         }
 
         let mut out = String::from(
