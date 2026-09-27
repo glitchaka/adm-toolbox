@@ -779,6 +779,14 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                 let ctrl = GetKeyState(VK_CONTROL as i32) < 0;
                 let shift = GetKeyState(VK_SHIFT as i32) < 0;
 
+                // Ctrl+Q is reserved by Shell Shock Tool as a hard abort.
+                // It must never be forwarded to the foreground application.
+                if ctrl && wp == b'Q' as usize {
+                    state.pty.force_abort();
+                    state.suppress_char = true;
+                    return 0;
+                }
+
                 if state.pty.raw_mode() {
                     if ((ctrl && wp == b'C' as usize) || (ctrl && wp == VK_INSERT as usize))
                         && state.has_selection()
