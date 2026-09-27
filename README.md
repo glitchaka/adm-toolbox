@@ -31,17 +31,11 @@ config reload
 
 ## Tipografía de la terminal
 
-La terminal nativa usa Nerd Font cuando encuentra una instalada en Windows. Prioriza:
+La terminal nativa lleva **JetBrainsMono Nerd Font Mono embebida dentro del ejecutable**. La fuente se carga de forma privada en memoria al iniciar ADM y se libera al cerrar: no necesita instalarse en Windows y funciona desde un pendrive.
 
-- CaskaydiaCove Nerd Font Mono
-- CaskaydiaMono Nerd Font Mono
-- JetBrainsMono Nerd Font Mono
-- FiraCode Nerd Font Mono
-- Hack Nerd Font Mono
-- MesloLGM Nerd Font Mono
-- UbuntuMono Nerd Font Mono
+Durante la compilación, `build.rs` obtiene la fuente oficial de Nerd Fonts y la incorpora al binario. Para una compilación sin Internet puede definirse `ADM_NERD_FONT_FILE` apuntando a una copia local compatible.
 
-El prompt utiliza glifos Nerd Font para usuario, carpeta y terminal. Si ninguna está instalada, ADM conserva un fallback a Cascadia Mono/Consolas para no impedir el arranque.
+El prompt utiliza glifos Nerd Font para usuario, carpeta y terminal.
 
 ## Shell Bash-compatible
 
@@ -130,6 +124,9 @@ which
 También:
 
 ```bash
+fetch
+neofetch
+fastfetch
 ps
 top
 df
