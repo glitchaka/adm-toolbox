@@ -11,7 +11,7 @@ use windows_sys::Win32::{
     Foundation::*,
     Graphics::{Dwm::*, Gdi::*},
     System::{DataExchange::*, LibraryLoader::GetModuleHandleW, Memory::*},
-    UI::{Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
+    UI::{Controls::MARGINS, Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
 };
 
 use crate::adapters::terminal::embedded::EmbeddedSession;
