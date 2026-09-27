@@ -219,6 +219,8 @@ fn run_helix(install: &Install, args: &[String], cwd: &Path) -> Result<()> {
     }
 
     let mut child = pair.slave.spawn_command(command)?;
+    let force_abort = terminal_io::force_abort_flag();
+    force_abort.store(false, std::sync::atomic::Ordering::SeqCst);
     drop(pair.slave);
 
     let mut reader = pair.master.try_clone_reader()?;
@@ -240,6 +242,13 @@ fn run_helix(install: &Install, args: &[String], cwd: &Path) -> Result<()> {
     });
 
     loop {
+        if force_abort.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            let _ = child.kill();
+            let _ = child.wait();
+            terminal_io::write(b"\r\n^Q helix-sst terminado a la fuerza\r\n")?;
+            break;
+        }
+
         while let Ok(bytes) = output_rx.try_recv() {
             terminal_io::write(&bytes)?;
         }
