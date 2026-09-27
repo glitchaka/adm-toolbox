@@ -10,7 +10,7 @@ use windows_sys::Win32::{
     Foundation::*,
     Graphics::{Dwm::*, Gdi::*},
     System::{DataExchange::*, LibraryLoader::GetModuleHandleW, Memory::*},
-    UI::{Controls::MARGINS, Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
+    UI::{Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
 };
 
 use crate::adapters::terminal::embedded::EmbeddedSession;
@@ -207,7 +207,6 @@ unsafe fn create_font(face: &str, size: i32, bold: bool) -> HFONT {
 
 unsafe fn apply_window_effects(hwnd: HWND) {
     unsafe {
-        // Windows 11: dark chrome + transient backdrop (acrylic-like).
         let dark: i32 = 1;
         let _ = DwmSetWindowAttribute(
             hwnd,
@@ -216,11 +215,15 @@ unsafe fn apply_window_effects(hwnd: HWND) {
             size_of::<i32>() as u32,
         );
 
-        let backdrop: i32 = 3;
+        // Do not use DWMWA_SYSTEMBACKDROP_TYPE here. It affects the entire client
+        // window, including the custom titlebar, and Windows changes its tint when
+        // the window becomes inactive. Transparency is instead restricted to the
+        // terminal area with a DWM blur region.
+        let backdrop_none: i32 = 1;
         let _ = DwmSetWindowAttribute(
             hwnd,
             38,
-            (&backdrop as *const i32).cast(),
+            (&backdrop_none as *const i32).cast(),
             size_of::<i32>() as u32,
         );
 
@@ -232,17 +235,35 @@ unsafe fn apply_window_effects(hwnd: HWND) {
             size_of::<i32>() as u32,
         );
 
-        let margins = MARGINS {
-            cxLeftWidth: -1,
-            cxRightWidth: -1,
-            cyTopHeight: -1,
-            cyBottomHeight: -1,
-        };
-        let _ = DwmExtendFrameIntoClientArea(hwnd, &margins);
+        update_terminal_blur_region(hwnd);
+    }
+}
 
-        // Do not apply a global layered alpha: it would fade text, cursor and icons.
-        // The client area is extended into DWM and the renderer leaves the default
-        // terminal background as glass while drawing glyphs at full opacity.
+unsafe fn update_terminal_blur_region(hwnd: HWND) {
+    unsafe {
+        let mut client: RECT = std::mem::zeroed();
+        GetClientRect(hwnd, &mut client);
+
+        let region = CreateRectRgn(
+            0,
+            TITLE_BAR_HEIGHT,
+            client.right.max(1),
+            client.bottom.max(TITLE_BAR_HEIGHT + 1),
+        );
+
+        if region.is_null() {
+            return;
+        }
+
+        let blur = DWM_BLURBEHIND {
+            dwFlags: 0x00000001 | 0x00000002,
+            fEnable: 1,
+            hRgnBlur: region,
+            fTransitionOnMaximized: 0,
+        };
+
+        let _ = DwmEnableBlurBehindWindow(hwnd, &blur);
+        DeleteObject(region);
     }
 }
 
@@ -396,11 +417,6 @@ impl Terminal {
 
             let title = wide("Shell Shock Tool");
             TextOutW(dc, 50, 12, title.as_ptr(), (title.len() - 1) as i32);
-
-            let subtitle = wide("adm-tool");
-            SetTextColor(dc, 0xAFA39D);
-            SelectObject(dc, self.font);
-            TextOutW(dc, 218, 12, subtitle.as_ptr(), (subtitle.len() - 1) as i32);
 
             let old_pen = SelectObject(dc, GetStockObject(NULL_PEN));
             for (button_kind, cx, color) in [
@@ -722,6 +738,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
 
                 state.parser.screen_mut().set_size(rows, cols);
                 state.pty.resize(cols, rows);
+                update_terminal_blur_region(hwnd);
                 state.selection = None;
                 InvalidateRect(hwnd, null(), 0);
                 0
