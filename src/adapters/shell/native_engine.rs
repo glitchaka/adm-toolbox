@@ -85,6 +85,104 @@ impl ShellCommandHost for WindowsShellHost {
             }
         }
     }
+    fn read_input(
+        &self,
+        prompt: &str,
+        silent: bool,
+        delimiter: char,
+        max_chars: Option<usize>,
+        timeout: Option<std::time::Duration>,
+        initial: &str,
+    ) -> Result<Option<String>> {
+        use crossterm::event::{Event, KeyCode, KeyModifiers};
+
+        crate::adapters::terminal::io::write(prompt.as_bytes())?;
+        crate::adapters::terminal::io::enter_raw()?;
+        struct RawGuard;
+        impl Drop for RawGuard {
+            fn drop(&mut self) { crate::adapters::terminal::io::leave_raw(); }
+        }
+        let _guard = RawGuard;
+
+        let mut line = initial.to_owned();
+        if !silent && !initial.is_empty() {
+            crate::adapters::terminal::io::write(initial.as_bytes())?;
+        }
+        let started = std::time::Instant::now();
+
+        loop {
+            if let Some(limit) = max_chars {
+                if line.chars().count() >= limit {
+                    crate::adapters::terminal::io::write(b"\r\n")?;
+                    return Ok(Some(line));
+                }
+            }
+
+            if let Some(limit) = timeout {
+                let elapsed = started.elapsed();
+                if elapsed >= limit {
+                    return Ok(None);
+                }
+                if !crate::adapters::terminal::io::poll(limit - elapsed)? {
+                    return Ok(None);
+                }
+            }
+
+            match crate::adapters::terminal::io::read()? {
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('d') && line.is_empty() =>
+                {
+                    return Ok(None);
+                }
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('c') =>
+                {
+                    crate::adapters::terminal::io::write(b"^C\r\n")?;
+                    return Ok(None);
+                }
+                Event::Key(key) => match key.code {
+                    KeyCode::Enter if delimiter == '\n' => {
+                        crate::adapters::terminal::io::write(b"\r\n")?;
+                        return Ok(Some(line));
+                    }
+                    KeyCode::Backspace => {
+                        if line.pop().is_some() && !silent {
+                            crate::adapters::terminal::io::write(b"\x08 \x08")?;
+                        }
+                    }
+                    KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        if ch == delimiter {
+                            if !silent && delimiter != '\n' {
+                                let mut buf = [0u8; 4];
+                                crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                            }
+                            return Ok(Some(line));
+                        }
+                        line.push(ch);
+                        if !silent {
+                            let mut buf = [0u8; 4];
+                            crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                        }
+                    }
+                    _ => {}
+                },
+                Event::Paste(text) => {
+                    for ch in text.chars() {
+                        if ch == delimiter {
+                            return Ok(Some(line));
+                        }
+                        line.push(ch);
+                        if max_chars.is_some_and(|limit| line.chars().count() >= limit) {
+                            break;
+                        }
+                    }
+                    if !silent { crate::adapters::terminal::io::write(text.as_bytes())?; }
+                }
+                _ => {}
+            }
+        }
+    }
+
     fn execute_builtin(
         &self,
         name: &str,
@@ -115,6 +213,14 @@ impl ShellCommandHost for WindowsShellHost {
 
     fn command_is_builtin(&self, name: &str) -> bool {
         name == "help" || name == "man" || self.registry.names().iter().any(|candidate| candidate == name)
+    }
+
+    fn command_names(&self) -> Vec<String> {
+        let mut names = self.registry.names();
+        names.extend(["help".to_owned(), "man".to_owned()]);
+        names.sort();
+        names.dedup();
+        names
     }
 
     fn execute_external(
@@ -349,6 +455,11 @@ impl NativeShellEngine {
             "ADM_CONFIG",
             config_file.to_string_lossy().into_owned(),
         );
+        let history_file = config_file.parent()
+            .and_then(|config_dir| config_dir.parent())
+            .map(|root| root.join("data").join("history"))
+            .unwrap_or_else(|| PathBuf::from("data").join("history"));
+        interpreter.env.set("HISTFILE", history_file.to_string_lossy().into_owned());
 
         let mut engine = Self {
             interpreter,
@@ -377,6 +488,48 @@ impl ShellEngine for NativeShellEngine {
         self.interpreter.env.script_name = name.to_owned();
         self.interpreter.env.positional = args.to_vec();
     }
+
+    fn set_interactive(&mut self, interactive: bool) {
+        self.interpreter.set_interactive(interactive);
+    }
+
+    fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
+        self.interpreter.prepare_prompt(continuation)
+    }
+
+    fn pre_execute_prompt(&mut self) -> Result<String> {
+        self.interpreter.pre_execute_prompt()
+    }
+
+    fn input_timeout(&self) -> Option<std::time::Duration> {
+        self.interpreter.input_timeout()
+    }
+
+    fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
+        self.interpreter.complete_line(line, cursor)
+    }
+
+    fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
+        self.interpreter.prepare_history(line)
+    }
+
+    fn record_history(&mut self, line: &str) -> Result<()> {
+        self.interpreter.record_history(line)
+    }
+
+    fn readline_bindings(&self) -> HashMap<String, String> {
+        self.interpreter.readline_bindings()
+    }
+
+    fn run_readline_binding(
+        &mut self,
+        command: &str,
+        line: &str,
+        cursor: usize,
+    ) -> Result<(String, usize, String, String)> {
+        self.interpreter.run_readline_binding(command, line, cursor)
+    }
+
     fn working_dir(&self) -> &Path {
         &self.interpreter.env.cwd
     }
