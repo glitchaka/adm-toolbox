@@ -1080,7 +1080,9 @@ fn shell_quote(value: &str) -> String {
 }
 
 fn is_variable_name(name: &str) -> bool {
-    is_variable_name(name)
+    !name.is_empty() && name.chars().enumerate().all(|(index, ch)| {
+        ch == '_' || (ch.is_ascii_alphanumeric() && (index > 0 || !ch.is_ascii_digit()))
+    })
 }
 
 fn is_assignment(word: &str) -> bool {
