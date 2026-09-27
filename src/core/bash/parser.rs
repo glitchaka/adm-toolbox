@@ -271,6 +271,14 @@ impl Parser {
                     self.pos += 1;
                     expression.push(")".to_owned());
                 }
+                Token::Redirect { op: RedirectOp::Write, .. } => {
+                    self.pos += 1;
+                    expression.push(">".to_owned());
+                }
+                Token::Redirect { op: RedirectOp::Read, .. } => {
+                    self.pos += 1;
+                    expression.push("<".to_owned());
+                }
                 other => bail!("[[: token no soportado: {other:?}"),
             }
         }
@@ -320,6 +328,24 @@ impl Parser {
                 Token::Pipe => {
                     self.pos += 1;
                     parts.push("|".to_owned());
+                }
+                Token::Redirect { op: RedirectOp::Write, .. } => {
+                    self.pos += 1;
+                    if matches!(self.peek(), Token::Word(word) if word == "=") {
+                        self.pos += 1;
+                        parts.push(">=".to_owned());
+                    } else {
+                        parts.push(">".to_owned());
+                    }
+                }
+                Token::Redirect { op: RedirectOp::Read, .. } => {
+                    self.pos += 1;
+                    if matches!(self.peek(), Token::Word(word) if word == "=") {
+                        self.pos += 1;
+                        parts.push("<=".to_owned());
+                    } else {
+                        parts.push("<".to_owned());
+                    }
                 }
                 other => bail!("((: token no soportado: {other:?}"),
             }
