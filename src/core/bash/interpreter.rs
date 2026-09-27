@@ -45,6 +45,15 @@ struct ProcessSubstitution {
     stderr: String,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct ExpansionCheckpoint {
+    stdout_len: usize,
+    stderr_len: usize,
+    statuses_len: usize,
+    exits_len: usize,
+    process_sub_len: usize,
+}
+
 impl ExecutionResult {
     fn append(&mut self, next: Self) {
         self.stdout.push_str(&next.stdout);
@@ -153,6 +162,10 @@ pub struct Interpreter {
     source_stack: Vec<String>,
     process_sub_counter: u64,
     pending_process_substitutions: Vec<ProcessSubstitution>,
+    pending_expansion_stdout: String,
+    pending_expansion_stderr: String,
+    pending_substitution_statuses: Vec<i32>,
+    pending_expansion_exits: Vec<i32>,
 }
 
 impl Interpreter {
@@ -168,6 +181,10 @@ impl Interpreter {
             source_stack: Vec::new(),
             process_sub_counter: 0,
             pending_process_substitutions: Vec::new(),
+            pending_expansion_stdout: String::new(),
+            pending_expansion_stderr: String::new(),
+            pending_substitution_statuses: Vec::new(),
+            pending_expansion_exits: Vec::new(),
         }
     }
 
@@ -742,7 +759,7 @@ impl Interpreter {
     }
 
     fn execute_simple(&mut self, command: &SimpleCommand, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
-        let process_sub_start = self.pending_process_substitutions.len();
+        let checkpoint = self.expansion_checkpoint();
         let mut local_stdin = stdin.map(ToOwned::to_owned);
 
         for redirect in &command.redirects {
@@ -765,7 +782,7 @@ impl Interpreter {
         }
 
         if command.words.is_empty() {
-            return Ok(ExecutionResult::success());
+            return self.finish_simple_result(checkpoint, false, ExecutionResult::success());
         }
 
         let mut raw = command.words.clone();
@@ -787,12 +804,12 @@ impl Interpreter {
         }
 
         if index == raw.len() {
-            return Ok(ExecutionResult::success());
+            return self.finish_simple_result(checkpoint, false, ExecutionResult::success());
         }
 
         let words = self.expand_words(&raw[index..])?;
         if words.is_empty() {
-            return Ok(ExecutionResult::success());
+            return self.finish_simple_result(checkpoint, false, ExecutionResult::success());
         }
 
         let name = words[0].clone();
@@ -884,10 +901,7 @@ impl Interpreter {
             result.stderr = format!("{trace}{}", result.stderr);
         }
         self.apply_output_redirects(command, &mut result)?;
-        let process_output = self.finish_process_substitutions(process_sub_start)?;
-        result.stdout.push_str(&process_output.stdout);
-        result.stderr.push_str(&process_output.stderr);
-        Ok(result)
+        self.finish_simple_result(checkpoint, true, result)
     }
 
     fn shell_builtin(
@@ -3010,6 +3024,60 @@ impl Interpreter {
         Ok(())
     }
 
+    fn expansion_checkpoint(&self) -> ExpansionCheckpoint {
+        ExpansionCheckpoint {
+            stdout_len: self.pending_expansion_stdout.len(),
+            stderr_len: self.pending_expansion_stderr.len(),
+            statuses_len: self.pending_substitution_statuses.len(),
+            exits_len: self.pending_expansion_exits.len(),
+            process_sub_len: self.pending_process_substitutions.len(),
+        }
+    }
+
+    fn finish_simple_result(
+        &mut self,
+        checkpoint: ExpansionCheckpoint,
+        command_present: bool,
+        mut result: ExecutionResult,
+    ) -> Result<ExecutionResult> {
+        let expansion_stdout = self.pending_expansion_stdout.split_off(checkpoint.stdout_len);
+        let expansion_stderr = self.pending_expansion_stderr.split_off(checkpoint.stderr_len);
+
+        let substitution_status = self.pending_substitution_statuses
+            .get(checkpoint.statuses_len..)
+            .and_then(|statuses| statuses.last())
+            .copied();
+        self.pending_substitution_statuses.truncate(checkpoint.statuses_len);
+
+        let requested_exit = self.pending_expansion_exits
+            .get(checkpoint.exits_len..)
+            .and_then(|statuses| statuses.last())
+            .copied();
+        self.pending_expansion_exits.truncate(checkpoint.exits_len);
+
+        if !command_present {
+            if let Some(status) = substitution_status {
+                result.status = status;
+            }
+        }
+        if let Some(status) = requested_exit {
+            result.status = status;
+            result.exit_requested = true;
+        }
+
+        if !expansion_stdout.is_empty() {
+            result.stdout = format!("{expansion_stdout}{}", result.stdout);
+        }
+        if !expansion_stderr.is_empty() {
+            result.stderr = format!("{expansion_stderr}{}", result.stderr);
+        }
+
+        let process_output = self.finish_process_substitutions(checkpoint.process_sub_len)?;
+        result.stdout.push_str(&process_output.stdout);
+        result.stderr.push_str(&process_output.stderr);
+        Ok(result)
+    }
+
     fn next_process_substitution_path(&mut self) -> PathBuf {
         self.process_sub_counter = self.process_sub_counter.wrapping_add(1);
         std::env::temp_dir().join(format!(
@@ -3183,10 +3251,16 @@ impl Interpreter {
                     while end < chars.len() && chars[end] != '`' { end += 1; }
                     if end >= chars.len() { bail!("sustitución con backticks sin cerrar"); }
                     let source: String = chars[i + 1..end].iter().collect();
-                    let saved = self.env.clone();
+                    let saved_env = self.env.clone();
+                    let saved_hash = self.command_hash.clone();
+                    let saved_disabled = self.disabled_builtins.clone();
                     let result = self.execute_text(&source);
-                    self.env = saved;
+                    self.env = saved_env;
+                    self.command_hash = saved_hash;
+                    self.disabled_builtins = saved_disabled;
                     let result = result?;
+                    self.pending_expansion_stderr.push_str(&result.stderr);
+                    self.pending_substitution_statuses.push(result.status);
                     out.push_str(result.stdout.trim_end_matches(['\r','\n']));
                     i = end + 1;
                 }
@@ -3201,17 +3275,27 @@ impl Interpreter {
                         let end = matching(&chars, i + 1, '(', ')')
                             .ok_or_else(|| anyhow!("sustitución de comando sin cerrar"))?;
                         let source: String = chars[i + 2..end].iter().collect();
-                        let saved = self.env.clone();
+                        let saved_env = self.env.clone();
+                        let saved_hash = self.command_hash.clone();
+                        let saved_disabled = self.disabled_builtins.clone();
                         let result = self.execute_text(&source);
-                        self.env = saved;
+                        self.env = saved_env;
+                        self.command_hash = saved_hash;
+                        self.disabled_builtins = saved_disabled;
                         let result = result?;
+                        self.pending_expansion_stderr.push_str(&result.stderr);
+                        self.pending_substitution_statuses.push(result.status);
                         out.push_str(result.stdout.trim_end_matches(['\r', '\n']));
                         i = end + 1;
                     } else if chars.get(i + 1) == Some(&'{') {
                         let end = matching(&chars, i + 1, '{', '}')
                             .ok_or_else(|| anyhow!("expansión de parámetro sin cerrar"))?;
                         let expression: String = chars[i + 2..end].iter().collect();
-                        out.push_str(&self.expand_parameter(&expression)?);
+                        if let Some(value) = self.expand_current_shell_substitution(&expression)? {
+                            out.push_str(&value);
+                        } else {
+                            out.push_str(&self.expand_parameter(&expression)?);
+                        }
                         i = end + 1;
                     } else {
                         let (name, used) = parameter_name(&chars[i + 1..]);
@@ -3236,6 +3320,61 @@ impl Interpreter {
 
         if single || double { bail!("comillas sin cerrar"); }
         Ok(out)
+    }
+
+    fn expand_current_shell_substitution(&mut self, expression: &str) -> Result<Option<String>> {
+        let reply_mode = expression.starts_with('|');
+        let capture_mode = expression.chars().next().is_some_and(char::is_whitespace);
+        if !reply_mode && !capture_mode {
+            return Ok(None);
+        }
+
+        let command_text = if reply_mode {
+            &expression[1..]
+        } else {
+            expression
+        };
+        let trimmed = command_text.trim();
+        let Some(command) = trimmed.strip_suffix(';') else {
+            bail!("sustitución de comando en shell actual: falta ';' antes de '}}'");
+        };
+        let command = command.trim_end();
+
+        self.env.push_local_scope();
+        if reply_mode {
+            let _ = self.env.localize_unset("REPLY");
+        }
+
+        let execution = self.execute_text(command);
+
+        let reply = if reply_mode {
+            self.env.get("REPLY")
+        } else {
+            String::new()
+        };
+
+        self.env.pop_local_scope();
+
+        let mut execution = execution?;
+        if execution.flow == FlowSignal::Return {
+            execution.flow = FlowSignal::None;
+        }
+
+        self.pending_substitution_statuses.push(execution.status);
+        self.pending_expansion_stderr.push_str(&execution.stderr);
+
+        if execution.exit_requested {
+            self.pending_expansion_exits.push(execution.status);
+        }
+
+        if reply_mode {
+            self.pending_expansion_stdout.push_str(&execution.stdout);
+            Ok(Some(reply))
+        } else {
+            Ok(Some(
+                execution.stdout.trim_end_matches(['\r', '\n']).to_owned()
+            ))
+        }
     }
 
     fn special_value(&self, name: &str) -> String {

@@ -381,6 +381,15 @@ impl ShellEnvironment {
         }
     }
 
+    pub fn localize_unset(&mut self, name: &str) -> bool {
+        if self.local_scopes.is_empty() || self.readonly.contains(name) {
+            return false;
+        }
+        self.remember_local(name);
+        self.clear_binding(name);
+        true
+    }
+
     pub fn set_local(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
         let name = name.into();
         if self.local_scopes.is_empty() || self.readonly.contains(&name) {
