@@ -2,8 +2,12 @@ name: build
 
 on:
   push:
-    branches: [main]
+    branches: [main, fix-helix-sst-tui-bridge]
   workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   windows:
