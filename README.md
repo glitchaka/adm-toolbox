@@ -1,6 +1,6 @@
-# ADM Toolbox
+# Shell Shock Tool
 
-ADM Toolbox es una consola portable de administración y soporte técnico para Windows, construida en Rust.
+**Shell Shock Tool** es el nombre visual de `adm-tool` / `adm-toolbox`: una consola portable de administración y soporte técnico para Windows, construida en Rust.
 
 Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de tráfico, consulta de dominio, localización de puertos de switch y herramientas de línea de comandos de uso cotidiano.
 
@@ -29,19 +29,24 @@ config edit
 config reload
 ```
 
-## Tipografía de la terminal
+## Interfaz gráfica y tipografía
 
-La terminal nativa usa Nerd Font cuando encuentra una instalada en Windows. Prioriza:
+La terminal nativa de Shell Shock Tool tiene interfaz propia Win32:
 
-- CaskaydiaCove Nerd Font Mono
-- CaskaydiaMono Nerd Font Mono
-- JetBrainsMono Nerd Font Mono
-- FiraCode Nerd Font Mono
-- Hack Nerd Font Mono
-- MesloLGM Nerd Font Mono
-- UbuntuMono Nerd Font Mono
+- barra de título personalizada con el icono/mascota;
+- controles de minimizar, maximizar y cerrar inspirados en los tres botones de la mascota;
+- fondo oscuro translúcido con backdrop DWM en Windows 11;
+- prompt Nerd Font;
+- selección con mouse y scrollback;
+- `Ctrl+C` copia cuando hay selección y conserva la interrupción cuando no la hay;
+- `Ctrl+V`, `Ctrl+Shift+V` y `Shift+Insert` pegan texto;
+- `Ctrl+Insert` copia.
 
-El prompt utiliza glifos Nerd Font para usuario, carpeta y terminal. Si ninguna está instalada, ADM conserva un fallback a Cascadia Mono/Consolas para no impedir el arranque.
+La terminal lleva **JetBrainsMono Nerd Font Mono embebida dentro del ejecutable**. Se carga de forma privada en memoria al iniciar y se libera al cerrar, por lo que no requiere instalar fuentes en el PC y funciona desde un pendrive.
+
+Durante la compilación, `build.rs` obtiene la fuente oficial de Nerd Fonts y la incorpora al binario. Para compilar sin Internet puede definirse `ADM_NERD_FONT_FILE` apuntando a una copia local compatible.
+
+El icono de Shell Shock Tool se genera e incrusta como recurso de Windows a partir del diseño de la mascota. El SVG fuente está en `assets/shell-shock-mascot.svg`.
 
 ## Shell Bash-compatible
 
@@ -130,6 +135,9 @@ which
 También:
 
 ```bash
+fetch
+neofetch
+fastfetch
 ps
 top
 df
@@ -139,6 +147,8 @@ whoami
 uname
 kill
 ```
+
+`fetch`, `neofetch` y `fastfetch` muestran la mascota de Shell Shock Tool como ASCII art junto con la información del sistema. Usa `fetch --small` para una variante compacta.
 
 `top` y `less` funcionan como TUI dentro de la terminal y regresan al prompt al cerrarse.
 
@@ -316,26 +326,16 @@ Funciones actuales:
 ## Arquitectura
 
 ```text
-ADM Toolbox
+Shell Shock Tool (adm-tool)
 │
-├── Bash-compatible Rust shell engine
-│   ├── brush-core
-│   ├── brush-builtins
-│   ├── aliases / variables / functions
-│   ├── expansions / pipes / redirections
-│   └── ejecución de programas Windows
-│
-├── ADM builtins escritos en Rust
-│   ├── net
-│   ├── sys
-│   ├── domain
-│   ├── device
-│   ├── switch
-│   ├── wol
-│   └── diag
-│
+├── intérprete Bash propio en Rust
+├── terminal nativa Win32
+│   ├── renderer VT100
+│   ├── Nerd Font embebida
+│   ├── backdrop/transparencia
+│   └── branding Shell Shock Tool
+├── builtins ADM escritos en Rust
 ├── utilidades Unix integradas
-│
 └── editor modal tipo Vim escrito en Rust
 ```
 

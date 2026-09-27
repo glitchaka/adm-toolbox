@@ -11,6 +11,7 @@ use super::BuiltinCommand;
 
 const ALIASES: &[&str] = &[
     "ps", "top", "df", "free", "hostname", "whoami", "uname", "kill",
+    "fetch", "neofetch", "fastfetch",
 ];
 
 pub struct SystemBuiltin {
