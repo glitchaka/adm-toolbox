@@ -2,8 +2,12 @@ use std::{
     collections::HashMap,
     io::{Read, Write},
     path::{Path, PathBuf},
-    process::{Child, Command, Stdio},
-    sync::{Arc, Mutex},
+    process::{Child, ChildStdin, Command, Stdio},
+    sync::{
+        atomic::{AtomicI32, Ordering},
+        mpsc,
+        Arc, Mutex,
+    },
 };
 
 use anyhow::{Context, Result};
@@ -21,6 +25,18 @@ use crate::{
 struct BackgroundJob {
     command: String,
     child: Child,
+    pipe_fds: Vec<i32>,
+}
+
+struct VirtualReader {
+    receiver: mpsc::Receiver<Vec<u8>>,
+    buffer: Vec<u8>,
+    eof: bool,
+}
+
+enum VirtualPipe {
+    Reader(VirtualReader),
+    Writer(ChildStdin),
 }
 
 struct WindowsShellHost {
@@ -28,6 +44,8 @@ struct WindowsShellHost {
     interrupt: Arc<std::sync::atomic::AtomicBool>,
     force_abort: Arc<std::sync::atomic::AtomicBool>,
     jobs: Mutex<HashMap<u32, BackgroundJob>>,
+    pipes: Mutex<HashMap<i32, VirtualPipe>>,
+    next_fd: AtomicI32,
 }
 
 impl ShellCommandHost for WindowsShellHost {
@@ -260,7 +278,9 @@ impl ShellCommandHost for WindowsShellHost {
         }
 
         loop {
-            if self.force_abort.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            if self.force_abort.swap(false, Ordering::SeqCst)
+                || self.interrupt.swap(false, Ordering::SeqCst)
+            {
                 let _ = child.kill();
                 let output = child.wait_with_output()?;
                 return Ok(ExecutionResult::from_parts(
@@ -368,7 +388,9 @@ impl ShellCommandHost for WindowsShellHost {
 
         let mut statuses = vec![None; children.len()];
         while statuses.iter().any(Option::is_none) {
-            if self.force_abort.swap(false, std::sync::atomic::Ordering::SeqCst) {
+            if self.force_abort.swap(false, Ordering::SeqCst)
+                || self.interrupt.swap(false, Ordering::SeqCst)
+            {
                 for child in &mut children {
                     let _ = child.kill();
                 }
@@ -414,6 +436,142 @@ impl ShellCommandHost for WindowsShellHost {
         )))
     }
 
+    fn start_coproc(
+        &self,
+        source: &str,
+        cwd: &Path,
+        env: &HashMap<String, String>,
+    ) -> Result<Option<(u32, i32, i32)>> {
+        let mut command = Command::new(std::env::current_exe()?);
+        command.arg("-c")
+            .arg(source)
+            .current_dir(cwd)
+            .envs(env)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::inherit());
+
+        let mut child = command.spawn().context("no se pudo iniciar coproc Bash")?;
+        let stdin = child.stdin.take().context("coproc sin stdin")?;
+        let mut stdout = child.stdout.take().context("coproc sin stdout")?;
+        let pid = child.id();
+
+        let read_fd = self.next_fd.fetch_add(1, Ordering::SeqCst);
+        let write_fd = self.next_fd.fetch_add(1, Ordering::SeqCst);
+        let (sender, receiver) = mpsc::channel::<Vec<u8>>();
+
+        std::thread::spawn(move || {
+            let mut chunk = [0u8; 4096];
+            loop {
+                match stdout.read(&mut chunk) {
+                    Ok(0) | Err(_) => break,
+                    Ok(size) => {
+                        if sender.send(chunk[..size].to_vec()).is_err() {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
+        {
+            let mut pipes = self.pipes.lock().unwrap_or_else(|error| error.into_inner());
+            pipes.insert(read_fd, VirtualPipe::Reader(VirtualReader {
+                receiver,
+                buffer: Vec::new(),
+                eof: false,
+            }));
+            pipes.insert(write_fd, VirtualPipe::Writer(stdin));
+        }
+
+        self.jobs.lock().unwrap_or_else(|error| error.into_inner()).insert(
+            pid,
+            BackgroundJob {
+                command: source.to_owned(),
+                child,
+                pipe_fds: vec![read_fd, write_fd],
+            },
+        );
+
+        Ok(Some((pid, read_fd, write_fd)))
+    }
+
+    fn read_fd(
+        &self,
+        fd: i32,
+        delimiter: char,
+        max_chars: Option<usize>,
+        timeout: Option<std::time::Duration>,
+    ) -> Result<Option<String>> {
+        let started = std::time::Instant::now();
+        let delimiter_bytes = delimiter.to_string().into_bytes();
+        let mut pipes = self.pipes.lock().unwrap_or_else(|error| error.into_inner());
+        let Some(VirtualPipe::Reader(reader)) = pipes.get_mut(&fd) else {
+            return Ok(None);
+        };
+
+        loop {
+            if let Some(position) = find_byte_sequence(&reader.buffer, &delimiter_bytes) {
+                let bytes = reader.buffer
+                    .drain(..position + delimiter_bytes.len())
+                    .collect::<Vec<_>>();
+                let content = &bytes[..bytes.len().saturating_sub(delimiter_bytes.len())];
+                return Ok(Some(limit_utf8_chars(content, max_chars)));
+            }
+
+            if let Some(limit) = max_chars {
+                if String::from_utf8_lossy(&reader.buffer).chars().count() >= limit {
+                    return Ok(Some(take_utf8_chars(&mut reader.buffer, limit)));
+                }
+            }
+
+            if reader.eof {
+                if reader.buffer.is_empty() {
+                    return Ok(None);
+                }
+                let bytes = std::mem::take(&mut reader.buffer);
+                return Ok(Some(limit_utf8_chars(&bytes, max_chars)));
+            }
+
+            let next = if let Some(limit) = timeout {
+                let elapsed = started.elapsed();
+                if elapsed >= limit {
+                    return Ok(None);
+                }
+                match reader.receiver.recv_timeout(limit - elapsed) {
+                    Ok(bytes) => Some(bytes),
+                    Err(mpsc::RecvTimeoutError::Timeout) => return Ok(None),
+                    Err(mpsc::RecvTimeoutError::Disconnected) => None,
+                }
+            } else {
+                reader.receiver.recv().ok()
+            };
+
+            match next {
+                Some(bytes) => reader.buffer.extend_from_slice(&bytes),
+                None => reader.eof = true,
+            }
+        }
+    }
+
+    fn write_fd(&self, fd: i32, data: &[u8]) -> Result<bool> {
+        let mut pipes = self.pipes.lock().unwrap_or_else(|error| error.into_inner());
+        let Some(VirtualPipe::Writer(writer)) = pipes.get_mut(&fd) else {
+            return Ok(false);
+        };
+        writer.write_all(data)?;
+        writer.flush()?;
+        Ok(true)
+    }
+
+    fn close_fd(&self, fd: i32) -> Result<bool> {
+        Ok(self.pipes
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
+            .remove(&fd)
+            .is_some())
+    }
+
     fn execute_external_background(
         &self,
         program: &str,
@@ -442,7 +600,11 @@ impl ShellCommandHost for WindowsShellHost {
         let pid = child.id();
         self.jobs.lock().unwrap_or_else(|e| e.into_inner()).insert(
             pid,
-            BackgroundJob { command: format!("{} {}", program, args.join(" ")).trim().to_owned(), child },
+            BackgroundJob {
+                command: format!("{} {}", program, args.join(" ")).trim().to_owned(),
+                child,
+                pipe_fds: Vec::new(),
+            },
         );
         Ok(pid)
     }
@@ -466,7 +628,7 @@ impl ShellCommandHost for WindowsShellHost {
         let pid = child.id();
         self.jobs.lock().unwrap_or_else(|e| e.into_inner()).insert(
             pid,
-            BackgroundJob { command: source.to_owned(), child },
+            BackgroundJob { command: source.to_owned(), child, pipe_fds: Vec::new() },
         );
         Ok(pid)
     }
@@ -487,17 +649,30 @@ impl ShellCommandHost for WindowsShellHost {
     }
 
     fn wait_job(&self, pid: Option<u32>) -> Result<i32> {
-        let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
         if let Some(pid) = pid {
-            let Some(mut job) = jobs.remove(&pid) else { return Ok(127); };
-            return Ok(job.child.wait()?.code().unwrap_or(1));
+            let job = self.jobs.lock().unwrap_or_else(|e| e.into_inner()).remove(&pid);
+            let Some(mut job) = job else { return Ok(127); };
+            let status = job.child.wait()?.code().unwrap_or(1);
+            for fd in job.pipe_fds {
+                let _ = self.close_fd(fd)?;
+            }
+            return Ok(status);
         }
 
-        let pids: Vec<u32> = jobs.keys().copied().collect();
+        let pids: Vec<u32> = self.jobs
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .keys()
+            .copied()
+            .collect();
         let mut status = 0;
         for pid in pids {
-            if let Some(mut job) = jobs.remove(&pid) {
+            let job = self.jobs.lock().unwrap_or_else(|e| e.into_inner()).remove(&pid);
+            if let Some(mut job) = job {
                 status = job.child.wait()?.code().unwrap_or(1);
+                for fd in job.pipe_fds {
+                    let _ = self.close_fd(fd)?;
+                }
             }
         }
         Ok(status)
@@ -520,27 +695,60 @@ impl ShellCommandHost for WindowsShellHost {
                 }
 
                 if let Some((pid, status)) = completed {
-                    jobs.remove(&pid);
-                    Some((pid, status))
+                    let pipe_fds = jobs.remove(&pid).map(|job| job.pipe_fds).unwrap_or_default();
+                    Some((pid, status, pipe_fds))
                 } else {
                     None
                 }
             };
 
-            if completed.is_some() {
-                return Ok(completed);
+            if let Some((pid, status, pipe_fds)) = completed {
+                for fd in pipe_fds {
+                    let _ = self.close_fd(fd)?;
+                }
+                return Ok(Some((pid, status)));
             }
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
     }
 
     fn disown_job(&self, pid: u32) -> Result<bool> {
-        Ok(self.jobs
+        let job = self.jobs
             .lock()
             .unwrap_or_else(|e| e.into_inner())
-            .remove(&pid)
-            .is_some())
+            .remove(&pid);
+        if let Some(job) = job {
+            for fd in job.pipe_fds {
+                let _ = self.close_fd(fd)?;
+            }
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     }
+}
+
+fn find_byte_sequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
+    if needle.is_empty() { return Some(0); }
+    haystack.windows(needle.len()).position(|window| window == needle)
+}
+
+fn limit_utf8_chars(bytes: &[u8], limit: Option<usize>) -> String {
+    let text = String::from_utf8_lossy(bytes);
+    match limit {
+        Some(limit) => text.chars().take(limit).collect(),
+        None => text.into_owned(),
+    }
+}
+
+fn take_utf8_chars(buffer: &mut Vec<u8>, count: usize) -> String {
+    let text = String::from_utf8_lossy(buffer);
+    let end = text.char_indices()
+        .nth(count)
+        .map(|(index, _)| index)
+        .unwrap_or(text.len());
+    let bytes = buffer.drain(..end).collect::<Vec<_>>();
+    String::from_utf8_lossy(&bytes).into_owned()
 }
 
 fn resolve_shell_script(program: &str, cwd: &Path) -> Option<PathBuf> {
@@ -580,6 +788,8 @@ impl NativeShellEngine {
             interrupt: interrupt.clone(),
             force_abort: force_abort.clone(),
             jobs: Mutex::new(HashMap::new()),
+            pipes: Mutex::new(HashMap::new()),
+            next_fd: AtomicI32::new(10),
         };
         let mut interpreter = Interpreter::new(Box::new(host));
         interpreter.env.export(

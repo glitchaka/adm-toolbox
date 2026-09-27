@@ -159,6 +159,28 @@ pub trait ShellCommandHost: Send + Sync {
         Ok(None)
     }
 
+    fn start_coproc(
+        &self,
+        _source: &str,
+        _cwd: &Path,
+        _env: &HashMap<String, String>,
+    ) -> Result<Option<(u32, i32, i32)>> {
+        Ok(None)
+    }
+
+    fn read_fd(
+        &self,
+        _fd: i32,
+        _delimiter: char,
+        _max_chars: Option<usize>,
+        _timeout: Option<std::time::Duration>,
+    ) -> Result<Option<String>> {
+        Ok(None)
+    }
+
+    fn write_fd(&self, _fd: i32, _data: &[u8]) -> Result<bool> { Ok(false) }
+    fn close_fd(&self, _fd: i32) -> Result<bool> { Ok(false) }
+
     fn command_is_builtin(&self, _name: &str) -> bool { false }
     fn command_names(&self) -> Vec<String> { Vec::new() }
     fn jobs(&self) -> Result<Vec<JobInfo>> { Ok(Vec::new()) }
@@ -980,13 +1002,25 @@ impl Interpreter {
 
     fn execute_coproc(&mut self, name: Option<&str>, body: &AstNode) -> Result<ExecutionResult> {
         let source = render_ast(body);
+        let variable = name.unwrap_or("COPROC");
+
+        if let Some((pid, read_fd, write_fd)) = self.host.start_coproc(
+            &source,
+            &self.env.cwd,
+            &self.env.exported,
+        )? {
+            self.env.last_background_pid = Some(pid);
+            self.env.set(format!("{variable}_PID"), pid.to_string());
+            self.env.set_array(
+                variable.to_owned(),
+                vec![read_fd.to_string(), write_fd.to_string()],
+            );
+            return Ok(ExecutionResult::success());
+        }
+
         let pid = self.host.execute_shell_background(&source, &self.env.cwd, &self.env.exported)?;
         self.env.last_background_pid = Some(pid);
-
-        let variable = name.unwrap_or("COPROC");
         self.env.set(format!("{variable}_PID"), pid.to_string());
-        // Windows does not expose POSIX numeric pipe descriptors. Keep the Bash
-        // array present and explicit instead of inventing unusable descriptor IDs.
         self.env.set_array(variable.to_owned(), vec![String::new(), String::new()]);
         Ok(ExecutionResult::success())
     }
@@ -1009,11 +1043,23 @@ impl Interpreter {
                     match target.as_str() {
                         "-" => local_stdin = Some(Vec::new()),
                         "0" => {}
-                        _ => return Ok(ExecutionResult::from_parts(
-                            String::new(),
-                            format!("{}<&{}: descriptor no disponible\n", redirect.fd, target),
-                            1,
-                        )),
+                        _ => {
+                            let Some(fd) = target.parse::<i32>().ok() else {
+                                return Ok(ExecutionResult::from_parts(
+                                    String::new(),
+                                    format!("{}<&{}: descriptor inválido\n", redirect.fd, target),
+                                    1,
+                                ));
+                            };
+                            match self.host.read_fd(fd, '\0', None, None)? {
+                                Some(value) => local_stdin = Some(value.into_bytes()),
+                                None => return Ok(ExecutionResult::from_parts(
+                                    String::new(),
+                                    format!("{}<&{}: descriptor no disponible\n", redirect.fd, target),
+                                    1,
+                                )),
+                            }
+                        }
                     }
                 }
                 RedirectKind::HereString => {
@@ -2630,15 +2676,9 @@ impl Interpreter {
             index += 1;
         }
 
-        if fd != 0 && stdin.is_none() {
-            return Ok(ExecutionResult::from_parts(
-                String::new(),
-                format!("read: {fd}: descriptor no disponible\n"),
-                1,
-            ));
-        }
-
-        let source = if let Some(bytes) = stdin {
+        let source = if fd != 0 && stdin.is_none() {
+            self.host.read_fd(fd, delimiter, max_chars, timeout)?
+        } else if let Some(bytes) = stdin {
             let text = String::from_utf8_lossy(bytes);
             let value = if delimiter == '\0' {
                 text.split('\0').next().unwrap_or("").to_owned()
@@ -3090,13 +3130,15 @@ impl Interpreter {
             index += 1;
         }
 
-        if fd != 0 && stdin.is_none() {
-            return Ok(ExecutionResult::from_parts(
-                String::new(), format!("mapfile: {fd}: descriptor no disponible\n"), 1,
-            ));
-        }
-
-        let text = if let Some(bytes) = stdin {
+        let text = if fd != 0 && stdin.is_none() {
+            let mut all = String::new();
+            loop {
+                let Some(value) = self.host.read_fd(fd, delimiter, None, None)? else { break };
+                all.push_str(&value);
+                all.push(delimiter);
+            }
+            all
+        } else if let Some(bytes) = stdin {
             String::from_utf8_lossy(bytes).into_owned()
         } else {
             let mut all = String::new();
@@ -3737,7 +3779,15 @@ impl Interpreter {
                         result.stderr.push_str(&result.stdout);
                         result.stdout.clear();
                     } else if target.chars().all(|ch| ch.is_ascii_digit()) {
-                        return Err(anyhow!("{}>&{}: descriptor no disponible", redirect.fd, target));
+                        let fd = target.parse::<i32>().unwrap_or(-1);
+                        let data = if redirect.fd == 2 {
+                            std::mem::take(&mut result.stderr)
+                        } else {
+                            std::mem::take(&mut result.stdout)
+                        };
+                        if !self.host.write_fd(fd, data.as_bytes())? {
+                            return Err(anyhow!("{}>&{}: descriptor no disponible", redirect.fd, target));
+                        }
                     } else {
                         let path = self.resolve_path(&target);
                         let mut file = OpenOptions::new().create(true).write(true).truncate(true).open(path)?;
