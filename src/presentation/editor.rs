@@ -58,8 +58,15 @@ struct VimEditor {
 pub struct ModalTextEditor;
 
 impl TextEditor for ModalTextEditor {
-    fn edit(&self, path: &Path) -> Result<()> {
-        run_editor(path)
+    fn edit(&self, args: &[String], cwd: &Path) -> Result<()> {
+        let path = args
+            .first()
+            .map(|raw| {
+                let path = Path::new(raw);
+                if path.is_absolute() { path.to_path_buf() } else { cwd.join(path) }
+            })
+            .unwrap_or_else(|| cwd.join("untitled"));
+        run_editor(&path)
     }
 }
 
