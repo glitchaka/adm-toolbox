@@ -148,6 +148,17 @@ pub trait ShellCommandHost: Send + Sync {
         bail!("background de shell no disponible en este host")
     }
 
+    fn execute_shell_pipeline(
+        &self,
+        _commands: &[String],
+        _stderr_to_pipe: &[bool],
+        _cwd: &Path,
+        _env: &HashMap<String, String>,
+        _stdin: Option<&[u8]>,
+    ) -> Result<Option<(ExecutionResult, Vec<i32>)>> {
+        Ok(None)
+    }
+
     fn command_is_builtin(&self, _name: &str) -> bool { false }
     fn command_names(&self) -> Vec<String> { Vec::new() }
     fn jobs(&self) -> Result<Vec<JobInfo>> { Ok(Vec::new()) }
@@ -843,6 +854,26 @@ impl Interpreter {
         stderr_to_pipe: &[bool],
         stdin: Option<&[u8]>,
     ) -> Result<ExecutionResult> {
+        let commands: Vec<String> = parts.iter().map(render_ast).collect();
+        if let Some((mut result, statuses)) = self.host.execute_shell_pipeline(
+            &commands,
+            stderr_to_pipe,
+            &self.env.cwd,
+            &self.env.exported,
+            stdin,
+        )? {
+            self.env.set_array(
+                "PIPESTATUS",
+                statuses.iter().map(ToString::to_string).collect(),
+            );
+            if self.env.option_enabled("pipefail") {
+                if let Some(status) = statuses.iter().rev().copied().find(|status| *status != 0) {
+                    result.status = status;
+                }
+            }
+            return Ok(result);
+        }
+
         let mut input = stdin.map(ToOwned::to_owned);
         let mut collected_stderr = String::new();
         let mut statuses = Vec::new();

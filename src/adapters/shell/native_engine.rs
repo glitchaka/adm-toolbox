@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    io::Write,
+    io::{Read, Write},
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::{Arc, Mutex},
@@ -281,6 +281,137 @@ impl ShellCommandHost for WindowsShellHost {
 
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
+    }
+
+
+    fn execute_shell_pipeline(
+        &self,
+        commands: &[String],
+        stderr_to_pipe: &[bool],
+        cwd: &Path,
+        env: &HashMap<String, String>,
+        stdin: Option<&[u8]>,
+    ) -> Result<Option<(ExecutionResult, Vec<i32>)>> {
+        if commands.is_empty() {
+            return Ok(Some((ExecutionResult::success(), Vec::new())));
+        }
+
+        let exe = std::env::current_exe()?;
+        let mut children = Vec::with_capacity(commands.len());
+        let mut stderr_readers = Vec::with_capacity(commands.len());
+        let mut previous_stdout = None;
+        let mut input_writer = None;
+        let mut final_stdout = None;
+
+        for (index, source) in commands.iter().enumerate() {
+            let pipe_stderr = stderr_to_pipe.get(index).copied().unwrap_or(false)
+                && index + 1 < commands.len();
+            let source = if pipe_stderr {
+                format!("{{ {source}; }} 2>&1")
+            } else {
+                source.clone()
+            };
+
+            let mut command = Command::new(&exe);
+            command
+                .arg("-c")
+                .arg(source)
+                .current_dir(cwd)
+                .envs(env)
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped());
+
+            if index == 0 {
+                if stdin.is_some() {
+                    command.stdin(Stdio::piped());
+                } else {
+                    command.stdin(Stdio::inherit());
+                }
+            } else {
+                let upstream = previous_stdout.take()
+                    .ok_or_else(|| anyhow::anyhow!("pipeline: stdout anterior no disponible"))?;
+                command.stdin(Stdio::from(upstream));
+            }
+
+            let mut child = command.spawn()
+                .with_context(|| format!("no se pudo lanzar etapa {} del pipeline", index + 1))?;
+
+            if index == 0 {
+                if let (Some(bytes), Some(mut writer)) = (stdin, child.stdin.take()) {
+                    let bytes = bytes.to_vec();
+                    input_writer = Some(std::thread::spawn(move || {
+                        let _ = writer.write_all(&bytes);
+                    }));
+                }
+            }
+
+            if let Some(mut stderr) = child.stderr.take() {
+                stderr_readers.push(std::thread::spawn(move || {
+                    let mut bytes = Vec::new();
+                    let _ = stderr.read_to_end(&mut bytes);
+                    bytes
+                }));
+            }
+
+            if index + 1 < commands.len() {
+                previous_stdout = child.stdout.take();
+            } else if let Some(mut stdout) = child.stdout.take() {
+                final_stdout = Some(std::thread::spawn(move || {
+                    let mut bytes = Vec::new();
+                    let _ = stdout.read_to_end(&mut bytes);
+                    bytes
+                }));
+            }
+
+            children.push(child);
+        }
+
+        let mut statuses = vec![None; children.len()];
+        while statuses.iter().any(Option::is_none) {
+            if self.force_abort.swap(false, std::sync::atomic::Ordering::SeqCst) {
+                for child in &mut children {
+                    let _ = child.kill();
+                }
+            }
+
+            for (index, child) in children.iter_mut().enumerate() {
+                if statuses[index].is_none() {
+                    if let Some(status) = child.try_wait()? {
+                        statuses[index] = Some(status.code().unwrap_or(1));
+                    }
+                }
+            }
+
+            if statuses.iter().any(Option::is_none) {
+                std::thread::sleep(std::time::Duration::from_millis(10));
+            }
+        }
+
+        if let Some(writer) = input_writer {
+            let _ = writer.join();
+        }
+
+        let stdout = final_stdout
+            .and_then(|reader| reader.join().ok())
+            .unwrap_or_default();
+
+        let mut stderr = Vec::new();
+        for reader in stderr_readers {
+            if let Ok(mut bytes) = reader.join() {
+                stderr.append(&mut bytes);
+            }
+        }
+
+        let statuses: Vec<i32> = statuses.into_iter().map(|status| status.unwrap_or(1)).collect();
+        let status = statuses.last().copied().unwrap_or(0);
+        Ok(Some((
+            ExecutionResult::from_parts(
+                String::from_utf8_lossy(&stdout).into_owned(),
+                String::from_utf8_lossy(&stderr).into_owned(),
+                status,
+            ),
+            statuses,
+        )))
     }
 
     fn execute_external_background(
