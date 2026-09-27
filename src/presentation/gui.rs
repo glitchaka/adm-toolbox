@@ -218,8 +218,8 @@ unsafe fn apply_window_effects(hwnd: HWND) {
 
         // Do not use DWMWA_SYSTEMBACKDROP_TYPE here. It affects the entire client
         // window, including the custom titlebar, and Windows changes its tint when
-        // the window becomes inactive. Transparency is instead restricted to the
-        // terminal area with a DWM blur region.
+        // the window becomes inactive. The terminal glass is instead created by
+        // extending only the bottom DWM frame into the client area.
         let backdrop_none: i32 = 1;
         let _ = DwmSetWindowAttribute(
             hwnd,
@@ -236,35 +236,26 @@ unsafe fn apply_window_effects(hwnd: HWND) {
             size_of::<i32>() as u32,
         );
 
-        update_terminal_blur_region(hwnd);
+        update_terminal_glass_region(hwnd);
     }
 }
 
-unsafe fn update_terminal_blur_region(hwnd: HWND) {
+unsafe fn update_terminal_glass_region(hwnd: HWND) {
     unsafe {
         let mut client: RECT = std::mem::zeroed();
         GetClientRect(hwnd, &mut client);
 
-        let region = CreateRectRgn(
-            0,
-            TITLE_BAR_HEIGHT,
-            client.right.max(1),
-            client.bottom.max(TITLE_BAR_HEIGHT + 1),
-        );
-
-        if region.is_null() {
-            return;
-        }
-
-        let blur = DWM_BLURBEHIND {
-            dwFlags: 0x00000001 | 0x00000002,
-            fEnable: 1,
-            hRgnBlur: region,
-            fTransitionOnMaximized: 0,
+        // Extend DWM glass upward from the bottom edge only as far as the terminal.
+        // The custom titlebar remains outside the extended frame, so it is always
+        // rendered as a normal opaque client surface.
+        let margins = MARGINS {
+            cxLeftWidth: 0,
+            cxRightWidth: 0,
+            cyTopHeight: 0,
+            cyBottomHeight: (client.bottom - TITLE_BAR_HEIGHT).max(0),
         };
 
-        let _ = DwmEnableBlurBehindWindow(hwnd, &blur);
-        DeleteObject(region);
+        let _ = DwmExtendFrameIntoClientArea(hwnd, &margins);
     }
 }
 
@@ -476,9 +467,9 @@ impl Terminal {
             let bitmap = CreateCompatibleBitmap(dc, bounds.right.max(1), bounds.bottom.max(1));
             let old_bitmap = SelectObject(mem, bitmap);
 
-            // On an extended DWM frame, black is the glass key for the client area.
-            // Keeping the default terminal background black lets the system backdrop
-            // remain visible without reducing glyph opacity.
+            // Black is the DWM glass key only inside the lower extended frame.
+            // The titlebar is repainted afterward with TITLE_BG and sits outside
+            // that frame, so it remains fully opaque.
             let glass = CreateSolidBrush(0x000000);
             FillRect(mem, &bounds, glass);
             DeleteObject(glass);
@@ -739,7 +730,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
 
                 state.parser.screen_mut().set_size(rows, cols);
                 state.pty.resize(cols, rows);
-                update_terminal_blur_region(hwnd);
+                update_terminal_glass_region(hwnd);
                 state.selection = None;
                 InvalidateRect(hwnd, null(), 0);
                 0
