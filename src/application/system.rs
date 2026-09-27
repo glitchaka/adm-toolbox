@@ -1,15 +1,19 @@
 use std::{
     env,
     fmt::Write as _,
+    process::Command,
     sync::Arc,
     time::Duration,
 };
 
 use sysinfo::{Disks, Pid, System};
 
-use crate::core::{
-    CommandOutput,
-    ports::{TerminalFactory, TerminalKey},
+use crate::{
+    core::{
+        CommandOutput,
+        ports::{TerminalFactory, TerminalKey},
+    },
+    support::options,
 };
 
 pub struct SystemService {
@@ -35,12 +39,16 @@ impl SystemService {
             "uname" => uname(&args[1..]),
             "kill" => kill_process(&args[1..]),
             "fetch" | "neofetch" | "fastfetch" => fetch(&args[1..]),
-            "services" => Ok(CommandOutput::error(
-                "sys services: usa 'sc query' por ahora; proveedor Rust pendiente",
-                2,
-            )),
+            "uptime" => uptime(),
+            "services" => services(&args[1..]),
+            "users" => users(&args[1..]),
+            "drivers" => drivers(&args[1..]),
+            "events" => events(&args[1..]),
+            "registry" | "reg" => registry(&args[1..]),
+            "tasks" | "scheduled-tasks" => scheduled_tasks(&args[1..]),
+            "help" | "-h" | "--help" => Ok(system_help()),
             _ => Ok(CommandOutput::error(
-                format!("sys: subcomando desconocido: {sub}"),
+                format!("sys: subcomando desconocido: {sub}\nusa 'sys --help' para ver los subcomandos disponibles"),
                 2,
             )),
         }
@@ -56,6 +64,7 @@ impl SystemService {
             "whoami" => whoami(),
             "uname" => uname(args),
             "kill" => kill_process(args),
+            "uptime" => uptime(),
             "fetch" | "neofetch" | "fastfetch" => fetch(args),
             _ => Ok(CommandOutput::error(
                 format!("comando de sistema desconocido: {name}"),
@@ -137,6 +146,317 @@ impl SystemService {
 
         Ok(CommandOutput::ok(""))
     }
+}
+
+
+fn system_help() -> CommandOutput {
+    CommandOutput::ok(
+        "sys — información y administración local de Windows\n\n\
+         uso: sys SUBCOMANDO [opciones]\n\n\
+         Información:\n\
+           sys info                     resumen del equipo\n\
+           sys processes                procesos por CPU/RAM\n\
+           sys top                      monitor TUI de procesos\n\
+           sys disks                    discos y uso\n\
+           sys memory                   memoria y swap\n\
+           sys uptime                   tiempo desde el último arranque\n\
+           sys hostname                 nombre del equipo\n\
+           sys whoami                   usuario actual\n\
+           sys uname [-a]               identificación del sistema\n\n\
+         Administración / auditoría de solo lectura:\n\
+           sys services [NOMBRE]        servicios de Windows\n\
+           sys users [USUARIO]          cuentas locales (o --domain)\n\
+           sys drivers                  controladores instalados\n\
+           sys drivers --pnp            paquetes de controladores PnP\n\
+           sys drivers --devices        dispositivos PnP conectados\n\
+           sys events [LOG]             últimos eventos (System por defecto)\n\
+           sys registry CLAVE           consulta del Registro de Windows\n\
+           sys tasks [NOMBRE]           tareas programadas\n\n\
+         Estas vistas usan las utilidades nativas de Windows como backend y no modifican\n\
+         servicios, cuentas, registro, drivers, eventos ni tareas programadas.\n",
+    )
+}
+
+fn uptime() -> anyhow::Result<CommandOutput> {
+    let seconds = System::uptime();
+    let days = seconds / 86_400;
+    let hours = (seconds % 86_400) / 3_600;
+    let minutes = (seconds % 3_600) / 60;
+    let secs = seconds % 60;
+
+    Ok(CommandOutput::ok(format!(
+        "uptime: {days}d {hours}h {minutes}m {secs}s\nseconds: {seconds}\n"
+    )))
+}
+
+fn services(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
+        return Ok(CommandOutput::ok(
+            "sys services — consulta servicios de Windows\n\
+             uso:\n\
+               sys services              todos los servicios\n\
+               sys services --running    solo servicios activos\n\
+               sys services --stopped    servicios detenidos\n\
+               sys services NOMBRE       detalle de un servicio\n",
+        ));
+    }
+
+    let mut native = vec!["query".to_owned()];
+    if let Some(name) = args.first().filter(|arg| !arg.starts_with('-')) {
+        native.push(name.clone());
+    } else if options::has(args, "--running") {
+        native.push("state=".to_owned());
+        native.push("active".to_owned());
+    } else if options::has(args, "--stopped") {
+        native.push("state=".to_owned());
+        native.push("inactive".to_owned());
+    } else {
+        native.push("state=".to_owned());
+        native.push("all".to_owned());
+    }
+
+    run_windows_tool("sc.exe", &native)
+}
+
+fn users(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
+        return Ok(CommandOutput::ok(
+            "sys users — consulta cuentas de Windows\n\
+             uso:\n\
+               sys users                  cuentas locales\n\
+               sys users USUARIO          detalle de una cuenta\n\
+               sys users --domain         cuentas del dominio\n\
+               sys users USUARIO --domain detalle de cuenta de dominio\n",
+        ));
+    }
+
+    let mut native = vec!["user".to_owned()];
+    if let Some(name) = args.first().filter(|arg| !arg.starts_with('-')) {
+        native.push(name.clone());
+    }
+    if options::has(args, "--domain") {
+        native.push("/domain".to_owned());
+    }
+
+    run_windows_tool("net.exe", &native)
+}
+
+fn drivers(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
+        return Ok(CommandOutput::ok(
+            "sys drivers — consulta controladores y dispositivos PnP\n\
+             uso:\n\
+               sys drivers                listado de drivers\n\
+               sys drivers --verbose      información detallada\n\
+               sys drivers --signed       información de firma\n\
+               sys drivers --csv          salida CSV\n\
+               sys drivers --pnp          paquetes de drivers PnP\n\
+               sys drivers --devices      dispositivos PnP conectados\n",
+        ));
+    }
+
+    if options::has(args, "--pnp") {
+        return run_windows_tool("pnputil.exe", &["/enum-drivers".to_owned()]);
+    }
+
+    if options::has(args, "--devices") {
+        return run_windows_tool(
+            "pnputil.exe",
+            &["/enum-devices".to_owned(), "/connected".to_owned()],
+        );
+    }
+
+    let mut native = Vec::new();
+    if options::has(args, "--verbose") {
+        native.push("/V".to_owned());
+    }
+    if options::has(args, "--signed") {
+        native.push("/SI".to_owned());
+    }
+    native.push("/FO".to_owned());
+    native.push(if options::has(args, "--csv") {
+        "CSV".to_owned()
+    } else {
+        "TABLE".to_owned()
+    });
+
+    run_windows_tool("driverquery.exe", &native)
+}
+
+fn events(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
+        return Ok(CommandOutput::ok(
+            "sys events — consulta Windows Event Log\n\
+             uso:\n\
+               sys events                       últimos 20 eventos de System\n\
+               sys events Application           últimos eventos de Application\n\
+               sys events --log Security        selecciona un log\n\
+               sys events --count 50            cantidad (1..500)\n\
+               sys events --query XPATH         filtro XPath de wevtutil\n\
+               sys events --format text|xml     formato de salida\n\
+               sys events --logs                lista logs disponibles\n\
+               sys events --publishers          lista publishers\n",
+        ));
+    }
+
+    if options::has(args, "--logs") {
+        return run_windows_tool("wevtutil.exe", &["el".to_owned()]);
+    }
+    if options::has(args, "--publishers") {
+        return run_windows_tool("wevtutil.exe", &["ep".to_owned()]);
+    }
+
+    let positional_log = args.first().filter(|arg| !arg.starts_with('-')).map(String::as_str);
+    let log = options::value(args, "--log")
+        .or(positional_log)
+        .unwrap_or("System");
+
+    let count = options::value(args, "--count")
+        .unwrap_or("20")
+        .parse::<u32>()
+        .map_err(|_| anyhow::anyhow!("sys events: --count debe ser un número"))?;
+
+    if !(1..=500).contains(&count) {
+        return Ok(CommandOutput::error(
+            "sys events: --count debe estar entre 1 y 500",
+            2,
+        ));
+    }
+
+    let format = options::value(args, "--format").unwrap_or("text");
+    if !matches!(format, "text" | "xml") {
+        return Ok(CommandOutput::error(
+            "sys events: --format debe ser text o xml",
+            2,
+        ));
+    }
+
+    let mut native = vec![
+        "qe".to_owned(),
+        log.to_owned(),
+        format!("/c:{count}"),
+        "/rd:true".to_owned(),
+        format!("/f:{format}"),
+    ];
+
+    if let Some(query) = options::value(args, "--query") {
+        native.push(format!("/q:{query}"));
+    }
+
+    run_windows_tool("wevtutil.exe", &native)
+}
+
+fn registry(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
+        return Ok(CommandOutput::ok(
+            "sys registry — consulta de solo lectura del Registro de Windows\n\
+             uso:\n\
+               sys registry CLAVE\n\
+               sys registry query CLAVE\n\
+               sys registry CLAVE --value NOMBRE\n\
+               sys registry CLAVE --default\n\
+               sys registry CLAVE --recursive\n\
+               sys registry CLAVE --find TEXTO [--keys|--data]\n\
+             ejemplo:\n\
+               sys registry \"HKLM\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\"\n",
+        ));
+    }
+
+    let offset = usize::from(args.first().is_some_and(|arg| arg == "query"));
+    let Some(key) = args.get(offset) else {
+        return Ok(CommandOutput::error("sys registry: falta CLAVE", 2));
+    };
+    if key.starts_with('-') {
+        return Ok(CommandOutput::error(
+            "sys registry: la CLAVE debe ir antes de las opciones",
+            2,
+        ));
+    }
+
+    let mut native = vec!["query".to_owned(), key.clone()];
+
+    if let Some(value) = options::value(args, "--value") {
+        native.push("/v".to_owned());
+        native.push(value.to_owned());
+    } else if options::has(args, "--default") {
+        native.push("/ve".to_owned());
+    }
+
+    if options::has(args, "--recursive") {
+        native.push("/s".to_owned());
+    }
+
+    if let Some(find) = options::value(args, "--find") {
+        native.push("/f".to_owned());
+        native.push(find.to_owned());
+        if options::has(args, "--keys") {
+            native.push("/k".to_owned());
+        }
+        if options::has(args, "--data") {
+            native.push("/d".to_owned());
+        }
+    }
+
+    run_windows_tool("reg.exe", &native)
+}
+
+fn scheduled_tasks(args: &[String]) -> anyhow::Result<CommandOutput> {
+    if args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
+        return Ok(CommandOutput::ok(
+            "sys tasks — consulta tareas programadas de Windows\n\
+             uso:\n\
+               sys tasks                  listado en tabla\n\
+               sys tasks --verbose        listado detallado\n\
+               sys tasks --csv            salida CSV\n\
+               sys tasks NOMBRE           detalle de una tarea\n\
+               sys tasks NOMBRE --xml     definición XML de una tarea\n",
+        ));
+    }
+
+    let name = args.first().filter(|arg| !arg.starts_with('-'));
+    let mut native = vec!["/Query".to_owned()];
+
+    if let Some(name) = name {
+        native.push("/TN".to_owned());
+        native.push(name.clone());
+
+        if options::has(args, "--xml") {
+            native.push("/XML".to_owned());
+            return run_windows_tool("schtasks.exe", &native);
+        }
+
+        native.push("/FO".to_owned());
+        native.push(if options::has(args, "--csv") {
+            "CSV".to_owned()
+        } else {
+            "LIST".to_owned()
+        });
+        native.push("/V".to_owned());
+    } else {
+        native.push("/FO".to_owned());
+        native.push(if options::has(args, "--csv") {
+            "CSV".to_owned()
+        } else {
+            "TABLE".to_owned()
+        });
+        if options::has(args, "--verbose") {
+            native.push("/V".to_owned());
+        }
+    }
+
+    run_windows_tool("schtasks.exe", &native)
+}
+
+fn run_windows_tool(program: &str, args: &[String]) -> anyhow::Result<CommandOutput> {
+    let output = Command::new(program).args(args).output().map_err(|error| {
+        anyhow::anyhow!("{program}: no se pudo ejecutar la utilidad nativa de Windows: {error}")
+    })?;
+
+    Ok(CommandOutput {
+        stdout: String::from_utf8_lossy(&output.stdout).into_owned(),
+        stderr: String::from_utf8_lossy(&output.stderr).into_owned(),
+        status: output.status.code().unwrap_or(1),
+    })
 }
 
 fn info() -> anyhow::Result<CommandOutput> {
