@@ -393,18 +393,31 @@ impl Interpreter {
                 let user = after.0.saturating_sub(before.0);
                 let system = after.1.saturating_sub(before.1);
 
-                fn seconds(value: Duration) -> f64 {
-                    value.as_secs_f64()
+                fn format_seconds(value: Duration, precision: usize, long: bool) -> String {
+                    let precision = precision.min(6);
+                    if long {
+                        let total = value.as_secs_f64();
+                        let minutes = (total / 60.0).floor() as u64;
+                        let seconds = total - minutes as f64 * 60.0;
+                        if precision == 0 {
+                            format!("{minutes}m{seconds:02.0}s")
+                        } else {
+                            let width = precision + 3;
+                            format!("{minutes}m{seconds:0width$.precision$}s")
+                        }
+                    } else if precision == 0 {
+                        format!("{:.0}", value.as_secs_f64())
+                    } else {
+                        format!("{:.precision$}", value.as_secs_f64())
+                    }
                 }
 
-                let timing = if *posix {
-                    format!(
-                        "real {:.3}\nuser {:.3}\nsys {:.3}\n",
-                        seconds(real),
-                        seconds(user),
-                        seconds(system),
-                    )
-                } else if let Some(format_string) = self.env.vars.get("TIMEFORMAT").cloned() {
+                fn render_timeformat(
+                    format_string: &str,
+                    real: Duration,
+                    user: Duration,
+                    system: Duration,
+                ) -> String {
                     let total_cpu = user + system;
                     let percent = if real.is_zero() {
                         0.0
@@ -412,33 +425,74 @@ impl Interpreter {
                         total_cpu.as_secs_f64() * 100.0 / real.as_secs_f64()
                     };
                     let mut rendered = String::new();
-                    let mut chars = format_string.chars().peekable();
-                    while let Some(ch) = chars.next() {
-                        if ch != '%' {
-                            rendered.push(ch);
+                    let chars: Vec<char> = format_string.chars().collect();
+                    let mut i = 0usize;
+                    while i < chars.len() {
+                        if chars[i] != '%' {
+                            rendered.push(chars[i]);
+                            i += 1;
                             continue;
                         }
-                        match chars.next() {
-                            Some('%') => rendered.push('%'),
-                            Some('R') => rendered.push_str(&format!("{:.3}", seconds(real))),
-                            Some('U') => rendered.push_str(&format!("{:.3}", seconds(user))),
-                            Some('S') => rendered.push_str(&format!("{:.3}", seconds(system))),
-                            Some('P') => rendered.push_str(&format!("{percent:.2}")),
-                            Some(other) => {
+                        i += 1;
+                        if i >= chars.len() {
+                            rendered.push('%');
+                            break;
+                        }
+                        if chars[i] == '%' {
+                            rendered.push('%');
+                            i += 1;
+                            continue;
+                        }
+
+                        let mut precision = 3usize;
+                        if chars[i].is_ascii_digit() {
+                            precision = chars[i].to_digit(10).unwrap_or(3) as usize;
+                            precision = precision.min(6);
+                            i += 1;
+                        }
+                        let long = i < chars.len() && chars[i] == 'l';
+                        if long { i += 1; }
+                        if i >= chars.len() {
+                            rendered.push('%');
+                            break;
+                        }
+
+                        match chars[i] {
+                            'R' => rendered.push_str(&format_seconds(real, precision, long)),
+                            'U' => rendered.push_str(&format_seconds(user, precision, long)),
+                            'S' => rendered.push_str(&format_seconds(system, precision, long)),
+                            'P' if !long => rendered.push_str(&format!("{percent:.2}")),
+                            other => {
                                 rendered.push('%');
+                                if precision != 3 { rendered.push_str(&precision.to_string()); }
+                                if long { rendered.push('l'); }
                                 rendered.push(other);
                             }
-                            None => rendered.push('%'),
                         }
+                        i += 1;
                     }
-                    if rendered.is_empty() { rendered } else { format!("{rendered}\n") }
-                } else {
+                    rendered
+                }
+
+                let timing = if *posix {
                     format!(
-                        "\nreal\t0m{:.3}s\nuser\t0m{:.3}s\nsys\t0m{:.3}s\n",
-                        seconds(real),
-                        seconds(user),
-                        seconds(system),
+                        "real {:.3}\nuser {:.3}\nsys {:.3}\n",
+                        real.as_secs_f64(),
+                        user.as_secs_f64(),
+                        system.as_secs_f64(),
                     )
+                } else {
+                    let format_string = self.env.vars.get("TIMEFORMAT")
+                        .cloned()
+                        .unwrap_or_else(|| "\nreal\t%3lR\nuser\t%3lU\nsys\t%3lS".to_owned());
+                    if format_string.is_empty() {
+                        String::new()
+                    } else {
+                        format!(
+                            "{}\n",
+                            render_timeformat(&format_string, real, user, system)
+                        )
+                    }
                 };
                 result.stderr.push_str(&timing);
                 result
@@ -606,7 +660,18 @@ impl Interpreter {
                     }
                     let prompt = self.env.vars.get("PS3").cloned().unwrap_or_else(|| "#? ".to_owned());
                     let combined_prompt = format!("{menu}{prompt}");
-                    let Some(answer) = self.host.read_line(&combined_prompt, false)? else { break; };
+                    let timeout = self.env.get("TMOUT").parse::<f64>().ok()
+                        .filter(|seconds| *seconds > 0.0)
+                        .map(Duration::from_secs_f64);
+                    let Some(answer) = self.host.read_line_with_options(
+                        &combined_prompt,
+                        false,
+                        "",
+                        timeout,
+                        Some('\n'),
+                        None,
+                        false,
+                    )? else { break; };
                     self.env.set("REPLY", answer.clone());
                     let selected = answer.trim().parse::<usize>().ok()
                         .and_then(|i| i.checked_sub(1))
@@ -4484,6 +4549,12 @@ impl Interpreter {
                 value => variables.push(value.to_owned()),
             }
             index += 1;
+        }
+
+        if timeout.is_none() {
+            timeout = self.env.get("TMOUT").parse::<f64>().ok()
+                .filter(|seconds| *seconds > 0.0)
+                .map(Duration::from_secs_f64);
         }
 
         let source = if input_fd != 0 {
