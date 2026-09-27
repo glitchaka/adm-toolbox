@@ -123,6 +123,8 @@ pub struct Interpreter {
     loop_depth: usize,
     source_depth: usize,
     command_hash: HashMap<String, String>,
+    function_stack: Vec<String>,
+    source_stack: Vec<String>,
 }
 
 impl Interpreter {
@@ -133,6 +135,8 @@ impl Interpreter {
             loop_depth: 0,
             source_depth: 0,
             command_hash: HashMap::new(),
+            function_stack: Vec::new(),
+            source_stack: Vec::new(),
         }
     }
 
@@ -599,6 +603,7 @@ impl Interpreter {
         let mut stderr = String::new();
         let mut last = ExecutionResult::success();
         let mut last_nonzero = 0;
+        let mut pipe_status = Vec::with_capacity(parts.len());
 
         for part in parts {
             let saved = self.env.clone();
@@ -608,10 +613,12 @@ impl Interpreter {
             last.exit_requested = false;
             last.flow = FlowSignal::None;
             stderr.push_str(&last.stderr);
+            pipe_status.push(last.status.to_string());
             if last.status != 0 { last_nonzero = last.status; }
             input = Some(last.stdout.as_bytes().to_vec());
         }
 
+        self.env.set_array("PIPESTATUS", pipe_status);
         last.stderr = stderr;
         if self.env.option_enabled("pipefail") && last_nonzero != 0 {
             last.status = last_nonzero;
@@ -689,7 +696,11 @@ impl Interpreter {
             let saved = self.env.positional.clone();
             self.env.positional = args.to_vec();
             self.env.push_local_scope();
+            self.function_stack.push(name.clone());
+            self.refresh_call_stack_arrays();
             let execution = self.execute(&body, local_stdin.as_deref());
+            self.function_stack.pop();
+            self.refresh_call_stack_arrays();
             self.env.pop_local_scope();
             self.env.positional = saved;
             let mut result = execution?;
@@ -879,7 +890,11 @@ impl Interpreter {
                     self.env.positional = args[1..].to_vec();
                 }
                 self.source_depth += 1;
+                self.source_stack.push(path.clone());
+                self.refresh_call_stack_arrays();
                 let execution = self.execute_text(&source);
+                self.source_stack.pop();
+                self.refresh_call_stack_arrays();
                 self.source_depth = self.source_depth.saturating_sub(1);
                 self.env.positional = saved_positional;
                 self.env.script_name = saved_name;
@@ -1110,6 +1125,19 @@ impl Interpreter {
                 | "dirs" | "pushd" | "popd" | "umask" | "ulimit" | "times" | "caller"
                 | ":" | "true" | "false"
         )
+    }
+
+    fn refresh_call_stack_arrays(&mut self) {
+        let mut funcs = self.function_stack.iter().rev().cloned().collect::<Vec<_>>();
+        funcs.push("main".to_owned());
+        self.env.set_array("FUNCNAME", funcs);
+
+        let mut sources = self.source_stack.iter().rev().cloned().collect::<Vec<_>>();
+        sources.push(self.env.script_name.clone());
+        self.env.set_array("BASH_SOURCE", sources);
+
+        let depth = self.env.array_values("BASH_SOURCE").len().saturating_sub(1);
+        self.env.set_array("BASH_LINENO", vec!["0".to_owned(); depth]);
     }
 
     fn resolve_jobspec(&self, spec: Option<&str>) -> Result<Option<(usize, JobInfo)>> {
@@ -1604,11 +1632,22 @@ impl Interpreter {
         let mut export = false;
         let mut print = false;
         let mut integer = false;
+        let mut nameref = false;
+        let mut uppercase = false;
+        let mut lowercase = false;
+        let mut trace = false;
+        let mut global = false;
+        let mut remove_attrs = Vec::new();
         let mut names = Vec::new();
 
         for arg in args {
-            if arg.starts_with('-') && arg.len() > 1 {
+            if (arg.starts_with('-') || arg.starts_with('+')) && arg.len() > 1 {
+                let enabling = arg.starts_with('-');
                 for flag in arg[1..].chars() {
+                    if !enabling {
+                        remove_attrs.push(flag);
+                        continue;
+                    }
                     match flag {
                         'a' => indexed = true,
                         'A' => associative = true,
@@ -1616,6 +1655,12 @@ impl Interpreter {
                         'x' => export = true,
                         'p' => print = true,
                         'i' => integer = true,
+                        'n' => nameref = true,
+                        'u' => uppercase = true,
+                        'l' => lowercase = true,
+                        't' => trace = true,
+                        'g' => global = true,
+                        'f' | 'F' => print = true,
                         _ => {}
                     }
                 }
@@ -1626,10 +1671,25 @@ impl Interpreter {
 
         if print || names.is_empty() {
             let mut stdout = String::new();
-            let mut all: Vec<_> = self.env.vars.keys().cloned().collect();
+            let mut all: Vec<_> = self.env.vars.keys().cloned()
+                .chain(self.env.namerefs.keys().cloned())
+                .collect();
             all.sort();
+            all.dedup();
             for name in all {
-                stdout.push_str(&format!("declare -- {}={}\n", name, shell_quote(&self.env.get(&name))));
+                if let Some(target) = self.env.namerefs.get(&name) {
+                    stdout.push_str(&format!("declare -n {}={}\n", name, shell_quote(target)));
+                    continue;
+                }
+                let mut attrs = String::new();
+                if self.env.readonly.contains(&name) { attrs.push('r'); }
+                if self.env.integer_vars.contains(&name) { attrs.push('i'); }
+                if self.env.uppercase_vars.contains(&name) { attrs.push('u'); }
+                if self.env.lowercase_vars.contains(&name) { attrs.push('l'); }
+                if self.env.trace_vars.contains(&name) { attrs.push('t'); }
+                if self.env.exported.contains_key(&name) { attrs.push('x'); }
+                if attrs.is_empty() { attrs.push('-'); }
+                stdout.push_str(&format!("declare -{} {}={}\n", attrs, name, shell_quote(&self.env.get(&name))));
             }
             for (name, values) in &self.env.arrays {
                 stdout.push_str(&format!("declare -a {name}=("));
@@ -1653,49 +1713,78 @@ impl Interpreter {
                 .map(|(n,v)| (n.to_owned(), Some(v.to_owned())))
                 .unwrap_or((item.clone(), None));
 
-            if associative { self.env.declare_assoc(name.clone()); }
-            else if indexed { self.env.set_array(name.clone(), Vec::new()); }
+            // +n removes the nameref attribute without dereferencing the target.
+            if remove_attrs.contains(&'n') {
+                self.env.unset_nameref(&name);
+            }
+            if remove_attrs.contains(&'i') { self.env.set_integer(&name, false); }
+            if remove_attrs.contains(&'u') { self.env.set_uppercase(&name, false); }
+            if remove_attrs.contains(&'l') { self.env.set_lowercase(&name, false); }
+            if remove_attrs.contains(&'t') { self.env.set_trace(&name, false); }
+            if remove_attrs.contains(&'x') { self.env.exported.remove(&name); }
 
-            if let Some(raw_value) = value.take() {
-                if raw_value.starts_with('(') && raw_value.ends_with(')') && (indexed || associative) {
-                    let body = &raw_value[1..raw_value.len() - 1];
-                    let items = split_shell_words_relaxed(body)?;
-                    if associative {
-                        self.env.declare_assoc(name.clone());
-                        for item in items {
-                            if let Some((key, value)) = parse_array_entry(&item) {
-                                let expanded = self.expand_scalar(&value)?;
-                                self.env.assoc_arrays.entry(name.clone()).or_default().insert(key, expanded);
-                            }
-                        }
-                    } else {
-                        let mut values = Vec::new();
-                        for item in items {
-                            if let Some((key, value)) = parse_array_entry(&item) {
-                                if let Ok(index) = key.parse::<usize>() {
-                                    if values.len() <= index { values.resize(index + 1, String::new()); }
-                                    values[index] = self.expand_scalar(&value)?;
-                                }
-                            } else {
-                                values.push(self.expand_scalar(&item)?);
-                            }
-                        }
-                        self.env.set_array(name.clone(), values);
-                    }
+            if nameref {
+                let target = value.take().unwrap_or_else(|| self.env.get(&name));
+                if local && !global {
+                    self.env.set_local_nameref(name.clone(), strip_outer_quotes(&target));
                 } else {
-                    let expanded = if integer {
-                        self.evaluate_arithmetic_command(&raw_value)?.to_string()
-                    } else {
-                        self.expand_scalar(&raw_value)?
-                    };
-                    if local { self.env.set_local(name.clone(), expanded); }
-                    else { self.env.set(name.clone(), expanded); }
+                    self.env.set_nameref(name.clone(), strip_outer_quotes(&target));
                 }
-            } else if local {
-                let current = self.env.get(&name);
-                self.env.set_local(name.clone(), current);
+            } else {
+                if associative {
+                    if local && !global { self.env.declare_local_assoc(name.clone()); }
+                    else { self.env.declare_assoc(name.clone()); }
+                } else if indexed {
+                    if local && !global { self.env.set_local_array(name.clone(), Vec::new()); }
+                    else { self.env.set_array(name.clone(), Vec::new()); }
+                }
+
+                if let Some(raw_value) = value.take() {
+                    if raw_value.starts_with('(') && raw_value.ends_with(')') && (indexed || associative) {
+                        let body = &raw_value[1..raw_value.len() - 1];
+                        let items = split_shell_words_relaxed(body)?;
+                        if associative {
+                            if local && !global { self.env.declare_local_assoc(name.clone()); }
+                            else { self.env.declare_assoc(name.clone()); }
+                            for item in items {
+                                if let Some((key, value)) = parse_array_entry(&item) {
+                                    let expanded = self.expand_scalar(&value)?;
+                                    self.env.assoc_arrays.entry(name.clone()).or_default().insert(key, expanded);
+                                }
+                            }
+                        } else {
+                            let mut values = Vec::new();
+                            for item in items {
+                                if let Some((key, value)) = parse_array_entry(&item) {
+                                    if let Ok(index) = key.parse::<usize>() {
+                                        if values.len() <= index { values.resize(index + 1, String::new()); }
+                                        values[index] = self.expand_scalar(&value)?;
+                                    }
+                                } else {
+                                    values.push(self.expand_scalar(&item)?);
+                                }
+                            }
+                            if local && !global { self.env.set_local_array(name.clone(), values); }
+                            else { self.env.set_array(name.clone(), values); }
+                        }
+                    } else {
+                        let expanded = if integer {
+                            self.evaluate_arithmetic_command(&raw_value)?.to_string()
+                        } else {
+                            self.expand_scalar(&raw_value)?
+                        };
+                        if local && !global { self.env.set_local(name.clone(), expanded); }
+                        else { self.env.set(name.clone(), expanded); }
+                    }
+                } else if local && !global {
+                    self.env.localize_unset(&name);
+                }
             }
 
+            if integer { self.env.set_integer(&name, true); }
+            if uppercase { self.env.set_uppercase(&name, true); }
+            if lowercase { self.env.set_lowercase(&name, true); }
+            if trace { self.env.set_trace(&name, true); }
             if readonly { self.env.set_readonly(&name); }
             if export { self.env.mark_exported(&name); }
         }
@@ -2036,9 +2125,26 @@ impl Interpreter {
                             .map(|pattern| !pattern.matches(&l))
                             .unwrap_or(l != r)
                     }
-                    "=~" => regex::Regex::new(&right)
-                        .map(|pattern| pattern.is_match(&left))
-                        .unwrap_or(false),
+                    "=~" => {
+                        match regex::Regex::new(&right) {
+                            Ok(pattern) => {
+                                if let Some(captures) = pattern.captures(&left) {
+                                    let values = (0..captures.len())
+                                        .map(|index| captures.get(index).map(|m| m.as_str()).unwrap_or("").to_owned())
+                                        .collect::<Vec<_>>();
+                                    self.env.set_array("BASH_REMATCH", values);
+                                    true
+                                } else {
+                                    self.env.set_array("BASH_REMATCH", Vec::new());
+                                    false
+                                }
+                            }
+                            Err(_) => {
+                                self.env.set_array("BASH_REMATCH", Vec::new());
+                                false
+                            }
+                        }
+                    },
                     "<" => if nocase { left.to_lowercase() < right.to_lowercase() } else { left < right },
                     ">" => if nocase { left.to_lowercase() > right.to_lowercase() } else { left > right },
                     "-eq" => eval_arithmetic(&left, &self.env)? == eval_arithmetic(&right, &self.env)?,
