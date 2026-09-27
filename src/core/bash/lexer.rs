@@ -26,7 +26,8 @@ pub enum RedirectOp {
     Read,
     Write,
     Append,
-    Dup,
+    DupInput,
+    DupOutput,
     HereString,
     ReadWrite,
     Clobber,
@@ -320,15 +321,20 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
             ')' => { flush(&mut word, &mut out); out.push(Token::RParen); i += 1; }
             '{' if word.is_empty() => { out.push(Token::LBrace); i += 1; }
             '}' if word.is_empty() => { out.push(Token::RBrace); i += 1; }
-            '0'..='9'
-                if word.is_empty()
-                    && chars.get(i + 1).is_some_and(|c| *c == '>' || *c == '<') =>
-            {
-                let fd = ch.to_digit(10).unwrap_or(1) as i32;
-                i += 1;
-                let (op, used) = redirect_op(&chars, i)?;
-                out.push(Token::Redirect { fd, op });
-                i += used;
+            '0'..='9' if word.is_empty() => {
+                let start = i;
+                while i < chars.len() && chars[i].is_ascii_digit() {
+                    i += 1;
+                }
+                if i < chars.len() && matches!(chars[i], '>' | '<') {
+                    let fd_text: String = chars[start..i].iter().collect();
+                    let fd = fd_text.parse::<i32>().map_err(|_| anyhow::anyhow!("descriptor inválido: {fd_text}"))?;
+                    let (op, used) = redirect_op(&chars, i)?;
+                    out.push(Token::Redirect { fd, op });
+                    i += used;
+                } else {
+                    word.extend(&chars[start..i]);
+                }
             }
             '>' | '<' => {
                 flush(&mut word, &mut out);
@@ -349,14 +355,14 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
 fn redirect_op(chars: &[char], i: usize) -> Result<(RedirectOp, usize)> {
     match chars.get(i) {
         Some('>') if chars.get(i + 1) == Some(&'>') => Ok((RedirectOp::Append, 2)),
-        Some('>') if chars.get(i + 1) == Some(&'&') => Ok((RedirectOp::Dup, 2)),
+        Some('>') if chars.get(i + 1) == Some(&'&') => Ok((RedirectOp::DupOutput, 2)),
         Some('>') if chars.get(i + 1) == Some(&'|') => Ok((RedirectOp::Clobber, 2)),
         Some('>') => Ok((RedirectOp::Write, 1)),
         Some('<') if chars.get(i + 1) == Some(&'>') => Ok((RedirectOp::ReadWrite, 2)),
         Some('<') if chars.get(i + 1) == Some(&'<') && chars.get(i + 2) == Some(&'<') => {
             Ok((RedirectOp::HereString, 3))
         }
-        Some('<') if chars.get(i + 1) == Some(&'&') => Ok((RedirectOp::Dup, 2)),
+        Some('<') if chars.get(i + 1) == Some(&'&') => Ok((RedirectOp::DupInput, 2)),
         Some('<') => Ok((RedirectOp::Read, 1)),
         _ => bail!("redirección inválida"),
     }
@@ -372,7 +378,7 @@ mod tests {
         assert!(tokens.contains(&Token::Pipe));
         assert!(tokens.contains(&Token::AndIf));
         assert!(tokens.contains(&Token::Amp));
-        assert!(tokens.contains(&Token::Redirect { fd: 2, op: RedirectOp::Dup }));
+        assert!(tokens.contains(&Token::Redirect { fd: 2, op: RedirectOp::DupOutput }));
         assert!(tokens.contains(&Token::Word("\"a b\"".into())));
     }
 }

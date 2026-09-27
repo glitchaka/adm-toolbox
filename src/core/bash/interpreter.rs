@@ -3,6 +3,7 @@ use std::{
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
+    sync::{Arc, Mutex},
     time::Duration,
 };
 
@@ -56,6 +57,27 @@ struct ProcessSubstitution {
     path: PathBuf,
     command: Option<String>,
     stderr: String,
+}
+
+#[derive(Debug)]
+struct FdCursor {
+    data: Vec<u8>,
+    offset: usize,
+}
+
+#[derive(Debug, Clone)]
+enum FdInputBinding {
+    Data(Arc<Mutex<FdCursor>>),
+    Stdin,
+    Closed,
+}
+
+#[derive(Debug, Clone)]
+enum FdOutputBinding {
+    File(PathBuf),
+    Stdout,
+    Stderr,
+    Closed,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -183,6 +205,8 @@ pub struct Interpreter {
     completion_specs: HashMap<String, CompletionSpec>,
     active_completion_options: Option<HashSet<String>>,
     key_bindings: HashMap<String, String>,
+    fd_inputs: HashMap<i32, FdInputBinding>,
+    fd_outputs: HashMap<i32, FdOutputBinding>,
 }
 
 impl Interpreter {
@@ -213,6 +237,8 @@ impl Interpreter {
                 ("\\C-n".to_owned(), "next-history".to_owned()),
                 ("\\C-l".to_owned(), "clear-screen".to_owned()),
             ].into_iter().collect(),
+            fd_inputs: HashMap::new(),
+            fd_outputs: HashMap::new(),
         }
     }
 
@@ -793,13 +819,206 @@ impl Interpreter {
         Ok(last)
     }
 
+    fn resolved_input_binding(&self, fd: i32) -> Option<FdInputBinding> {
+        self.fd_inputs.get(&fd).cloned().or_else(|| {
+            (fd == 0).then_some(FdInputBinding::Stdin)
+        })
+    }
+
+    fn resolved_output_binding(&self, fd: i32) -> Option<FdOutputBinding> {
+        self.fd_outputs.get(&fd).cloned().or_else(|| match fd {
+            1 => Some(FdOutputBinding::Stdout),
+            2 => Some(FdOutputBinding::Stderr),
+            _ => None,
+        })
+    }
+
+    fn consume_descriptor_all(&mut self, fd: i32) -> Result<Option<Vec<u8>>> {
+        match self.resolved_input_binding(fd) {
+            Some(FdInputBinding::Data(cursor)) => {
+                let mut cursor = cursor.lock().unwrap_or_else(|error| error.into_inner());
+                let data = cursor.data.get(cursor.offset..).unwrap_or_default().to_vec();
+                cursor.offset = cursor.data.len();
+                Ok(Some(data))
+            }
+            Some(FdInputBinding::Stdin) => Ok(None),
+            Some(FdInputBinding::Closed) | None => bail!("{fd}: descriptor de archivo inválido"),
+        }
+    }
+
+    fn read_descriptor_record(
+        &mut self,
+        fd: i32,
+        prompt: &str,
+        silent: bool,
+        initial: &str,
+        timeout: Option<Duration>,
+        delimiter: Option<char>,
+        max_chars: Option<usize>,
+        exact_chars: bool,
+    ) -> Result<Option<String>> {
+        match self.resolved_input_binding(fd) {
+            Some(FdInputBinding::Stdin) => self.host.read_line_with_options(
+                prompt,
+                silent,
+                initial,
+                timeout,
+                delimiter,
+                max_chars,
+                exact_chars,
+            ),
+            Some(FdInputBinding::Closed) | None => bail!("{fd}: descriptor de archivo inválido"),
+            Some(FdInputBinding::Data(cursor)) => {
+                let mut cursor = cursor.lock().unwrap_or_else(|error| error.into_inner());
+                if cursor.offset >= cursor.data.len() {
+                    return Ok(None);
+                }
+
+                let remaining = String::from_utf8_lossy(&cursor.data[cursor.offset..]).into_owned();
+                let mut value = initial.to_owned();
+                let mut consumed_bytes = 0usize;
+                let delimiter = delimiter.unwrap_or('\n');
+
+                if exact_chars {
+                    let limit = max_chars.unwrap_or(usize::MAX);
+                    for ch in remaining.chars().take(limit) {
+                        value.push(ch);
+                        consumed_bytes += ch.len_utf8();
+                    }
+                } else {
+                    let limit = max_chars.unwrap_or(usize::MAX);
+                    let mut count = 0usize;
+                    for ch in remaining.chars() {
+                        if ch == delimiter {
+                            consumed_bytes += ch.len_utf8();
+                            break;
+                        }
+                        if count >= limit {
+                            break;
+                        }
+                        value.push(ch);
+                        consumed_bytes += ch.len_utf8();
+                        count += 1;
+                    }
+                }
+
+                cursor.offset = (cursor.offset + consumed_bytes).min(cursor.data.len());
+                Ok(Some(value))
+            }
+        }
+    }
+
+    fn install_persistent_redirects(&mut self, command: &SimpleCommand) -> Result<()> {
+        for redirect in &command.redirects {
+            match redirect.kind {
+                RedirectKind::Read => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    let data = fs::read(self.resolve_path(&target))?;
+                    self.fd_inputs.insert(
+                        redirect.fd,
+                        FdInputBinding::Data(Arc::new(Mutex::new(FdCursor { data, offset: 0 }))),
+                    );
+                }
+                RedirectKind::HereString => {
+                    let mut value = self.expand_scalar(&redirect.target)?;
+                    value.push('\n');
+                    self.fd_inputs.insert(
+                        redirect.fd,
+                        FdInputBinding::Data(Arc::new(Mutex::new(FdCursor {
+                            data: value.into_bytes(),
+                            offset: 0,
+                        }))),
+                    );
+                }
+                RedirectKind::ReadWrite => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    let path = self.resolve_path(&target);
+                    if !path.exists() {
+                        OpenOptions::new().create(true).write(true).open(&path)?;
+                    }
+                    let data = fs::read(&path).unwrap_or_default();
+                    self.fd_inputs.insert(
+                        redirect.fd,
+                        FdInputBinding::Data(Arc::new(Mutex::new(FdCursor { data, offset: 0 }))),
+                    );
+                    self.fd_outputs.insert(redirect.fd, FdOutputBinding::File(path));
+                }
+                RedirectKind::Write | RedirectKind::Clobber | RedirectKind::Append => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    let path = self.resolve_path(&target);
+                    if redirect.kind == RedirectKind::Write
+                        && self.env.option_enabled("noclobber")
+                        && path.exists()
+                    {
+                        bail!("{target}: no se puede sobrescribir: noclobber activo");
+                    }
+                    let mut options = OpenOptions::new();
+                    options.create(true).write(true);
+                    if redirect.kind == RedirectKind::Append {
+                        options.append(true);
+                    } else {
+                        options.truncate(true);
+                    }
+                    options.open(&path)?;
+                    self.fd_outputs.insert(redirect.fd, FdOutputBinding::File(path));
+                }
+                RedirectKind::BothWrite | RedirectKind::BothAppend => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    let path = self.resolve_path(&target);
+                    if redirect.kind == RedirectKind::BothWrite
+                        && self.env.option_enabled("noclobber")
+                        && path.exists()
+                    {
+                        bail!("{target}: no se puede sobrescribir: noclobber activo");
+                    }
+                    let mut options = OpenOptions::new();
+                    options.create(true).write(true);
+                    if redirect.kind == RedirectKind::BothAppend {
+                        options.append(true);
+                    } else {
+                        options.truncate(true);
+                    }
+                    options.open(&path)?;
+                    let binding = FdOutputBinding::File(path);
+                    self.fd_outputs.insert(1, binding.clone());
+                    self.fd_outputs.insert(2, binding);
+                }
+                RedirectKind::DupInput => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    if target == "-" {
+                        self.fd_inputs.insert(redirect.fd, FdInputBinding::Closed);
+                    } else {
+                        let source = target.parse::<i32>()
+                            .map_err(|_| anyhow!("redirección <&: descriptor inválido: {target}"))?;
+                        let binding = self.resolved_input_binding(source)
+                            .ok_or_else(|| anyhow!("{source}: descriptor de archivo inválido"))?;
+                        self.fd_inputs.insert(redirect.fd, binding);
+                    }
+                }
+                RedirectKind::DupOutput => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    if target == "-" {
+                        self.fd_outputs.insert(redirect.fd, FdOutputBinding::Closed);
+                    } else {
+                        let source = target.parse::<i32>()
+                            .map_err(|_| anyhow!("redirección >&: descriptor inválido: {target}"))?;
+                        let binding = self.resolved_output_binding(source)
+                            .ok_or_else(|| anyhow!("{source}: descriptor de archivo inválido"))?;
+                        self.fd_outputs.insert(redirect.fd, binding);
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
     fn execute_simple(&mut self, command: &SimpleCommand, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
         let checkpoint = self.expansion_checkpoint();
         let mut local_stdin = stdin.map(ToOwned::to_owned);
 
         for redirect in &command.redirects {
             match redirect.kind {
-                RedirectKind::Read | RedirectKind::ReadWrite => {
+                RedirectKind::Read | RedirectKind::ReadWrite if redirect.fd == 0 => {
                     let target = self.expand_scalar(&redirect.target)?;
                     let path = self.resolve_path(&target);
                     if redirect.kind == RedirectKind::ReadWrite && !path.exists() {
@@ -807,10 +1026,20 @@ impl Interpreter {
                     }
                     local_stdin = Some(fs::read(path)?);
                 }
-                RedirectKind::HereString => {
+                RedirectKind::HereString if redirect.fd == 0 => {
                     let mut value = self.expand_scalar(&redirect.target)?;
                     value.push('\n');
                     local_stdin = Some(value.into_bytes());
+                }
+                RedirectKind::DupInput if redirect.fd == 0 => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    if target == "-" {
+                        local_stdin = Some(Vec::new());
+                    } else {
+                        let source = target.parse::<i32>()
+                            .map_err(|_| anyhow!("redirección <&: descriptor inválido: {target}"))?;
+                        local_stdin = self.consume_descriptor_all(source)?;
+                    }
                 }
                 _ => {}
             }
@@ -856,6 +1085,11 @@ impl Interpreter {
         self.env.set("BASH_COMMAND", words.iter().map(|word| shell_quote(word)).collect::<Vec<_>>().join(" "));
         if let Some(last) = words.last() {
             self.env.set("_", last.clone());
+        }
+
+        if name == "exec" && args.is_empty() && !command.redirects.is_empty() {
+            self.install_persistent_redirects(command)?;
+            return self.finish_simple_result(checkpoint, true, ExecutionResult::success());
         }
 
         let mut trace = String::new();
@@ -3172,15 +3406,18 @@ impl Interpreter {
             index += 1;
         }
 
-        if input_fd != 0 {
-            return Ok(ExecutionResult::from_parts(
-                String::new(),
-                format!("read: descriptor {input_fd}: no disponible en esta sesión\n"),
-                1,
-            ));
-        }
-
-        let source = if let Some(bytes) = stdin {
+        let source = if input_fd != 0 {
+            self.read_descriptor_record(
+                input_fd,
+                &prompt,
+                silent,
+                &initial,
+                timeout,
+                delimiter,
+                max_chars,
+                exact_chars,
+            )?
+        } else if let Some(bytes) = stdin {
             let text = String::from_utf8_lossy(bytes);
             let mut value = if exact_chars {
                 text.chars().take(max_chars.unwrap_or(usize::MAX)).collect::<String>()
@@ -3193,6 +3430,17 @@ impl Interpreter {
                 value.insert_str(0, &initial);
             }
             Some(value)
+        } else if self.fd_inputs.contains_key(&0) {
+            self.read_descriptor_record(
+                0,
+                &prompt,
+                silent,
+                &initial,
+                timeout,
+                delimiter,
+                max_chars,
+                exact_chars,
+            )?
         } else {
             self.host.read_line_with_options(
                 &prompt,
@@ -3638,16 +3886,32 @@ impl Interpreter {
             index += 1;
         }
 
-        if input_fd != 0 {
-            return Ok(ExecutionResult::from_parts(
-                String::new(),
-                format!("mapfile: descriptor {input_fd}: no disponible en esta sesión\n"),
-                1,
-            ));
-        }
-
-        let text = if let Some(bytes) = stdin {
+        let text = if input_fd != 0 {
+            match self.consume_descriptor_all(input_fd)? {
+                Some(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
+                None => {
+                    let mut all = String::new();
+                    while let Some(line) = self.host.read_line("", false)? {
+                        all.push_str(&line);
+                        all.push('\n');
+                    }
+                    all
+                }
+            }
+        } else if let Some(bytes) = stdin {
             String::from_utf8_lossy(bytes).into_owned()
+        } else if self.fd_inputs.contains_key(&0) {
+            match self.consume_descriptor_all(0)? {
+                Some(bytes) => String::from_utf8_lossy(&bytes).into_owned(),
+                None => {
+                    let mut all = String::new();
+                    while let Some(line) = self.host.read_line("", false)? {
+                        all.push_str(&line);
+                        all.push('\n');
+                    }
+                    all
+                }
+            }
         } else {
             let mut all = String::new();
             while let Some(line) = self.host.read_line("", false)? {
@@ -4241,6 +4505,16 @@ impl Interpreter {
         command: &SimpleCommand,
         result: &mut ExecutionResult,
     ) -> Result<()> {
+        let mut bindings = self.fd_outputs.clone();
+
+        let resolve = |fd: i32, bindings: &HashMap<i32, FdOutputBinding>| {
+            bindings.get(&fd).cloned().or_else(|| match fd {
+                1 => Some(FdOutputBinding::Stdout),
+                2 => Some(FdOutputBinding::Stderr),
+                _ => None,
+            })
+        };
+
         for redirect in &command.redirects {
             match redirect.kind {
                 RedirectKind::Write | RedirectKind::Clobber | RedirectKind::Append => {
@@ -4259,13 +4533,16 @@ impl Interpreter {
                     } else {
                         options.truncate(true);
                     }
-                    let mut file = options.open(path)?;
-                    let data = if redirect.fd == 2 {
-                        std::mem::take(&mut result.stderr)
-                    } else {
-                        std::mem::take(&mut result.stdout)
-                    };
-                    file.write_all(data.as_bytes())?;
+                    options.open(&path)?;
+                    bindings.insert(redirect.fd, FdOutputBinding::File(path));
+                }
+                RedirectKind::ReadWrite => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    let path = self.resolve_path(&target);
+                    if !path.exists() {
+                        OpenOptions::new().create(true).write(true).open(&path)?;
+                    }
+                    bindings.insert(redirect.fd, FdOutputBinding::File(path));
                 }
                 RedirectKind::BothWrite | RedirectKind::BothAppend => {
                     let target = self.expand_scalar(&redirect.target)?;
@@ -4283,30 +4560,55 @@ impl Interpreter {
                     } else {
                         options.truncate(true);
                     }
-                    let mut file = options.open(path)?;
-                    let stdout = std::mem::take(&mut result.stdout);
-                    let stderr = std::mem::take(&mut result.stderr);
-                    file.write_all(stdout.as_bytes())?;
-                    file.write_all(stderr.as_bytes())?;
+                    options.open(&path)?;
+                    let binding = FdOutputBinding::File(path);
+                    bindings.insert(1, binding.clone());
+                    bindings.insert(2, binding);
                 }
-                RedirectKind::Dup => {
+                RedirectKind::DupOutput => {
                     let target = self.expand_scalar(&redirect.target)?;
                     if target == "-" {
-                        if redirect.fd == 2 { result.stderr.clear(); }
-                        else if redirect.fd == 1 { result.stdout.clear(); }
-                    } else if redirect.fd == 2 && target == "1" {
-                        result.stdout.push_str(&result.stderr);
-                        result.stderr.clear();
-                    } else if redirect.fd == 1 && target == "2" {
-                        result.stderr.push_str(&result.stdout);
-                        result.stdout.clear();
+                        bindings.insert(redirect.fd, FdOutputBinding::Closed);
+                    } else {
+                        let source = target.parse::<i32>()
+                            .map_err(|_| anyhow!("redirección >&: descriptor inválido: {target}"))?;
+                        let binding = resolve(source, &bindings)
+                            .ok_or_else(|| anyhow!("{source}: descriptor de archivo inválido"))?;
+                        bindings.insert(redirect.fd, binding);
                     }
                 }
-                RedirectKind::Read
-                | RedirectKind::ReadWrite
-                | RedirectKind::HereString => {}
+                RedirectKind::Read | RedirectKind::HereString | RedirectKind::DupInput => {}
             }
         }
+
+        let original_stdout = std::mem::take(&mut result.stdout);
+        let original_stderr = std::mem::take(&mut result.stderr);
+        let stdout_binding = resolve(1, &bindings).unwrap_or(FdOutputBinding::Stdout);
+        let stderr_binding = resolve(2, &bindings).unwrap_or(FdOutputBinding::Stderr);
+
+        fn route(
+            binding: FdOutputBinding,
+            data: &str,
+            stdout: &mut String,
+            stderr: &mut String,
+        ) -> Result<()> {
+            if data.is_empty() {
+                return Ok(());
+            }
+            match binding {
+                FdOutputBinding::Stdout => stdout.push_str(data),
+                FdOutputBinding::Stderr => stderr.push_str(data),
+                FdOutputBinding::Closed => {}
+                FdOutputBinding::File(path) => {
+                    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+                    file.write_all(data.as_bytes())?;
+                }
+            }
+            Ok(())
+        }
+
+        route(stdout_binding, &original_stdout, &mut result.stdout, &mut result.stderr)?;
+        route(stderr_binding, &original_stderr, &mut result.stdout, &mut result.stderr)?;
         Ok(())
     }
 
@@ -6429,7 +6731,8 @@ fn render_redirect(redirect: &super::ast::Redirect) -> String {
         RedirectKind::Read => "<",
         RedirectKind::Write => ">",
         RedirectKind::Append => ">>",
-        RedirectKind::Dup => ">&",
+        RedirectKind::DupInput => "<&",
+        RedirectKind::DupOutput => ">&",
         RedirectKind::HereString => "<<<",
         RedirectKind::ReadWrite => "<>",
         RedirectKind::Clobber => ">|",
