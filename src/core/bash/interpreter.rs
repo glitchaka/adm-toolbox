@@ -1313,6 +1313,41 @@ mod tests {
         assert_eq!(shell.expand_scalar("${missing:-fallback}").unwrap(), "fallback");
     }
 
+
+    #[test]
+    fn case_conditional_and_arithmetic_commands_work() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+
+        shell.execute_text("x=beta").unwrap();
+        let case_result = shell
+            .execute_text("case $x in alpha) echo no ;; beta|gamma) echo yes ;; *) echo fallback ;; esac")
+            .unwrap();
+        assert!(case_result.stdout.contains("external:echo"));
+
+        assert_eq!(shell.execute_text("[[ -n $x && $x == beta ]]").unwrap().status, 0);
+        assert_eq!(shell.execute_text("[[ $x == nope ]]").unwrap().status, 1);
+
+        shell.execute_text("n=1").unwrap();
+        assert_eq!(shell.execute_text("(( n += 2 ))").unwrap().status, 0);
+        assert_eq!(shell.env.get("n"), "3");
+        assert_eq!(shell.execute_text("(( n > 2 ))").unwrap().status, 0);
+    }
+
+    #[test]
+    fn break_continue_return_and_local_are_native() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+
+        shell.execute_text("x=outer").unwrap();
+        shell.execute_text("f() { local x=inner; return 7; x=never; }").unwrap();
+        let result = shell.execute_text("f").unwrap();
+        assert_eq!(result.status, 7);
+        assert_eq!(shell.env.get("x"), "outer");
+
+        shell.execute_text("count=0").unwrap();
+        shell.execute_text("for i in 1 2 3 4; do (( count += 1 )); if [[ $i == 2 ]]; then continue; fi; if [[ $i == 3 ]]; then break; fi; done").unwrap();
+        assert_eq!(shell.env.get("count"), "3");
+    }
+
     struct XargsHost;
 
     impl ShellCommandHost for XargsHost {
