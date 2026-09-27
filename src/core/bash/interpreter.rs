@@ -44,6 +44,13 @@ struct CallFrame {
     line: u32,
 }
 
+#[derive(Debug, Clone)]
+struct ProcessSubstitution {
+    path: PathBuf,
+    command: String,
+    consume_as_stdin: bool,
+}
+
 #[derive(Debug, Clone, Default)]
 struct CompletionSpec {
     words: Vec<String>,
@@ -158,6 +165,8 @@ pub struct Interpreter {
     disabled_builtins: HashSet<String>,
     completion_specs: HashMap<String, CompletionSpec>,
     readline_bindings: HashMap<String, String>,
+    process_substitutions: Vec<ProcessSubstitution>,
+    process_substitution_counter: u64,
     call_stack: Vec<CallFrame>,
     ulimits: HashMap<char, String>,
 }
@@ -173,6 +182,8 @@ impl Interpreter {
             disabled_builtins: HashSet::new(),
             completion_specs: HashMap::new(),
             readline_bindings: HashMap::new(),
+            process_substitutions: Vec::new(),
+            process_substitution_counter: 0,
             call_stack: Vec::new(),
             ulimits: HashMap::new(),
         }
@@ -1035,6 +1046,7 @@ impl Interpreter {
             result.stderr = format!("{trace}{}", result.stderr);
         }
         self.apply_output_redirects(command, &mut result)?;
+        self.finalize_process_substitutions(&mut result)?;
         Ok(result)
     }
 
@@ -3657,9 +3669,11 @@ impl Interpreter {
                 }
 
                 let quoted = is_shell_quoted(&braced);
+                let process_substitution = (braced.starts_with("<(") || braced.starts_with(">("))
+                    && braced.ends_with(')');
                 let expanded = self.expand_scalar(&braced)?;
 
-                if quoted {
+                if quoted || process_substitution {
                     result.push(expanded);
                     continue;
                 }
@@ -3716,6 +3730,20 @@ impl Interpreter {
                 if end >= chars.len() { bail!("comilla ANSI-C sin cerrar"); }
                 let body: String = chars[i + 2..end].iter().collect();
                 out.push_str(&decode_backslash_escapes(&body, false).0);
+                i = end + 1;
+                continue;
+            }
+
+            if !single
+                && matches!(chars[i], '<' | '>')
+                && chars.get(i + 1) == Some(&'(')
+            {
+                let direction = chars[i];
+                let end = matching(&chars, i + 1, '(', ')')
+                    .ok_or_else(|| anyhow!("sustitución de proceso sin cerrar"))?;
+                let source: String = chars[i + 2..end].iter().collect();
+                let path = self.create_process_substitution(direction, &source)?;
+                out.push_str(&path.to_string_lossy());
                 i = end + 1;
                 continue;
             }
@@ -3793,6 +3821,56 @@ impl Interpreter {
         Ok(out)
     }
 
+
+    fn create_process_substitution(&mut self, direction: char, source: &str) -> Result<PathBuf> {
+        self.process_substitution_counter = self.process_substitution_counter.wrapping_add(1);
+        let path = std::env::temp_dir().join(format!(
+            "sst-process-substitution-{}-{}.tmp",
+            std::process::id(),
+            self.process_substitution_counter
+        ));
+
+        if direction == '<' {
+            let saved = self.env.clone();
+            let result = self.execute_text(source);
+            self.env = saved;
+            let result = result?;
+            fs::write(&path, result.stdout.as_bytes())?;
+            self.process_substitutions.push(ProcessSubstitution {
+                path: path.clone(),
+                command: String::new(),
+                consume_as_stdin: false,
+            });
+        } else {
+            fs::write(&path, b"")?;
+            self.process_substitutions.push(ProcessSubstitution {
+                path: path.clone(),
+                command: source.to_owned(),
+                consume_as_stdin: true,
+            });
+        }
+
+        Ok(path)
+    }
+
+    fn finalize_process_substitutions(&mut self, result: &mut ExecutionResult) -> Result<()> {
+        let pending = std::mem::take(&mut self.process_substitutions);
+        for substitution in pending {
+            if substitution.consume_as_stdin {
+                let input = fs::read(&substitution.path).unwrap_or_default();
+                let node = parse(&substitution.command)?;
+                let consumer = self.execute(&node, Some(&input))?;
+                result.stdout.push_str(&consumer.stdout);
+                result.stderr.push_str(&consumer.stderr);
+                if result.status == 0 && consumer.status != 0 {
+                    result.status = consumer.status;
+                }
+            }
+            let _ = fs::remove_file(&substitution.path);
+        }
+        Ok(())
+    }
+
     fn special_value(&self, name: &str) -> String {
         match name {
             "BASHPID" | "$" => std::process::id().to_string(),
@@ -3801,6 +3879,20 @@ impl Interpreter {
     }
 
     fn expand_parameter(&mut self, expression: &str) -> Result<String> {
+        if let Some(source) = expression.strip_prefix('|') {
+            let source = source.trim();
+            let source = source.strip_suffix(';').unwrap_or(source).trim();
+            let _ = self.execute_text(source)?;
+            return Ok(self.env.get("REPLY"));
+        }
+
+        if expression.starts_with(char::is_whitespace) {
+            let source = expression.trim();
+            let source = source.strip_suffix(';').unwrap_or(source).trim();
+            let result = self.execute_text(source)?;
+            return Ok(result.stdout.trim_end_matches(['\r', '\n']).to_owned());
+        }
+
         if let Some(rest) = expression.strip_prefix('!') {
             if let Some(base) = rest.strip_suffix("[@]").or_else(|| rest.strip_suffix("[*]")) {
                 return Ok(self.env.array_keys(base).join(" "));
