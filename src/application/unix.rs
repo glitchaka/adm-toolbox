@@ -1407,6 +1407,12 @@ fn is_internal_command(name: &str) -> bool {
             | "sort"
             | "uniq"
             | "cut"
+            | "xargs"
+            | "tar"
+            | "gzip"
+            | "gunzip"
+            | "zip"
+            | "unzip"
             | "tee"
             | "less"
             | "more"
@@ -1440,4 +1446,123 @@ fn is_internal_command(name: &str) -> bool {
             | "uname"
             | "kill"
     )
+}
+
+
+#[cfg(test)]
+mod archive_tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_root(name: &str) -> PathBuf {
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = env::temp_dir().join(format!(
+            "adm-toolbox-{name}-{}-{stamp}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&root).unwrap();
+        root
+    }
+
+    #[test]
+    fn archive_utilities_round_trip() {
+        let root = temp_root("archives");
+        fs::write(root.join("alpha.txt"), "uno\ndos\n").unwrap();
+        fs::create_dir_all(root.join("folder")).unwrap();
+        fs::write(root.join("folder").join("beta.txt"), "tres\n").unwrap();
+
+        tar_cmd(
+            &[
+                "-czf".into(),
+                "bundle.tar.gz".into(),
+                "alpha.txt".into(),
+                "folder".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        let listing = tar_cmd(
+            &["-tzf".into(), "bundle.tar.gz".into()],
+            &root,
+        )
+        .unwrap();
+        assert!(listing.stdout.contains("alpha.txt"));
+        assert!(listing.stdout.contains("folder/beta.txt"));
+
+        let tar_out = root.join("tar-out");
+        fs::create_dir_all(&tar_out).unwrap();
+        tar_cmd(
+            &[
+                "-xzf".into(),
+                "bundle.tar.gz".into(),
+                "-C".into(),
+                "tar-out".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        assert_eq!(
+            fs::read_to_string(tar_out.join("alpha.txt")).unwrap(),
+            "uno\ndos\n"
+        );
+
+        zip_cmd(
+            &[
+                "-r".into(),
+                "bundle.zip".into(),
+                "alpha.txt".into(),
+                "folder".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        let zip_listing = unzip_cmd(
+            &["-l".into(), "bundle.zip".into()],
+            &root,
+        )
+        .unwrap();
+        assert!(zip_listing.stdout.contains("alpha.txt"));
+        assert!(zip_listing.stdout.contains("folder/beta.txt"));
+
+        let zip_out = root.join("zip-out");
+        unzip_cmd(
+            &[
+                "bundle.zip".into(),
+                "-d".into(),
+                "zip-out".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        assert_eq!(
+            fs::read_to_string(zip_out.join("folder").join("beta.txt")).unwrap(),
+            "tres\n"
+        );
+
+        fs::write(root.join("gamma.txt"), "contenido gzip").unwrap();
+        gzip_cmd(
+            "gzip",
+            &["-k".into(), "gamma.txt".into()],
+            &root,
+        )
+        .unwrap();
+        assert!(root.join("gamma.txt.gz").is_file());
+        fs::remove_file(root.join("gamma.txt")).unwrap();
+
+        gzip_cmd(
+            "gunzip",
+            &["-k".into(), "gamma.txt.gz".into()],
+            &root,
+        )
+        .unwrap();
+        assert_eq!(
+            fs::read_to_string(root.join("gamma.txt")).unwrap(),
+            "contenido gzip"
+        );
+
+        fs::remove_dir_all(root).unwrap();
+    }
 }
