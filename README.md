@@ -305,27 +305,29 @@ diag traffic
 diag domain
 ```
 
-## Editor modal en Rust
+## Editor integrado: helix-sst
+
+Shell Shock Tool integra `helix-sst 0.1.0`, basado en **Helix 25.07.1**.
 
 ```bash
-vim archivo.conf
-edit archivo.conf
+helix
+helix archivo.conf
+helix script.sh
+hx script.sh
+helix --version
+helix --credits
 ```
 
-El editor está implementado dentro de ADM Toolbox; no ejecuta `vim.exe`.
+La distribución oficial de Helix 25.07.1 para Windows queda embebida durante la compilación y se despliega de forma portable al primer uso. Shell Shock Tool añade su propio tema, configuración portable, puente PTY e integración de comandos.
 
-Funciones actuales:
+Proyecto original: `helix-editor/helix`  
+Versión upstream integrada: `25.07.1`  
+Licencia upstream: Mozilla Public License 2.0 (MPL-2.0)  
+Créditos: Helix contributors.
 
-- Normal, Insert, Command, Search y Visual Line;
-- `h j k l`, flechas, `w`, `b`, `0`, `$`, `gg`, `G`;
-- `i`, `a`, `o`, `O`;
-- `x`, `dd`, `yy`, `p`;
-- `u`, `Ctrl-R`;
-- `V` para selección por líneas;
-- `/texto`, `n`, `N`;
-- `:w`, `:q`, `:q!`, `:wq`, `:x`;
-- `:set number`, `:set nonumber`;
-- `:%s/antiguo/nuevo/g`.
+Los avisos y la licencia correspondientes se conservan en `THIRD_PARTY_NOTICES.md` y `licenses/HELIX-MPL-2.0.txt`.
+
+Para una compilación sin Internet puede definirse `ADM_HELIX_ARCHIVE` apuntando al ZIP oficial `helix-25.07.1-x86_64-windows.zip`.
 
 ## Arquitectura
 
@@ -340,7 +342,7 @@ Shell Shock Tool (adm-tool)
 │   └── branding Shell Shock Tool
 ├── builtins ADM escritos en Rust
 ├── utilidades Unix integradas
-└── editor modal tipo Vim escrito en Rust
+└── helix-sst 0.1.0 (basado en Helix 25.07.1)
 ```
 
 El alcance completo está en `ADM_TOOLBOX_PLAN.md`.

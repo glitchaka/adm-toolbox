@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::{bail, Result};
+use crossterm::event::{KeyCode as CtKeyCode, KeyEvent as CtKeyEvent, KeyModifiers as CtKeyModifiers};
 use windows_sys::Win32::{
     Foundation::*,
     Graphics::{Dwm::*, Gdi::*},
@@ -777,6 +778,66 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
             WM_KEYDOWN => {
                 let ctrl = GetKeyState(VK_CONTROL as i32) < 0;
                 let shift = GetKeyState(VK_SHIFT as i32) < 0;
+
+                if state.pty.raw_mode() {
+                    if ((ctrl && wp == b'C' as usize) || (ctrl && wp == VK_INSERT as usize))
+                        && state.has_selection()
+                    {
+                        copy(hwnd, &state.selected_text());
+                        state.suppress_char = true;
+                        return 0;
+                    }
+
+                    if (ctrl && wp == b'V' as usize) || (shift && wp == VK_INSERT as usize) {
+                        paste(hwnd, state);
+                        state.suppress_char = true;
+                        return 0;
+                    }
+
+                    let mut modifiers = CtKeyModifiers::NONE;
+                    if ctrl {
+                        modifiers |= CtKeyModifiers::CONTROL;
+                    }
+                    if shift {
+                        modifiers |= CtKeyModifiers::SHIFT;
+                    }
+
+                    let code = match wp as u16 {
+                        VK_ESCAPE => Some(CtKeyCode::Esc),
+                        VK_RETURN => Some(CtKeyCode::Enter),
+                        VK_TAB if shift => Some(CtKeyCode::BackTab),
+                        VK_TAB => Some(CtKeyCode::Tab),
+                        VK_BACK => Some(CtKeyCode::Backspace),
+                        VK_UP => Some(CtKeyCode::Up),
+                        VK_DOWN => Some(CtKeyCode::Down),
+                        VK_LEFT => Some(CtKeyCode::Left),
+                        VK_RIGHT => Some(CtKeyCode::Right),
+                        VK_HOME => Some(CtKeyCode::Home),
+                        VK_END => Some(CtKeyCode::End),
+                        VK_DELETE => Some(CtKeyCode::Delete),
+                        VK_INSERT => Some(CtKeyCode::Insert),
+                        VK_PRIOR => Some(CtKeyCode::PageUp),
+                        VK_NEXT => Some(CtKeyCode::PageDown),
+                        _ if ctrl && wp >= b'A' as usize && wp <= b'Z' as usize => {
+                            Some(CtKeyCode::Char((wp as u8).to_ascii_lowercase() as char))
+                        }
+                        _ => None,
+                    };
+
+                    if let Some(code) = code {
+                        let _ = state.pty.send_raw_key(CtKeyEvent::new(code, modifiers));
+                        state.suppress_char = matches!(
+                            code,
+                            CtKeyCode::Esc
+                                | CtKeyCode::Enter
+                                | CtKeyCode::Tab
+                                | CtKeyCode::BackTab
+                                | CtKeyCode::Backspace
+                                | CtKeyCode::Char(_)
+                        );
+                        return 0;
+                    }
+                }
 
                 if ((ctrl && wp == b'C' as usize) || (ctrl && wp == VK_INSERT as usize))
                     && state.has_selection()

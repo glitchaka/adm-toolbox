@@ -71,6 +71,11 @@ impl EmbeddedSession {
         if self.raw.load(Ordering::SeqCst) { let _ = self.keys.send(Event::Resize(cols, rows)); }
     }
     pub fn exited(&self) -> bool { self.exited.load(Ordering::SeqCst) }
+    pub fn raw_mode(&self) -> bool { self.raw.load(Ordering::SeqCst) }
+    pub fn send_raw_key(&self, key: KeyEvent) -> Result<()> {
+        self.keys.send(Event::Key(key))?;
+        Ok(())
+    }
     fn emit(&self, text: &str) { let _ = self.display.send(text.as_bytes().to_vec()); }
     fn redraw(&self) {
         let prompt = if self.pending.is_empty() { "$ " } else { "> " };

@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::{
     core::{CommandContext, CommandOutput, ports::TextEditor},
-    support::path,
+    presentation::helix_sst::{HELIX_SST_VERSION, HELIX_UPSTREAM_VERSION},
 };
 
 use super::BuiltinCommand;
@@ -21,32 +21,36 @@ impl EditorBuiltin {
 
 impl BuiltinCommand for EditorBuiltin {
     fn name(&self) -> &'static str {
-        "vim"
+        "helix"
     }
 
     fn aliases(&self) -> &'static [&'static str] {
-        &["edit"]
+        &["hx"]
     }
 
     fn help(&self) -> &'static str {
-        "vim FILE — editor modal integrado escrito en Rust"
+        "helix [FILE...] — helix-sst, integración portable basada en Helix 25.07.1"
     }
 
     fn execute(
         &self,
-        invoked_name: &str,
+        _invoked_name: &str,
         args: &[String],
         context: CommandContext<'_>,
     ) -> Result<CommandOutput> {
-        let Some(raw_path) = args.first() else {
-            return Ok(CommandOutput::error(
-                format!("{invoked_name}: falta el archivo"),
-                2,
-            ));
-        };
+        if args.iter().any(|arg| matches!(arg.as_str(), "--version" | "-V")) {
+            return Ok(CommandOutput::ok(format!(
+                "helix-sst {HELIX_SST_VERSION}\nBased on Helix {HELIX_UPSTREAM_VERSION}\nUpstream: helix-editor/helix\nLicense: MPL-2.0\n"
+            )));
+        }
 
-        let file = path::resolve(context.cwd, raw_path);
-        self.editor.edit(&file)?;
+        if args.iter().any(|arg| arg == "--credits") {
+            return Ok(CommandOutput::ok(format!(
+                "helix-sst {HELIX_SST_VERSION}\nBased on Helix {HELIX_UPSTREAM_VERSION}\nHelix is developed by the Helix contributors.\nUpstream: https://github.com/helix-editor/helix\nLicense: Mozilla Public License 2.0 (MPL-2.0)\n"
+            )));
+        }
+
+        self.editor.edit(args, context.cwd)?;
         Ok(CommandOutput::ok(""))
     }
 }
