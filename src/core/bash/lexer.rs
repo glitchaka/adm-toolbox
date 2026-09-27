@@ -4,6 +4,7 @@ use anyhow::{bail, Result};
 pub enum Token {
     Word(String),
     Pipe,
+    PipeBoth,
     AndIf,
     OrIf,
     Amp,
@@ -217,6 +218,11 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
             '|' if chars.get(i + 1) == Some(&'|') => {
                 flush(&mut word, &mut out);
                 out.push(Token::OrIf);
+                i += 2;
+            }
+            '|' if chars.get(i + 1) == Some(&'&') => {
+                flush(&mut word, &mut out);
+                out.push(Token::PipeBoth);
                 i += 2;
             }
             '|' => { flush(&mut word, &mut out); out.push(Token::Pipe); i += 1; }

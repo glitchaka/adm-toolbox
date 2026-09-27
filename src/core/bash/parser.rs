@@ -80,13 +80,20 @@ impl Parser {
         if negate { self.pos += 1; }
 
         let mut parts = vec![self.parse_command()?];
-        while matches!(self.peek(), Token::Pipe) {
+        let mut stderr_to_pipe = Vec::new();
+        while matches!(self.peek(), Token::Pipe | Token::PipeBoth) {
+            let merge_stderr = matches!(self.peek(), Token::PipeBoth);
             self.pos += 1;
             self.skip_semi();
+            stderr_to_pipe.push(merge_stderr);
             parts.push(self.parse_command()?);
         }
 
-        let mut node = if parts.len() == 1 { parts.remove(0) } else { AstNode::Pipeline(parts) };
+        let mut node = if parts.len() == 1 {
+            parts.remove(0)
+        } else {
+            AstNode::Pipeline { parts, stderr_to_pipe }
+        };
         if negate {
             node = AstNode::Negate(Box::new(node));
         }

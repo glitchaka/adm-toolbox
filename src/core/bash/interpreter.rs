@@ -223,7 +223,7 @@ impl Interpreter {
                 }
                 left
             }
-            AstNode::Pipeline(parts) => self.execute_pipeline(parts, stdin)?,
+            AstNode::Pipeline { parts, stderr_to_pipe } => self.execute_pipeline(parts, stderr_to_pipe, stdin)?,
             AstNode::Time { body, posix } => {
                 let started = std::time::Instant::now();
                 let before = self.host.shell_times().unwrap_or((
@@ -494,9 +494,12 @@ impl Interpreter {
                 for arm in arms {
                     let matched = force_next || arm.patterns.iter().any(|pattern| {
                         let pattern = self.expand_scalar(pattern).unwrap_or_else(|_| pattern.clone());
-                        glob::Pattern::new(&pattern)
-                            .map(|candidate| candidate.matches(&value))
-                            .unwrap_or(false)
+                        shell_pattern_matches(
+                            &pattern,
+                            &value,
+                            self.env.option_enabled("extglob"),
+                            self.env.option_enabled("nocasematch"),
+                        )
                     });
 
                     if matched {
@@ -694,24 +697,40 @@ impl Interpreter {
         ))
     }
 
-    fn execute_pipeline(&mut self, parts: &[AstNode], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
+    fn execute_pipeline(
+        &mut self,
+        parts: &[AstNode],
+        stderr_to_pipe: &[bool],
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
         let mut input = stdin.map(ToOwned::to_owned);
         let mut stderr = String::new();
         let mut last = ExecutionResult::success();
         let mut last_nonzero = 0;
         let mut statuses = Vec::new();
 
-        for part in parts {
+        for (index, part) in parts.iter().enumerate() {
             let saved = self.env.clone();
             let result = self.execute(part, input.as_deref());
             self.env = saved;
             last = result?;
             last.exit_requested = false;
             last.flow = FlowSignal::None;
-            stderr.push_str(&last.stderr);
+
             if last.status != 0 { last_nonzero = last.status; }
             statuses.push(last.status.to_string());
-            input = Some(last.stdout.as_bytes().to_vec());
+
+            if index + 1 < parts.len() {
+                let mut piped = last.stdout.as_bytes().to_vec();
+                if stderr_to_pipe.get(index).copied().unwrap_or(false) {
+                    piped.extend_from_slice(last.stderr.as_bytes());
+                } else {
+                    stderr.push_str(&last.stderr);
+                }
+                input = Some(piped);
+            } else {
+                stderr.push_str(&last.stderr);
+            }
         }
 
         self.env.set_array("PIPESTATUS", statuses);
@@ -2614,26 +2633,18 @@ impl Interpreter {
                 let right = self.expand_scalar(right)?;
                 let nocase = self.env.option_enabled("nocasematch");
                 Ok(match op.as_str() {
-                    "=" | "==" => {
-                        let (l, r) = if nocase {
-                            (left.to_lowercase(), right.to_lowercase())
-                        } else {
-                            (left.clone(), right.clone())
-                        };
-                        glob::Pattern::new(&r)
-                            .map(|pattern| pattern.matches(&l))
-                            .unwrap_or(l == r)
-                    }
-                    "!=" => {
-                        let (l, r) = if nocase {
-                            (left.to_lowercase(), right.to_lowercase())
-                        } else {
-                            (left.clone(), right.clone())
-                        };
-                        glob::Pattern::new(&r)
-                            .map(|pattern| !pattern.matches(&l))
-                            .unwrap_or(l != r)
-                    }
+                    "=" | "==" => shell_pattern_matches(
+                        &right,
+                        &left,
+                        self.env.option_enabled("extglob"),
+                        nocase,
+                    ),
+                    "!=" => !shell_pattern_matches(
+                        &right,
+                        &left,
+                        self.env.option_enabled("extglob"),
+                        nocase,
+                    )
                     "=~" => {
                         match regex::RegexBuilder::new(&right)
                             .case_insensitive(nocase)
@@ -3374,26 +3385,62 @@ impl Interpreter {
         let base_len = parameter_reference_len(expression);
         let (name, remainder) = expression.split_at(base_len);
 
+        let extglob = self.env.option_enabled("extglob");
+        let patsub_replacement = self.env.option_enabled("patsub_replacement");
+
         if let Some(rest) = remainder.strip_prefix("//") {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob(&self.env.get(name), pattern, replacement, true));
+            return Ok(replace_glob(
+                &self.env.get(name),
+                pattern,
+                replacement,
+                true,
+                extglob,
+                patsub_replacement,
+            ));
         }
         if let Some(rest) = remainder.strip_prefix("/#") {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, true));
+            return Ok(replace_glob_anchored(
+                &self.env.get(name),
+                pattern,
+                replacement,
+                true,
+                extglob,
+                patsub_replacement,
+            ));
         }
         if let Some(rest) = remainder.strip_prefix("/%") {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, false));
+            return Ok(replace_glob_anchored(
+                &self.env.get(name),
+                pattern,
+                replacement,
+                false,
+                extglob,
+                patsub_replacement,
+            ));
         }
         if let Some(rest) = remainder.strip_prefix('/') {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob(&self.env.get(name), pattern, replacement, false));
+            return Ok(replace_glob(
+                &self.env.get(name),
+                pattern,
+                replacement,
+                false,
+                extglob,
+                patsub_replacement,
+            ));
         }
 
         for operator in ["##", "#", "%%", "%"] {
             if let Some(pattern) = remainder.strip_prefix(operator) {
-                return Ok(remove_glob_pattern(&self.env.get(name), pattern, operator));
+                return Ok(remove_glob_pattern(
+                    &self.env.get(name),
+                    pattern,
+                    operator,
+                    extglob,
+                ));
             }
         }
 
@@ -3424,7 +3471,17 @@ impl Interpreter {
     }
 
     fn glob(&self, value: &str) -> Result<Vec<String>> {
-        if !contains_glob_meta(value) { return Ok(Vec::new()); }
+        let extglob_enabled = self.env.option_enabled("extglob");
+        let has_pattern = contains_glob_meta(value)
+            || (extglob_enabled && find_extglob(value).is_some());
+        if !has_pattern {
+            return Ok(Vec::new());
+        }
+
+        if extglob_enabled && find_extglob(value).is_some() {
+            return self.glob_extglob(value);
+        }
+
         let mut pattern = if Path::new(value).is_absolute() {
             value.to_owned()
         } else {
@@ -3455,6 +3512,129 @@ impl Interpreter {
             }
         }
         result.sort();
+        Ok(result)
+    }
+
+    fn glob_extglob(&self, value: &str) -> Result<Vec<String>> {
+        fn descendants(
+            base: &Path,
+            include_hidden: bool,
+            output: &mut Vec<PathBuf>,
+        ) {
+            let Ok(entries) = fs::read_dir(base) else { return };
+            for entry in entries.flatten() {
+                let path = entry.path();
+                let hidden = entry.file_name().to_string_lossy().starts_with('.');
+                if hidden && !include_hidden {
+                    continue;
+                }
+                output.push(path.clone());
+                if path.is_dir() {
+                    descendants(&path, include_hidden, output);
+                }
+            }
+        }
+
+        let absolute = Path::new(value).is_absolute();
+        let full = if absolute {
+            PathBuf::from(value)
+        } else {
+            self.env.cwd.join(value)
+        };
+
+        let mut paths = vec![PathBuf::new()];
+        for component in full.components() {
+            match component {
+                std::path::Component::Prefix(prefix) => {
+                    paths = vec![PathBuf::from(prefix.as_os_str())];
+                }
+                std::path::Component::RootDir => {
+                    if paths.len() == 1 && paths[0].as_os_str().is_empty() {
+                        paths[0].push(std::path::MAIN_SEPARATOR.to_string());
+                    } else {
+                        for path in &mut paths {
+                            path.push(std::path::MAIN_SEPARATOR.to_string());
+                        }
+                    }
+                }
+                std::path::Component::CurDir => {}
+                std::path::Component::ParentDir => {
+                    for path in &mut paths {
+                        path.push("..");
+                    }
+                }
+                std::path::Component::Normal(component) => {
+                    let pattern = component.to_string_lossy().into_owned();
+                    let recursive = self.env.option_enabled("globstar") && pattern == "**";
+                    let patterned = contains_glob_meta(&pattern)
+                        || find_extglob(&pattern).is_some();
+
+                    if recursive {
+                        let mut expanded = Vec::new();
+                        for base in &paths {
+                            expanded.push(base.clone());
+                            descendants(
+                                base,
+                                self.env.option_enabled("dotglob"),
+                                &mut expanded,
+                            );
+                        }
+                        paths = expanded;
+                        continue;
+                    }
+
+                    if !patterned {
+                        for path in &mut paths {
+                            path.push(&pattern);
+                        }
+                        continue;
+                    }
+
+                    let mut expanded = Vec::new();
+                    for base in &paths {
+                        let directory = if base.as_os_str().is_empty() {
+                            Path::new(".")
+                        } else {
+                            base.as_path()
+                        };
+                        let Ok(entries) = fs::read_dir(directory) else { continue };
+                        for entry in entries.flatten() {
+                            let name = entry.file_name().to_string_lossy().into_owned();
+                            if name.starts_with('.')
+                                && !self.env.option_enabled("dotglob")
+                                && !pattern.starts_with('.')
+                            {
+                                continue;
+                            }
+                            if shell_pattern_matches(
+                                &pattern,
+                                &name,
+                                true,
+                                self.env.option_enabled("nocaseglob"),
+                            ) {
+                                expanded.push(entry.path());
+                            }
+                        }
+                    }
+                    paths = expanded;
+                }
+            }
+        }
+
+        let mut result = paths.into_iter()
+            .filter(|path| path.exists())
+            .filter_map(|path| {
+                if absolute {
+                    Some(path.to_string_lossy().into_owned())
+                } else {
+                    path.strip_prefix(&self.env.cwd)
+                        .ok()
+                        .map(|relative| relative.to_string_lossy().into_owned())
+                }
+            })
+            .collect::<Vec<_>>();
+        result.sort();
+        result.dedup();
         Ok(result)
     }
 
@@ -3802,8 +3982,221 @@ fn char_boundaries(value: &str) -> Vec<usize> {
     points
 }
 
-fn remove_glob_pattern(value: &str, pattern: &str, operator: &str) -> String {
-    let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
+fn basic_shell_pattern_matches(pattern: &str, value: &str, nocase: bool) -> bool {
+    let Ok(pattern) = glob::Pattern::new(pattern) else {
+        return if nocase {
+            pattern.eq_ignore_ascii_case(value)
+        } else {
+            pattern == value
+        };
+    };
+    pattern.matches_with(
+        value,
+        glob::MatchOptions {
+            case_sensitive: !nocase,
+            require_literal_separator: false,
+            require_literal_leading_dot: false,
+        },
+    )
+}
+
+fn find_extglob(pattern: &str) -> Option<(usize, char, usize, usize)> {
+    let chars: Vec<(usize, char)> = pattern.char_indices().collect();
+    let mut index = 0usize;
+    let mut escaped = false;
+    while index + 1 < chars.len() {
+        let (byte, ch) = chars[index];
+        if escaped {
+            escaped = false;
+            index += 1;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            index += 1;
+            continue;
+        }
+        if matches!(ch, '?' | '*' | '+' | '@' | '!')
+            && chars[index + 1].1 == '('
+        {
+            let open_byte = chars[index + 1].0;
+            let mut depth = 1usize;
+            let mut cursor = index + 2;
+            let mut inner_escaped = false;
+            while cursor < chars.len() {
+                let (close_byte, current) = chars[cursor];
+                if inner_escaped {
+                    inner_escaped = false;
+                    cursor += 1;
+                    continue;
+                }
+                if current == '\\' {
+                    inner_escaped = true;
+                    cursor += 1;
+                    continue;
+                }
+                if current == '(' {
+                    depth += 1;
+                } else if current == ')' {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Some((byte, ch, open_byte, close_byte));
+                    }
+                }
+                cursor += 1;
+            }
+            return None;
+        }
+        index += 1;
+    }
+    None
+}
+
+fn split_extglob_alternatives(body: &str) -> Vec<&str> {
+    let mut parts = Vec::new();
+    let mut start = 0usize;
+    let mut depth = 0usize;
+    let mut escaped = false;
+    for (index, ch) in body.char_indices() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+        match ch {
+            '(' => depth += 1,
+            ')' => depth = depth.saturating_sub(1),
+            '|' if depth == 0 => {
+                parts.push(&body[start..index]);
+                start = index + 1;
+            }
+            _ => {}
+        }
+    }
+    parts.push(&body[start..]);
+    parts
+}
+
+fn extglob_repetition_matches(
+    alternatives: &[&str],
+    value: &str,
+    minimum: usize,
+    nocase: bool,
+) -> bool {
+    if value.is_empty() {
+        if minimum == 0 {
+            return true;
+        }
+        return alternatives.iter().any(|pattern| {
+            shell_pattern_matches(pattern, "", true, nocase)
+        });
+    }
+
+    let boundaries = char_boundaries(value);
+    let mut stack = vec![(0usize, 0usize)];
+    let mut visited = HashSet::new();
+
+    while let Some((start, count)) = stack.pop() {
+        if !visited.insert((start, count.min(minimum))) {
+            continue;
+        }
+        if start == value.len() && count >= minimum {
+            return true;
+        }
+        for &end in boundaries.iter().filter(|&&end| end > start) {
+            let segment = &value[start..end];
+            if alternatives.iter().any(|pattern| {
+                shell_pattern_matches(pattern, segment, true, nocase)
+            }) {
+                stack.push((end, count + 1));
+            }
+        }
+    }
+
+    false
+}
+
+fn shell_pattern_matches(pattern: &str, value: &str, extglob: bool, nocase: bool) -> bool {
+    if !extglob {
+        return basic_shell_pattern_matches(pattern, value, nocase);
+    }
+
+    let Some((start, operator, open, close)) = find_extglob(pattern) else {
+        return basic_shell_pattern_matches(pattern, value, nocase);
+    };
+
+    let prefix = &pattern[..start];
+    let body = &pattern[open + 1..close];
+    let suffix = &pattern[close + 1..];
+    let alternatives = split_extglob_alternatives(body);
+    let boundaries = char_boundaries(value);
+
+    for &prefix_end in &boundaries {
+        if !basic_shell_pattern_matches(prefix, &value[..prefix_end], nocase) {
+            continue;
+        }
+
+        for &group_end in boundaries.iter().filter(|&&end| end >= prefix_end) {
+            let segment = &value[prefix_end..group_end];
+            let group_matches = match operator {
+                '@' => alternatives.iter().any(|pattern| {
+                    shell_pattern_matches(pattern, segment, true, nocase)
+                }),
+                '?' => segment.is_empty() || alternatives.iter().any(|pattern| {
+                    shell_pattern_matches(pattern, segment, true, nocase)
+                }),
+                '*' => extglob_repetition_matches(&alternatives, segment, 0, nocase),
+                '+' => extglob_repetition_matches(&alternatives, segment, 1, nocase),
+                '!' => !alternatives.iter().any(|pattern| {
+                    shell_pattern_matches(pattern, segment, true, nocase)
+                }),
+                _ => false,
+            };
+
+            if group_matches
+                && shell_pattern_matches(suffix, &value[group_end..], true, nocase)
+            {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
+fn replacement_text(replacement: &str, matched: &str, expand_ampersand: bool) -> String {
+    if !expand_ampersand {
+        return replacement.to_owned();
+    }
+    let mut output = String::new();
+    let mut escaped = false;
+    for ch in replacement.chars() {
+        if escaped {
+            output.push(ch);
+            escaped = false;
+        } else if ch == '\\' {
+            escaped = true;
+        } else if ch == '&' {
+            output.push_str(matched);
+        } else {
+            output.push(ch);
+        }
+    }
+    if escaped {
+        output.push('\\');
+    }
+    output
+}
+
+fn remove_glob_pattern(
+    value: &str,
+    pattern: &str,
+    operator: &str,
+    extglob: bool,
+) -> String {
     let points = char_boundaries(value);
     match operator {
         "#" | "##" => {
@@ -3813,7 +4206,9 @@ fn remove_glob_pattern(value: &str, pattern: &str, operator: &str) -> String {
                 points.iter().copied().rev().collect()
             };
             for point in ordered {
-                if pattern.matches(&value[..point]) { return value[point..].to_owned(); }
+                if shell_pattern_matches(pattern, &value[..point], extglob, false) {
+                    return value[point..].to_owned();
+                }
             }
         }
         "%" | "%%" => {
@@ -3823,7 +4218,9 @@ fn remove_glob_pattern(value: &str, pattern: &str, operator: &str) -> String {
                 points.clone()
             };
             for point in ordered {
-                if pattern.matches(&value[point..]) { return value[..point].to_owned(); }
+                if shell_pattern_matches(pattern, &value[point..], extglob, false) {
+                    return value[..point].to_owned();
+                }
             }
         }
         _ => {}
@@ -3831,28 +4228,38 @@ fn remove_glob_pattern(value: &str, pattern: &str, operator: &str) -> String {
     value.to_owned()
 }
 
-fn replace_glob(value: &str, pattern: &str, replacement: &str, all: bool) -> String {
-    let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
+fn replace_glob(
+    value: &str,
+    pattern: &str,
+    replacement: &str,
+    all: bool,
+    extglob: bool,
+    expand_ampersand: bool,
+) -> String {
     let points = char_boundaries(value);
     let mut out = String::new();
     let mut cursor = 0usize;
 
     while cursor < value.len() {
         let mut found = None;
-        'outer: for &start in points.iter().filter(|&&p| p >= cursor) {
-            for &end in points.iter().filter(|&&p| p > start) {
-                if pattern.matches(&value[start..end]) {
-                    found = Some((start,end));
+        'outer: for &start in points.iter().filter(|&&point| point >= cursor) {
+            for &end in points.iter().filter(|&&point| point > start) {
+                if shell_pattern_matches(pattern, &value[start..end], extglob, false) {
+                    found = Some((start, end));
                     break 'outer;
                 }
             }
         }
-        let Some((start,end)) = found else {
+        let Some((start, end)) = found else {
             out.push_str(&value[cursor..]);
             break;
         };
         out.push_str(&value[cursor..start]);
-        out.push_str(replacement);
+        out.push_str(&replacement_text(
+            replacement,
+            &value[start..end],
+            expand_ampersand,
+        ));
         cursor = end;
         if !all {
             out.push_str(&value[cursor..]);
@@ -3862,19 +4269,33 @@ fn replace_glob(value: &str, pattern: &str, replacement: &str, all: bool) -> Str
     if value.is_empty() { String::new() } else { out }
 }
 
-fn replace_glob_anchored(value: &str, pattern: &str, replacement: &str, prefix: bool) -> String {
-    let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
+fn replace_glob_anchored(
+    value: &str,
+    pattern: &str,
+    replacement: &str,
+    prefix: bool,
+    extglob: bool,
+    expand_ampersand: bool,
+) -> String {
     let points = char_boundaries(value);
     if prefix {
         for &end in points.iter().rev() {
-            if pattern.matches(&value[..end]) {
-                return format!("{replacement}{}", &value[end..]);
+            if shell_pattern_matches(pattern, &value[..end], extglob, false) {
+                return format!(
+                    "{}{}",
+                    replacement_text(replacement, &value[..end], expand_ampersand),
+                    &value[end..],
+                );
             }
         }
     } else {
         for &start in &points {
-            if pattern.matches(&value[start..]) {
-                return format!("{}{replacement}", &value[..start]);
+            if shell_pattern_matches(pattern, &value[start..], extglob, false) {
+                return format!(
+                    "{}{}",
+                    &value[..start],
+                    replacement_text(replacement, &value[start..], expand_ampersand),
+                );
             }
         }
     }
@@ -4441,7 +4862,20 @@ fn render_ast(node: &AstNode) -> String {
         AstNode::Sequence(nodes) => nodes.iter().map(render_ast).collect::<Vec<_>>().join("; "),
         AstNode::And(left,right) => format!("{} && {}", render_ast(left), render_ast(right)),
         AstNode::Or(left,right) => format!("{} || {}", render_ast(left), render_ast(right)),
-        AstNode::Pipeline(parts) => parts.iter().map(render_ast).collect::<Vec<_>>().join(" | "),
+        AstNode::Pipeline { parts, stderr_to_pipe } => {
+            let mut rendered = String::new();
+            for (index, part) in parts.iter().enumerate() {
+                if index > 0 {
+                    rendered.push_str(if stderr_to_pipe.get(index - 1).copied().unwrap_or(false) {
+                        " |& "
+                    } else {
+                        " | "
+                    });
+                }
+                rendered.push_str(&render_ast(part));
+            }
+            rendered
+        },
         AstNode::Time { body, posix } => format!(
             "time {}{}",
             if *posix { "-p " } else { "" },

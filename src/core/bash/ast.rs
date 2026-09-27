@@ -4,7 +4,10 @@ pub enum AstNode {
     Sequence(Vec<AstNode>),
     And(Box<AstNode>, Box<AstNode>),
     Or(Box<AstNode>, Box<AstNode>),
-    Pipeline(Vec<AstNode>),
+    Pipeline {
+        parts: Vec<AstNode>,
+        stderr_to_pipe: Vec<bool>,
+    },
     Time {
         body: Box<AstNode>,
         posix: bool,
