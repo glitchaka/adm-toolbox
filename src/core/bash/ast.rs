@@ -12,6 +12,10 @@ pub enum AstNode {
         body: Box<AstNode>,
         posix: bool,
     },
+    Coproc {
+        name: Option<String>,
+        body: Box<AstNode>,
+    },
     Negate(Box<AstNode>),
     Background(Box<AstNode>),
     Simple(SimpleCommand),

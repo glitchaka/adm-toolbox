@@ -13,7 +13,7 @@ use crate::{
     core::{
         CommandContext,
         ShellExecution,
-        bash::{ExecutionResult, Interpreter, JobInfo, ShellCommandHost},
+        bash::{CoprocHandles, ExecutionResult, Interpreter, JobInfo, ShellCommandHost},
         ports::ShellEngine,
     },
 };
@@ -363,6 +363,41 @@ impl ShellCommandHost for WindowsShellHost {
             BackgroundJob { command: source.to_owned(), child },
         );
         Ok(pid)
+    }
+
+    fn execute_coproc(
+        &self,
+        source: &str,
+        cwd: &Path,
+        env: &HashMap<String, String>,
+    ) -> Result<CoprocHandles> {
+        let mut command = Command::new(std::env::current_exe()?);
+        command
+            .arg("-c")
+            .arg(source)
+            .current_dir(cwd)
+            .envs(env)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::inherit());
+
+        let mut child = command.spawn().context("no se pudo lanzar coproc Bash")?;
+        let pid = child.id();
+        let stdout = child.stdout.take()
+            .ok_or_else(|| anyhow::anyhow!("coproc: no se pudo abrir stdout"))?;
+        let stdin = child.stdin.take()
+            .ok_or_else(|| anyhow::anyhow!("coproc: no se pudo abrir stdin"))?;
+
+        self.jobs.lock().unwrap_or_else(|error| error.into_inner()).insert(
+            pid,
+            BackgroundJob { command: source.to_owned(), child },
+        );
+
+        Ok(CoprocHandles {
+            pid,
+            stdout: Box::new(stdout),
+            stdin: Box::new(stdin),
+        })
     }
 
     fn jobs(&self) -> Result<Vec<JobInfo>> {

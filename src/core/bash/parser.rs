@@ -110,6 +110,7 @@ impl Parser {
                 self.pos += 1;
                 Ok(AstNode::ArithmeticCommand(expression))
             }
+            Token::Word(word) if word == "coproc" => self.parse_coproc(),
             Token::Word(word) if word == "if" => self.parse_if(),
             Token::Word(word) if word == "for" => self.parse_for(),
             Token::Word(word) if word == "select" => self.parse_select(),
@@ -150,6 +151,34 @@ impl Parser {
             }
             _ => self.parse_simple(),
         }
+    }
+
+    fn parse_coproc(&mut self) -> Result<AstNode> {
+        self.expect_word("coproc")?;
+
+        let mut name = None;
+        if let Token::Word(candidate) = self.peek().clone() {
+            let next_is_compound = self.tokens.get(self.pos + 1).is_some_and(|token| {
+                matches!(token, Token::LBrace | Token::LParen | Token::Arithmetic(_))
+                    || matches!(token,
+                        Token::Word(word)
+                        if matches!(word.as_str(),
+                            "if" | "for" | "select" | "while" | "until" | "case"
+                            | "function" | "[["
+                        )
+                    )
+            });
+            if next_is_compound && is_shell_name(&candidate) {
+                name = Some(candidate);
+                self.pos += 1;
+            }
+        }
+
+        let body = self.parse_command()?;
+        Ok(AstNode::Coproc {
+            name,
+            body: Box::new(body),
+        })
     }
 
     fn parse_function_body(&mut self) -> Result<AstNode> {
@@ -487,6 +516,13 @@ impl Parser {
     fn peek(&self) -> &Token { self.tokens.get(self.pos).unwrap_or(&Token::Eof) }
 }
 
+
+fn is_shell_name(value: &str) -> bool {
+    let mut chars = value.chars();
+    let Some(first) = chars.next() else { return false };
+    (first == '_' || first.is_ascii_alphabetic())
+        && chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
+}
 
 fn split_arithmetic_for_sections(expression: &str) -> Result<[String; 3]> {
     let mut sections = [String::new(), String::new(), String::new()];

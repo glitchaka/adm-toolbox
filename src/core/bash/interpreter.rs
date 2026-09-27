@@ -1,7 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     fs::{self, OpenOptions},
-    io::Write,
+    io::{Read, Write},
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Duration,
@@ -39,6 +39,12 @@ pub struct JobInfo {
     pub running: bool,
 }
 
+pub struct CoprocHandles {
+    pub pid: u32,
+    pub stdout: Box<dyn Read + Send>,
+    pub stdin: Box<dyn Write + Send>,
+}
+
 #[derive(Debug, Clone, Default)]
 struct CompletionSpec {
     actions: Vec<String>,
@@ -65,16 +71,18 @@ struct FdCursor {
     offset: usize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 enum FdInputBinding {
     Data(Arc<Mutex<FdCursor>>),
+    Reader(Arc<Mutex<Box<dyn Read + Send>>>),
     Stdin,
     Closed,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 enum FdOutputBinding {
     File(PathBuf),
+    Writer(Arc<Mutex<Box<dyn Write + Send>>>),
     Stdout,
     Stderr,
     Closed,
@@ -175,6 +183,16 @@ pub trait ShellCommandHost: Send + Sync {
     ) -> Result<u32> {
         let _ = (source, cwd, env);
         bail!("background de shell no disponible en este host")
+    }
+
+    fn execute_coproc(
+        &self,
+        source: &str,
+        cwd: &Path,
+        env: &HashMap<String, String>,
+    ) -> Result<CoprocHandles> {
+        let _ = (source, cwd, env);
+        bail!("coproc no disponible en este host")
     }
 
     fn command_is_builtin(&self, _name: &str) -> bool { false }
@@ -385,6 +403,31 @@ impl Interpreter {
                 };
                 result.stderr.push_str(&timing);
                 result
+            }
+            AstNode::Coproc { name, body } => {
+                let name = name.clone().unwrap_or_else(|| "COPROC".to_owned());
+                let handles = self.host.execute_coproc(
+                    &render_ast(body),
+                    &self.env.cwd,
+                    &self.env.exported,
+                )?;
+                let read_fd = self.next_available_fd();
+                self.fd_inputs.insert(
+                    read_fd,
+                    FdInputBinding::Reader(Arc::new(Mutex::new(handles.stdout))),
+                );
+                let write_fd = self.next_available_fd();
+                self.fd_outputs.insert(
+                    write_fd,
+                    FdOutputBinding::Writer(Arc::new(Mutex::new(handles.stdin))),
+                );
+                self.env.set_array(name.clone(), vec![read_fd.to_string(), write_fd.to_string()]);
+                self.env.set(format!("{name}_PID"), handles.pid.to_string());
+                if name == "COPROC" {
+                    self.env.set("COPROC_PID", handles.pid.to_string());
+                }
+                self.env.last_background_pid = Some(handles.pid);
+                ExecutionResult::success()
             }
             AstNode::Negate(body) => {
                 let mut result = self.execute(body, stdin)?;
@@ -875,6 +918,13 @@ impl Interpreter {
         Ok(last)
     }
 
+    fn next_available_fd(&self) -> i32 {
+        (10..=63)
+            .rev()
+            .find(|fd| !self.fd_inputs.contains_key(fd) && !self.fd_outputs.contains_key(fd))
+            .unwrap_or(10)
+    }
+
     fn resolved_input_binding(&self, fd: i32) -> Option<FdInputBinding> {
         self.fd_inputs.get(&fd).cloned().or_else(|| {
             (fd == 0).then_some(FdInputBinding::Stdin)
@@ -895,6 +945,12 @@ impl Interpreter {
                 let mut cursor = cursor.lock().unwrap_or_else(|error| error.into_inner());
                 let data = cursor.data.get(cursor.offset..).unwrap_or_default().to_vec();
                 cursor.offset = cursor.data.len();
+                Ok(Some(data))
+            }
+            Some(FdInputBinding::Reader(reader)) => {
+                let mut reader = reader.lock().unwrap_or_else(|error| error.into_inner());
+                let mut data = Vec::new();
+                reader.read_to_end(&mut data)?;
                 Ok(Some(data))
             }
             Some(FdInputBinding::Stdin) => Ok(None),
@@ -924,6 +980,33 @@ impl Interpreter {
                 exact_chars,
             ),
             Some(FdInputBinding::Closed) | None => bail!("{fd}: descriptor de archivo inválido"),
+            Some(FdInputBinding::Reader(reader)) => {
+                let mut reader = reader.lock().unwrap_or_else(|error| error.into_inner());
+                let delimiter = delimiter.unwrap_or('\n');
+                let limit = max_chars.unwrap_or(usize::MAX);
+                let mut value = initial.to_owned();
+                let mut chars_read = 0usize;
+                let mut utf8 = Vec::new();
+                loop {
+                    if chars_read >= limit { break; }
+                    let mut byte = [0u8; 1];
+                    if reader.read(&mut byte)? == 0 { break; }
+                    utf8.push(byte[0]);
+                    if let Ok(text) = std::str::from_utf8(&utf8) {
+                        if let Some(ch) = text.chars().next() {
+                            utf8.clear();
+                            if !exact_chars && ch == delimiter { break; }
+                            value.push(ch);
+                            chars_read += 1;
+                        }
+                    } else if utf8.len() >= 4 {
+                        value.push(char::REPLACEMENT_CHARACTER);
+                        utf8.clear();
+                        chars_read += 1;
+                    }
+                }
+                if value == initial && chars_read == 0 { Ok(None) } else { Ok(Some(value)) }
+            }
             Some(FdInputBinding::Data(cursor)) => {
                 let mut cursor = cursor.lock().unwrap_or_else(|error| error.into_inner());
                 if cursor.offset >= cursor.data.len() {
@@ -4975,6 +5058,11 @@ impl Interpreter {
                     let mut file = OpenOptions::new().create(true).append(true).open(path)?;
                     file.write_all(data.as_bytes())?;
                 }
+                FdOutputBinding::Writer(writer) => {
+                    let mut writer = writer.lock().unwrap_or_else(|error| error.into_inner());
+                    writer.write_all(data.as_bytes())?;
+                    writer.flush()?;
+                }
             }
             Ok(())
         }
@@ -7163,6 +7251,10 @@ fn render_ast(node: &AstNode) -> String {
             if *posix { "-p " } else { "" },
             render_ast(body),
         ),
+        AstNode::Coproc { name, body } => match name {
+            Some(name) => format!("coproc {name} {}", render_ast(body)),
+            None => format!("coproc {}", render_ast(body)),
+        },
         AstNode::Negate(body) => format!("! {}", render_ast(body)),
         AstNode::Background(body) => format!("{} &", render_ast(body)),
         AstNode::Simple(command) => {
