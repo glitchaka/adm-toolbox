@@ -1,7 +1,7 @@
 use std::{
     env,
     fs::{self, OpenOptions},
-    io::Write,
+    io::{self, Read, Write},
     path::{Path, PathBuf},
     thread,
     time::Duration,
@@ -10,6 +10,17 @@ use std::{
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use chrono::Local;
 use crossterm::event::{Event, KeyCode};
+use flate2::{
+    Compression,
+    read::GzDecoder,
+    write::GzEncoder,
+};
+use tar::{Archive as TarArchive, Builder as TarBuilder};
+use zip::{
+    ZipArchive,
+    ZipWriter,
+    write::FileOptions,
+};
 use crate::adapters::terminal::io as terminal_io;
 use sha2::{Digest, Sha256};
 use similar::{ChangeTag, TextDiff};
@@ -68,6 +79,10 @@ impl UnixService {
         "rm" => rm(args, cwd),
         "cp" => cp(args, cwd),
         "mv" => mv(args, cwd),
+        "tar" => tar_cmd(args, cwd),
+        "gzip" | "gunzip" => gzip_cmd(name, args, cwd),
+        "zip" => zip_cmd(args, cwd),
+        "unzip" => unzip_cmd(args, cwd),
         "which" | "type" => which(args),
         _ => Ok(CommandOutput::error("comando Unix no implementado", 127)),
     }
@@ -905,6 +920,376 @@ fn mv(args: &[String], cwd: &Path) -> Result<CommandOutput> {
     Ok(CommandOutput::ok(""))
 }
 
+
+fn tar_cmd(args: &[String], cwd: &Path) -> Result<CommandOutput> {
+    let mut mode: Option<char> = None;
+    let mut gzip = false;
+    let mut verbose = false;
+    let mut archive_name: Option<String> = None;
+    let mut base_dir = cwd.to_path_buf();
+    let mut operands = Vec::new();
+    let mut index = 0usize;
+
+    while index < args.len() {
+        let arg = &args[index];
+
+        if arg == "-C" {
+            index += 1;
+            let Some(dir) = args.get(index) else {
+                return Ok(CommandOutput::error("tar: -C requiere directorio", 2));
+            };
+            base_dir = resolve_path(cwd, dir);
+            index += 1;
+            continue;
+        }
+
+        let is_flag_bundle = arg.starts_with('-')
+            || (index == 0
+                && !arg.contains(['/', '\\', '.'])
+                && arg.chars().all(|ch| matches!(ch, 'c' | 'x' | 't' | 'z' | 'v' | 'f')));
+
+        if is_flag_bundle && arg != "-" {
+            let flags = arg.trim_start_matches('-');
+            let mut consumes_archive = false;
+
+            for flag in flags.chars() {
+                match flag {
+                    'c' | 'x' | 't' => mode = Some(flag),
+                    'z' => gzip = true,
+                    'v' => verbose = true,
+                    'f' => consumes_archive = true,
+                    _ => {
+                        return Ok(CommandOutput::error(
+                            format!("tar: opción no soportada: -{flag}"),
+                            2,
+                        ));
+                    }
+                }
+            }
+
+            if consumes_archive {
+                index += 1;
+                let Some(file) = args.get(index) else {
+                    return Ok(CommandOutput::error("tar: -f requiere archivo", 2));
+                };
+                archive_name = Some(file.clone());
+            }
+
+            index += 1;
+            continue;
+        }
+
+        operands.push(arg.clone());
+        index += 1;
+    }
+
+    let Some(mode) = mode else {
+        return Ok(CommandOutput::error(
+            "tar: especifique uno de -c, -x o -t",
+            2,
+        ));
+    };
+    let Some(archive_name) = archive_name else {
+        return Ok(CommandOutput::error(
+            "tar: esta implementación requiere -f ARCHIVO",
+            2,
+        ));
+    };
+
+    let archive_path = resolve_path(cwd, &archive_name);
+    let gzip = gzip
+        || archive_name.ends_with(".tar.gz")
+        || archive_name.ends_with(".tgz");
+
+    match mode {
+        'c' => {
+            if operands.is_empty() {
+                return Ok(CommandOutput::error("tar: faltan archivos", 2));
+            }
+
+            let file = fs::File::create(&archive_path)?;
+            if gzip {
+                let encoder = GzEncoder::new(file, Compression::default());
+                let mut builder = TarBuilder::new(encoder);
+                append_tar_operands(&mut builder, &base_dir, &operands, verbose)?;
+                let encoder = builder.into_inner()?;
+                encoder.finish()?;
+            } else {
+                let mut builder = TarBuilder::new(file);
+                append_tar_operands(&mut builder, &base_dir, &operands, verbose)?;
+                builder.finish()?;
+            }
+
+            Ok(CommandOutput::ok(""))
+        }
+        't' => {
+            let file = fs::File::open(&archive_path)?;
+            let reader: Box<dyn Read> = if gzip {
+                Box::new(GzDecoder::new(file))
+            } else {
+                Box::new(file)
+            };
+            let mut archive = TarArchive::new(reader);
+            let mut out = String::new();
+
+            for entry in archive.entries()? {
+                let entry = entry?;
+                let path = entry.path()?;
+                out.push_str(&path.to_string_lossy().replace('\\', "/"));
+                out.push('\n');
+            }
+
+            Ok(CommandOutput::ok(out))
+        }
+        'x' => {
+            let file = fs::File::open(&archive_path)?;
+            let reader: Box<dyn Read> = if gzip {
+                Box::new(GzDecoder::new(file))
+            } else {
+                Box::new(file)
+            };
+            let mut archive = TarArchive::new(reader);
+            archive.unpack(&base_dir)?;
+            Ok(CommandOutput::ok(""))
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn append_tar_operands<W: Write>(
+    builder: &mut TarBuilder<W>,
+    base_dir: &Path,
+    operands: &[String],
+    verbose: bool,
+) -> Result<()> {
+    for operand in operands {
+        let source = resolve_path(base_dir, operand);
+        let archive_name = Path::new(operand);
+
+        if !source.exists() {
+            anyhow::bail!("tar: {}: no existe", source.display());
+        }
+
+        if verbose {
+            println!("{}", operand.replace('\\', "/"));
+        }
+
+        if source.is_dir() {
+            builder.append_dir_all(archive_name, &source)?;
+        } else {
+            builder.append_path_with_name(&source, archive_name)?;
+        }
+    }
+    Ok(())
+}
+
+fn gzip_cmd(invoked_name: &str, args: &[String], cwd: &Path) -> Result<CommandOutput> {
+    let decompress = invoked_name == "gunzip"
+        || args.iter().any(|arg| arg == "-d" || arg == "--decompress");
+    let keep = args.iter().any(|arg| arg == "-k" || arg == "--keep");
+    let to_stdout = args.iter().any(|arg| arg == "-c" || arg == "--stdout");
+    let files: Vec<&String> = args.iter()
+        .filter(|arg| !arg.starts_with('-'))
+        .collect();
+
+    if to_stdout {
+        return Ok(CommandOutput::error(
+            "gzip: -c no está disponible aún porque el pipeline de ADM es textual, no binario",
+            2,
+        ));
+    }
+
+    if files.is_empty() {
+        return Ok(CommandOutput::error(
+            "gzip: especifique al menos un archivo",
+            2,
+        ));
+    }
+
+    for file_name in files {
+        let input_path = resolve_path(cwd, file_name);
+
+        if decompress {
+            let output_path = if input_path.extension().and_then(|ext| ext.to_str()) == Some("gz") {
+                input_path.with_extension("")
+            } else {
+                return Ok(CommandOutput::error(
+                    format!("gzip: {}: no termina en .gz", input_path.display()),
+                    2,
+                ));
+            };
+
+            let input = fs::File::open(&input_path)?;
+            let mut decoder = GzDecoder::new(input);
+            let mut output = fs::File::create(&output_path)?;
+            io::copy(&mut decoder, &mut output)?;
+        } else {
+            let file_name = input_path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("archivo");
+            let output_path = input_path.with_file_name(format!("{file_name}.gz"));
+
+            let mut input = fs::File::open(&input_path)?;
+            let output = fs::File::create(&output_path)?;
+            let mut encoder = GzEncoder::new(output, Compression::default());
+            io::copy(&mut input, &mut encoder)?;
+            encoder.finish()?;
+        }
+
+        if !keep {
+            fs::remove_file(&input_path)?;
+        }
+    }
+
+    Ok(CommandOutput::ok(""))
+}
+
+fn zip_cmd(args: &[String], cwd: &Path) -> Result<CommandOutput> {
+    let recursive = args.iter().any(|arg| arg == "-r" || arg == "--recurse-paths");
+    let positional: Vec<&String> = args.iter()
+        .filter(|arg| !arg.starts_with('-'))
+        .collect();
+
+    let Some(archive_name) = positional.first() else {
+        return Ok(CommandOutput::error("zip: falta archivo ZIP", 2));
+    };
+    if positional.len() < 2 {
+        return Ok(CommandOutput::error("zip: faltan archivos para comprimir", 2));
+    }
+
+    let archive_path = resolve_path(cwd, archive_name);
+    let file = fs::File::create(&archive_path)?;
+    let mut writer = ZipWriter::new(file);
+
+    for operand in positional.iter().skip(1) {
+        let source = resolve_path(cwd, operand);
+        if source.is_dir() && !recursive {
+            return Ok(CommandOutput::error(
+                format!("zip: {} es directorio; use -r", operand),
+                2,
+            ));
+        }
+
+        add_path_to_zip(&mut writer, &source, Path::new(operand))?;
+    }
+
+    writer.finish()?;
+    Ok(CommandOutput::ok(""))
+}
+
+fn add_path_to_zip(
+    writer: &mut ZipWriter<fs::File>,
+    source: &Path,
+    archive_name: &Path,
+) -> Result<()> {
+    let name = archive_name.to_string_lossy().replace('\\', "/");
+
+    if source.is_dir() {
+        let directory_name = if name.ends_with('/') {
+            name
+        } else {
+            format!("{name}/")
+        };
+        writer.add_directory(directory_name, FileOptions::default())?;
+
+        for entry in fs::read_dir(source)? {
+            let entry = entry?;
+            add_path_to_zip(
+                writer,
+                &entry.path(),
+                &archive_name.join(entry.file_name()),
+            )?;
+        }
+    } else {
+        writer.start_file(
+            name,
+            FileOptions::default()
+                .compression_method(zip::CompressionMethod::Deflated),
+        )?;
+        let mut input = fs::File::open(source)?;
+        io::copy(&mut input, writer)?;
+    }
+
+    Ok(())
+}
+
+fn unzip_cmd(args: &[String], cwd: &Path) -> Result<CommandOutput> {
+    let list_only = args.iter().any(|arg| arg == "-l");
+    let mut destination = cwd.to_path_buf();
+    let mut archive_name: Option<&String> = None;
+    let mut index = 0usize;
+
+    while index < args.len() {
+        match args[index].as_str() {
+            "-d" => {
+                index += 1;
+                let Some(dir) = args.get(index) else {
+                    return Ok(CommandOutput::error("unzip: -d requiere directorio", 2));
+                };
+                destination = resolve_path(cwd, dir);
+            }
+            "-l" | "-o" => {}
+            arg if !arg.starts_with('-') && archive_name.is_none() => {
+                archive_name = args.get(index);
+            }
+            arg if arg.starts_with('-') => {
+                return Ok(CommandOutput::error(
+                    format!("unzip: opción no soportada: {arg}"),
+                    2,
+                ));
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+
+    let Some(archive_name) = archive_name else {
+        return Ok(CommandOutput::error("unzip: falta archivo ZIP", 2));
+    };
+
+    let file = fs::File::open(resolve_path(cwd, archive_name))?;
+    let mut archive = ZipArchive::new(file)?;
+    let mut out = String::new();
+
+    if list_only {
+        for index in 0..archive.len() {
+            let entry = archive.by_index(index)?;
+            out.push_str(entry.name());
+            out.push('\n');
+        }
+        return Ok(CommandOutput::ok(out));
+    }
+
+    fs::create_dir_all(&destination)?;
+
+    for index in 0..archive.len() {
+        let mut entry = archive.by_index(index)?;
+        let Some(relative) = entry.enclosed_name().map(Path::to_path_buf) else {
+            return Ok(CommandOutput::error(
+                format!("unzip: ruta insegura en archivo: {}", entry.name()),
+                2,
+            ));
+        };
+        let output_path = destination.join(relative);
+
+        if entry.is_dir() {
+            fs::create_dir_all(&output_path)?;
+            continue;
+        }
+
+        if let Some(parent) = output_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        let mut output = fs::File::create(&output_path)?;
+        io::copy(&mut entry, &mut output)?;
+    }
+
+    Ok(CommandOutput::ok(""))
+}
+
+
 fn which(args: &[String]) -> Result<CommandOutput> {
     let Some(name) = args.first() else {
         return Ok(CommandOutput::error("which: falta comando", 2));
@@ -1022,6 +1407,12 @@ fn is_internal_command(name: &str) -> bool {
             | "sort"
             | "uniq"
             | "cut"
+            | "xargs"
+            | "tar"
+            | "gzip"
+            | "gunzip"
+            | "zip"
+            | "unzip"
             | "tee"
             | "less"
             | "more"
@@ -1055,4 +1446,123 @@ fn is_internal_command(name: &str) -> bool {
             | "uname"
             | "kill"
     )
+}
+
+
+#[cfg(test)]
+mod archive_tests {
+    use super::*;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_root(name: &str) -> PathBuf {
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let root = env::temp_dir().join(format!(
+            "adm-toolbox-{name}-{}-{stamp}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&root).unwrap();
+        root
+    }
+
+    #[test]
+    fn archive_utilities_round_trip() {
+        let root = temp_root("archives");
+        fs::write(root.join("alpha.txt"), "uno\ndos\n").unwrap();
+        fs::create_dir_all(root.join("folder")).unwrap();
+        fs::write(root.join("folder").join("beta.txt"), "tres\n").unwrap();
+
+        tar_cmd(
+            &[
+                "-czf".into(),
+                "bundle.tar.gz".into(),
+                "alpha.txt".into(),
+                "folder".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        let listing = tar_cmd(
+            &["-tzf".into(), "bundle.tar.gz".into()],
+            &root,
+        )
+        .unwrap();
+        assert!(listing.stdout.contains("alpha.txt"));
+        assert!(listing.stdout.contains("folder/beta.txt"));
+
+        let tar_out = root.join("tar-out");
+        fs::create_dir_all(&tar_out).unwrap();
+        tar_cmd(
+            &[
+                "-xzf".into(),
+                "bundle.tar.gz".into(),
+                "-C".into(),
+                "tar-out".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        assert_eq!(
+            fs::read_to_string(tar_out.join("alpha.txt")).unwrap(),
+            "uno\ndos\n"
+        );
+
+        zip_cmd(
+            &[
+                "-r".into(),
+                "bundle.zip".into(),
+                "alpha.txt".into(),
+                "folder".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        let zip_listing = unzip_cmd(
+            &["-l".into(), "bundle.zip".into()],
+            &root,
+        )
+        .unwrap();
+        assert!(zip_listing.stdout.contains("alpha.txt"));
+        assert!(zip_listing.stdout.contains("folder/beta.txt"));
+
+        let zip_out = root.join("zip-out");
+        unzip_cmd(
+            &[
+                "bundle.zip".into(),
+                "-d".into(),
+                "zip-out".into(),
+            ],
+            &root,
+        )
+        .unwrap();
+        assert_eq!(
+            fs::read_to_string(zip_out.join("folder").join("beta.txt")).unwrap(),
+            "tres\n"
+        );
+
+        fs::write(root.join("gamma.txt"), "contenido gzip").unwrap();
+        gzip_cmd(
+            "gzip",
+            &["-k".into(), "gamma.txt".into()],
+            &root,
+        )
+        .unwrap();
+        assert!(root.join("gamma.txt.gz").is_file());
+        fs::remove_file(root.join("gamma.txt")).unwrap();
+
+        gzip_cmd(
+            "gunzip",
+            &["-k".into(), "gamma.txt.gz".into()],
+            &root,
+        )
+        .unwrap();
+        assert_eq!(
+            fs::read_to_string(root.join("gamma.txt")).unwrap(),
+            "contenido gzip"
+        );
+
+        fs::remove_dir_all(root).unwrap();
+    }
 }

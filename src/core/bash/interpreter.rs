@@ -368,6 +368,9 @@ impl Interpreter {
                 self.env.set(variable, value);
                 ExecutionResult::success()
             }
+            "xargs" => {
+                self.execute_xargs(args, stdin)?
+            }
             "config" => {
                 match args.first().map(String::as_str).unwrap_or("path") {
                     "path" => ExecutionResult::from_parts(
@@ -407,6 +410,177 @@ impl Interpreter {
         };
 
         Ok(Some(result))
+    }
+
+
+    fn execute_xargs(
+        &mut self,
+        args: &[String],
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
+        let mut nul_delimited = false;
+        let mut no_run_if_empty = false;
+        let mut max_args: Option<usize> = None;
+        let mut replacement: Option<String> = None;
+        let mut command_start = 0usize;
+        let mut index = 0usize;
+
+        while index < args.len() {
+            match args[index].as_str() {
+                "-0" | "--null" => {
+                    nul_delimited = true;
+                    index += 1;
+                }
+                "-r" | "--no-run-if-empty" => {
+                    no_run_if_empty = true;
+                    index += 1;
+                }
+                "-n" | "--max-args" => {
+                    index += 1;
+                    let Some(value) = args.get(index) else {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "xargs: -n requiere un número\n".to_owned(),
+                            2,
+                        ));
+                    };
+                    let count = value.parse::<usize>().unwrap_or(0);
+                    if count == 0 {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "xargs: -n requiere un número mayor que cero\n".to_owned(),
+                            2,
+                        ));
+                    }
+                    max_args = Some(count);
+                    index += 1;
+                }
+                "-I" | "--replace" => {
+                    index += 1;
+                    let Some(value) = args.get(index) else {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "xargs: -I requiere marcador\n".to_owned(),
+                            2,
+                        ));
+                    };
+                    replacement = Some(value.clone());
+                    index += 1;
+                }
+                "--" => {
+                    command_start = index + 1;
+                    break;
+                }
+                value if value.starts_with('-') => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("xargs: opción no soportada: {value}\n"),
+                        2,
+                    ));
+                }
+                _ => {
+                    command_start = index;
+                    break;
+                }
+            }
+        }
+
+        if index >= args.len() {
+            command_start = args.len();
+        }
+
+        let input = stdin.unwrap_or_default();
+        let items: Vec<String> = if nul_delimited {
+            input
+                .split(|byte| *byte == 0)
+                .filter(|part| !part.is_empty())
+                .map(|part| String::from_utf8_lossy(part).into_owned())
+                .collect()
+        } else if replacement.is_some() {
+            String::from_utf8_lossy(input)
+                .lines()
+                .map(str::trim)
+                .filter(|line| !line.is_empty())
+                .map(str::to_owned)
+                .collect()
+        } else {
+            String::from_utf8_lossy(input)
+                .split_whitespace()
+                .map(str::to_owned)
+                .collect()
+        };
+
+        if items.is_empty() && no_run_if_empty {
+            return Ok(ExecutionResult::success());
+        }
+
+        let base_command = if command_start < args.len() {
+            args[command_start..].to_vec()
+        } else {
+            vec!["echo".to_owned()]
+        };
+
+        if base_command.is_empty() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "xargs: falta comando\n".to_owned(),
+                2,
+            ));
+        }
+
+        let mut combined = ExecutionResult::success();
+
+        if let Some(marker) = replacement {
+            if items.is_empty() {
+                return Ok(combined);
+            }
+
+            for item in items {
+                let words = base_command
+                    .iter()
+                    .map(|word| word.replace(&marker, &item))
+                    .collect::<Vec<_>>();
+                let command = words
+                    .iter()
+                    .map(|word| shell_quote(word))
+                    .collect::<Vec<_>>()
+                    .join(" ");
+                let result = self.execute_text(&command)?;
+                combined.append(result);
+                if combined.exit_requested || combined.status != 0 {
+                    break;
+                }
+            }
+
+            return Ok(combined);
+        }
+
+        let chunk_size = max_args.unwrap_or_else(|| items.len().max(1));
+        if items.is_empty() {
+            let command = base_command
+                .iter()
+                .map(|word| shell_quote(word))
+                .collect::<Vec<_>>()
+                .join(" ");
+            return self.execute_text(&command);
+        }
+
+        for chunk in items.chunks(chunk_size) {
+            let mut words = base_command.clone();
+            words.extend(chunk.iter().cloned());
+            let command = words
+                .iter()
+                .map(|word| shell_quote(word))
+                .collect::<Vec<_>>()
+                .join(" ");
+            let result = self.execute_text(&command)?;
+            combined.append(result);
+            if combined.exit_requested || combined.status != 0 {
+                break;
+            }
+        }
+
+        Ok(combined)
     }
 
     fn apply_output_redirects(
@@ -587,6 +761,21 @@ impl Interpreter {
         let path = PathBuf::from(raw);
         if path.is_absolute() { path } else { self.env.cwd.join(path) }
     }
+}
+
+
+fn shell_quote(value: &str) -> String {
+    if value.is_empty() {
+        return "''".to_owned();
+    }
+
+    if value.chars().all(|ch| {
+        ch.is_ascii_alphanumeric() || matches!(ch, '_' | '-' | '.' | '/' | '\\' | ':' | '@' | '%')
+    }) {
+        return value.to_owned();
+    }
+
+    format!("'{}'", value.replace('\'', "'\\''"))
 }
 
 fn is_assignment(word: &str) -> bool {
@@ -818,4 +1007,43 @@ mod tests {
         assert_eq!(shell.expand_scalar("$((20+22))").unwrap(), "42");
         assert_eq!(shell.expand_scalar("${missing:-fallback}").unwrap(), "fallback");
     }
+
+    struct XargsHost;
+
+    impl ShellCommandHost for XargsHost {
+        fn execute_builtin(
+            &self, _name: &str, _args: &[String], _cwd: &Path, _stdin: Option<&[u8]>,
+        ) -> Result<Option<ExecutionResult>> {
+            Ok(None)
+        }
+
+        fn execute_external(
+            &self, program: &str, args: &[String], _cwd: &Path,
+            _env: &HashMap<String, String>, _stdin: Option<&[u8]>,
+        ) -> Result<ExecutionResult> {
+            if program == "echo" {
+                Ok(ExecutionResult::from_parts(
+                    format!("{}\n", args.join(" ")),
+                    String::new(),
+                    0,
+                ))
+            } else {
+                Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("unknown:{program}\n"),
+                    127,
+                ))
+            }
+        }
+    }
+
+    #[test]
+    fn xargs_consumes_pipeline_input() {
+        let mut shell = Interpreter::new(Box::new(XargsHost));
+        let ast = parse("xargs -n 1 echo").unwrap();
+        let result = shell.execute(&ast, Some(b"uno dos tres\n")).unwrap();
+        assert_eq!(result.stdout, "uno\ndos\ntres\n");
+        assert_eq!(result.status, 0);
+    }
+
 }
