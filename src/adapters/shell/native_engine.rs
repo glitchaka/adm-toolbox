@@ -736,6 +736,15 @@ impl ShellCommandHost for WindowsShellHost {
             .is_some())
     }
 
+    fn terminate_jobs(&self) -> Result<()> {
+        let mut jobs = self.jobs.lock().unwrap_or_else(|error| error.into_inner());
+        for job in jobs.values_mut() {
+            let _ = job.child.kill();
+        }
+        jobs.clear();
+        Ok(())
+    }
+
     fn shell_times(&self) -> Result<(
         std::time::Duration,
         std::time::Duration,

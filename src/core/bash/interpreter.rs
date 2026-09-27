@@ -229,6 +229,7 @@ pub trait ShellCommandHost: Send + Sync {
     fn wait_job(&self, _pid: Option<u32>) -> Result<i32> { Ok(127) }
     fn wait_next_job(&self) -> Result<Option<(u32, i32)>> { Ok(None) }
     fn disown_job(&self, _pid: u32) -> Result<bool> { Ok(false) }
+    fn terminate_jobs(&self) -> Result<()> { Ok(()) }
     fn shell_times(&self) -> Result<(Duration, Duration, Duration, Duration)> {
         Ok((Duration::ZERO, Duration::ZERO, Duration::ZERO, Duration::ZERO))
     }
@@ -257,6 +258,7 @@ pub struct Interpreter {
     fd_outputs: HashMap<i32, FdOutputBinding>,
     active_traps: HashSet<String>,
     interactive: bool,
+    exit_warning_pending: bool,
 }
 
 impl Interpreter {
@@ -305,6 +307,7 @@ impl Interpreter {
             fd_outputs: HashMap::new(),
             active_traps: HashSet::new(),
             interactive: false,
+            exit_warning_pending: false,
         }
     }
 
@@ -1320,6 +1323,9 @@ impl Interpreter {
 
         let name = words[0].clone();
         let args = &words[1..];
+        if !matches!(name.as_str(), "exit" | "logout") {
+            self.exit_warning_pending = false;
+        }
         if self.env.option_enabled("restricted_shell")
             && (name.contains('/') || name.contains('\\'))
         {
@@ -1715,6 +1721,21 @@ impl Interpreter {
             "kill" => self.host.execute_builtin("kill", args, &self.env.cwd, stdin)?
                 .unwrap_or_else(|| ExecutionResult::from_parts(String::new(), "kill: builtin no disponible\n".to_owned(), 1)),
             "exit" | "logout" => {
+                if self.interactive && self.env.option_enabled("checkjobs") && !self.exit_warning_pending {
+                    let jobs = self.host.jobs()?;
+                    let running: Vec<_> = jobs.into_iter().filter(|job| job.running).collect();
+                    if !running.is_empty() {
+                        self.exit_warning_pending = true;
+                        let mut stderr = "Hay jobs activos.\n".to_owned();
+                        for (index, job) in running.iter().enumerate() {
+                            stderr.push_str(&format!("[{}] Running {} {}\n", index + 1, job.pid, job.command));
+                        }
+                        return Ok(Some(ExecutionResult::from_parts(String::new(), stderr, 1)));
+                    }
+                }
+                if self.env.option_enabled("huponexit") {
+                    let _ = self.host.terminate_jobs();
+                }
                 let status = args.first()
                     .and_then(|value| value.parse::<i32>().ok())
                     .unwrap_or(self.env.last_status);
@@ -2397,10 +2418,238 @@ impl Interpreter {
         Ok((output, print_only))
     }
 
+    pub fn prepare_history_line(&mut self, line: &str) -> Result<(String, bool)> {
+        if !self.env.option_enabled("histexpand") || (!line.contains('!') && !line.contains('^')) {
+            return Ok((line.to_owned(), false));
+        }
+
+        let entries = self.read_history_entries();
+        if entries.is_empty() {
+            if line.contains('!') || line.starts_with('^') {
+                bail!("evento de historial no encontrado");
+            }
+            return Ok((line.to_owned(), false));
+        }
+
+        if line.starts_with('^') {
+            let tail = &line[1..];
+            if let Some((old, rest)) = tail.split_once('^') {
+                if let Some((new, suffix)) = rest.split_once('^') {
+                    let replacement = entries.last().unwrap().replacen(old, new, 1);
+                    return Ok((format!("{replacement}{suffix}"), false));
+                }
+            }
+        }
+
+        fn event_words(event: &str) -> Vec<String> {
+            split_shell_words_relaxed(event)
+                .unwrap_or_else(|_| event.split_whitespace().map(str::to_owned).collect())
+        }
+
+        fn select_words(event: &str, designator: &str) -> String {
+            let words = event_words(event);
+            if words.is_empty() {
+                return String::new();
+            }
+            match designator {
+                "0" => words.first().cloned().unwrap_or_default(),
+                "^" => words.get(1).cloned().unwrap_or_default(),
+                "$" => words.last().cloned().unwrap_or_default(),
+                "*" => words.get(1..).unwrap_or(&[]).join(" "),
+                _ => {
+                    if let Some((left, right)) = designator.split_once('-') {
+                        let start = left.parse::<usize>().unwrap_or(0);
+                        let end = if right.is_empty() {
+                            words.len().saturating_sub(1)
+                        } else {
+                            right.parse::<usize>().unwrap_or(start)
+                        };
+                        if start < words.len() {
+                            return words[start..=end.min(words.len() - 1)].join(" ");
+                        }
+                    }
+                    designator.parse::<usize>().ok()
+                        .and_then(|index| words.get(index))
+                        .cloned()
+                        .unwrap_or_else(|| event.to_owned())
+                }
+            }
+        }
+
+        fn apply_path_modifier(value: String, modifier: &str) -> String {
+            let path = Path::new(&value);
+            match modifier {
+                "h" => path.parent().map(|path| path.to_string_lossy().into_owned()).unwrap_or_default(),
+                "t" => path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default(),
+                "r" => {
+                    let mut path = PathBuf::from(&value);
+                    path.set_extension("");
+                    path.to_string_lossy().trim_end_matches('.').to_owned()
+                }
+                "e" => path.extension().map(|ext| format!(".{}", ext.to_string_lossy())).unwrap_or_default(),
+                "q" => shell_quote(&value),
+                "x" => split_shell_words_relaxed(&value)
+                    .unwrap_or_else(|_| value.split_whitespace().map(str::to_owned).collect())
+                    .into_iter()
+                    .map(|word| shell_quote(&word))
+                    .collect::<Vec<_>>()
+                    .join(" "),
+                _ => value,
+            }
+        }
+
+        let mut output = String::new();
+        let mut bytes = line.char_indices().peekable();
+        let mut single = false;
+        let mut escaped = false;
+        let mut print_only = false;
+
+        while let Some((index, ch)) = bytes.next() {
+            if escaped {
+                output.push(ch);
+                escaped = false;
+                continue;
+            }
+            if ch == '\\' && !single {
+                if bytes.peek().is_some_and(|(_, next)| *next == '!') {
+                    escaped = true;
+                    continue;
+                }
+                output.push(ch);
+                continue;
+            }
+            if ch == '\'' {
+                single = !single;
+                output.push(ch);
+                continue;
+            }
+            if ch != '!' || single {
+                output.push(ch);
+                continue;
+            }
+
+            let after = index + 1;
+            let rest = &line[after..];
+            let mut consumed = 0usize;
+            let mut event = None::<String>;
+
+            if rest.starts_with('!') {
+                event = entries.last().cloned();
+                consumed = 1;
+            } else if rest.starts_with('#') {
+                event = Some(output.clone());
+                consumed = 1;
+            } else if let Some(tail) = rest.strip_prefix('-') {
+                let digits: String = tail.chars().take_while(|ch| ch.is_ascii_digit()).collect();
+                if !digits.is_empty() {
+                    let back = digits.parse::<usize>().unwrap_or(0);
+                    event = entries.len().checked_sub(back).and_then(|position| entries.get(position)).cloned();
+                    consumed = 1 + digits.len();
+                }
+            } else if rest.starts_with('?') {
+                if let Some(end) = rest[1..].find('?') {
+                    let needle = &rest[1..end + 1];
+                    event = entries.iter().rfind(|entry| entry.contains(needle)).cloned();
+                    consumed = end + 2;
+                }
+            } else if rest.chars().next().is_some_and(|ch| ch.is_ascii_digit()) {
+                let digits: String = rest.chars().take_while(|ch| ch.is_ascii_digit()).collect();
+                let number = digits.parse::<usize>().unwrap_or(0);
+                event = number.checked_sub(1).and_then(|position| entries.get(position)).cloned();
+                consumed = digits.len();
+            } else {
+                let prefix: String = rest.chars()
+                    .take_while(|ch| !ch.is_whitespace() && !matches!(ch, ':' | ';' | '&' | '|' | '(' | ')' | '\'' | '"'))
+                    .collect();
+                if !prefix.is_empty() {
+                    event = entries.iter().rfind(|entry| entry.starts_with(&prefix)).cloned();
+                    consumed = prefix.len();
+                }
+            }
+
+            let Some(mut expanded) = event else {
+                bail!("evento de historial no encontrado cerca de '!{}'", rest);
+            };
+
+            let mut suffix_index = after + consumed;
+            while line.as_bytes().get(suffix_index) == Some(&b':') {
+                suffix_index += 1;
+                let modifier_start = suffix_index;
+                while let Some(byte) = line.as_bytes().get(suffix_index) {
+                    if *byte == b':' || byte.is_ascii_whitespace() {
+                        break;
+                    }
+                    suffix_index += 1;
+                }
+                let token = &line[modifier_start..suffix_index];
+                if token.is_empty() {
+                    break;
+                }
+
+                if matches!(token, "^" | "$" | "*" | "0")
+                    || token.chars().next().is_some_and(|ch| ch.is_ascii_digit())
+                {
+                    expanded = select_words(&expanded, token);
+                    continue;
+                }
+
+                if token == "p" {
+                    print_only = true;
+                    continue;
+                }
+                if matches!(token, "h" | "t" | "r" | "e" | "q" | "x") {
+                    expanded = apply_path_modifier(expanded, token);
+                    continue;
+                }
+
+                let substitution = token.strip_prefix("gs").map(|tail| (true, tail))
+                    .or_else(|| token.strip_prefix('s').map(|tail| (false, tail)));
+                if let Some((global, tail)) = substitution {
+                    let mut chars = tail.chars();
+                    let Some(delim) = chars.next() else { continue };
+                    let body = chars.as_str();
+                    let mut parts = body.splitn(3, delim);
+                    let old = parts.next().unwrap_or("");
+                    let new = parts.next().unwrap_or("");
+                    expanded = if global {
+                        expanded.replace(old, new)
+                    } else {
+                        expanded.replacen(old, new, 1)
+                    };
+                }
+            }
+
+            output.push_str(&expanded);
+
+            while let Some((next_index, _)) = bytes.peek().copied() {
+                if next_index < suffix_index {
+                    bytes.next();
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if self.env.option_enabled("histverify") && output != line {
+            print_only = true;
+        }
+        Ok((output, print_only))
+    }
+
     pub fn record_history_line(&mut self, line: &str) -> Result<()> {
         if line.is_empty() {
             return Ok(());
         }
+
+        let normalized_storage;
+        let line = if line.contains('\n') && self.env.option_enabled("cmdhist")
+            && !self.env.option_enabled("lithist")
+        {
+            normalized_storage = line.lines().map(str::trim_end).collect::<Vec<_>>().join("; ");
+            &normalized_storage
+        } else {
+            line
+        };
 
         let histcontrol = self.env.get("HISTCONTROL");
         let controls: HashSet<&str> = histcontrol.split(':').collect();
@@ -3367,30 +3616,62 @@ impl Interpreter {
         let parent = path.parent()
             .filter(|parent| !parent.as_os_str().is_empty())
             .unwrap_or(Path::new("."));
-        let stem = path.file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("");
+        let stem = path.file_name().and_then(|name| name.to_str()).unwrap_or("");
         let directory = self.resolve_path(&parent.to_string_lossy());
 
+        let fignore = self.env.get("FIGNORE");
+        let ignored_suffixes: Vec<&str> = fignore.split(':')
+            .filter(|suffix| !suffix.is_empty())
+            .collect();
         let mut values = Vec::new();
-        if let Ok(entries) = fs::read_dir(directory) {
+        let mut ignored = Vec::new();
+
+        if let Ok(entries) = fs::read_dir(&directory) {
             for entry in entries.flatten() {
-                if directories_only && !entry.path().is_dir() {
-                    continue;
-                }
+                if directories_only && !entry.path().is_dir() { continue; }
                 let name = entry.file_name().to_string_lossy().into_owned();
-                if !name.starts_with(stem) {
-                    continue;
-                }
+                if !name.starts_with(stem) { continue; }
                 let mut value = if parent == Path::new(".") {
-                    name
+                    name.clone()
                 } else {
-                    parent.join(name).to_string_lossy().into_owned()
+                    parent.join(&name).to_string_lossy().into_owned()
                 };
-                if entry.path().is_dir() {
-                    value.push('/');
+                if entry.path().is_dir() { value.push('/'); }
+                if !entry.path().is_dir()
+                    && ignored_suffixes.iter().any(|suffix| name.ends_with(suffix))
+                {
+                    ignored.push(value);
+                } else {
+                    values.push(value);
                 }
-                values.push(value);
+            }
+        }
+
+        if values.is_empty() && directories_only && self.env.option_enabled("dirspell") && !stem.is_empty() {
+            if let Ok(entries) = fs::read_dir(&directory) {
+                for entry in entries.flatten().filter(|entry| entry.path().is_dir()) {
+                    let name = entry.file_name().to_string_lossy().into_owned();
+                    if spelling_distance_at_most_one(&name, stem) {
+                        let mut value = if parent == Path::new(".") {
+                            name
+                        } else {
+                            parent.join(name).to_string_lossy().into_owned()
+                        };
+                        value.push('/');
+                        values.push(value);
+                    }
+                }
+            }
+        }
+
+        if values.is_empty() && !self.env.option_enabled("force_fignore") {
+            values = ignored;
+        }
+        if self.env.option_enabled("complete_fullquote") {
+            for value in &mut values {
+                if value.chars().any(|ch| ch.is_whitespace() || matches!(ch, '\'' | '"' | '(' | ')' | '&' | ';')) {
+                    *value = shell_quote(value);
+                }
             }
         }
         values
@@ -3719,6 +4000,16 @@ impl Interpreter {
         self.env.set("COMP_KEY", "9");
 
         let first_command_word = cword == command_index;
+        if first_command_word && word.is_empty() && self.env.option_enabled("no_empty_cmd_completion") {
+            return Ok(Vec::new());
+        }
+        let alias_command = if self.env.option_enabled("progcomp_alias") {
+            self.env.aliases.get(&command_name)
+                .and_then(|alias| split_shell_words_relaxed(alias).ok())
+                .and_then(|words| words.into_iter().next())
+        } else {
+            None
+        };
         let spec = if segment.trim().is_empty() {
             self.completion_specs.get("__empty__").cloned()
         } else if first_command_word {
@@ -3726,6 +4017,7 @@ impl Interpreter {
                 .or_else(|| self.completion_specs.get(&command_name).cloned())
         } else {
             self.completion_specs.get(&command_name).cloned()
+                .or_else(|| alias_command.as_ref().and_then(|name| self.completion_specs.get(name)).cloned())
                 .or_else(|| {
                     Path::new(&command_name)
                         .file_name()
@@ -4401,6 +4693,14 @@ impl Interpreter {
                 .map(|(n,v)| (n.to_owned(), Some(v.to_owned())))
                 .unwrap_or((item.clone(), None));
 
+            if self.env.option_enabled("restricted_shell") && restricted_variable(&name) {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("declare: {name}: variable restringida\n"),
+                    1,
+                ));
+            }
+
             if nameref == Some(false) {
                 if let Some(target) = self.env.namerefs.get(&name).cloned() {
                     let _ = self.env.unset_nameref(&name);
@@ -4432,7 +4732,11 @@ impl Interpreter {
                 if effective_local { self.env.set_local_array(name.clone(), Vec::new()); }
                 else { self.env.set_array(name.clone(), Vec::new()); }
             } else if effective_local && value.is_none() {
-                let current = self.env.get(&name);
+                let current = if self.env.option_enabled("localvar_inherit") {
+                    self.env.get(&name)
+                } else {
+                    String::new()
+                };
                 self.env.set_local(name.clone(), current);
             }
 
