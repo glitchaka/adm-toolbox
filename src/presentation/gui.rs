@@ -373,8 +373,13 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     state.suppress_char = true;
                     return 0;
                 }
-                if (ctrl && shift && wp == b'V' as usize) || (shift && wp == VK_INSERT as usize) {
-                    paste(hwnd, state); state.suppress_char = true; return 0;
+                if (ctrl && wp == b'V' as usize)
+                    || (ctrl && shift && wp == b'V' as usize)
+                    || (shift && wp == VK_INSERT as usize)
+                {
+                    paste(hwnd, state);
+                    state.suppress_char = true;
+                    return 0;
                 }
                 let sequence = match wp as u16 {
                     VK_UP => if state.parser.screen().application_cursor() { "\x1bOA" } else { "\x1b[A" },
@@ -384,6 +389,10 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     _ => return DefWindowProcW(hwnd, msg, wp, lp),
                 };
                 state.input(sequence.as_bytes()); 0
+            }
+            WM_PASTE => {
+                paste(hwnd, state);
+                0
             }
             WM_CHAR => {
                 if state.suppress_char { state.suppress_char = false; return 0; }
