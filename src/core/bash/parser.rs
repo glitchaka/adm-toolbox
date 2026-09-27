@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 
 use super::{
-    ast::{AstNode, Redirect, RedirectKind, SimpleCommand},
+    ast::{AstNode, CaseArm, Redirect, RedirectKind, SimpleCommand},
     lexer::{RedirectOp, Token},
 };
 
@@ -28,7 +28,7 @@ impl Parser {
         let mut nodes = Vec::new();
         self.skip_semi();
 
-        while !matches!(self.peek(), Token::Eof | Token::RBrace | Token::RParen)
+        while !matches!(self.peek(), Token::Eof | Token::RBrace | Token::RParen | Token::DblSemi)
             && !self.is_stop(stops)
         {
             nodes.push(self.parse_and_or()?);
@@ -83,6 +83,11 @@ impl Parser {
             Token::Word(word) if word == "if" => self.parse_if(),
             Token::Word(word) if word == "for" => self.parse_for(),
             Token::Word(word) if word == "while" || word == "until" => self.parse_while(),
+            Token::Word(word) if word == "case" => self.parse_case(),
+            Token::Word(word) if word == "[[" => self.parse_conditional(),
+            Token::LParen if self.tokens.get(self.pos + 1) == Some(&Token::LParen) => {
+                self.parse_arithmetic_command()
+            },
             Token::LParen => {
                 self.pos += 1;
                 let body = self.parse_list(&[])?;
@@ -180,6 +185,147 @@ impl Parser {
             body: Box::new(body),
             until,
         })
+    }
+
+    fn parse_case(&mut self) -> Result<AstNode> {
+        self.expect_word("case")?;
+        let word = self.take_word()?;
+        self.expect_word("in")?;
+        self.skip_semi();
+
+        let mut arms = Vec::new();
+
+        while !self.word_is("esac") {
+            while matches!(self.peek(), Token::Semi) {
+                self.pos += 1;
+            }
+            if self.word_is("esac") {
+                break;
+            }
+
+            let mut patterns = Vec::new();
+            loop {
+                match self.peek().clone() {
+                    Token::Word(pattern) => {
+                        self.pos += 1;
+                        patterns.push(pattern);
+                    }
+                    Token::Pipe => {
+                        self.pos += 1;
+                    }
+                    Token::RParen => {
+                        self.pos += 1;
+                        break;
+                    }
+                    other => bail!("case: patrón inválido: {other:?}"),
+                }
+            }
+
+            if patterns.is_empty() {
+                bail!("case: brazo sin patrón");
+            }
+
+            let body = self.parse_list(&["esac"])?;
+            arms.push(CaseArm {
+                patterns,
+                body: Box::new(body),
+            });
+
+            if matches!(self.peek(), Token::DblSemi) {
+                self.pos += 1;
+            } else if !self.word_is("esac") {
+                bail!("case: se esperaba ';;' o 'esac'");
+            }
+            self.skip_semi();
+        }
+
+        self.expect_word("esac")?;
+        Ok(AstNode::Case { word, arms })
+    }
+
+    fn parse_conditional(&mut self) -> Result<AstNode> {
+        self.expect_word("[[")?;
+        let mut expression = Vec::new();
+
+        while !self.word_is("]]") {
+            let token = self.peek().clone();
+            match token {
+                Token::Eof => bail!("[[: falta ']]'"),
+                Token::Word(word) => {
+                    self.pos += 1;
+                    expression.push(word);
+                }
+                Token::AndIf => {
+                    self.pos += 1;
+                    expression.push("&&".to_owned());
+                }
+                Token::OrIf => {
+                    self.pos += 1;
+                    expression.push("||".to_owned());
+                }
+                Token::LParen => {
+                    self.pos += 1;
+                    expression.push("(".to_owned());
+                }
+                Token::RParen => {
+                    self.pos += 1;
+                    expression.push(")".to_owned());
+                }
+                other => bail!("[[: token no soportado: {other:?}"),
+            }
+        }
+
+        self.expect_word("]]")?;
+        Ok(AstNode::Conditional(expression))
+    }
+
+    fn parse_arithmetic_command(&mut self) -> Result<AstNode> {
+        self.expect_token(Token::LParen)?;
+        self.expect_token(Token::LParen)?;
+
+        let mut depth = 0usize;
+        let mut parts = Vec::new();
+
+        loop {
+            match self.peek().clone() {
+                Token::Eof => bail!("((: expresión sin cerrar"),
+                Token::LParen => {
+                    depth += 1;
+                    self.pos += 1;
+                    parts.push("(".to_owned());
+                }
+                Token::RParen if depth > 0 => {
+                    depth -= 1;
+                    self.pos += 1;
+                    parts.push(")".to_owned());
+                }
+                Token::RParen
+                    if self.tokens.get(self.pos + 1) == Some(&Token::RParen) =>
+                {
+                    self.pos += 2;
+                    break;
+                }
+                Token::Word(word) => {
+                    self.pos += 1;
+                    parts.push(word);
+                }
+                Token::AndIf => {
+                    self.pos += 1;
+                    parts.push("&&".to_owned());
+                }
+                Token::OrIf => {
+                    self.pos += 1;
+                    parts.push("||".to_owned());
+                }
+                Token::Pipe => {
+                    self.pos += 1;
+                    parts.push("|".to_owned());
+                }
+                other => bail!("((: token no soportado: {other:?}"),
+            }
+        }
+
+        Ok(AstNode::ArithmeticCommand(parts.join(" ")))
     }
 
     fn parse_simple(&mut self) -> Result<AstNode> {
@@ -282,6 +428,18 @@ mod tests {
         assert!(matches!(
             Parser::new(lex("f() { echo hi; }").unwrap()).parse().unwrap(),
             AstNode::FunctionDef { .. }
+        ));
+        assert!(matches!(
+            Parser::new(lex("case $x in a|b) echo yes ;; *) echo no ;; esac").unwrap()).parse().unwrap(),
+            AstNode::Case { .. }
+        ));
+        assert!(matches!(
+            Parser::new(lex("[[ -n $x && $x == ok ]]").unwrap()).parse().unwrap(),
+            AstNode::Conditional(_)
+        ));
+        assert!(matches!(
+            Parser::new(lex("(( 1 + 2 ))").unwrap()).parse().unwrap(),
+            AstNode::ArithmeticCommand(_)
         ));
     }
 }
