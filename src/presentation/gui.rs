@@ -36,6 +36,13 @@ const BTN_YELLOW: u32 = 0x1BC6F6;  // #F6C61B
 const BTN_BLUE: u32 = 0xF5A81F;    // #1FA8F5
 const BTN_RED: u32 = 0x382DFF;     // #FF2D38
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum TitleButton {
+    Minimize,
+    Maximize,
+    Close,
+}
+
 struct Terminal {
     pty: EmbeddedSession,
     parser: vt100::Parser,
@@ -46,6 +53,8 @@ struct Terminal {
     cell_height: i32,
     selection: Option<(usize, usize)>,
     dragging: bool,
+    hovered_title_button: Option<TitleButton>,
+    pressed_title_button: Option<TitleButton>,
     suppress_char: bool,
     surrogate: Option<u16>,
     cursor_on: bool,
@@ -118,6 +127,8 @@ pub fn run() -> Result<()> {
             cell_height: 23,
             selection: None,
             dragging: false,
+            hovered_title_button: None,
+            pressed_title_button: None,
             suppress_char: false,
             surrogate: None,
             cursor_on: true,
@@ -273,7 +284,7 @@ unsafe fn screen_point_to_client(hwnd: HWND, x: i32, y: i32) -> (i32, i32) {
     }
 }
 
-fn title_button_at(hwnd: HWND, x: i32, y: i32) -> Option<u8> {
+fn title_button_at(hwnd: HWND, x: i32, y: i32) -> Option<TitleButton> {
     if !(0..TITLE_BAR_HEIGHT).contains(&y) {
         return None;
     }
@@ -282,16 +293,20 @@ fn title_button_at(hwnd: HWND, x: i32, y: i32) -> Option<u8> {
         let mut rect: RECT = std::mem::zeroed();
         GetClientRect(hwnd, &mut rect);
         let right = rect.right;
-        let centers = [right - 92, right - 58, right - 24];
 
-        centers
-            .iter()
-            .position(|cx| {
-                let dx = x - *cx;
-                let dy = y - 22;
-                dx * dx + dy * dy <= 12 * 12
-            })
-            .map(|index| index as u8)
+        [
+            (TitleButton::Minimize, right - 109, right - 75),
+            (TitleButton::Maximize, right - 75, right - 41),
+            (TitleButton::Close, right - 41, right - 7),
+        ]
+        .into_iter()
+        .find_map(|(button, left, right)| {
+            if x >= left && x < right {
+                Some(button)
+            } else {
+                None
+            }
+        })
     }
 }
 
@@ -388,16 +403,45 @@ impl Terminal {
             TextOutW(dc, 218, 12, subtitle.as_ptr(), (subtitle.len() - 1) as i32);
 
             let old_pen = SelectObject(dc, GetStockObject(NULL_PEN));
-            for (cx, color) in [
-                (bounds.right - 92, BTN_YELLOW),
-                (bounds.right - 58, BTN_BLUE),
-                (bounds.right - 24, BTN_RED),
+            for (button_kind, cx, color) in [
+                (TitleButton::Minimize, bounds.right - 92, BTN_YELLOW),
+                (TitleButton::Maximize, bounds.right - 58, BTN_BLUE),
+                (TitleButton::Close, bounds.right - 24, BTN_RED),
             ] {
+                let radius = if self.pressed_title_button == Some(button_kind) {
+                    8
+                } else if self.hovered_title_button == Some(button_kind) {
+                    11
+                } else {
+                    10
+                };
                 let button = CreateSolidBrush(color);
                 let old_brush = SelectObject(dc, button);
-                Ellipse(dc, cx - 10, 12, cx + 10, 32);
+                Ellipse(dc, cx - radius, 22 - radius, cx + radius, 22 + radius);
                 SelectObject(dc, old_brush);
                 DeleteObject(button);
+
+                if self.hovered_title_button == Some(button_kind) {
+                    let glyph_pen = CreatePen(PS_SOLID, 2, TITLE_BG);
+                    let old_glyph_pen = SelectObject(dc, glyph_pen);
+                    match button_kind {
+                        TitleButton::Minimize => {
+                            MoveToEx(dc, cx - 4, 22, null_mut());
+                            LineTo(dc, cx + 5, 22);
+                        }
+                        TitleButton::Maximize => {
+                            Rectangle(dc, cx - 4, 18, cx + 5, 27);
+                        }
+                        TitleButton::Close => {
+                            MoveToEx(dc, cx - 4, 18, null_mut());
+                            LineTo(dc, cx + 5, 27);
+                            MoveToEx(dc, cx + 4, 18, null_mut());
+                            LineTo(dc, cx - 5, 27);
+                        }
+                    }
+                    SelectObject(dc, old_glyph_pen);
+                    DeleteObject(glyph_pen);
+                }
             }
             SelectObject(dc, old_pen);
             SelectObject(dc, old_font);
@@ -798,15 +842,21 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
 
             WM_LBUTTONDOWN => {
                 let (x, y) = point_from_lparam(lp);
-                if y < TITLE_BAR_HEIGHT {
-                    SetFocus(hwnd);
-                    if title_button_at(hwnd, x, y).is_some() {
-                        SetCapture(hwnd);
-                    }
+                SetFocus(hwnd);
+
+                if let Some(button) = title_button_at(hwnd, x, y) {
+                    state.pressed_title_button = Some(button);
+                    state.hovered_title_button = Some(button);
+                    state.dragging = false;
+                    SetCapture(hwnd);
+                    InvalidateRect(hwnd, null(), 0);
                     return 0;
                 }
 
-                SetFocus(hwnd);
+                if y < TITLE_BAR_HEIGHT {
+                    return DefWindowProcW(hwnd, msg, wp, lp);
+                }
+
                 SetCapture(hwnd);
                 let index = state.cell_at(lp);
                 state.selection = Some((index, index));
@@ -815,38 +865,64 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                 0
             }
 
-            WM_MOUSEMOVE if state.dragging => {
-                let index = state.cell_at(lp);
-                if let Some((a, _)) = state.selection {
-                    state.selection = Some((a, index));
+            WM_MOUSEMOVE => {
+                let (x, y) = point_from_lparam(lp);
+
+                let hovered = title_button_at(hwnd, x, y);
+                if state.hovered_title_button != hovered {
+                    state.hovered_title_button = hovered;
+                    InvalidateRect(hwnd, null(), 0);
                 }
-                InvalidateRect(hwnd, null(), 0);
+
+                if state.dragging {
+                    let index = state.cell_at(lp);
+                    if let Some((a, _)) = state.selection {
+                        state.selection = Some((a, index));
+                    }
+                    InvalidateRect(hwnd, null(), 0);
+                }
+
                 0
             }
 
             WM_LBUTTONUP => {
                 let (x, y) = point_from_lparam(lp);
-                if let Some(button) = title_button_at(hwnd, x, y) {
+                let released_over = title_button_at(hwnd, x, y);
+                let pressed = state.pressed_title_button.take();
+
+                if pressed.is_some() {
                     ReleaseCapture();
-                    match button {
-                        0 => { ShowWindow(hwnd, SW_MINIMIZE); }
-                        1 => {
-                            if IsZoomed(hwnd) != 0 {
-                                ShowWindow(hwnd, SW_RESTORE);
-                            } else {
-                                ShowWindow(hwnd, SW_MAXIMIZE);
+                    InvalidateRect(hwnd, null(), 0);
+
+                    if pressed == released_over {
+                        match pressed.unwrap() {
+                            TitleButton::Minimize => {
+                                ShowWindow(hwnd, SW_MINIMIZE);
+                            }
+                            TitleButton::Maximize => {
+                                if IsZoomed(hwnd) != 0 {
+                                    ShowWindow(hwnd, SW_RESTORE);
+                                } else {
+                                    ShowWindow(hwnd, SW_MAXIMIZE);
+                                }
+                            }
+                            TitleButton::Close => {
+                                SendMessageW(hwnd, WM_CLOSE, 0, 0);
                             }
                         }
-                        2 => {
-                            PostMessageW(hwnd, WM_CLOSE, 0, 0);
-                        }
-                        _ => {}
                     }
                     return 0;
                 }
 
                 state.dragging = false;
                 ReleaseCapture();
+                0
+            }
+
+            WM_CAPTURECHANGED => {
+                state.pressed_title_button = None;
+                state.dragging = false;
+                InvalidateRect(hwnd, null(), 0);
                 0
             }
 
@@ -868,6 +944,20 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                 state.selection = None;
                 InvalidateRect(hwnd, null(), 0);
                 0
+            }
+
+            WM_SETCURSOR => {
+                let mut point: POINT = std::mem::zeroed();
+                GetCursorPos(&mut point);
+                ScreenToClient(hwnd, &mut point);
+
+                let cursor = if point.y < TITLE_BAR_HEIGHT {
+                    LoadCursorW(null_mut(), IDC_ARROW)
+                } else {
+                    LoadCursorW(null_mut(), IDC_IBEAM)
+                };
+                SetCursor(cursor);
+                1
             }
 
             WM_ERASEBKGND => 1,
