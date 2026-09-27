@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
@@ -35,6 +35,24 @@ pub struct JobInfo {
     pub pid: u32,
     pub command: String,
     pub running: bool,
+}
+
+#[derive(Debug, Clone)]
+struct CallFrame {
+    function: String,
+    source: String,
+    line: u32,
+}
+
+#[derive(Debug, Clone, Default)]
+struct CompletionSpec {
+    words: Vec<String>,
+    action: Option<String>,
+    function: Option<String>,
+    command: Option<String>,
+    prefix: String,
+    suffix: String,
+    options: HashSet<String>,
 }
 
 impl ExecutionResult {
@@ -124,6 +142,7 @@ pub trait ShellCommandHost: Send + Sync {
     }
 
     fn command_is_builtin(&self, _name: &str) -> bool { false }
+    fn command_names(&self) -> Vec<String> { Vec::new() }
     fn jobs(&self) -> Result<Vec<JobInfo>> { Ok(Vec::new()) }
     fn wait_job(&self, _pid: Option<u32>) -> Result<i32> { Ok(127) }
     fn wait_next_job(&self) -> Result<Option<(u32, i32)>> { Ok(None) }
@@ -136,6 +155,11 @@ pub struct Interpreter {
     loop_depth: usize,
     source_depth: usize,
     command_hash: HashMap<String, String>,
+    disabled_builtins: HashSet<String>,
+    completion_specs: HashMap<String, CompletionSpec>,
+    readline_bindings: HashMap<String, String>,
+    call_stack: Vec<CallFrame>,
+    ulimits: HashMap<char, String>,
 }
 
 impl Interpreter {
@@ -146,6 +170,11 @@ impl Interpreter {
             loop_depth: 0,
             source_depth: 0,
             command_hash: HashMap::new(),
+            disabled_builtins: HashSet::new(),
+            completion_specs: HashMap::new(),
+            readline_bindings: HashMap::new(),
+            call_stack: Vec::new(),
+            ulimits: HashMap::new(),
         }
     }
 
@@ -699,6 +728,18 @@ impl Interpreter {
                     }
                     local_stdin = Some(fs::read(path)?);
                 }
+                RedirectKind::DupInput => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    match target.as_str() {
+                        "-" => local_stdin = Some(Vec::new()),
+                        "0" => {}
+                        _ => return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("{}<&{}: descriptor no disponible\n", redirect.fd, target),
+                            1,
+                        )),
+                    }
+                }
                 RedirectKind::HereString => {
                     let mut value = self.expand_scalar(&redirect.target)?;
                     value.push('\n');
@@ -756,7 +797,15 @@ impl Interpreter {
             let saved = self.env.positional.clone();
             self.env.positional = args.to_vec();
             self.env.push_local_scope();
+            self.call_stack.push(CallFrame {
+                function: name.clone(),
+                source: self.env.script_name.clone(),
+                line: 0,
+            });
+            self.sync_call_stack_arrays();
             let execution = self.execute(&body, local_stdin.as_deref());
+            self.call_stack.pop();
+            self.sync_call_stack_arrays();
             self.env.pop_local_scope();
             self.env.positional = saved;
             let mut result = execution?;
@@ -796,12 +845,29 @@ impl Interpreter {
         Ok(result)
     }
 
+    fn sync_call_stack_arrays(&mut self) {
+        let mut functions = Vec::new();
+        let mut sources = Vec::new();
+        let mut lines = Vec::new();
+        for frame in self.call_stack.iter().rev() {
+            functions.push(frame.function.clone());
+            sources.push(frame.source.clone());
+            lines.push(frame.line.to_string());
+        }
+        self.env.set_array("FUNCNAME", functions);
+        self.env.set_array("BASH_SOURCE", sources);
+        self.env.set_array("BASH_LINENO", lines);
+    }
+
     fn shell_builtin(
         &mut self,
         name: &str,
         args: &[String],
         stdin: Option<&[u8]>,
     ) -> Result<Option<ExecutionResult>> {
+        if name != "enable" && self.disabled_builtins.contains(name) {
+            return Ok(None);
+        }
         let result = match name {
             "cd" => {
                 let raw = args.first().map(String::as_str).unwrap_or("~");
@@ -1099,6 +1165,15 @@ impl Interpreter {
             "type" => self.builtin_type(args)?,
             "hash" => self.builtin_hash(args)?,
             "getopts" => self.builtin_getopts(args)?,
+            "exec" => self.builtin_exec(args, stdin)?,
+            "history" => self.builtin_history(args)?,
+            "fc" => self.builtin_fc(args)?,
+            "bind" => self.builtin_bind(args)?,
+            "enable" => self.builtin_enable(args)?,
+            "complete" => self.builtin_complete(args)?,
+            "compgen" => self.builtin_compgen(args)?,
+            "compopt" => self.builtin_compopt(args)?,
+            "suspend" => self.builtin_suspend(args)?,
             "dirs" => {
                 let mut stdout = self.env.cwd.to_string_lossy().into_owned();
                 for path in self.env.dir_stack.iter().rev() {
@@ -1144,9 +1219,9 @@ impl Interpreter {
                     )
                 }
             }
-            "ulimit" => ExecutionResult::from_parts("unlimited\n".to_owned(), String::new(), 0),
-            "times" => ExecutionResult::from_parts("0m0.000s 0m0.000s\n0m0.000s 0m0.000s\n".to_owned(), String::new(), 0),
-            "caller" => ExecutionResult::from_parts(String::new(), String::new(), 1),
+            "ulimit" => self.builtin_ulimit(args)?,
+            "times" => self.builtin_times(),
+            "caller" => self.builtin_caller(args),
             "xargs" => self.execute_xargs(args, stdin)?,
             "config" => {
                 match args.first().map(String::as_str).unwrap_or("path") {
@@ -1174,6 +1249,7 @@ impl Interpreter {
     }
 
     fn shell_builtin_name(&self, name: &str) -> bool {
+        if self.disabled_builtins.contains(name) { return false; }
         matches!(
             name,
             "cd" | "pwd" | "echo" | "printf" | "export" | "unset" | "alias" | "unalias"
@@ -1181,6 +1257,7 @@ impl Interpreter {
                 | "readonly" | "break" | "continue" | "return" | "shift" | "set" | "shopt"
                 | "trap" | "eval" | "let" | "test" | "[" | "mapfile" | "readarray" | "jobs"
                 | "wait" | "fg" | "bg" | "disown" | "command" | "builtin" | "type" | "hash" | "getopts"
+                | "exec" | "history" | "fc" | "bind" | "enable" | "complete" | "compgen" | "compopt" | "suspend"
                 | "dirs" | "pushd" | "popd" | "umask" | "ulimit" | "times" | "caller"
                 | ":" | "true" | "false"
         )
@@ -2582,7 +2659,7 @@ impl Interpreter {
                     file.write_all(stdout.as_bytes())?;
                     file.write_all(stderr.as_bytes())?;
                 }
-                RedirectKind::Dup => {
+                RedirectKind::DupOutput => {
                     let target = self.expand_scalar(&redirect.target)?;
                     if target == "-" {
                         if redirect.fd == 2 { result.stderr.clear(); }
@@ -2593,9 +2670,22 @@ impl Interpreter {
                     } else if redirect.fd == 1 && target == "2" {
                         result.stderr.push_str(&result.stdout);
                         result.stdout.clear();
+                    } else if target.chars().all(|ch| ch.is_ascii_digit()) {
+                        return Err(anyhow!("{}>&{}: descriptor no disponible", redirect.fd, target));
+                    } else {
+                        let path = self.resolve_path(&target);
+                        let mut file = OpenOptions::new().create(true).write(true).truncate(true).open(path)?;
+                        if redirect.fd == 2 {
+                            file.write_all(result.stderr.as_bytes())?;
+                            result.stderr.clear();
+                        } else {
+                            file.write_all(result.stdout.as_bytes())?;
+                            result.stdout.clear();
+                        }
                     }
                 }
                 RedirectKind::Read
+                | RedirectKind::DupInput
                 | RedirectKind::ReadWrite
                 | RedirectKind::HereString => {}
             }
@@ -3878,7 +3968,8 @@ fn render_redirect(redirect: &super::ast::Redirect) -> String {
         RedirectKind::Read => "<",
         RedirectKind::Write => ">",
         RedirectKind::Append => ">>",
-        RedirectKind::Dup => ">&",
+        RedirectKind::DupInput => "<&",
+        RedirectKind::DupOutput => ">&",
         RedirectKind::HereString => "<<<",
         RedirectKind::ReadWrite => "<>",
         RedirectKind::Clobber => ">|",
