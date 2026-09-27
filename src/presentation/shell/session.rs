@@ -38,6 +38,10 @@ impl ShellSession {
             "alias".to_owned(),
             "unalias".to_owned(),
             "source".to_owned(),
+            "local".to_owned(),
+            "return".to_owned(),
+            "break".to_owned(),
+            "continue".to_owned(),
         ]);
 
         let mut editor = Editor::<ShellHelper, DefaultHistory>::new()?;

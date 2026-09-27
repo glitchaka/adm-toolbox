@@ -7,6 +7,7 @@ pub enum Token {
     AndIf,
     OrIf,
     Semi,
+    DblSemi,
     LParen,
     RParen,
     LBrace,
@@ -104,7 +105,13 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
                 }
             }
             ' ' | '\t' | '\r' => { flush(&mut word, &mut out); i += 1; }
-            '\n' | ';' => { flush(&mut word, &mut out); out.push(Token::Semi); i += 1; }
+            '\n' => { flush(&mut word, &mut out); out.push(Token::Semi); i += 1; }
+            ';' if chars.get(i + 1) == Some(&';') => {
+                flush(&mut word, &mut out);
+                out.push(Token::DblSemi);
+                i += 2;
+            }
+            ';' => { flush(&mut word, &mut out); out.push(Token::Semi); i += 1; }
             '&' if chars.get(i + 1) == Some(&'&') => {
                 flush(&mut word, &mut out);
                 out.push(Token::AndIf);

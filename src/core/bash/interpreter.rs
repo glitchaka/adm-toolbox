@@ -13,12 +13,21 @@ use super::{
     parse,
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FlowSignal {
+    None,
+    Break(usize),
+    Continue(usize),
+    Return,
+}
+
 #[derive(Debug, Clone)]
 pub struct ExecutionResult {
     pub stdout: String,
     pub stderr: String,
     pub status: i32,
     pub exit_requested: bool,
+    flow: FlowSignal,
 }
 
 impl ExecutionResult {
@@ -27,13 +36,16 @@ impl ExecutionResult {
         self.stderr.push_str(&next.stderr);
         self.status = next.status;
         self.exit_requested = next.exit_requested;
+        if next.flow != FlowSignal::None {
+            self.flow = next.flow;
+        }
     }
     pub fn success() -> Self {
         Self::from_parts(String::new(), String::new(), 0)
     }
 
     pub fn from_parts(stdout: String, stderr: String, status: i32) -> Self {
-        Self { stdout, stderr, status, exit_requested: false }
+        Self { stdout, stderr, status, exit_requested: false, flow: FlowSignal::None }
     }
 }
 
@@ -60,11 +72,12 @@ pub trait ShellCommandHost: Send + Sync {
 pub struct Interpreter {
     pub env: ShellEnvironment,
     host: Box<dyn ShellCommandHost>,
+    loop_depth: usize,
 }
 
 impl Interpreter {
     pub fn new(host: Box<dyn ShellCommandHost>) -> Self {
-        Self { env: ShellEnvironment::new(), host }
+        Self { env: ShellEnvironment::new(), host, loop_depth: 0 }
     }
 
     pub fn execute_text(&mut self, input: &str) -> Result<ExecutionResult> {
@@ -80,18 +93,22 @@ impl Interpreter {
                 let mut last = ExecutionResult::success();
                 for node in nodes {
                     last.append(self.execute(node, stdin)?);
-                    if last.exit_requested { break; }
+                    if last.exit_requested || last.flow != FlowSignal::None { break; }
                 }
                 last
             }
             AstNode::And(left, right) => {
                 let mut left = self.execute(left, stdin)?;
-                if !left.exit_requested && left.status == 0 { left.append(self.execute(right, stdin)?); }
+                if !left.exit_requested && left.flow == FlowSignal::None && left.status == 0 {
+                    left.append(self.execute(right, stdin)?);
+                }
                 left
             }
             AstNode::Or(left, right) => {
                 let mut left = self.execute(left, stdin)?;
-                if !left.exit_requested && left.status != 0 { left.append(self.execute(right, stdin)?); }
+                if !left.exit_requested && left.flow == FlowSignal::None && left.status != 0 {
+                    left.append(self.execute(right, stdin)?);
+                }
                 left
             }
             AstNode::Pipeline(parts) => self.execute_pipeline(parts, stdin)?,
@@ -117,23 +134,89 @@ impl Interpreter {
                     self.expand_words(words)?
                 };
                 let mut last = ExecutionResult::success();
+                self.loop_depth += 1;
                 for value in values {
                     self.env.set(name.clone(), value);
                     last.append(self.execute(body, stdin)?);
                     if last.exit_requested { break; }
+                    match last.flow {
+                        FlowSignal::Break(levels) => {
+                            last.flow = if levels > 1 { FlowSignal::Break(levels - 1) } else { FlowSignal::None };
+                            break;
+                        }
+                        FlowSignal::Continue(levels) => {
+                            last.flow = if levels > 1 { FlowSignal::Continue(levels - 1) } else { FlowSignal::None };
+                            if levels > 1 { break; }
+                            continue;
+                        }
+                        FlowSignal::Return => break,
+                        FlowSignal::None => {}
+                    }
                 }
+                self.loop_depth = self.loop_depth.saturating_sub(1);
                 last
             }
             AstNode::While { condition, body, until } => {
                 let mut last = ExecutionResult::success();
+                self.loop_depth += 1;
                 loop {
-                    let condition = self.execute(condition, None)?;
-                    let should_run = if *until { condition.status != 0 } else { condition.status == 0 };
+                    let condition_result = self.execute(condition, None)?;
+                    let should_run = if *until {
+                        condition_result.status != 0
+                    } else {
+                        condition_result.status == 0
+                    };
                     if !should_run { break; }
+
                     last.append(self.execute(body, stdin)?);
                     if last.exit_requested { break; }
+
+                    match last.flow {
+                        FlowSignal::Break(levels) => {
+                            last.flow = if levels > 1 { FlowSignal::Break(levels - 1) } else { FlowSignal::None };
+                            break;
+                        }
+                        FlowSignal::Continue(levels) => {
+                            last.flow = if levels > 1 { FlowSignal::Continue(levels - 1) } else { FlowSignal::None };
+                            if levels > 1 { break; }
+                            continue;
+                        }
+                        FlowSignal::Return => break,
+                        FlowSignal::None => {}
+                    }
                 }
+                self.loop_depth = self.loop_depth.saturating_sub(1);
                 last
+            }
+            AstNode::Case { word, arms } => {
+                let value = self.expand_scalar(word)?;
+                let mut result = ExecutionResult::success();
+                for arm in arms {
+                    let mut matched = false;
+                    for pattern in &arm.patterns {
+                        let pattern = self.expand_scalar(pattern)?;
+                        if glob::Pattern::new(&pattern)
+                            .map(|candidate| candidate.matches(&value))
+                            .unwrap_or(false)
+                        {
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if matched {
+                        result = self.execute(&arm.body, stdin)?;
+                        break;
+                    }
+                }
+                result
+            }
+            AstNode::Conditional(expression) => {
+                let success = self.evaluate_conditional(expression)?;
+                ExecutionResult::from_parts(String::new(), String::new(), if success { 0 } else { 1 })
+            }
+            AstNode::ArithmeticCommand(expression) => {
+                let value = self.evaluate_arithmetic_command(expression)?;
+                ExecutionResult::from_parts(String::new(), String::new(), if value != 0 { 0 } else { 1 })
             }
             AstNode::FunctionDef { name, body } => {
                 self.env.functions.insert(name.clone(), (**body).clone());
@@ -146,6 +229,7 @@ impl Interpreter {
                 self.env = saved;
                 let mut result = result?;
                 result.exit_requested = false;
+                result.flow = FlowSignal::None;
                 result
             }
         };
@@ -165,6 +249,7 @@ impl Interpreter {
             self.env = saved;
             last = result?;
             last.exit_requested = false;
+            last.flow = FlowSignal::None;
             stderr.push_str(&last.stderr);
             input = Some(last.stdout.as_bytes().to_vec());
         }
@@ -230,8 +315,14 @@ impl Interpreter {
         } else if let Some(body) = self.env.functions.get(&name).cloned() {
             let saved = self.env.positional.clone();
             self.env.positional = args.to_vec();
-            let result = self.execute(&body, local_stdin.as_deref())?;
+            self.env.push_local_scope();
+            let execution = self.execute(&body, local_stdin.as_deref());
+            self.env.pop_local_scope();
             self.env.positional = saved;
+            let mut result = execution?;
+            if result.flow == FlowSignal::Return {
+                result.flow = FlowSignal::None;
+            }
             result
         } else if let Some(result) = self.host.execute_builtin(
             &name,
@@ -347,6 +438,7 @@ impl Interpreter {
                     stderr: String::new(),
                     status,
                     exit_requested: true,
+                    flow: FlowSignal::None,
                 }
             }
             "source" | "." => {
@@ -367,6 +459,70 @@ impl Interpreter {
                     .unwrap_or_default();
                 self.env.set(variable, value);
                 ExecutionResult::success()
+            }
+            "local" => {
+                if self.env.local_scopes.is_empty() {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "local: solo puede usarse dentro de una función\n".to_owned(),
+                        1,
+                    )
+                } else {
+                    for arg in args {
+                        if let Some((name, value)) = arg.split_once('=') {
+                            let value = self.expand_scalar(value)?;
+                            self.env.set_local(name.to_owned(), value);
+                        } else {
+                            let value = self.env.get(arg);
+                            self.env.set_local(arg.clone(), value);
+                        }
+                    }
+                    ExecutionResult::success()
+                }
+            }
+            "break" => {
+                if self.loop_depth == 0 {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "break: solo puede usarse dentro de un bucle\n".to_owned(),
+                        1,
+                    )
+                } else {
+                    let levels = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1).max(1);
+                    let mut result = ExecutionResult::success();
+                    result.flow = FlowSignal::Break(levels.min(self.loop_depth));
+                    result
+                }
+            }
+            "continue" => {
+                if self.loop_depth == 0 {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "continue: solo puede usarse dentro de un bucle\n".to_owned(),
+                        1,
+                    )
+                } else {
+                    let levels = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1).max(1);
+                    let mut result = ExecutionResult::success();
+                    result.flow = FlowSignal::Continue(levels.min(self.loop_depth));
+                    result
+                }
+            }
+            "return" => {
+                let status = args.first()
+                    .and_then(|value| value.parse::<i32>().ok())
+                    .unwrap_or(self.env.last_status);
+                if self.env.local_scopes.is_empty() {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "return: solo puede usarse dentro de una función\n".to_owned(),
+                        1,
+                    )
+                } else {
+                    let mut result = ExecutionResult::from_parts(String::new(), String::new(), status);
+                    result.flow = FlowSignal::Return;
+                    result
+                }
             }
             "xargs" => {
                 self.execute_xargs(args, stdin)?
@@ -412,6 +568,151 @@ impl Interpreter {
         Ok(Some(result))
     }
 
+
+    fn evaluate_conditional(&mut self, expression: &[String]) -> Result<bool> {
+        fn split_top_level<'a>(items: &'a [String], operator: &str) -> Option<(&'a [String], &'a [String])> {
+            let mut depth = 0i32;
+            for (index, item) in items.iter().enumerate() {
+                match item.as_str() {
+                    "(" => depth += 1,
+                    ")" => depth -= 1,
+                    _ if depth == 0 && item == operator => return Some((&items[..index], &items[index + 1..])),
+                    _ => {}
+                }
+            }
+            None
+        }
+
+        if let Some((left, right)) = split_top_level(expression, "||") {
+            return Ok(self.evaluate_conditional(left)? || self.evaluate_conditional(right)?);
+        }
+        if let Some((left, right)) = split_top_level(expression, "&&") {
+            return Ok(self.evaluate_conditional(left)? && self.evaluate_conditional(right)?);
+        }
+
+        let mut items = expression;
+        if items.first().map(String::as_str) == Some("(")
+            && items.last().map(String::as_str) == Some(")")
+        {
+            items = &items[1..items.len() - 1];
+        }
+
+        if items.first().map(String::as_str) == Some("!") {
+            return Ok(!self.evaluate_conditional(&items[1..])?);
+        }
+
+        match items {
+            [value] => Ok(!self.expand_scalar(value)?.is_empty()),
+            [op, value] => {
+                let value = self.expand_scalar(value)?;
+                Ok(match op.as_str() {
+                    "-n" => !value.is_empty(),
+                    "-z" => value.is_empty(),
+                    "-e" => self.resolve_path(&value).exists(),
+                    "-f" => self.resolve_path(&value).is_file(),
+                    "-d" => self.resolve_path(&value).is_dir(),
+                    _ => false,
+                })
+            }
+            [left, op, right] => {
+                let left = self.expand_scalar(left)?;
+                let right = self.expand_scalar(right)?;
+                Ok(match op.as_str() {
+                    "=" | "==" => glob::Pattern::new(&right)
+                        .map(|pattern| pattern.matches(&left))
+                        .unwrap_or(left == right),
+                    "!=" => glob::Pattern::new(&right)
+                        .map(|pattern| !pattern.matches(&left))
+                        .unwrap_or(left != right),
+                    "<" => left < right,
+                    ">" => left > right,
+                    "-eq" => left.parse::<i64>().unwrap_or(0) == right.parse::<i64>().unwrap_or(0),
+                    "-ne" => left.parse::<i64>().unwrap_or(0) != right.parse::<i64>().unwrap_or(0),
+                    "-lt" => left.parse::<i64>().unwrap_or(0) < right.parse::<i64>().unwrap_or(0),
+                    "-le" => left.parse::<i64>().unwrap_or(0) <= right.parse::<i64>().unwrap_or(0),
+                    "-gt" => left.parse::<i64>().unwrap_or(0) > right.parse::<i64>().unwrap_or(0),
+                    "-ge" => left.parse::<i64>().unwrap_or(0) >= right.parse::<i64>().unwrap_or(0),
+                    _ => false,
+                })
+            }
+            _ => Ok(false),
+        }
+    }
+
+    fn evaluate_arithmetic_command(&mut self, expression: &str) -> Result<i64> {
+        let expression = expression.trim();
+
+        for suffix in ["++", "--"] {
+            if let Some(name) = expression.strip_suffix(suffix).map(str::trim) {
+                if is_variable_name(name) {
+                    let current = self.env.get(name).parse::<i64>().unwrap_or(0);
+                    let next = if suffix == "++" { current + 1 } else { current - 1 };
+                    self.env.set(name.to_owned(), next.to_string());
+                    return Ok(current);
+                }
+            }
+        }
+
+        for prefix in ["++", "--"] {
+            if let Some(name) = expression.strip_prefix(prefix).map(str::trim) {
+                if is_variable_name(name) {
+                    let current = self.env.get(name).parse::<i64>().unwrap_or(0);
+                    let next = if prefix == "++" { current + 1 } else { current - 1 };
+                    self.env.set(name.to_owned(), next.to_string());
+                    return Ok(next);
+                }
+            }
+        }
+
+        for operator in ["==", "!=", ">=", "<=", ">", "<"] {
+            if let Some((left, right)) = expression.split_once(operator) {
+                let left = eval_arithmetic(left.trim(), &self.env)?;
+                let right = eval_arithmetic(right.trim(), &self.env)?;
+                return Ok(match operator {
+                    "==" => (left == right) as i64,
+                    "!=" => (left != right) as i64,
+                    ">=" => (left >= right) as i64,
+                    "<=" => (left <= right) as i64,
+                    ">" => (left > right) as i64,
+                    "<" => (left < right) as i64,
+                    _ => 0,
+                });
+            }
+        }
+
+        for operator in ["+=", "-=", "*=", "/=", "%="] {
+            if let Some((name, rhs)) = expression.split_once(operator) {
+                let name = name.trim();
+                if is_variable_name(name) {
+                    let right = eval_arithmetic(rhs.trim(), &self.env)?;
+                    let current = self.env.get(name).parse::<i64>().unwrap_or(0);
+                    let value = match operator {
+                        "+=" => current + right,
+                        "-=" => current - right,
+                        "*=" => current * right,
+                        "/=" => if right == 0 { 0 } else { current / right },
+                        "%=" => if right == 0 { 0 } else { current % right },
+                        _ => unreachable!(),
+                    };
+                    self.env.set(name.to_owned(), value.to_string());
+                    return Ok(value);
+                }
+            }
+        }
+
+        if expression.matches('=').count() == 1 {
+            if let Some((name, rhs)) = expression.split_once('=') {
+                let name = name.trim();
+                if is_variable_name(name) {
+                    let value = eval_arithmetic(rhs.trim(), &self.env)?;
+                    self.env.set(name.to_owned(), value.to_string());
+                    return Ok(value);
+                }
+            }
+        }
+
+        eval_arithmetic(expression, &self.env)
+    }
 
     fn execute_xargs(
         &mut self,
@@ -778,6 +1079,12 @@ fn shell_quote(value: &str) -> String {
     format!("'{}'", value.replace('\'', "'\\''"))
 }
 
+fn is_variable_name(name: &str) -> bool {
+    !name.is_empty() && name.chars().enumerate().all(|(index, ch)| {
+        ch == '_' || (ch.is_ascii_alphanumeric() && (index > 0 || !ch.is_ascii_digit()))
+    })
+}
+
 fn is_assignment(word: &str) -> bool {
     let Some((name, _)) = word.split_once('=') else { return false };
     !name.is_empty() && name.chars().enumerate().all(|(index, ch)| {
@@ -1006,6 +1313,41 @@ mod tests {
         let mut shell = Interpreter::new(Box::new(NullHost));
         assert_eq!(shell.expand_scalar("$((20+22))").unwrap(), "42");
         assert_eq!(shell.expand_scalar("${missing:-fallback}").unwrap(), "fallback");
+    }
+
+
+    #[test]
+    fn case_conditional_and_arithmetic_commands_work() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+
+        shell.execute_text("x=beta").unwrap();
+        let case_result = shell
+            .execute_text("case $x in alpha) echo no ;; beta|gamma) echo yes ;; *) echo fallback ;; esac")
+            .unwrap();
+        assert!(case_result.stdout.contains("external:echo"));
+
+        assert_eq!(shell.execute_text("[[ -n $x && $x == beta ]]").unwrap().status, 0);
+        assert_eq!(shell.execute_text("[[ $x == nope ]]").unwrap().status, 1);
+
+        shell.execute_text("n=1").unwrap();
+        assert_eq!(shell.execute_text("(( n += 2 ))").unwrap().status, 0);
+        assert_eq!(shell.env.get("n"), "3");
+        assert_eq!(shell.execute_text("(( n > 2 ))").unwrap().status, 0);
+    }
+
+    #[test]
+    fn break_continue_return_and_local_are_native() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+
+        shell.execute_text("x=outer").unwrap();
+        shell.execute_text("f() { local x=inner; return 7; x=never; }").unwrap();
+        let result = shell.execute_text("f").unwrap();
+        assert_eq!(result.status, 7);
+        assert_eq!(shell.env.get("x"), "outer");
+
+        shell.execute_text("count=0").unwrap();
+        shell.execute_text("for i in 1 2 3 4; do (( count += 1 )); if [[ $i == 2 ]]; then continue; fi; if [[ $i == 3 ]]; then break; fi; done").unwrap();
+        assert_eq!(shell.env.get("count"), "3");
     }
 
     struct XargsHost;
