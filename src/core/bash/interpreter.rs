@@ -38,6 +38,19 @@ pub struct JobInfo {
     pub running: bool,
 }
 
+#[derive(Debug, Clone, Default)]
+struct CompletionSpec {
+    actions: Vec<String>,
+    glob_pattern: Option<String>,
+    word_list: Option<String>,
+    function: Option<String>,
+    command: Option<String>,
+    filter_pattern: Option<String>,
+    prefix: String,
+    suffix: String,
+    options: HashSet<String>,
+}
+
 #[derive(Debug)]
 struct ProcessSubstitution {
     path: PathBuf,
@@ -142,6 +155,7 @@ pub trait ShellCommandHost: Send + Sync {
     }
 
     fn command_is_builtin(&self, _name: &str) -> bool { false }
+    fn command_names(&self) -> Vec<String> { Vec::new() }
     fn jobs(&self) -> Result<Vec<JobInfo>> { Ok(Vec::new()) }
     fn wait_job(&self, _pid: Option<u32>) -> Result<i32> { Ok(127) }
     fn wait_next_job(&self) -> Result<Option<(u32, i32)>> { Ok(None) }
@@ -166,6 +180,8 @@ pub struct Interpreter {
     pending_expansion_stderr: String,
     pending_substitution_statuses: Vec<i32>,
     pending_expansion_exits: Vec<i32>,
+    completion_specs: HashMap<String, CompletionSpec>,
+    active_completion_options: Option<HashSet<String>>,
 }
 
 impl Interpreter {
@@ -185,6 +201,8 @@ impl Interpreter {
             pending_expansion_stderr: String::new(),
             pending_substitution_statuses: Vec::new(),
             pending_expansion_exits: Vec::new(),
+            completion_specs: HashMap::new(),
+            active_completion_options: None,
         }
     }
 
@@ -1262,6 +1280,9 @@ impl Interpreter {
             }
             "type" => self.builtin_type(args)?,
             "hash" => self.builtin_hash(args)?,
+            "complete" => self.builtin_complete(args)?,
+            "compgen" => self.builtin_compgen(args)?,
+            "compopt" => self.builtin_compopt(args)?,
             "getopts" => self.builtin_getopts(args)?,
             "dirs" => {
                 let mut stdout = self.env.cwd.to_string_lossy().into_owned();
@@ -1344,7 +1365,8 @@ impl Interpreter {
                 | "exit" | "logout" | "exec" | "source" | "." | "read" | "local" | "declare" | "typeset"
                 | "readonly" | "break" | "continue" | "return" | "shift" | "set" | "shopt"
                 | "trap" | "eval" | "let" | "test" | "[" | "mapfile" | "readarray" | "jobs"
-                | "wait" | "fg" | "bg" | "disown" | "command" | "builtin" | "type" | "hash" | "getopts"
+                | "wait" | "fg" | "bg" | "disown" | "command" | "builtin" | "type" | "hash"
+                | "complete" | "compgen" | "compopt" | "getopts"
                 | "dirs" | "pushd" | "popd" | "umask" | "ulimit" | "times" | "caller"
                 | "enable" | ":" | "true" | "false"
         )
@@ -1582,6 +1604,699 @@ impl Interpreter {
             let _ = self.host.disown_job(pid)?;
         }
         Ok(ExecutionResult::success())
+    }
+
+    fn parse_completion_args(
+        &self,
+        args: &[String],
+        compgen: bool,
+    ) -> Result<(
+        CompletionSpec,
+        Vec<String>,
+        Option<String>,
+        Option<String>,
+        bool,
+        bool,
+        Option<String>,
+    )> {
+        let mut spec = CompletionSpec::default();
+        let mut operands = Vec::new();
+        let mut store_var = None;
+        let mut print = false;
+        let mut remove = false;
+        let mut special_target = None;
+        let mut index = 0usize;
+
+        while index < args.len() {
+            let arg = &args[index];
+            match arg.as_str() {
+                "--" => {
+                    operands.extend(args[index + 1..].iter().cloned());
+                    break;
+                }
+                "-p" if !compgen => print = true,
+                "-r" if !compgen => remove = true,
+                "-D" if !compgen => special_target = Some("__default__".to_owned()),
+                "-E" if !compgen => special_target = Some("__empty__".to_owned()),
+                "-I" if !compgen => special_target = Some("__initial__".to_owned()),
+                "-V" if compgen => {
+                    index += 1;
+                    store_var = args.get(index).cloned();
+                    if store_var.is_none() {
+                        bail!("compgen: -V requiere nombre de variable");
+                    }
+                }
+                "-A" | "-G" | "-W" | "-F" | "-C" | "-X" | "-P" | "-S" | "-o" => {
+                    let option = arg.clone();
+                    index += 1;
+                    let Some(value) = args.get(index).cloned() else {
+                        bail!("{}: {option} requiere argumento", if compgen { "compgen" } else { "complete" });
+                    };
+                    match option.as_str() {
+                        "-A" => spec.actions.push(value),
+                        "-G" => spec.glob_pattern = Some(value),
+                        "-W" => spec.word_list = Some(value),
+                        "-F" => spec.function = Some(value),
+                        "-C" => spec.command = Some(value),
+                        "-X" => spec.filter_pattern = Some(value),
+                        "-P" => spec.prefix = value,
+                        "-S" => spec.suffix = value,
+                        "-o" => { spec.options.insert(value); }
+                        _ => {}
+                    }
+                }
+                "-a" => spec.actions.push("alias".to_owned()),
+                "-b" => spec.actions.push("builtin".to_owned()),
+                "-c" => spec.actions.push("command".to_owned()),
+                "-d" => spec.actions.push("directory".to_owned()),
+                "-e" => spec.actions.push("export".to_owned()),
+                "-f" => spec.actions.push("file".to_owned()),
+                "-g" => spec.actions.push("group".to_owned()),
+                "-j" => spec.actions.push("job".to_owned()),
+                "-k" => spec.actions.push("keyword".to_owned()),
+                "-s" => spec.actions.push("service".to_owned()),
+                "-u" => spec.actions.push("user".to_owned()),
+                "-v" => spec.actions.push("variable".to_owned()),
+                value if value.starts_with('-') => {
+                    bail!(
+                        "{}: opción no válida: {value}",
+                        if compgen { "compgen" } else { "complete" }
+                    );
+                }
+                value => operands.push(value.to_owned()),
+            }
+            index += 1;
+        }
+
+        let word = if compgen {
+            operands.last().cloned()
+        } else {
+            None
+        };
+        Ok((spec, operands, word, store_var, print, remove, special_target))
+    }
+
+    fn render_completion_spec(&self, name: &str, spec: &CompletionSpec) -> String {
+        let mut parts = vec!["complete".to_owned()];
+        for action in &spec.actions {
+            parts.push("-A".to_owned());
+            parts.push(shell_quote(action));
+        }
+        for (flag, value) in [
+            ("-G", spec.glob_pattern.as_ref()),
+            ("-W", spec.word_list.as_ref()),
+            ("-F", spec.function.as_ref()),
+            ("-C", spec.command.as_ref()),
+            ("-X", spec.filter_pattern.as_ref()),
+        ] {
+            if let Some(value) = value {
+                parts.push(flag.to_owned());
+                parts.push(shell_quote(value));
+            }
+        }
+        if !spec.prefix.is_empty() {
+            parts.push("-P".to_owned());
+            parts.push(shell_quote(&spec.prefix));
+        }
+        if !spec.suffix.is_empty() {
+            parts.push("-S".to_owned());
+            parts.push(shell_quote(&spec.suffix));
+        }
+        let mut options = spec.options.iter().cloned().collect::<Vec<_>>();
+        options.sort();
+        for option in options {
+            parts.push("-o".to_owned());
+            parts.push(option);
+        }
+        match name {
+            "__default__" => parts.push("-D".to_owned()),
+            "__empty__" => parts.push("-E".to_owned()),
+            "__initial__" => parts.push("-I".to_owned()),
+            _ => parts.push(shell_quote(name)),
+        }
+        parts.join(" ")
+    }
+
+    fn builtin_complete(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let (spec, operands, _, _, print, remove, special_target) =
+            self.parse_completion_args(args, false)?;
+
+        let has_definition = !spec.actions.is_empty()
+            || spec.glob_pattern.is_some()
+            || spec.word_list.is_some()
+            || spec.function.is_some()
+            || spec.command.is_some()
+            || spec.filter_pattern.is_some()
+            || !spec.prefix.is_empty()
+            || !spec.suffix.is_empty()
+            || !spec.options.is_empty();
+
+        if remove {
+            if let Some(target) = special_target {
+                let existed = self.completion_specs.remove(&target).is_some();
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    String::new(),
+                    if existed { 0 } else { 1 },
+                ));
+            }
+            if operands.is_empty() {
+                self.completion_specs.clear();
+                return Ok(ExecutionResult::success());
+            }
+            let mut status = 0;
+            for name in operands {
+                if self.completion_specs.remove(&name).is_none() {
+                    status = 1;
+                }
+            }
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), status));
+        }
+
+        if print || (!has_definition && (operands.is_empty() || special_target.is_none())) {
+            let mut names = if let Some(target) = special_target {
+                vec![target]
+            } else if operands.is_empty() {
+                let mut names = self.completion_specs.keys().cloned().collect::<Vec<_>>();
+                names.sort();
+                names
+            } else {
+                operands
+            };
+            names.sort();
+            let mut stdout = String::new();
+            let mut status = 0;
+            for name in names {
+                if let Some(existing) = self.completion_specs.get(&name) {
+                    stdout.push_str(&self.render_completion_spec(&name, existing));
+                    stdout.push('\n');
+                } else {
+                    status = 1;
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), status));
+        }
+
+        if let Some(target) = special_target {
+            self.completion_specs.insert(target, spec);
+            return Ok(ExecutionResult::success());
+        }
+
+        if operands.is_empty() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "complete: falta nombre de comando\n".to_owned(),
+                2,
+            ));
+        }
+
+        for name in operands {
+            self.completion_specs.insert(name, spec.clone());
+        }
+        Ok(ExecutionResult::success())
+    }
+
+    fn builtin_compgen(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let (spec, _, word, store_var, _, _, special) = self.parse_completion_args(args, true)?;
+        if special.is_some() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "compgen: opción no válida\n".to_owned(),
+                2,
+            ));
+        }
+        let word = word.unwrap_or_default();
+        let values = self.generate_completions(&spec, &word, "", "")?;
+        let status = if values.is_empty() { 1 } else { 0 };
+        if let Some(name) = store_var {
+            self.env.set_array(name, values);
+            Ok(ExecutionResult::from_parts(String::new(), String::new(), status))
+        } else {
+            let stdout = if values.is_empty() {
+                String::new()
+            } else {
+                format!("{}\n", values.join("\n"))
+            };
+            Ok(ExecutionResult::from_parts(stdout, String::new(), status))
+        }
+    }
+
+    fn builtin_compopt(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let mut add = Vec::new();
+        let mut remove = Vec::new();
+        let mut names = Vec::new();
+        let mut special = None;
+        let mut index = 0usize;
+
+        while index < args.len() {
+            match args[index].as_str() {
+                "-D" => special = Some("__default__".to_owned()),
+                "-E" => special = Some("__empty__".to_owned()),
+                "-I" => special = Some("__initial__".to_owned()),
+                "-o" | "+o" => {
+                    let enable = args[index] == "-o";
+                    index += 1;
+                    let Some(option) = args.get(index).cloned() else {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "compopt: falta opción después de -o/+o\n".to_owned(),
+                            2,
+                        ));
+                    };
+                    if enable { add.push(option); } else { remove.push(option); }
+                }
+                value if value.starts_with('-') || value.starts_with('+') => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("compopt: opción no válida: {value}\n"),
+                        2,
+                    ));
+                }
+                value => names.push(value.to_owned()),
+            }
+            index += 1;
+        }
+
+        if let Some(target) = special {
+            names = vec![target];
+        }
+
+        if names.is_empty() {
+            if let Some(active) = self.active_completion_options.as_mut() {
+                for option in add { active.insert(option); }
+                for option in remove { active.remove(&option); }
+                if args.is_empty() {
+                    let mut options = active.iter().cloned().collect::<Vec<_>>();
+                    options.sort();
+                    return Ok(ExecutionResult::from_parts(
+                        options.into_iter().map(|option| format!("compopt -o {option}\n")).collect(),
+                        String::new(),
+                        0,
+                    ));
+                }
+                return Ok(ExecutionResult::success());
+            }
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "compopt: no hay completion activa\n".to_owned(),
+                1,
+            ));
+        }
+
+        let mut stdout = String::new();
+        let mut status = 0;
+        for name in names {
+            let Some(spec) = self.completion_specs.get_mut(&name) else {
+                status = 1;
+                continue;
+            };
+            for option in &add { spec.options.insert(option.clone()); }
+            for option in &remove { spec.options.remove(option); }
+            if args.iter().all(|arg| arg != "-o" && arg != "+o") {
+                let mut options = spec.options.iter().cloned().collect::<Vec<_>>();
+                options.sort();
+                for option in options {
+                    stdout.push_str(&format!("compopt -o {option} {}\n", shell_quote(&name)));
+                }
+            }
+        }
+        Ok(ExecutionResult::from_parts(stdout, String::new(), status))
+    }
+
+    fn shell_builtin_completion_names(&self) -> Vec<String> {
+        [
+            ":", ".", "[", "alias", "bg", "break", "builtin", "caller", "cd",
+            "command", "compgen", "complete", "compopt", "continue", "declare",
+            "dirs", "disown", "echo", "enable", "eval", "exec", "exit", "export",
+            "false", "fg", "getopts", "hash", "jobs", "let", "local", "logout",
+            "mapfile", "popd", "printf", "pushd", "pwd", "read", "readarray",
+            "readonly", "return", "set", "shift", "shopt", "source", "test",
+            "times", "trap", "true", "type", "typeset", "ulimit", "umask",
+            "unalias", "unset", "wait",
+        ]
+        .into_iter()
+        .map(str::to_owned)
+        .collect()
+    }
+
+    fn file_completions(&self, word: &str, directories_only: bool) -> Vec<String> {
+        let path = PathBuf::from(word);
+        let parent = path.parent()
+            .filter(|parent| !parent.as_os_str().is_empty())
+            .unwrap_or(Path::new("."));
+        let stem = path.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("");
+        let directory = self.resolve_path(&parent.to_string_lossy());
+
+        let mut values = Vec::new();
+        if let Ok(entries) = fs::read_dir(directory) {
+            for entry in entries.flatten() {
+                if directories_only && !entry.path().is_dir() {
+                    continue;
+                }
+                let name = entry.file_name().to_string_lossy().into_owned();
+                if !name.starts_with(stem) {
+                    continue;
+                }
+                let mut value = if parent == Path::new(".") {
+                    name
+                } else {
+                    parent.join(name).to_string_lossy().into_owned()
+                };
+                if entry.path().is_dir() {
+                    value.push('/');
+                }
+                values.push(value);
+            }
+        }
+        values
+    }
+
+    fn path_command_names(&self) -> Vec<String> {
+        let mut values = Vec::new();
+        let path = self.env.get("PATH");
+        for directory in std::env::split_paths(&path) {
+            let Ok(entries) = fs::read_dir(directory) else { continue };
+            for entry in entries.flatten() {
+                if !entry.path().is_file() {
+                    continue;
+                }
+                let mut name = entry.file_name().to_string_lossy().into_owned();
+                #[cfg(windows)]
+                {
+                    let lower = name.to_ascii_lowercase();
+                    if ![".exe", ".cmd", ".bat", ".com"]
+                        .iter()
+                        .any(|extension| lower.ends_with(extension))
+                    {
+                        continue;
+                    }
+                    if let Some((base, _)) = name.rsplit_once('.') {
+                        name = base.to_owned();
+                    }
+                }
+                values.push(name);
+            }
+        }
+        values
+    }
+
+    fn completion_action(&self, action: &str, word: &str) -> Result<Vec<String>> {
+        let mut values = match action {
+            "alias" => self.env.aliases.keys().cloned().collect(),
+            "arrayvar" => self.env.arrays.keys()
+                .chain(self.env.assoc_arrays.keys())
+                .cloned()
+                .collect(),
+            "builtin" => self.shell_builtin_completion_names()
+                .into_iter()
+                .filter(|name| !self.disabled_builtins.contains(name))
+                .collect(),
+            "command" => {
+                let mut values = self.host.command_names();
+                values.extend(self.shell_builtin_completion_names());
+                values.extend(self.env.functions.keys().cloned());
+                values.extend(self.env.aliases.keys().cloned());
+                values.extend(self.path_command_names());
+                values
+            }
+            "directory" => self.file_completions(word, true),
+            "file" => self.file_completions(word, false),
+            "disabled" => self.disabled_builtins.iter().cloned().collect(),
+            "enabled" => self.shell_builtin_completion_names()
+                .into_iter()
+                .filter(|name| !self.disabled_builtins.contains(name))
+                .collect(),
+            "export" => self.env.exported.keys().cloned().collect(),
+            "function" => self.env.functions.keys().cloned().collect(),
+            "job" => self.host.jobs()?.into_iter().map(|job| job.command).collect(),
+            "keyword" => [
+                "if", "then", "else", "elif", "fi", "for", "select", "while",
+                "until", "do", "done", "case", "in", "esac", "function", "time",
+                "{", "}", "[[", "]]",
+            ].into_iter().map(str::to_owned).collect(),
+            "signal" => [
+                "EXIT", "HUP", "INT", "QUIT", "ILL", "ABRT", "FPE", "KILL",
+                "SEGV", "PIPE", "ALRM", "TERM", "CHLD", "CONT", "STOP", "TSTP",
+                "TTIN", "TTOU", "DEBUG", "RETURN", "ERR",
+            ].into_iter().map(str::to_owned).collect(),
+            "user" => {
+                let user = self.env.get("USERNAME");
+                if user.is_empty() { Vec::new() } else { vec![user] }
+            }
+            "hostname" => {
+                let hostname = self.env.get("COMPUTERNAME");
+                if hostname.is_empty() { Vec::new() } else { vec![hostname] }
+            },
+            "variable" => self.env.vars.keys()
+                .chain(self.env.arrays.keys())
+                .chain(self.env.assoc_arrays.keys())
+                .chain(self.env.namerefs.keys())
+                .cloned()
+                .collect(),
+            "group" | "service" | "binding" | "stopped" => Vec::new(),
+            other => bail!("complete: acción no válida: {other}"),
+        };
+
+        if !matches!(action, "file" | "directory") {
+            values.retain(|value| value.starts_with(word));
+        }
+        values.sort();
+        values.dedup();
+        Ok(values)
+    }
+
+    fn invoke_completion_function(
+        &mut self,
+        function: &str,
+        command: &str,
+        word: &str,
+        previous: &str,
+        options: &HashSet<String>,
+    ) -> Result<(Vec<String>, HashSet<String>)> {
+        let Some(body) = self.env.functions.get(function).cloned() else {
+            return Ok((Vec::new(), options.clone()));
+        };
+
+        let saved_positional = self.env.positional.clone();
+        let words = vec![command.to_owned(), word.to_owned(), previous.to_owned()];
+        let comp_line = self.env.get("COMP_LINE");
+        let comp_point = self.env.get("COMP_POINT");
+        let comp_words = self.env.array_values("COMP_WORDS");
+        let comp_cword = self.env.get("COMP_CWORD");
+        self.env.push_local_scope();
+        self.env.set_local("COMP_LINE", comp_line);
+        self.env.set_local("COMP_POINT", comp_point);
+        self.env.set_local_array("COMP_WORDS", comp_words);
+        self.env.set_local("COMP_CWORD", comp_cword);
+        self.env.set_local_array("COMPREPLY", Vec::new());
+        self.env.positional = words;
+        self.active_completion_options = Some(options.clone());
+
+        let execution = self.execute(&body, None);
+        let replies = self.env.array_values("COMPREPLY");
+        let updated_options = self.active_completion_options.take().unwrap_or_else(|| options.clone());
+
+        self.env.positional = saved_positional;
+        self.env.pop_local_scope();
+        let mut execution = execution?;
+        if execution.flow == FlowSignal::Return {
+            execution.flow = FlowSignal::None;
+        }
+        let _ = execution;
+        Ok((replies, updated_options))
+    }
+
+    fn generate_completions(
+        &mut self,
+        spec: &CompletionSpec,
+        word: &str,
+        command_name: &str,
+        previous: &str,
+    ) -> Result<Vec<String>> {
+        let mut values = Vec::new();
+        for action in &spec.actions {
+            values.extend(self.completion_action(action, word)?);
+        }
+
+        if let Some(word_list) = spec.word_list.as_ref() {
+            let expanded = self.expand_scalar(word_list)?;
+            let words = split_shell_words_relaxed(&expanded)
+                .unwrap_or_else(|_| expanded.split_whitespace().map(str::to_owned).collect());
+            values.extend(words.into_iter().filter(|value| value.starts_with(word)));
+        }
+
+        if let Some(pattern) = spec.glob_pattern.as_ref() {
+            values.extend(self.glob(pattern)?);
+        }
+
+        let mut effective_options = spec.options.clone();
+        if let Some(function) = spec.function.as_ref() {
+            let (replies, options) = self.invoke_completion_function(
+                function,
+                command_name,
+                word,
+                previous,
+                &effective_options,
+            )?;
+            values.extend(replies);
+            effective_options = options;
+        }
+
+        if let Some(command) = spec.command.as_ref() {
+            let source = format!(
+                "{} {} {} {}",
+                command,
+                shell_quote(command_name),
+                shell_quote(word),
+                shell_quote(previous),
+            );
+            let saved_env = self.env.clone();
+            let saved_hash = self.command_hash.clone();
+            let saved_disabled = self.disabled_builtins.clone();
+            let execution = self.execute_text(&source);
+            self.env = saved_env;
+            self.command_hash = saved_hash;
+            self.disabled_builtins = saved_disabled;
+            let execution = execution?;
+            values.extend(execution.stdout.lines().map(str::to_owned));
+            self.pending_expansion_stderr.push_str(&execution.stderr);
+        }
+
+        if let Some(filter) = spec.filter_pattern.as_ref() {
+            let negate = filter.starts_with('!');
+            let pattern = filter.strip_prefix('!').unwrap_or(filter);
+            let pattern = pattern.replace('&', word);
+            let extglob = self.env.option_enabled("extglob");
+            let nocase = self.env.option_enabled("nocasematch");
+            values.retain(|value| {
+                let matched = shell_pattern_matches(&pattern, value, extglob, nocase);
+                if negate { matched } else { !matched }
+            });
+        }
+
+        if effective_options.contains("plusdirs")
+            || (values.is_empty() && effective_options.contains("dirnames"))
+        {
+            values.extend(self.file_completions(word, true));
+        }
+        if values.is_empty()
+            && (effective_options.contains("default") || effective_options.contains("bashdefault"))
+        {
+            values.extend(self.file_completions(word, false));
+        }
+
+        if effective_options.contains("filenames") {
+            for value in &mut values {
+                let path = self.resolve_path(value.trim_end_matches('/'));
+                if path.is_dir() && !value.ends_with('/') {
+                    value.push('/');
+                }
+            }
+        }
+
+        values = values.into_iter()
+            .map(|value| format!("{}{}{}", spec.prefix, value, spec.suffix))
+            .collect();
+
+        if !effective_options.contains("nosort") {
+            values.sort();
+            values.dedup();
+        } else {
+            let mut seen = HashSet::new();
+            values.retain(|value| seen.insert(value.clone()));
+        }
+        Ok(values)
+    }
+
+    pub fn complete_line(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
+        if !self.env.option_enabled("progcomp") {
+            return Ok(Vec::new());
+        }
+
+        let prefix = line.chars().take(cursor).collect::<String>();
+        let mut segment_start = 0usize;
+        let mut single = false;
+        let mut double = false;
+        let mut escaped = false;
+        for (index, ch) in prefix.char_indices() {
+            if escaped {
+                escaped = false;
+                continue;
+            }
+            if ch == '\\' && !single {
+                escaped = true;
+                continue;
+            }
+            if ch == '\'' && !double {
+                single = !single;
+                continue;
+            }
+            if ch == '"' && !single {
+                double = !double;
+                continue;
+            }
+            if !single && !double && matches!(ch, ';' | '|' | '&') {
+                segment_start = index + ch.len_utf8();
+            }
+        }
+
+        let segment = &prefix[segment_start..];
+        let trailing_space = segment.chars().last().is_some_and(char::is_whitespace);
+        let mut words = split_shell_words_relaxed(segment)
+            .unwrap_or_else(|_| segment.split_whitespace().map(str::to_owned).collect());
+        if trailing_space {
+            words.push(String::new());
+        }
+        if words.is_empty() {
+            words.push(String::new());
+        }
+
+        let cword = words.len().saturating_sub(1);
+        let word = words.get(cword).cloned().unwrap_or_default();
+        let previous = cword.checked_sub(1)
+            .and_then(|index| words.get(index))
+            .cloned()
+            .unwrap_or_default();
+        let command_index = words.iter()
+            .position(|candidate| !is_assignment(candidate))
+            .unwrap_or(0);
+        let command_name = words.get(command_index).cloned().unwrap_or_default();
+
+        self.env.set("COMP_LINE", line.to_owned());
+        self.env.set("COMP_POINT", prefix.len().to_string());
+        self.env.set_array("COMP_WORDS", words.clone());
+        self.env.set("COMP_CWORD", cword.to_string());
+        self.env.set("COMP_TYPE", "9");
+        self.env.set("COMP_KEY", "9");
+
+        let first_command_word = cword == command_index;
+        let spec = if segment.trim().is_empty() {
+            self.completion_specs.get("__empty__").cloned()
+        } else if first_command_word {
+            self.completion_specs.get("__initial__").cloned()
+                .or_else(|| self.completion_specs.get(&command_name).cloned())
+        } else {
+            self.completion_specs.get(&command_name).cloned()
+                .or_else(|| {
+                    Path::new(&command_name)
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .and_then(|name| self.completion_specs.get(name))
+                        .cloned()
+                })
+                .or_else(|| self.completion_specs.get("__default__").cloned())
+        };
+
+        if let Some(spec) = spec {
+            return self.generate_completions(&spec, &word, &command_name, &previous);
+        }
+
+        if first_command_word {
+            return self.completion_action("command", &word);
+        }
+        Ok(self.file_completions(&word, false))
     }
 
     fn builtin_hash(&mut self, args: &[String]) -> Result<ExecutionResult> {

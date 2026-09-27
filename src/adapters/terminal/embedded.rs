@@ -1,21 +1,29 @@
 //! In-process interpreter session. The window talks to a Rust worker through channels.
-use std::{fs, path::PathBuf, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread};
+use std::{fs, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread};
 use anyhow::Result;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use super::io::{self, WindowIo};
 
+enum WorkerRequest {
+    Execute(String),
+    Complete {
+        line: String,
+        cursor: usize,
+        reply: mpsc::Sender<Vec<String>>,
+    },
+}
+
 pub struct EmbeddedSession {
-    commands: mpsc::Sender<String>, keys: mpsc::Sender<Event>, display: mpsc::Sender<Vec<u8>>,
+    commands: mpsc::Sender<WorkerRequest>, keys: mpsc::Sender<Event>, display: mpsc::Sender<Vec<u8>>,
     pub output: mpsc::Receiver<Vec<u8>>,
     size: Arc<Mutex<(u16,u16)>>, raw: Arc<AtomicBool>, busy: Arc<AtomicBool>,
     interrupt: Arc<AtomicBool>, force_abort: Arc<AtomicBool>, exited: Arc<AtomicBool>,
-    cwd: Arc<Mutex<PathBuf>>, names: Arc<Mutex<Vec<String>>>,
     line: Vec<char>, cursor: usize, history: Vec<String>, history_index: usize,
     pending: String,
 }
 impl EmbeddedSession {
     pub fn start(cols: u16, rows: u16) -> Result<Self> {
-        let (commands, requests) = mpsc::channel::<String>();
+        let (commands, requests) = mpsc::channel::<WorkerRequest>();
         let (keys, key_events) = mpsc::channel();
         let (display, output) = mpsc::channel();
         let size = Arc::new(Mutex::new((cols, rows)));
@@ -24,8 +32,6 @@ impl EmbeddedSession {
         let interrupt = Arc::new(AtomicBool::new(false));
         let force_abort = Arc::new(AtomicBool::new(false));
         let exited = Arc::new(AtomicBool::new(false));
-        let cwd = Arc::new(Mutex::new(std::env::current_dir()?));
-        let names = Arc::new(Mutex::new(Vec::new()));
         let terminal_io = WindowIo::new(
             display.clone(),
             key_events,
@@ -35,33 +41,36 @@ impl EmbeddedSession {
             force_abort.clone(),
         );
         let worker_busy = busy.clone(); let worker_exited = exited.clone();
-        let worker_cwd = cwd.clone(); let worker_names = names.clone();
         thread::spawn(move || {
             io::install(terminal_io);
             let result = (|| -> Result<()> {
-                let (mut engine, mut commands, paths) = crate::composition::build_engine()?;
-                commands.extend(["cd", "export", "alias", "unset", "source", "exit"].map(str::to_owned));
-                commands.sort(); commands.dedup();
-                *worker_names.lock().unwrap_or_else(|e| e.into_inner()) = commands;
+                let (mut engine, _, paths) = crate::composition::build_engine()?;
                 io::write(crate::presentation::shell::prompt::banner().as_bytes())?;
                 io::write(crate::presentation::shell::prompt::render(engine.working_dir()).as_bytes())?;
                 worker_busy.store(false, Ordering::SeqCst);
-                for command in requests {
-                    if let Ok(mut file) = fs::OpenOptions::new().create(true).append(true).open(paths.history_file()) {
-                        use std::io::Write;
-                        let _ = writeln!(file, "{}", command.replace('\n', " "));
-                    }
-                    match engine.execute(&command) {
-                        Ok(result) => {
-                            io::write(result.stdout.as_bytes())?;
-                            io::write(result.stderr.as_bytes())?;
-                            if result.exit_requested { break; }
+                for request in requests {
+                    match request {
+                        WorkerRequest::Execute(command) => {
+                            if let Ok(mut file) = fs::OpenOptions::new().create(true).append(true).open(paths.history_file()) {
+                                use std::io::Write;
+                                let _ = writeln!(file, "{}", command.replace('\n', " "));
+                            }
+                            match engine.execute(&command) {
+                                Ok(result) => {
+                                    io::write(result.stdout.as_bytes())?;
+                                    io::write(result.stderr.as_bytes())?;
+                                    if result.exit_requested { break; }
+                                }
+                                Err(error) => io::write(format!("adm: {error}\n").as_bytes())?,
+                            }
+                            io::write(crate::presentation::shell::prompt::render(engine.working_dir()).as_bytes())?;
+                            worker_busy.store(false, Ordering::SeqCst);
                         }
-                        Err(error) => io::write(format!("adm: {error}\n").as_bytes())?,
+                        WorkerRequest::Complete { line, cursor, reply } => {
+                            let matches = engine.complete(&line, cursor).unwrap_or_default();
+                            let _ = reply.send(matches);
+                        }
                     }
-                    *worker_cwd.lock().unwrap_or_else(|e| e.into_inner()) = engine.working_dir().to_path_buf();
-                    io::write(crate::presentation::shell::prompt::render(engine.working_dir()).as_bytes())?;
-                    worker_busy.store(false, Ordering::SeqCst);
                 }
                 Ok(())
             })();
@@ -71,7 +80,7 @@ impl EmbeddedSession {
         let history = fs::read_to_string(crate::adapters::persistence::AppPaths::detect().history_file())
             .unwrap_or_default().lines().filter(|line| !line.starts_with('#')).map(str::to_owned).collect::<Vec<_>>();
         let history_index = history.len();
-        Ok(Self { commands, keys, display, output, size, raw, busy, interrupt, force_abort, exited, cwd, names,
+        Ok(Self { commands, keys, display, output, size, raw, busy, interrupt, force_abort, exited,
             line: Vec::new(), cursor: 0, history, history_index, pending: String::new() })
     }
     pub fn resize(&self, cols: u16, rows: u16) {
@@ -136,11 +145,11 @@ impl EmbeddedSession {
                     if command.trim().is_empty() { self.redraw(); continue; }
                     self.history.push(command.clone()); self.history_index = self.history.len();
                     self.busy.store(true, Ordering::SeqCst);
-                    self.commands.send(command)?;
+                    self.commands.send(WorkerRequest::Execute(command))?;
                     continue;
                 }
                 KeyCode::Char('d') if event.modifiers.contains(KeyModifiers::CONTROL) && self.line.is_empty() => {
-                    self.busy.store(true, Ordering::SeqCst); self.commands.send("exit".to_owned())?;
+                    self.busy.store(true, Ordering::SeqCst); self.commands.send(WorkerRequest::Execute("exit".to_owned()))?;
                 }
                 KeyCode::Char('l') if event.modifiers.contains(KeyModifiers::CONTROL) => self.emit("\x1b[2J\x1b[H"),
                 KeyCode::Char('u') if event.modifiers.contains(KeyModifiers::CONTROL) => { self.line.drain(..self.cursor); self.cursor = 0; }
@@ -167,28 +176,38 @@ impl EmbeddedSession {
         Ok(())
     }
     fn complete(&mut self) {
-        let prefix: String = self.line[..self.cursor].iter().collect();
-        let start = prefix.rfind(char::is_whitespace).map_or(0, |i| i + 1);
-        let token = &prefix[start..];
-        let mut matches = if start == 0 {
-            self.names.lock().unwrap_or_else(|e| e.into_inner()).iter().filter(|s| s.starts_with(token)).cloned().collect::<Vec<_>>()
-        } else {
-            let cwd = self.cwd.lock().unwrap_or_else(|e| e.into_inner());
-            let path = PathBuf::from(token);
-            let directory = path.parent().filter(|p| !p.as_os_str().is_empty()).unwrap_or(std::path::Path::new("."));
-            let stem = path.file_name().unwrap_or_default().to_string_lossy();
-            fs::read_dir(cwd.join(directory)).into_iter().flatten().filter_map(|e| e.ok()).filter_map(|entry| {
-                let name = entry.file_name().to_string_lossy().into_owned();
-                if !name.starts_with(stem.as_ref()) { return None; }
-                let value = if directory == std::path::Path::new(".") { name } else { directory.join(name).to_string_lossy().into_owned() };
-                Some(format!("{value}{}", if entry.path().is_dir() { "/" } else { "" }))
-            }).collect::<Vec<_>>()
+        let line = self.line.iter().collect::<String>();
+        let (reply_tx, reply_rx) = mpsc::channel();
+        if self.commands.send(WorkerRequest::Complete {
+            line: line.clone(),
+            cursor: self.cursor,
+            reply: reply_tx,
+        }).is_err() {
+            return;
+        }
+
+        let Ok(mut matches) = reply_rx.recv_timeout(std::time::Duration::from_secs(2)) else {
+            return;
         };
+        if matches.is_empty() {
+            return;
+        }
+
         matches.sort();
+        matches.dedup();
+
+        let prefix: String = self.line[..self.cursor].iter().collect();
+        let start = prefix.rfind(|ch: char| {
+            ch.is_whitespace() || matches!(ch, ';' | '|' | '&' | '(' | ')')
+        }).map_or(0, |index| index + 1);
+
         if matches.len() == 1 {
             let begin = prefix[..start].chars().count();
             let chars = matches[0].chars().collect::<Vec<_>>();
-            self.line.splice(begin..self.cursor, chars.iter().copied()); self.cursor = begin + chars.len();
-        } else if !matches.is_empty() { self.emit(&format!("\r\n{}\r\n", matches.join("  "))); }
+            self.line.splice(begin..self.cursor, chars.iter().copied());
+            self.cursor = begin + chars.len();
+        } else {
+            self.emit(&format!("\r\n{}\r\n", matches.join("  ")));
+        }
     }
 }

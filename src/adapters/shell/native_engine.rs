@@ -235,6 +235,14 @@ impl ShellCommandHost for WindowsShellHost {
         name == "help" || name == "man" || self.registry.names().iter().any(|candidate| candidate == name)
     }
 
+    fn command_names(&self) -> Vec<String> {
+        let mut names = self.registry.names();
+        names.extend(["help".to_owned(), "man".to_owned()]);
+        names.sort();
+        names.dedup();
+        names
+    }
+
     fn execute_external(
         &self,
         program: &str,
@@ -550,6 +558,10 @@ impl ShellEngine for NativeShellEngine {
     }
     fn working_dir(&self) -> &Path {
         &self.interpreter.env.cwd
+    }
+
+    fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
+        self.interpreter.complete_line(line, cursor)
     }
 
     fn execute(&mut self, line: &str) -> Result<ShellExecution> {

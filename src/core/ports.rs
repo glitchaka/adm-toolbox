@@ -31,6 +31,9 @@ pub trait ShellEngine: Send {
     fn working_dir(&self) -> &Path;
     fn execute(&mut self, line: &str) -> Result<ShellExecution>;
     fn set_arguments(&mut self, name: &str, args: &[String]);
+    fn complete(&mut self, _line: &str, _cursor: usize) -> Result<Vec<String>> {
+        Ok(Vec::new())
+    }
 }
 
 pub trait DeviceRepository: Send + Sync {
