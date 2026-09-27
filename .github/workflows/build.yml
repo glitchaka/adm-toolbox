@@ -2,12 +2,8 @@ name: build
 
 on:
   push:
-    branches: [main, integrate-helix-sst]
+    branches: [main]
   workflow_dispatch:
-
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   windows:
