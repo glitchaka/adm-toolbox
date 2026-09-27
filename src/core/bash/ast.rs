@@ -21,12 +21,24 @@ pub enum AstNode {
         body: Box<AstNode>,
         until: bool,
     },
+    Case {
+        word: String,
+        arms: Vec<CaseArm>,
+    },
+    Conditional(Vec<String>),
+    ArithmeticCommand(String),
     FunctionDef {
         name: String,
         body: Box<AstNode>,
     },
     Group(Box<AstNode>),
     Subshell(Box<AstNode>),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CaseArm {
+    pub patterns: Vec<String>,
+    pub body: Box<AstNode>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
