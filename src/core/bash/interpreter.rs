@@ -1,7 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     fs::{self, OpenOptions},
-    io::{Read, Write},
+    io::{IsTerminal, Read, Write},
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
     time::Duration,
@@ -4876,6 +4876,39 @@ impl Interpreter {
         }
     }
 
+    fn fd_is_terminal(&self, fd: i32) -> bool {
+        match fd {
+            0 => std::io::stdin().is_terminal(),
+            1 => std::io::stdout().is_terminal(),
+            2 => std::io::stderr().is_terminal(),
+            value => {
+                self.fd_inputs.get(&value).is_some_and(|binding| {
+                    !matches!(binding, FdInputBinding::Closed)
+                }) || self.fd_outputs.get(&value).is_some_and(|binding| {
+                    !matches!(binding, FdOutputBinding::Closed)
+                })
+            }
+        }
+    }
+
+    fn path_is_executable(&self, path: &Path) -> bool {
+        if !path.is_file() {
+            return false;
+        }
+        let extension = path.extension()
+            .and_then(|value| value.to_str())
+            .unwrap_or("")
+            .to_ascii_lowercase();
+        if matches!(extension.as_str(), "exe" | "com" | "bat" | "cmd" | "ps1" | "sh") {
+            return true;
+        }
+        if let Ok(bytes) = fs::read(path) {
+            let first = bytes.split(|byte| *byte == b'\n').next().unwrap_or_default();
+            return first.starts_with(b"#!");
+        }
+        false
+    }
+
     fn evaluate_conditional(&mut self, expression: &[String]) -> Result<bool> {
         fn split_top_level<'a>(
             items: &'a [String],
@@ -4917,9 +4950,13 @@ impl Interpreter {
             [] => Ok(false),
             [value] => Ok(!self.expand_scalar(value)?.is_empty()),
             [op, value] => {
-                if op == "-v" {
+                if op == "-v" || op == "-R" {
                     let name = self.expand_scalar(value)?;
-                    return Ok(self.env.is_set(&name));
+                    return Ok(if op == "-R" {
+                        self.env.is_nameref(&name)
+                    } else {
+                        self.env.is_set(&name)
+                    });
                 }
 
                 let value = self.expand_scalar(value)?;
@@ -4933,12 +4970,39 @@ impl Interpreter {
                     "-s" => fs::metadata(&path).map(|m| m.len() > 0).unwrap_or(false),
                     "-r" => fs::File::open(&path).is_ok(),
                     "-w" => OpenOptions::new().write(true).open(&path).is_ok(),
-                    "-x" => path.is_file(),
+                    "-x" => self.path_is_executable(&path),
                     "-L" | "-h" => fs::symlink_metadata(&path)
                         .map(|m| m.file_type().is_symlink())
                         .unwrap_or(false),
-                    "-b" | "-c" | "-p" | "-S" => false,
-                    "-t" => value.parse::<i32>().ok().is_some_and(|fd| (0..=2).contains(&fd)),
+                    "-N" => fs::metadata(&path).ok().is_some_and(|metadata| {
+                        match (metadata.modified(), metadata.accessed()) {
+                            (Ok(modified), Ok(accessed)) => modified > accessed,
+                            _ => false,
+                        }
+                    }),
+                    "-p" => {
+                        let normalized = value.replace('/', "\\").to_ascii_lowercase();
+                        normalized.starts_with("\\\\.\\pipe\\")
+                    }
+                    "-c" => {
+                        let name = path.file_name()
+                            .and_then(|name| name.to_str())
+                            .unwrap_or("")
+                            .trim_end_matches(':')
+                            .to_ascii_uppercase();
+                        matches!(name.as_str(), "CON" | "CONIN$" | "CONOUT$" | "NUL" | "PRN" | "AUX")
+                            || name.starts_with("COM") && name[3..].parse::<u16>().is_ok()
+                            || name.starts_with("LPT") && name[3..].parse::<u16>().is_ok()
+                    }
+                    "-b" => {
+                        let normalized = value.replace('/', "\\").to_ascii_lowercase();
+                        normalized.starts_with("\\\\.\\physicaldrive")
+                            || normalized.starts_with("\\\\?\\volume{")
+                    }
+                    "-S" => false,
+                    "-u" | "-g" | "-k" => false,
+                    "-O" | "-G" => path.exists(),
+                    "-t" => value.parse::<i32>().ok().is_some_and(|fd| self.fd_is_terminal(fd)),
                     "-o" => self.env.option_enabled(&value),
                     _ => false,
                 })
