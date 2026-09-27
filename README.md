@@ -29,6 +29,20 @@ config edit
 config reload
 ```
 
+## Tipografía de la terminal
+
+La terminal nativa usa Nerd Font cuando encuentra una instalada en Windows. Prioriza:
+
+- CaskaydiaCove Nerd Font Mono
+- CaskaydiaMono Nerd Font Mono
+- JetBrainsMono Nerd Font Mono
+- FiraCode Nerd Font Mono
+- Hack Nerd Font Mono
+- MesloLGM Nerd Font Mono
+- UbuntuMono Nerd Font Mono
+
+El prompt utiliza glifos Nerd Font para usuario, carpeta y terminal. Si ninguna está instalada, ADM conserva un fallback a Cascadia Mono/Consolas para no impedir el arranque.
+
 ## Shell Bash-compatible
 
 La shell conserva estado entre comandos y entiende construcciones Bash reales, no solamente una lista de comandos que imitan Linux.

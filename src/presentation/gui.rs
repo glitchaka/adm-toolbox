@@ -23,6 +23,7 @@ struct Terminal {
     surrogate: Option<u16>,
     cursor_on: bool,
     blink: Instant,
+    font_family: String,
 }
 
 fn wide(text: &str) -> Vec<u16> { text.encode_utf16().chain(Some(0)).collect() }
@@ -37,13 +38,20 @@ pub fn run() -> Result<()> {
             ..std::mem::zeroed() };
         if RegisterClassW(&wc) == 0 { bail!("No se pudo registrar la terminal: {}", std::io::Error::last_os_error()); }
         let pty = EmbeddedSession::start(100, 30)?;
-        let font = make_font(19, false);
-        let bold = make_font(19, true);
+        let (font, bold, font_family) = make_terminal_fonts(19);
         let state = Box::new(Terminal { pty, parser: vt100::Parser::new(30, 100, 10000), font, bold,
             cell_width: 10, cell_height: 23, selection: None, dragging: false,
-            suppress_char: false, surrogate: None, cursor_on: true, blink: Instant::now() });
+            suppress_char: false, surrogate: None, cursor_on: true, blink: Instant::now(),
+            font_family });
+        let window_title = if state.font_family.to_ascii_lowercase().contains("nerd font")
+            || state.font_family.to_ascii_lowercase().ends_with(" nf")
+        {
+            format!("ADM Toolbox — {}", state.font_family)
+        } else {
+            format!("ADM Toolbox — {} (Nerd Font no instalada)", state.font_family)
+        };
         let ptr = Box::into_raw(state);
-        let hwnd = CreateWindowExW(0, class.as_ptr(), wide("ADM Toolbox").as_ptr(),
+        let hwnd = CreateWindowExW(0, class.as_ptr(), wide(&window_title).as_ptr(),
             WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1080, 760,
             null_mut(), null_mut(), instance, ptr.cast());
         if hwnd.is_null() { drop(Box::from_raw(ptr)); bail!("No se pudo crear la terminal: {}", std::io::Error::last_os_error()); }
@@ -61,10 +69,95 @@ pub fn run() -> Result<()> {
     Ok(())
 }
 
-unsafe fn make_font(size: i32, bold: bool) -> HFONT {
-    unsafe { CreateFontW(-size, 0, 0, 0, if bold { FW_BOLD } else { FW_NORMAL } as i32,
-        0, 0, 0, DEFAULT_CHARSET as u32, 0, 0, CLEARTYPE_QUALITY as u32,
-        FIXED_PITCH as u32, wide("Consolas").as_ptr()) }
+const NERD_FONT_FAMILIES: &[&str] = &[
+    "CaskaydiaCove Nerd Font Mono",
+    "CaskaydiaMono Nerd Font Mono",
+    "JetBrainsMono Nerd Font Mono",
+    "FiraCode Nerd Font Mono",
+    "Hack Nerd Font Mono",
+    "MesloLGM Nerd Font Mono",
+    "UbuntuMono Nerd Font Mono",
+    "CaskaydiaCove NF",
+];
+
+unsafe fn create_font(face: &str, size: i32, bold: bool) -> HFONT {
+    unsafe {
+        CreateFontW(
+            -size,
+            0,
+            0,
+            0,
+            if bold { FW_BOLD } else { FW_NORMAL } as i32,
+            0,
+            0,
+            0,
+            DEFAULT_CHARSET as u32,
+            0,
+            0,
+            CLEARTYPE_QUALITY as u32,
+            FIXED_PITCH as u32,
+            wide(face).as_ptr(),
+        )
+    }
+}
+
+unsafe fn resolved_font_face(font: HFONT) -> String {
+    unsafe {
+        let dc = GetDC(null_mut());
+        if dc.is_null() {
+            return String::new();
+        }
+
+        let old = SelectObject(dc, font);
+        let mut buffer = [0u16; 128];
+        let len = GetTextFaceW(dc, buffer.len() as i32, buffer.as_mut_ptr());
+
+        SelectObject(dc, old);
+        ReleaseDC(null_mut(), dc);
+
+        if len <= 0 {
+            String::new()
+        } else {
+            String::from_utf16_lossy(&buffer[..len as usize])
+                .trim_end_matches('\0')
+                .to_owned()
+        }
+    }
+}
+
+unsafe fn make_terminal_fonts(size: i32) -> (HFONT, HFONT, String) {
+    unsafe {
+        for family in NERD_FONT_FAMILIES {
+            let font = create_font(family, size, false);
+            if font.is_null() {
+                continue;
+            }
+
+            let resolved = resolved_font_face(font);
+            if resolved.eq_ignore_ascii_case(family)
+                || resolved.to_ascii_lowercase().contains("nerd font")
+                || resolved.to_ascii_lowercase().ends_with(" nf")
+            {
+                let bold = create_font(family, size, true);
+                return (font, bold, (*family).to_owned());
+            }
+
+            DeleteObject(font);
+        }
+
+        for fallback in ["Cascadia Mono", "Consolas"] {
+            let font = create_font(fallback, size, false);
+            if font.is_null() {
+                continue;
+            }
+            let bold = create_font(fallback, size, true);
+            return (font, bold, fallback.to_owned());
+        }
+
+        let font = create_font("Consolas", size, false);
+        let bold = create_font("Consolas", size, true);
+        (font, bold, "Consolas".to_owned())
+    }
 }
 
 fn color(value: vt100::Color, default: u32) -> u32 {
@@ -275,7 +368,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     state.suppress_char = true;
                     return 0;
                 }
-                if (ctrl && shift && wp == b'C' as usize {
+                if ctrl && shift && wp == b'C' as usize {
                     copy(hwnd, &state.selected_text());
                     state.suppress_char = true;
                     return 0;

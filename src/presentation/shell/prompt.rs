@@ -8,10 +8,10 @@ pub fn render(cwd: &Path) -> String {
     let cwd = path::display(cwd);
 
     format!(
-        "\x1b[38;5;42m{user}@{host}\x1b[0m \x1b[38;5;39m{cwd}\x1b[0m\n$ "
+        "\x1b[38;5;203m╭─ \u{f007} {user}@{host}\x1b[0m  \x1b[38;5;222m\u{f07c} {cwd}\x1b[0m\n\x1b[38;5;203m╰─ \u{f120} ❯\x1b[0m "
     )
 }
 
 pub fn banner() -> &'static str {
-    "\x1b[38;5;114mADM Toolbox\x1b[0m\nAdministración de Windows · terminal propia\nEscribe help para ver los comandos.\n"
+    "\x1b[38;5;203m\u{f120} ADM Toolbox\x1b[0m\nAdministración de Windows · terminal propia · Nerd Font\nEscribe help para ver los comandos.\n"
 }
