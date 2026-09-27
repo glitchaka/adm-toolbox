@@ -79,10 +79,15 @@ impl ShellEnvironment {
 
     pub fn set_local(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
         let name = name.into();
-        let Some(scope) = self.local_scopes.last_mut() else {
+        if self.local_scopes.is_empty() {
             return false;
-        };
-        scope.entry(name.clone()).or_insert_with(|| self.vars.get(&name).cloned());
+        }
+
+        let previous = self.vars.get(&name).cloned();
+        if let Some(scope) = self.local_scopes.last_mut() {
+            scope.entry(name.clone()).or_insert(previous);
+        }
+
         self.set(name, value);
         true
     }
