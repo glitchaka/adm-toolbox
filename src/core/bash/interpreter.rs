@@ -758,8 +758,13 @@ impl Interpreter {
 
         for (index, part) in parts.iter().enumerate() {
             let saved = self.env.clone();
+            let keep_last = index + 1 == parts.len()
+                && saved.option_enabled("lastpipe")
+                && !saved.option_enabled("monitor");
             let result = self.execute(part, input.as_deref());
-            self.env = saved;
+            if !keep_last {
+                self.env = saved;
+            }
             last = result?;
             last.exit_requested = false;
             last.flow = FlowSignal::None;
@@ -3735,47 +3740,103 @@ impl Interpreter {
 
     fn builtin_getopts(&mut self, args: &[String]) -> Result<ExecutionResult> {
         if args.len() < 2 {
-            return Ok(ExecutionResult::from_parts(String::new(), "getopts: uso: getopts optstring name [args]\n".to_owned(), 2));
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "getopts: uso: getopts optstring name [args]\n".to_owned(),
+                2,
+            ));
         }
+
         let optstring = &args[0];
         let varname = &args[1];
-        let source: Vec<String> = if args.len() > 2 { args[2..].to_vec() } else { self.env.positional.clone() };
-        let optind = self.env.get("OPTIND").parse::<usize>().unwrap_or(1).max(1);
+        let source: Vec<String> = if args.len() > 2 {
+            args[2..].to_vec()
+        } else {
+            self.env.positional.clone()
+        };
+
+        let mut optind = self.env.get("OPTIND").parse::<usize>().unwrap_or(1).max(1);
+        let mut char_pos = self.env.vars.get("__GETOPTS_CHAR")
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or(1)
+            .max(1);
+
         let Some(item) = source.get(optind - 1) else {
             self.env.set(varname.clone(), "?");
+            self.env.vars.remove("__GETOPTS_CHAR");
             return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         };
-        if !item.starts_with('-') || item == "-" || item == "--" {
+
+        if item == "--" {
+            optind += 1;
+            self.env.set("OPTIND", optind.to_string());
+            self.env.vars.remove("__GETOPTS_CHAR");
             self.env.set(varname.clone(), "?");
             return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         }
-        let option = item.chars().nth(1).unwrap_or('?');
-        let chars: Vec<char> = optstring.chars().collect();
-        let requires_arg = if let Some(pos) = chars.iter().position(|ch| *ch == option) {
-            chars.get(pos + 1) == Some(&':')
-        } else {
+        if !item.starts_with('-') || item == "-" {
+            self.env.vars.remove("__GETOPTS_CHAR");
+            self.env.set(varname.clone(), "?");
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
+        }
+
+        let option_chars: Vec<char> = item.chars().skip(1).collect();
+        if char_pos == 0 || char_pos > option_chars.len() {
+            char_pos = 1;
+        }
+        let option = option_chars.get(char_pos - 1).copied().unwrap_or('?');
+
+        let spec: Vec<char> = optstring.trim_start_matches(':').chars().collect();
+        let Some(spec_pos) = spec.iter().position(|ch| *ch == option) else {
             self.env.set(varname.clone(), "?");
             self.env.set("OPTARG", option.to_string());
-            self.env.set("OPTIND", (optind + 1).to_string());
+            if char_pos < option_chars.len() {
+                char_pos += 1;
+                self.env.vars.insert("__GETOPTS_CHAR".to_owned(), char_pos.to_string());
+            } else {
+                optind += 1;
+                self.env.set("OPTIND", optind.to_string());
+                self.env.vars.remove("__GETOPTS_CHAR");
+            }
             return Ok(ExecutionResult::success());
         };
+        let requires_arg = spec.get(spec_pos + 1) == Some(&':');
         self.env.set(varname.clone(), option.to_string());
+
         if requires_arg {
-            if item.len() > 2 {
-                self.env.set("OPTARG", item[2..].to_owned());
-                self.env.set("OPTIND", (optind + 1).to_string());
+            if char_pos < option_chars.len() {
+                let value: String = option_chars[char_pos..].iter().collect();
+                self.env.set("OPTARG", value);
+                optind += 1;
+                self.env.set("OPTIND", optind.to_string());
+                self.env.vars.remove("__GETOPTS_CHAR");
             } else if let Some(value) = source.get(optind) {
                 self.env.set("OPTARG", value.clone());
-                self.env.set("OPTIND", (optind + 2).to_string());
+                optind += 2;
+                self.env.set("OPTIND", optind.to_string());
+                self.env.vars.remove("__GETOPTS_CHAR");
             } else {
-                self.env.set(varname.clone(), if optstring.starts_with(':') { ":" } else { "?" });
+                self.env.set(
+                    varname.clone(),
+                    if optstring.starts_with(':') { ":" } else { "?" },
+                );
                 self.env.set("OPTARG", option.to_string());
-                self.env.set("OPTIND", (optind + 1).to_string());
+                optind += 1;
+                self.env.set("OPTIND", optind.to_string());
+                self.env.vars.remove("__GETOPTS_CHAR");
             }
         } else {
             self.env.set("OPTARG", "");
-            self.env.set("OPTIND", (optind + 1).to_string());
+            if char_pos < option_chars.len() {
+                char_pos += 1;
+                self.env.vars.insert("__GETOPTS_CHAR".to_owned(), char_pos.to_string());
+            } else {
+                optind += 1;
+                self.env.set("OPTIND", optind.to_string());
+                self.env.vars.remove("__GETOPTS_CHAR");
+            }
         }
+
         Ok(ExecutionResult::success())
     }
 
@@ -4417,6 +4478,9 @@ impl Interpreter {
 
                 if direction == '<' {
                     let saved = self.env.clone();
+                    if !self.env.option_enabled("inherit_errexit") {
+                        self.env.shell_options.remove("errexit");
+                    }
                     let execution = self.execute_text(&source);
                     self.env = saved;
                     let execution = execution?;
@@ -4481,6 +4545,9 @@ impl Interpreter {
                     let saved_env = self.env.clone();
                     let saved_hash = self.command_hash.clone();
                     let saved_disabled = self.disabled_builtins.clone();
+                    if !self.env.option_enabled("inherit_errexit") {
+                        self.env.shell_options.remove("errexit");
+                    }
                     let result = self.execute_text(&source);
                     self.env = saved_env;
                     self.command_hash = saved_hash;
@@ -4821,19 +4888,57 @@ impl Interpreter {
     }
 
     fn tilde_expand(&self, raw: &str) -> String {
-        if raw == "~" || raw.starts_with("~/") || raw.starts_with("~\\") {
-            let home = self.env.get("USERPROFILE");
-            if !home.is_empty() {
-                return format!("{home}{}", &raw[1..]);
+        if !raw.starts_with('~') {
+            return raw.to_owned();
+        }
+
+        let (head, suffix) = raw[1..]
+            .find(['/', '\\'])
+            .map(|index| (&raw[1..index + 1], &raw[index + 1..]))
+            .unwrap_or((&raw[1..], ""));
+
+        let stack = || {
+            let mut values = vec![self.env.cwd.clone()];
+            values.extend(self.env.dir_stack.iter().rev().cloned());
+            values
+        };
+
+        let base = if head.is_empty() {
+            let home = self.env.get("HOME");
+            if !home.is_empty() { Some(PathBuf::from(home)) }
+            else {
+                let profile = self.env.get("USERPROFILE");
+                (!profile.is_empty()).then(|| PathBuf::from(profile))
             }
+        } else if head == "+" {
+            Some(self.env.cwd.clone())
+        } else if head == "-" {
+            self.env.oldpwd.clone()
+        } else if let Some(number) = head.strip_prefix('+').and_then(|value| value.parse::<usize>().ok()) {
+            stack().get(number).cloned()
+        } else if let Some(number) = head.strip_prefix('-').and_then(|value| value.parse::<usize>().ok()) {
+            let values = stack();
+            values.len().checked_sub(number + 1).and_then(|index| values.get(index).cloned())
+        } else {
+            let current_user = self.env.get("USERNAME");
+            if head.eq_ignore_ascii_case(&current_user) {
+                let profile = self.env.get("USERPROFILE");
+                (!profile.is_empty()).then(|| PathBuf::from(profile))
+            } else {
+                let profile = PathBuf::from(self.env.get("USERPROFILE"));
+                profile.parent()
+                    .map(|parent| parent.join(head))
+                    .filter(|candidate| candidate.is_dir())
+            }
+        };
+
+        let Some(mut path) = base else {
+            return raw.to_owned();
+        };
+        if !suffix.is_empty() {
+            path.push(suffix);
         }
-        if raw == "~+" {
-            return self.env.cwd.to_string_lossy().into_owned();
-        }
-        if raw == "~-" {
-            return self.env.oldpwd.as_ref().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
-        }
-        raw.to_owned()
+        path.to_string_lossy().into_owned()
     }
 
     fn glob(&self, value: &str) -> Result<Vec<String>> {

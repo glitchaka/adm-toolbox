@@ -105,6 +105,11 @@ impl Parser {
 
     fn parse_command(&mut self) -> Result<AstNode> {
         match self.peek() {
+            Token::Arithmetic(expression) => {
+                let expression = expression.clone();
+                self.pos += 1;
+                Ok(AstNode::ArithmeticCommand(expression))
+            }
             Token::Word(word) if word == "if" => self.parse_if(),
             Token::Word(word) if word == "for" => self.parse_for(),
             Token::Word(word) if word == "select" => self.parse_select(),
@@ -220,56 +225,18 @@ impl Parser {
 
     fn parse_for(&mut self) -> Result<AstNode> {
         self.expect_word("for")?;
-        if matches!(self.peek(), Token::LParen)
-            && self.tokens.get(self.pos + 1) == Some(&Token::LParen)
-        {
-            self.pos += 2;
-            let mut sections = [Vec::<String>::new(), Vec::new(), Vec::new()];
-            let mut section = 0usize;
-            let mut depth = 0usize;
-            loop {
-                match self.peek().clone() {
-                    Token::Eof => bail!("for ((...)): expresión sin cerrar"),
-                    Token::LParen => {
-                        depth += 1;
-                        sections[section].push("(".to_owned());
-                        self.pos += 1;
-                    }
-                    Token::RParen if depth > 0 => {
-                        depth -= 1;
-                        sections[section].push(")".to_owned());
-                        self.pos += 1;
-                    }
-                    Token::RParen if self.tokens.get(self.pos + 1) == Some(&Token::RParen) => {
-                        self.pos += 2;
-                        break;
-                    }
-                    Token::Semi if depth == 0 && section < 2 => {
-                        section += 1;
-                        self.pos += 1;
-                    }
-                    Token::Word(word) => { sections[section].push(word); self.pos += 1; }
-                    Token::AndIf => { sections[section].push("&&".to_owned()); self.pos += 1; }
-                    Token::OrIf => { sections[section].push("||".to_owned()); self.pos += 1; }
-                    Token::Pipe => { sections[section].push("|".to_owned()); self.pos += 1; }
-                    Token::Redirect { op: RedirectOp::Write, .. } => {
-                        sections[section].push(">".to_owned()); self.pos += 1;
-                    }
-                    Token::Redirect { op: RedirectOp::Read, .. } => {
-                        sections[section].push("<".to_owned()); self.pos += 1;
-                    }
-                    other => bail!("for ((...)): token inesperado {other:?}"),
-                }
-            }
+        if let Token::Arithmetic(expression) = self.peek().clone() {
+            self.pos += 1;
+            let sections = split_arithmetic_for_sections(&expression)?;
             self.skip_semi();
             self.expect_word("do")?;
             self.skip_semi();
             let body = self.parse_list(&["done"])?;
             self.expect_word("done")?;
             return Ok(AstNode::ArithmeticFor {
-                init: sections[0].join(" "),
-                condition: sections[1].join(" "),
-                update: sections[2].join(" "),
+                init: sections[0].clone(),
+                condition: sections[1].clone(),
+                update: sections[2].clone(),
                 body: Box::new(body),
             });
         }
@@ -398,6 +365,7 @@ impl Parser {
                     break;
                 }
                 Token::Word(word) => { self.pos += 1; parts.push(word); }
+                Token::Arithmetic(expression) => { self.pos += 1; parts.push(expression); }
                 Token::AndIf => { self.pos += 1; parts.push("&&".to_owned()); }
                 Token::OrIf => { self.pos += 1; parts.push("||".to_owned()); }
                 Token::Pipe => { self.pos += 1; parts.push("|".to_owned()); }
@@ -516,6 +484,62 @@ impl Parser {
     }
 
     fn peek(&self) -> &Token { self.tokens.get(self.pos).unwrap_or(&Token::Eof) }
+}
+
+
+fn split_arithmetic_for_sections(expression: &str) -> Result<[String; 3]> {
+    let mut sections = [String::new(), String::new(), String::new()];
+    let mut section = 0usize;
+    let mut depth = 0i32;
+    let mut single = false;
+    let mut double = false;
+    let mut escaped = false;
+
+    for ch in expression.chars() {
+        if escaped {
+            sections[section].push(ch);
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            sections[section].push(ch);
+            escaped = true;
+            continue;
+        }
+        if ch == '\'' && !double {
+            single = !single;
+            sections[section].push(ch);
+            continue;
+        }
+        if ch == '"' && !single {
+            double = !double;
+            sections[section].push(ch);
+            continue;
+        }
+        if !single && !double {
+            match ch {
+                '(' => depth += 1,
+                ')' => depth -= 1,
+                ';' if depth == 0 => {
+                    if section >= 2 {
+                        bail!("for ((...)): demasiados separadores ';'");
+                    }
+                    section += 1;
+                    continue;
+                }
+                _ => {}
+            }
+        }
+        sections[section].push(ch);
+    }
+
+    if section != 2 {
+        bail!("for ((...)): se esperaban tres expresiones separadas por ';'");
+    }
+    for value in &mut sections {
+        *value = value.trim().to_owned();
+    }
+    Ok(sections)
 }
 
 #[cfg(test)]

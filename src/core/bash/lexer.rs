@@ -3,6 +3,7 @@ use anyhow::{bail, Result};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
     Word(String),
+    Arithmetic(String),
     Pipe,
     PipeBoth,
     AndIf,
@@ -78,6 +79,61 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
         }
 
         match ch {
+            '(' if word.is_empty() && chars.get(i + 1) == Some(&'(') => {
+                flush(&mut word, &mut out);
+                i += 2;
+                let start = i;
+                let mut depth = 0usize;
+                let mut quote = None;
+                let mut escaped_inner = false;
+                let mut closed = false;
+                while i < chars.len() {
+                    let current = chars[i];
+                    if escaped_inner {
+                        escaped_inner = false;
+                        i += 1;
+                        continue;
+                    }
+                    if current == '\\' {
+                        escaped_inner = true;
+                        i += 1;
+                        continue;
+                    }
+                    if let Some(q) = quote {
+                        if current == q { quote = None; }
+                        i += 1;
+                        continue;
+                    }
+                    if matches!(current, '\'' | '"') {
+                        quote = Some(current);
+                        i += 1;
+                        continue;
+                    }
+                    if current == '(' {
+                        depth += 1;
+                        i += 1;
+                        continue;
+                    }
+                    if current == ')' {
+                        if depth > 0 {
+                            depth -= 1;
+                            i += 1;
+                            continue;
+                        }
+                        if chars.get(i + 1) == Some(&')') {
+                            let expression: String = chars[start..i].iter().collect();
+                            out.push(Token::Arithmetic(expression));
+                            i += 2;
+                            closed = true;
+                            break;
+                        }
+                    }
+                    i += 1;
+                }
+                if !closed {
+                    bail!("expresión aritmética sin cerrar");
+                }
+            }
             '<' | '>' if chars.get(i + 1) == Some(&'(') => {
                 // Process substitution is a word-like expansion, not a redirection
                 // operator. Preserve the complete construct for the Bash expander.
