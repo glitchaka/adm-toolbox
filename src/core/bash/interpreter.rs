@@ -72,11 +72,12 @@ pub trait ShellCommandHost: Send + Sync {
 pub struct Interpreter {
     pub env: ShellEnvironment,
     host: Box<dyn ShellCommandHost>,
+    loop_depth: usize,
 }
 
 impl Interpreter {
     pub fn new(host: Box<dyn ShellCommandHost>) -> Self {
-        Self { env: ShellEnvironment::new(), host }
+        Self { env: ShellEnvironment::new(), host, loop_depth: 0 }
     }
 
     pub fn execute_text(&mut self, input: &str) -> Result<ExecutionResult> {
@@ -133,6 +134,7 @@ impl Interpreter {
                     self.expand_words(words)?
                 };
                 let mut last = ExecutionResult::success();
+                self.loop_depth += 1;
                 for value in values {
                     self.env.set(name.clone(), value);
                     last.append(self.execute(body, stdin)?);
@@ -151,17 +153,39 @@ impl Interpreter {
                         FlowSignal::None => {}
                     }
                 }
+                self.loop_depth = self.loop_depth.saturating_sub(1);
                 last
             }
             AstNode::While { condition, body, until } => {
                 let mut last = ExecutionResult::success();
+                self.loop_depth += 1;
                 loop {
-                    let condition = self.execute(condition, None)?;
-                    let should_run = if *until { condition.status != 0 } else { condition.status == 0 };
+                    let condition_result = self.execute(condition, None)?;
+                    let should_run = if *until {
+                        condition_result.status != 0
+                    } else {
+                        condition_result.status == 0
+                    };
                     if !should_run { break; }
+
                     last.append(self.execute(body, stdin)?);
                     if last.exit_requested { break; }
+
+                    match last.flow {
+                        FlowSignal::Break(levels) => {
+                            last.flow = if levels > 1 { FlowSignal::Break(levels - 1) } else { FlowSignal::None };
+                            break;
+                        }
+                        FlowSignal::Continue(levels) => {
+                            last.flow = if levels > 1 { FlowSignal::Continue(levels - 1) } else { FlowSignal::None };
+                            if levels > 1 { break; }
+                            continue;
+                        }
+                        FlowSignal::Return => break,
+                        FlowSignal::None => {}
+                    }
                 }
+                self.loop_depth = self.loop_depth.saturating_sub(1);
                 last
             }
             AstNode::Case { word, arms } => {
@@ -457,16 +481,32 @@ impl Interpreter {
                 }
             }
             "break" => {
-                let levels = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1).max(1);
-                let mut result = ExecutionResult::success();
-                result.flow = FlowSignal::Break(levels);
-                result
+                if self.loop_depth == 0 {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "break: solo puede usarse dentro de un bucle\n".to_owned(),
+                        1,
+                    )
+                } else {
+                    let levels = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1).max(1);
+                    let mut result = ExecutionResult::success();
+                    result.flow = FlowSignal::Break(levels.min(self.loop_depth));
+                    result
+                }
             }
             "continue" => {
-                let levels = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1).max(1);
-                let mut result = ExecutionResult::success();
-                result.flow = FlowSignal::Continue(levels);
-                result
+                if self.loop_depth == 0 {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "continue: solo puede usarse dentro de un bucle\n".to_owned(),
+                        1,
+                    )
+                } else {
+                    let levels = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1).max(1);
+                    let mut result = ExecutionResult::success();
+                    result.flow = FlowSignal::Continue(levels.min(self.loop_depth));
+                    result
+                }
             }
             "return" => {
                 let status = args.first()
@@ -624,27 +664,6 @@ impl Interpreter {
             }
         }
 
-        for operator in ["+=", "-=", "*=", "/=", "%=", "="] {
-            if let Some((name, rhs)) = expression.split_once(operator) {
-                let name = name.trim();
-                if is_variable_name(name) {
-                    let right = eval_arithmetic(rhs.trim(), &self.env)?;
-                    let current = self.env.get(name).parse::<i64>().unwrap_or(0);
-                    let value = match operator {
-                        "+=" => current + right,
-                        "-=" => current - right,
-                        "*=" => current * right,
-                        "/=" => if right == 0 { 0 } else { current / right },
-                        "%=" => if right == 0 { 0 } else { current % right },
-                        "=" => right,
-                        _ => unreachable!(),
-                    };
-                    self.env.set(name.to_owned(), value.to_string());
-                    return Ok(value);
-                }
-            }
-        }
-
         for operator in ["==", "!=", ">=", "<=", ">", "<"] {
             if let Some((left, right)) = expression.split_once(operator) {
                 let left = eval_arithmetic(left.trim(), &self.env)?;
@@ -658,6 +677,37 @@ impl Interpreter {
                     "<" => (left < right) as i64,
                     _ => 0,
                 });
+            }
+        }
+
+        for operator in ["+=", "-=", "*=", "/=", "%="] {
+            if let Some((name, rhs)) = expression.split_once(operator) {
+                let name = name.trim();
+                if is_variable_name(name) {
+                    let right = eval_arithmetic(rhs.trim(), &self.env)?;
+                    let current = self.env.get(name).parse::<i64>().unwrap_or(0);
+                    let value = match operator {
+                        "+=" => current + right,
+                        "-=" => current - right,
+                        "*=" => current * right,
+                        "/=" => if right == 0 { 0 } else { current / right },
+                        "%=" => if right == 0 { 0 } else { current % right },
+                        _ => unreachable!(),
+                    };
+                    self.env.set(name.to_owned(), value.to_string());
+                    return Ok(value);
+                }
+            }
+        }
+
+        if expression.matches('=').count() == 1 {
+            if let Some((name, rhs)) = expression.split_once('=') {
+                let name = name.trim();
+                if is_variable_name(name) {
+                    let value = eval_arithmetic(rhs.trim(), &self.env)?;
+                    self.env.set(name.to_owned(), value.to_string());
+                    return Ok(value);
+                }
             }
         }
 
