@@ -63,6 +63,7 @@ pub const UNIX_COMMANDS: &[(&str, &str)] = &[
     ("sort", "sort — ordena líneas"),
     ("uniq", "uniq — elimina líneas adyacentes repetidas"),
     ("cut", "cut — selecciona campos"),
+    ("xargs", "xargs — construye y ejecuta comandos desde stdin"),
     ("tee", "tee — copia stdin a archivo y stdout"),
     ("less", "less — paginador interactivo"),
     ("more", "more — alias del paginador"),
