@@ -178,6 +178,197 @@ impl Interpreter {
         }
     }
 
+
+    pub fn set_interactive(&mut self, interactive: bool) {
+        set_shell_option(&mut self.env, "interactive", interactive);
+    }
+
+    pub fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
+        let mut stdout = String::new();
+        let mut stderr = String::new();
+        if !continuation {
+            let commands = self.env.array_values("PROMPT_COMMAND");
+            if commands.is_empty() {
+                let command = self.env.get("PROMPT_COMMAND");
+                if !command.is_empty() {
+                    let result = self.execute_text(&command)?;
+                    stdout.push_str(&result.stdout);
+                    stderr.push_str(&result.stderr);
+                }
+            } else {
+                for command in commands {
+                    if command.is_empty() { continue; }
+                    let result = self.execute_text(&command)?;
+                    stdout.push_str(&result.stdout);
+                    stderr.push_str(&result.stderr);
+                }
+            }
+        }
+        let variable = if continuation { "PS2" } else { "PS1" };
+        let raw = self.env.get(variable);
+        let prompt = if raw.is_empty() {
+            if continuation { Some("> ".to_owned()) } else { None }
+        } else {
+            Some(self.expand_prompt_text(&raw)?)
+        };
+        Ok((stdout, stderr, prompt))
+    }
+
+    pub fn pre_execute_prompt(&mut self) -> Result<String> {
+        let raw = self.env.get("PS0");
+        if raw.is_empty() { Ok(String::new()) } else { self.expand_prompt_text(&raw) }
+    }
+
+    pub fn input_timeout(&self) -> Option<std::time::Duration> {
+        let seconds = self.env.get("TMOUT").parse::<u64>().ok()?;
+        (seconds > 0).then(|| std::time::Duration::from_secs(seconds))
+    }
+
+    fn expand_prompt_text(&mut self, raw: &str) -> Result<String> {
+        let chars: Vec<char> = raw.chars().collect();
+        let mut out = String::new();
+        let mut i = 0usize;
+        while i < chars.len() {
+            if chars[i] != '\\' || i + 1 >= chars.len() {
+                out.push(chars[i]); i += 1; continue;
+            }
+            i += 1;
+            match chars[i] {
+                'a' => out.push('\x07'),
+                'd' => out.push_str(&chrono::Local::now().format("%a %b %d").to_string()),
+                'e' => out.push('\x1b'),
+                'h' => {
+                    let host = self.env.get("COMPUTERNAME");
+                    out.push_str(host.split('.').next().unwrap_or(&host));
+                }
+                'H' => out.push_str(&self.env.get("COMPUTERNAME")),
+                'j' => out.push_str(&self.host.jobs()?.iter().filter(|job| job.running).count().to_string()),
+                'n' => out.push('\n'),
+                'r' => out.push('\r'),
+                's' => out.push_str("bash"),
+                't' => out.push_str(&chrono::Local::now().format("%H:%M:%S").to_string()),
+                'T' => out.push_str(&chrono::Local::now().format("%I:%M:%S").to_string()),
+                '@' => out.push_str(&chrono::Local::now().format("%I:%M %p").to_string()),
+                'A' => out.push_str(&chrono::Local::now().format("%H:%M").to_string()),
+                'u' => out.push_str(&self.env.get("USERNAME")),
+                'v' => out.push_str("5.3"),
+                'V' => out.push_str("5.3.0"),
+                'w' => out.push_str(&self.env.cwd.to_string_lossy()),
+                'W' => out.push_str(self.env.cwd.file_name().and_then(|name| name.to_str()).unwrap_or("/")),
+                '!' | '#' => out.push_str(&(self.history_lines().len() + 1).to_string()),
+                '$' => out.push(if self.env.get("EUID") == "0" { '#' } else { '$' }),
+                '\\' => out.push('\\'),
+                '[' | ']' => {}
+                other => { out.push('\\'); out.push(other); }
+            }
+            i += 1;
+        }
+        if self.env.option_enabled("promptvars") { self.expand_scalar(&out) } else { Ok(out) }
+    }
+
+    pub fn complete_line(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
+        let cursor = cursor.min(line.len());
+        let before = &line[..cursor];
+        let start = before.rfind(|ch: char| ch.is_whitespace() || matches!(ch, ';' | '|' | '&' | '(' | ')'))
+            .map_or(0, |index| index + 1);
+        let prefix = &before[start..];
+        let words = split_shell_words_relaxed(before).unwrap_or_default();
+        let command = words.first().map(String::as_str).unwrap_or(prefix);
+        self.env.set("COMP_LINE", line.to_owned());
+        self.env.set("COMP_POINT", cursor.to_string());
+        self.env.set_array("COMP_WORDS", words.clone());
+        self.env.set("COMP_CWORD", words.len().saturating_sub(1).to_string());
+        self.env.set("COMP_TYPE", "9");
+        self.env.set("COMP_KEY", "9");
+        if self.env.option_enabled("progcomp") {
+            if let Some(spec) = self.completion_specs.get(command).cloned() {
+                return self.generate_completions(&spec, prefix, line);
+            }
+        }
+        if start == 0 {
+            let spec = CompletionSpec { action: Some("command".to_owned()), ..CompletionSpec::default() };
+            return self.generate_completions(&spec, prefix, line);
+        }
+        Ok(completion_files(&self.env.cwd, prefix, false))
+    }
+
+    pub fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
+        if !self.env.option_enabled("histexpand") || line.is_empty() {
+            return Ok((line.to_owned(), false));
+        }
+        let history = self.history_lines();
+        if history.is_empty() { return Ok((line.to_owned(), false)); }
+        if line.starts_with('^') {
+            let mut parts = line[1..].splitn(3, '^');
+            if let (Some(from), Some(to)) = (parts.next(), parts.next()) {
+                return Ok((history.last().cloned().unwrap_or_default().replacen(from, to, 1), false));
+            }
+        }
+        let chars: Vec<char> = line.chars().collect();
+        let mut out = String::new();
+        let mut i = 0usize;
+        let mut single = false;
+        let mut print_only = false;
+        while i < chars.len() {
+            match chars[i] {
+                '\'' => { single = !single; out.push(chars[i]); i += 1; }
+                '\\' if i + 1 < chars.len() && chars[i + 1] == '!' => { out.push('!'); i += 2; }
+                '!' if !single => {
+                    let (mut event, used) = resolve_history_event(&chars[i..], &history)?;
+                    i += used;
+                    if i + 1 < chars.len() && chars[i] == ':' && chars[i + 1] == 'p' {
+                        print_only = true; i += 2;
+                    } else if i < chars.len() && chars[i] == ':' {
+                        let (modified, consumed) = apply_history_modifiers(&chars[i..], &event)?;
+                        event = modified; i += consumed;
+                    }
+                    out.push_str(&event);
+                }
+                ch => { out.push(ch); i += 1; }
+            }
+        }
+        Ok((out, print_only))
+    }
+
+    pub fn record_history(&mut self, line: &str) -> Result<()> {
+        if line.is_empty() || !self.env.option_enabled("history") { return Ok(()); }
+        let controls: HashSet<String> = self.env.get("HISTCONTROL").split(':')
+            .filter(|value| !value.is_empty()).map(str::to_owned).collect();
+        if controls.contains("ignorespace") && line.starts_with(' ') { return Ok(()); }
+        let histignore = self.env.get("HISTIGNORE");
+        if !histignore.is_empty() && histignore.split(':').any(|pattern| {
+            glob::Pattern::new(pattern).map(|compiled| compiled.matches(line)).unwrap_or(false)
+        }) { return Ok(()); }
+        let mut lines = self.history_lines();
+        if controls.contains("ignoredups") && lines.last().is_some_and(|last| last == line) { return Ok(()); }
+        if controls.contains("erasedups") { lines.retain(|existing| existing != line); }
+        lines.push(line.to_owned());
+        let histsize = self.env.get("HISTSIZE").parse::<usize>().unwrap_or(500);
+        if lines.len() > histsize { lines.drain(..lines.len() - histsize); }
+        let filesize = self.env.get("HISTFILESIZE").parse::<usize>().unwrap_or(histsize);
+        if lines.len() > filesize { lines.drain(..lines.len() - filesize); }
+        self.save_history_lines(&lines)
+    }
+
+    pub fn readline_bindings(&self) -> HashMap<String, String> {
+        self.readline_bindings.clone()
+    }
+
+    pub fn run_readline_binding(
+        &mut self,
+        command: &str,
+        line: &str,
+        cursor: usize,
+    ) -> Result<(String, usize, String, String)> {
+        self.env.set("READLINE_LINE", line.to_owned());
+        self.env.set("READLINE_POINT", cursor.to_string());
+        let result = self.execute_text(command)?;
+        let updated = self.env.get("READLINE_LINE");
+        let point = self.env.get("READLINE_POINT").parse::<usize>()
+            .unwrap_or(updated.len()).min(updated.len());
+        Ok((updated, point, result.stdout, result.stderr))
+    }
+
     pub fn execute_text(&mut self, input: &str) -> Result<ExecutionResult> {
         let (prepared, temporary) = self.prepare_heredocs(input)?;
         let node = parse(&prepared)?;
@@ -4688,6 +4879,109 @@ fn path_commands(path_value: &str) -> Vec<String> {
     values.sort();
     values.dedup();
     values
+}
+
+
+fn resolve_history_event(chars: &[char], history: &[String]) -> Result<(String, usize)> {
+    if chars.first() != Some(&'!') { bail!("expansión de historial inválida"); }
+    if chars.get(1) == Some(&'!') { return Ok((history.last().cloned().unwrap_or_default(), 2)); }
+    if chars.get(1) == Some(&'-') {
+        let mut end = 2usize;
+        while end < chars.len() && chars[end].is_ascii_digit() { end += 1; }
+        let offset = chars[2..end].iter().collect::<String>().parse::<usize>().unwrap_or(0);
+        if offset == 0 || offset > history.len() { bail!("evento de historial no encontrado"); }
+        return Ok((history[history.len() - offset].clone(), end));
+    }
+    if chars.get(1).is_some_and(|ch| ch.is_ascii_digit()) {
+        let mut end = 1usize;
+        while end < chars.len() && chars[end].is_ascii_digit() { end += 1; }
+        let number = chars[1..end].iter().collect::<String>().parse::<usize>().unwrap_or(0);
+        if number == 0 || number > history.len() { bail!("evento de historial no encontrado"); }
+        return Ok((history[number - 1].clone(), end));
+    }
+    if chars.get(1) == Some(&'?') {
+        let mut end = 2usize;
+        while end < chars.len() && chars[end] != '?' { end += 1; }
+        if end >= chars.len() { bail!("evento de historial sin '?' final"); }
+        let needle: String = chars[2..end].iter().collect();
+        let event = history.iter().rev().find(|line| line.contains(&needle))
+            .cloned().ok_or_else(|| anyhow!("evento de historial no encontrado: {needle}"))?;
+        return Ok((event, end + 1));
+    }
+    if chars.get(1) == Some(&'#') { return Ok((String::new(), 2)); }
+    let mut end = 1usize;
+    while end < chars.len() && !chars[end].is_whitespace()
+        && !matches!(chars[end], ':' | ';' | '&' | '|' | '(' | ')' | '<' | '>') { end += 1; }
+    let prefix: String = chars[1..end].iter().collect();
+    if prefix.is_empty() { bail!("designador de historial vacío"); }
+    let event = history.iter().rev().find(|line| line.starts_with(&prefix))
+        .cloned().ok_or_else(|| anyhow!("evento de historial no encontrado: {prefix}"))?;
+    Ok((event, end))
+}
+
+fn apply_history_modifiers(chars: &[char], event: &str) -> Result<(String, usize)> {
+    let mut value = event.to_owned();
+    let mut i = 0usize;
+    while i < chars.len() && chars[i] == ':' {
+        i += 1;
+        if i >= chars.len() { break; }
+        match chars[i] {
+            '^' | '$' | '*' | '0'..='9' => {
+                let words = split_shell_words_relaxed(&value)
+                    .unwrap_or_else(|_| value.split_whitespace().map(str::to_owned).collect());
+                if words.is_empty() { value.clear(); i += 1; continue; }
+                match chars[i] {
+                    '^' => { value = words.get(1).cloned().unwrap_or_default(); i += 1; }
+                    '$' => { value = words.last().cloned().unwrap_or_default(); i += 1; }
+                    '*' => { value = words.get(1..).unwrap_or(&[]).join(" "); i += 1; }
+                    _ => {
+                        let start = i;
+                        while i < chars.len() && chars[i].is_ascii_digit() { i += 1; }
+                        let first = chars[start..i].iter().collect::<String>().parse::<usize>().unwrap_or(0);
+                        let mut last = first;
+                        if i < chars.len() && chars[i] == '-' {
+                            i += 1;
+                            let range_start = i;
+                            while i < chars.len() && chars[i].is_ascii_digit() { i += 1; }
+                            last = if range_start == i { words.len().saturating_sub(1) } else {
+                                chars[range_start..i].iter().collect::<String>().parse::<usize>().unwrap_or(first)
+                            };
+                        }
+                        value = if first < words.len() {
+                            words[first..=last.min(words.len() - 1)].join(" ")
+                        } else { String::new() };
+                    }
+                }
+            }
+            'h' => { value = Path::new(&value).parent().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(); i += 1; }
+            't' => { value = Path::new(&value).file_name().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(); i += 1; }
+            'r' => { value = Path::new(&value).with_extension("").to_string_lossy().into_owned(); i += 1; }
+            'e' => { value = Path::new(&value).extension().map(|e| format!(".{}", e.to_string_lossy())).unwrap_or_default(); i += 1; }
+            'q' | 'x' => { value = shell_quote(&value); i += 1; }
+            's' => {
+                i += 1; if i >= chars.len() { break; }
+                let delimiter = chars[i]; i += 1;
+                let from_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                if i >= chars.len() { bail!("modificador :s incompleto"); }
+                let from: String = chars[from_start..i].iter().collect(); i += 1;
+                let to_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                let to: String = chars[to_start..i].iter().collect(); if i < chars.len() { i += 1; }
+                value = value.replacen(&from, &to, 1);
+            }
+            'g' if chars.get(i + 1) == Some(&'s') => {
+                i += 2; if i >= chars.len() { break; }
+                let delimiter = chars[i]; i += 1;
+                let from_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                if i >= chars.len() { bail!("modificador :gs incompleto"); }
+                let from: String = chars[from_start..i].iter().collect(); i += 1;
+                let to_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                let to: String = chars[to_start..i].iter().collect(); if i < chars.len() { i += 1; }
+                value = value.replace(&from, &to);
+            }
+            _ => break,
+        }
+    }
+    Ok((value, i))
 }
 
 #[cfg(test)]

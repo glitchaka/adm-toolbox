@@ -215,6 +215,14 @@ impl ShellCommandHost for WindowsShellHost {
         name == "help" || name == "man" || self.registry.names().iter().any(|candidate| candidate == name)
     }
 
+    fn command_names(&self) -> Vec<String> {
+        let mut names = self.registry.names();
+        names.extend(["help".to_owned(), "man".to_owned()]);
+        names.sort();
+        names.dedup();
+        names
+    }
+
     fn execute_external(
         &self,
         program: &str,
@@ -447,6 +455,11 @@ impl NativeShellEngine {
             "ADM_CONFIG",
             config_file.to_string_lossy().into_owned(),
         );
+        let history_file = config_file.parent()
+            .and_then(|config_dir| config_dir.parent())
+            .map(|root| root.join("data").join("history"))
+            .unwrap_or_else(|| PathBuf::from("data").join("history"));
+        interpreter.env.set("HISTFILE", history_file.to_string_lossy().into_owned());
 
         let mut engine = Self {
             interpreter,
@@ -475,6 +488,48 @@ impl ShellEngine for NativeShellEngine {
         self.interpreter.env.script_name = name.to_owned();
         self.interpreter.env.positional = args.to_vec();
     }
+
+    fn set_interactive(&mut self, interactive: bool) {
+        self.interpreter.set_interactive(interactive);
+    }
+
+    fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
+        self.interpreter.prepare_prompt(continuation)
+    }
+
+    fn pre_execute_prompt(&mut self) -> Result<String> {
+        self.interpreter.pre_execute_prompt()
+    }
+
+    fn input_timeout(&self) -> Option<std::time::Duration> {
+        self.interpreter.input_timeout()
+    }
+
+    fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
+        self.interpreter.complete_line(line, cursor)
+    }
+
+    fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
+        self.interpreter.prepare_history(line)
+    }
+
+    fn record_history(&mut self, line: &str) -> Result<()> {
+        self.interpreter.record_history(line)
+    }
+
+    fn readline_bindings(&self) -> HashMap<String, String> {
+        self.interpreter.readline_bindings()
+    }
+
+    fn run_readline_binding(
+        &mut self,
+        command: &str,
+        line: &str,
+        cursor: usize,
+    ) -> Result<(String, usize, String, String)> {
+        self.interpreter.run_readline_binding(command, line, cursor)
+    }
+
     fn working_dir(&self) -> &Path {
         &self.interpreter.env.cwd
     }

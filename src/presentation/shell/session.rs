@@ -94,7 +94,14 @@ impl ShellSession {
                         continue;
                     }
 
+                    let (command, print_only) = self.engine.prepare_history(&command)?;
+                    self.engine.record_history(&command)?;
                     let _ = self.editor.add_history_entry(command.as_str());
+
+                    if print_only {
+                        println!("{command}");
+                        continue;
+                    }
 
                     let ps0 = self.engine.pre_execute_prompt()?;
                     print!("{ps0}");
