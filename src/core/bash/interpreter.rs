@@ -164,6 +164,18 @@ pub trait ShellCommandHost: Send + Sync {
         stdin: Option<&[u8]>,
     ) -> Result<ExecutionResult>;
 
+    fn execute_shell_pipeline(
+        &self,
+        sources: &[String],
+        stderr_to_pipe: &[bool],
+        cwd: &Path,
+        env: &HashMap<String, String>,
+        stdin: Option<&[u8]>,
+    ) -> Result<Option<(ExecutionResult, Vec<i32>)>> {
+        let _ = (sources, stderr_to_pipe, cwd, env, stdin);
+        Ok(None)
+    }
+
     fn execute_external_background(
         &self,
         program: &str,
@@ -875,6 +887,33 @@ impl Interpreter {
         stderr_to_pipe: &[bool],
         stdin: Option<&[u8]>,
     ) -> Result<ExecutionResult> {
+        // Unless lastpipe is active, Bash executes every pipeline element in a
+        // subshell. Let the host connect child Shell Shock Tool processes with
+        // real OS pipes so producers and consumers run concurrently.
+        if parts.len() > 1
+            && !(self.env.option_enabled("lastpipe") && !self.env.option_enabled("monitor"))
+        {
+            let sources = parts.iter().map(render_ast).collect::<Vec<_>>();
+            if let Some((mut result, statuses)) = self.host.execute_shell_pipeline(
+                &sources,
+                stderr_to_pipe,
+                &self.env.cwd,
+                &self.env.exported,
+                stdin,
+            )? {
+                self.env.set_array(
+                    "PIPESTATUS",
+                    statuses.iter().map(ToString::to_string).collect(),
+                );
+                if self.env.option_enabled("pipefail") {
+                    if let Some(status) = statuses.iter().rev().copied().find(|status| *status != 0) {
+                        result.status = status;
+                    }
+                }
+                return Ok(result);
+            }
+        }
+
         let mut input = stdin.map(ToOwned::to_owned);
         let mut stderr = String::new();
         let mut last = ExecutionResult::success();
