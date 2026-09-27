@@ -362,7 +362,7 @@ fn registry(args: &[String]) -> anyhow::Result<CommandOutput> {
         ));
     }
 
-    let offset = usize::from(args.first().is_some_and(|arg| arg == "query"));
+    let offset = if args.first().is_some_and(|arg| arg == "query") { 1 } else { 0 };
     let Some(key) = args.get(offset) else {
         return Ok(CommandOutput::error("sys registry: falta CLAVE", 2));
     };
