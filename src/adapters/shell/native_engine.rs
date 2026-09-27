@@ -33,6 +33,11 @@ struct WindowsShellHost {
 impl ShellCommandHost for WindowsShellHost {
     fn interrupted(&self) -> bool { self.interrupt.load(std::sync::atomic::Ordering::SeqCst) }
 
+    fn clear_interrupt(&self) {
+        self.interrupt.store(false, std::sync::atomic::Ordering::SeqCst);
+        self.force_abort.store(false, std::sync::atomic::Ordering::SeqCst);
+    }
+
     fn read_line(&self, prompt: &str, silent: bool) -> Result<Option<String>> {
         use crossterm::event::{Event, KeyCode, KeyModifiers};
 
@@ -566,8 +571,34 @@ impl ShellEngine for NativeShellEngine {
         &self.interpreter.env.cwd
     }
 
+    fn set_interactive(&mut self, interactive: bool) {
+        self.interpreter.set_interactive(interactive);
+    }
+
     fn complete(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
         self.interpreter.complete_line(line, cursor)
+    }
+
+    fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
+        self.interpreter.prepare_history_line(line)
+    }
+
+    fn record_history(&mut self, line: &str) -> Result<()> {
+        self.interpreter.record_history_line(line)
+    }
+
+    fn readline_bindings(&self) -> HashMap<String, String> {
+        self.interpreter.readline_bindings()
+    }
+
+    fn run_readline_binding(
+        &mut self,
+        command: &str,
+        line: &str,
+        cursor: usize,
+    ) -> Result<(String, usize, String, String)> {
+        let (line, cursor, result) = self.interpreter.run_readline_shell_binding(command, line, cursor)?;
+        Ok((line, cursor, result.stdout, result.stderr))
     }
 
     fn execute(&mut self, line: &str) -> Result<ShellExecution> {

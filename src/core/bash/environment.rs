@@ -1,4 +1,5 @@
 use std::{
+    cell::Cell,
     collections::{HashMap, HashSet},
     env,
     path::PathBuf,
@@ -47,6 +48,9 @@ pub struct ShellEnvironment {
     pub script_name: String,
     pub local_scopes: Vec<HashMap<String, LocalBinding>>,
     started_at: Instant,
+    seconds_base: i64,
+    random_state: Cell<u32>,
+    srandom_state: Cell<u64>,
 }
 
 impl ShellEnvironment {
@@ -60,6 +64,11 @@ impl ShellEnvironment {
         vars.entry("BASH_COMMAND".to_owned()).or_default();
         vars.entry("HISTSIZE".to_owned()).or_insert_with(|| "500".to_owned());
         vars.entry("HISTFILESIZE".to_owned()).or_insert_with(|| "500".to_owned());
+        let shlvl = vars.get("SHLVL")
+            .and_then(|value| value.parse::<u32>().ok())
+            .unwrap_or(0)
+            .saturating_add(1);
+        vars.insert("SHLVL".to_owned(), shlvl.to_string());
 
         let mut arrays = HashMap::new();
         arrays.insert(
@@ -76,6 +85,8 @@ impl ShellEnvironment {
 
         let mut readonly = HashSet::new();
         readonly.insert("BASH_VERSINFO".to_owned());
+        readonly.insert("SHELLOPTS".to_owned());
+        readonly.insert("BASHOPTS".to_owned());
         Self {
             vars,
             exported,
@@ -104,6 +115,20 @@ impl ShellEnvironment {
             script_name: "adm-toolbox".to_owned(),
             local_scopes: Vec::new(),
             started_at: Instant::now(),
+            seconds_base: 0,
+            random_state: Cell::new(
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .map(|duration| (duration.as_nanos() as u32) ^ std::process::id())
+                    .unwrap_or(std::process::id()),
+            ),
+            srandom_state: Cell::new(
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .map(|duration| duration.as_nanos() as u64)
+                    .unwrap_or(0)
+                    ^ (std::process::id() as u64).rotate_left(23),
+            ),
         }
     }
 
@@ -177,18 +202,25 @@ impl ShellEnvironment {
                 flags
             }
             "$" => std::process::id().to_string(),
-            "SECONDS" => self.started_at.elapsed().as_secs().to_string(),
-            "BASH_MONOSECONDS" => self.started_at.elapsed().as_secs().to_string(),
-            "SRANDOM" => {
-                let nanos = SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .map(|duration| duration.as_nanos() as u64)
-                    .unwrap_or(0);
-                let mixed = nanos
-                    ^ (std::process::id() as u64).rotate_left(17)
-                    ^ self.started_at.elapsed().as_nanos() as u64;
-                ((mixed ^ mixed.rotate_left(13) ^ mixed.rotate_right(7)) & 0xffff_ffff).to_string()
+            "RANDOM" => {
+                let state = self.random_state.get()
+                    .wrapping_mul(1103515245)
+                    .wrapping_add(12345);
+                self.random_state.set(state);
+                ((state >> 16) & 0x7fff).to_string()
             }
+            "SRANDOM" => {
+                let mut state = self.srandom_state.get();
+                state ^= state << 13;
+                state ^= state >> 7;
+                state ^= state << 17;
+                self.srandom_state.set(state);
+                (state as u32).to_string()
+            }
+            "SECONDS" => self.seconds_base
+                .saturating_add(self.started_at.elapsed().as_secs() as i64)
+                .to_string(),
+            "BASH_MONOSECONDS" => self.started_at.elapsed().as_secs().to_string(),
             "EPOCHSECONDS" => SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .map(|duration| duration.as_secs().to_string())
@@ -241,6 +273,26 @@ impl ShellEnvironment {
         let name = self.dereference_name(&original);
         if self.readonly.contains(&name) { return false; }
         let mut value = value.into();
+
+        if name == "RANDOM" {
+            if let Ok(seed) = value.parse::<u32>() {
+                self.random_state.set(seed);
+            }
+            self.vars.insert(name, value);
+            return true;
+        }
+        if name == "SRANDOM" {
+            // Assignment is accepted but does not seed SRANDOM.
+            self.vars.insert(name, value);
+            return true;
+        }
+        if name == "SECONDS" {
+            self.seconds_base = value.parse::<i64>().unwrap_or(0);
+            self.started_at = Instant::now();
+            self.vars.insert(name, value);
+            return true;
+        }
+
         if self.uppercase_vars.contains(&name) {
             value = value.to_uppercase();
         } else if self.lowercase_vars.contains(&name) {

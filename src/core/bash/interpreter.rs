@@ -110,6 +110,7 @@ impl ExecutionResult {
 
 pub trait ShellCommandHost: Send + Sync {
     fn interrupted(&self) -> bool { false }
+    fn clear_interrupt(&self) {}
 
     fn read_line(&self, prompt: &str, silent: bool) -> Result<Option<String>> {
         if !prompt.is_empty() {
@@ -207,6 +208,7 @@ pub struct Interpreter {
     key_bindings: HashMap<String, String>,
     fd_inputs: HashMap<i32, FdInputBinding>,
     fd_outputs: HashMap<i32, FdOutputBinding>,
+    active_traps: HashSet<String>,
 }
 
 impl Interpreter {
@@ -236,9 +238,19 @@ impl Interpreter {
                 ("\\C-p".to_owned(), "previous-history".to_owned()),
                 ("\\C-n".to_owned(), "next-history".to_owned()),
                 ("\\C-l".to_owned(), "clear-screen".to_owned()),
+                ("\\C-u".to_owned(), "unix-line-discard".to_owned()),
+                ("\\C-h".to_owned(), "backward-delete-char".to_owned()),
+                ("\\C-i".to_owned(), "complete".to_owned()),
+                ("\\e[A".to_owned(), "previous-history".to_owned()),
+                ("\\e[B".to_owned(), "next-history".to_owned()),
+                ("\\e[C".to_owned(), "forward-char".to_owned()),
+                ("\\e[D".to_owned(), "backward-char".to_owned()),
+                ("\\e[H".to_owned(), "beginning-of-line".to_owned()),
+                ("\\e[F".to_owned(), "end-of-line".to_owned()),
             ].into_iter().collect(),
             fd_inputs: HashMap::new(),
             fd_outputs: HashMap::new(),
+            active_traps: HashSet::new(),
         }
     }
 
@@ -268,8 +280,23 @@ impl Interpreter {
     }
 
     pub fn execute(&mut self, node: &AstNode, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
-        if self.host.interrupted() { bail!("comando interrumpido"); }
-        let result = match node {
+        if self.host.interrupted() {
+            self.host.clear_interrupt();
+            if let Some(mut trapped) = self.run_named_trap("INT")? {
+                trapped.status = 130;
+                return Ok(trapped);
+            }
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), 130));
+        }
+
+        let mut prelude = ExecutionResult::success();
+        if matches!(node, AstNode::Simple(_)) {
+            if let Some(debug) = self.run_named_trap("DEBUG")? {
+                prelude.append(debug);
+            }
+        }
+
+        let mut result = match node {
             AstNode::Empty => ExecutionResult::success(),
             AstNode::Sequence(nodes) => {
                 let mut last = ExecutionResult::success();
@@ -621,8 +648,37 @@ impl Interpreter {
             }
         };
 
+        if !prelude.stdout.is_empty() || !prelude.stderr.is_empty() {
+            prelude.append(result);
+            result = prelude;
+        }
         self.env.last_status = result.status;
         Ok(result)
+    }
+
+    fn run_named_trap(&mut self, signal: &str) -> Result<Option<ExecutionResult>> {
+        let signal = normalize_signal(signal);
+        if self.active_traps.contains(&signal) {
+            return Ok(None);
+        }
+        let Some(action) = self.env.traps.get(&signal).cloned() else {
+            return Ok(None);
+        };
+        if action.is_empty() {
+            return Ok(Some(ExecutionResult::success()));
+        }
+
+        self.active_traps.insert(signal.clone());
+        let previous = self.env.get("BASH_TRAPSIG");
+        self.env.vars.insert("BASH_TRAPSIG".to_owned(), trap_signal_number(&signal).to_string());
+        let parsed = parse(&action);
+        let result = match parsed {
+            Ok(node) => self.execute(&node, None),
+            Err(error) => Err(error),
+        };
+        self.env.vars.insert("BASH_TRAPSIG".to_owned(), previous);
+        self.active_traps.remove(&signal);
+        result.map(Some)
     }
 
     fn prepare_heredocs(&mut self, input: &str) -> Result<(String, Vec<String>)> {
@@ -1118,6 +1174,9 @@ impl Interpreter {
             if result.flow == FlowSignal::Return {
                 result.flow = FlowSignal::None;
             }
+            if let Some(trap_result) = self.run_named_trap("RETURN")? {
+                result.append(trap_result);
+            }
             result
         } else if !self.disabled_builtins.contains(&name) {
             if let Some(result) = self.shell_builtin(&name, args, local_stdin.as_deref())? {
@@ -1409,6 +1468,9 @@ impl Interpreter {
                 self.env.script_name = saved_name;
                 let mut result = execution?;
                 if result.flow == FlowSignal::Return { result.flow = FlowSignal::None; }
+                if let Some(trap_result) = self.run_named_trap("RETURN")? {
+                    result.append(trap_result);
+                }
                 result
             }
             "read" => self.builtin_read(args, stdin)?,
@@ -1682,6 +1744,277 @@ impl Interpreter {
         let config = PathBuf::from(config);
         let root = config.parent()?.parent()?;
         Some(root.join("data").join("history"))
+    }
+
+    pub fn set_interactive(&mut self, interactive: bool) {
+        set_shell_option(&mut self.env, "histexpand", interactive);
+        set_shell_option(&mut self.env, "monitor", interactive);
+    }
+
+    pub fn prepare_history_line(&mut self, line: &str) -> Result<(String, bool)> {
+        if !self.env.option_enabled("histexpand") || (!line.contains('!') && !line.contains('^')) {
+            return Ok((line.to_owned(), false));
+        }
+
+        let entries = self.read_history_entries();
+        if entries.is_empty() {
+            if line.contains('!') || line.starts_with('^') {
+                bail!("evento de historial no encontrado");
+            }
+            return Ok((line.to_owned(), false));
+        }
+
+        if line.starts_with('^') {
+            let tail = &line[1..];
+            if let Some((old, rest)) = tail.split_once('^') {
+                if let Some((new, suffix)) = rest.split_once('^') {
+                    let replacement = entries.last().unwrap().replacen(old, new, 1);
+                    return Ok((format!("{replacement}{suffix}"), false));
+                }
+            }
+        }
+
+        fn event_words(event: &str) -> Vec<String> {
+            split_shell_words_relaxed(event)
+                .unwrap_or_else(|_| event.split_whitespace().map(str::to_owned).collect())
+        }
+
+        fn select_words(event: &str, designator: &str) -> String {
+            let words = event_words(event);
+            if words.is_empty() {
+                return String::new();
+            }
+            match designator {
+                "0" => words.first().cloned().unwrap_or_default(),
+                "^" => words.get(1).cloned().unwrap_or_default(),
+                "$" => words.last().cloned().unwrap_or_default(),
+                "*" => words.get(1..).unwrap_or(&[]).join(" "),
+                _ => {
+                    if let Some((left, right)) = designator.split_once('-') {
+                        let start = left.parse::<usize>().unwrap_or(0);
+                        let end = if right.is_empty() {
+                            words.len().saturating_sub(1)
+                        } else {
+                            right.parse::<usize>().unwrap_or(start)
+                        };
+                        if start < words.len() {
+                            return words[start..=end.min(words.len() - 1)].join(" ");
+                        }
+                    }
+                    designator.parse::<usize>().ok()
+                        .and_then(|index| words.get(index))
+                        .cloned()
+                        .unwrap_or_else(|| event.to_owned())
+                }
+            }
+        }
+
+        fn apply_path_modifier(value: String, modifier: &str) -> String {
+            let path = Path::new(&value);
+            match modifier {
+                "h" => path.parent().map(|path| path.to_string_lossy().into_owned()).unwrap_or_default(),
+                "t" => path.file_name().map(|name| name.to_string_lossy().into_owned()).unwrap_or_default(),
+                "r" => {
+                    let mut path = PathBuf::from(&value);
+                    path.set_extension("");
+                    path.to_string_lossy().trim_end_matches('.').to_owned()
+                }
+                "e" => path.extension().map(|ext| format!(".{}", ext.to_string_lossy())).unwrap_or_default(),
+                "q" => shell_quote(&value),
+                "x" => split_shell_words_relaxed(&value)
+                    .unwrap_or_else(|_| value.split_whitespace().map(str::to_owned).collect())
+                    .into_iter()
+                    .map(|word| shell_quote(&word))
+                    .collect::<Vec<_>>()
+                    .join(" "),
+                _ => value,
+            }
+        }
+
+        let mut output = String::new();
+        let mut bytes = line.char_indices().peekable();
+        let mut single = false;
+        let mut escaped = false;
+        let mut print_only = false;
+
+        while let Some((index, ch)) = bytes.next() {
+            if escaped {
+                output.push(ch);
+                escaped = false;
+                continue;
+            }
+            if ch == '\\' && !single {
+                if bytes.peek().is_some_and(|(_, next)| *next == '!') {
+                    escaped = true;
+                    continue;
+                }
+                output.push(ch);
+                continue;
+            }
+            if ch == '\'' {
+                single = !single;
+                output.push(ch);
+                continue;
+            }
+            if ch != '!' || single {
+                output.push(ch);
+                continue;
+            }
+
+            let after = index + 1;
+            let rest = &line[after..];
+            let mut consumed = 0usize;
+            let mut event = None::<String>;
+
+            if rest.starts_with('!') {
+                event = entries.last().cloned();
+                consumed = 1;
+            } else if rest.starts_with('#') {
+                event = Some(output.clone());
+                consumed = 1;
+            } else if let Some(tail) = rest.strip_prefix('-') {
+                let digits: String = tail.chars().take_while(|ch| ch.is_ascii_digit()).collect();
+                if !digits.is_empty() {
+                    let back = digits.parse::<usize>().unwrap_or(0);
+                    event = entries.len().checked_sub(back).and_then(|position| entries.get(position)).cloned();
+                    consumed = 1 + digits.len();
+                }
+            } else if rest.starts_with('?') {
+                if let Some(end) = rest[1..].find('?') {
+                    let needle = &rest[1..end + 1];
+                    event = entries.iter().rfind(|entry| entry.contains(needle)).cloned();
+                    consumed = end + 2;
+                }
+            } else if rest.chars().next().is_some_and(|ch| ch.is_ascii_digit()) {
+                let digits: String = rest.chars().take_while(|ch| ch.is_ascii_digit()).collect();
+                let number = digits.parse::<usize>().unwrap_or(0);
+                event = number.checked_sub(1).and_then(|position| entries.get(position)).cloned();
+                consumed = digits.len();
+            } else {
+                let prefix: String = rest.chars()
+                    .take_while(|ch| !ch.is_whitespace() && !matches!(ch, ':' | ';' | '&' | '|' | '(' | ')' | '\'' | '"'))
+                    .collect();
+                if !prefix.is_empty() {
+                    event = entries.iter().rfind(|entry| entry.starts_with(&prefix)).cloned();
+                    consumed = prefix.len();
+                }
+            }
+
+            let Some(mut expanded) = event else {
+                bail!("evento de historial no encontrado cerca de '!{}'", rest);
+            };
+
+            let mut suffix_index = after + consumed;
+            while line.as_bytes().get(suffix_index) == Some(&b':') {
+                suffix_index += 1;
+                let modifier_start = suffix_index;
+                while let Some(byte) = line.as_bytes().get(suffix_index) {
+                    if *byte == b':' || byte.is_ascii_whitespace() {
+                        break;
+                    }
+                    suffix_index += 1;
+                }
+                let token = &line[modifier_start..suffix_index];
+                if token.is_empty() {
+                    break;
+                }
+
+                if matches!(token, "^" | "$" | "*" | "0")
+                    || token.chars().next().is_some_and(|ch| ch.is_ascii_digit())
+                {
+                    expanded = select_words(&expanded, token);
+                    continue;
+                }
+
+                if token == "p" {
+                    print_only = true;
+                    continue;
+                }
+                if matches!(token, "h" | "t" | "r" | "e" | "q" | "x") {
+                    expanded = apply_path_modifier(expanded, token);
+                    continue;
+                }
+
+                let substitution = token.strip_prefix("gs").map(|tail| (true, tail))
+                    .or_else(|| token.strip_prefix('s').map(|tail| (false, tail)));
+                if let Some((global, tail)) = substitution {
+                    let mut chars = tail.chars();
+                    let Some(delim) = chars.next() else { continue };
+                    let body = chars.as_str();
+                    let mut parts = body.splitn(3, delim);
+                    let old = parts.next().unwrap_or("");
+                    let new = parts.next().unwrap_or("");
+                    expanded = if global {
+                        expanded.replace(old, new)
+                    } else {
+                        expanded.replacen(old, new, 1)
+                    };
+                }
+            }
+
+            output.push_str(&expanded);
+
+            while let Some((next_index, _)) = bytes.peek().copied() {
+                if next_index < suffix_index {
+                    bytes.next();
+                } else {
+                    break;
+                }
+            }
+        }
+
+        Ok((output, print_only))
+    }
+
+    pub fn record_history_line(&mut self, line: &str) -> Result<()> {
+        if line.is_empty() {
+            return Ok(());
+        }
+
+        let histcontrol = self.env.get("HISTCONTROL");
+        let controls: HashSet<&str> = histcontrol.split(':').collect();
+        let ignore_space = controls.contains("ignorespace") || controls.contains("ignoreboth");
+        let ignore_dups = controls.contains("ignoredups") || controls.contains("ignoreboth");
+        let erase_dups = controls.contains("erasedups");
+
+        if ignore_space && line.starts_with(' ') {
+            return Ok(());
+        }
+
+        let histignore = self.env.get("HISTIGNORE");
+        if !histignore.is_empty() && histignore.split(':').any(|pattern| {
+            !pattern.is_empty() && shell_pattern_matches(
+                pattern,
+                line,
+                self.env.option_enabled("extglob"),
+                false,
+            )
+        }) {
+            return Ok(());
+        }
+
+        let mut entries = self.read_history_entries();
+        if ignore_dups && entries.last().is_some_and(|entry| entry == line) {
+            return Ok(());
+        }
+        if erase_dups {
+            entries.retain(|entry| entry != line);
+        }
+        entries.push(line.to_owned());
+
+        let memory_limit = self.env.get("HISTSIZE").parse::<usize>().ok();
+        if let Some(limit) = memory_limit {
+            if entries.len() > limit {
+                entries.drain(..entries.len() - limit);
+            }
+        }
+        let file_limit = self.env.get("HISTFILESIZE").parse::<usize>().ok();
+        if let Some(limit) = file_limit {
+            if entries.len() > limit {
+                entries.drain(..entries.len() - limit);
+            }
+        }
+        self.write_history_entries(&entries)
     }
 
     fn read_history_entries(&self) -> Vec<String> {
@@ -2869,6 +3202,30 @@ impl Interpreter {
         Ok(values)
     }
 
+    pub fn readline_bindings(&self) -> HashMap<String, String> {
+        self.key_bindings.clone()
+    }
+
+    pub fn run_readline_shell_binding(
+        &mut self,
+        command: &str,
+        line: &str,
+        cursor: usize,
+    ) -> Result<(String, usize, ExecutionResult)> {
+        self.env.set("READLINE_LINE", line.to_owned());
+        self.env.set("READLINE_POINT", cursor.to_string());
+        self.env.set("READLINE_MARK", cursor.to_string());
+        self.env.set("READLINE_ARGUMENT", "1");
+
+        let result = self.execute_text(command)?;
+        let updated = self.env.get("READLINE_LINE");
+        let point = self.env.get("READLINE_POINT")
+            .parse::<usize>()
+            .unwrap_or(cursor)
+            .min(updated.chars().count());
+        Ok((updated, point, result))
+    }
+
     pub fn complete_line(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
         if !self.env.option_enabled("progcomp") {
             return Ok(Vec::new());
@@ -3794,10 +4151,25 @@ impl Interpreter {
     }
 
     fn builtin_trap(&mut self, args: &[String]) -> ExecutionResult {
+        if args.first().map(String::as_str) == Some("-l") {
+            let stdout = [
+                " 1) SIGHUP", " 2) SIGINT", " 3) SIGQUIT", " 6) SIGABRT",
+                " 9) SIGKILL", "11) SIGSEGV", "15) SIGTERM",
+                "DEBUG", "ERR", "RETURN", "EXIT",
+            ].join("\n") + "\n";
+            return ExecutionResult::from_parts(stdout, String::new(), 0);
+        }
+
         if args.is_empty() || args.first().map(String::as_str) == Some("-p") {
+            let requested: HashSet<String> = if args.first().map(String::as_str) == Some("-p") {
+                args[1..].iter().map(|signal| normalize_signal(signal)).collect()
+            } else {
+                HashSet::new()
+            };
             let mut traps = self.env.traps.iter().collect::<Vec<_>>();
             traps.sort_by_key(|(signal, _)| *signal);
             let stdout = traps.into_iter()
+                .filter(|(signal, _)| requested.is_empty() || requested.contains(*signal))
                 .map(|(signal, action)| format!("trap -- {} {}\n", shell_quote(action), signal))
                 .collect();
             return ExecutionResult::from_parts(stdout, String::new(), 0);
@@ -4975,16 +5347,18 @@ impl Interpreter {
 
     fn special_value(&self, name: &str) -> String {
         match name {
-            "RANDOM" => {
-                let nanos = std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map(|d| d.subsec_nanos())
-                    .unwrap_or(0);
-                (nanos % 32768).to_string()
-            }
             "BASH_VERSION" => "5.3.0(1)-sst".to_owned(),
             "BASHPID" | "$" => std::process::id().to_string(),
-            "PPID" => std::process::id().saturating_sub(1).to_string(),
+            "PPID" => {
+                sysinfo::get_current_pid()
+                    .ok()
+                    .and_then(|pid| {
+                        let system = sysinfo::System::new_all();
+                        system.process(pid).and_then(|process| process.parent())
+                    })
+                    .map(|pid| pid.as_u32().to_string())
+                    .unwrap_or_else(|| "0".to_owned())
+            }
             _ => self.env.get(name),
         }
     }
@@ -5748,6 +6122,19 @@ fn split_ifs(input: &str, ifs: &str) -> Vec<String> {
 fn set_shell_option(env: &mut ShellEnvironment, name: &str, enabled: bool) {
     if enabled { env.shell_options.insert(name.to_owned()); }
     else { env.shell_options.remove(name); }
+}
+
+fn trap_signal_number(signal: &str) -> i32 {
+    match normalize_signal(signal).as_str() {
+        "HUP" => 1,
+        "INT" => 2,
+        "QUIT" => 3,
+        "ABRT" => 6,
+        "KILL" => 9,
+        "SEGV" => 11,
+        "TERM" => 15,
+        _ => 0,
+    }
 }
 
 fn normalize_signal(value: &str) -> String {

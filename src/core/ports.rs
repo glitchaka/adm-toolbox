@@ -31,8 +31,26 @@ pub trait ShellEngine: Send {
     fn working_dir(&self) -> &Path;
     fn execute(&mut self, line: &str) -> Result<ShellExecution>;
     fn set_arguments(&mut self, name: &str, args: &[String]);
+    fn set_interactive(&mut self, _interactive: bool) {}
     fn complete(&mut self, _line: &str, _cursor: usize) -> Result<Vec<String>> {
         Ok(Vec::new())
+    }
+    fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
+        Ok((line.to_owned(), false))
+    }
+    fn record_history(&mut self, _line: &str) -> Result<()> {
+        Ok(())
+    }
+    fn readline_bindings(&self) -> HashMap<String, String> {
+        HashMap::new()
+    }
+    fn run_readline_binding(
+        &mut self,
+        _command: &str,
+        line: &str,
+        cursor: usize,
+    ) -> Result<(String, usize, String, String)> {
+        Ok((line.to_owned(), cursor, String::new(), String::new()))
     }
 }
 
