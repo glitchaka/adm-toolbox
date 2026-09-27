@@ -528,6 +528,12 @@ impl NativeShellEngine {
             "ADM_CONFIG",
             config_file.to_string_lossy().into_owned(),
         );
+        if let Some(root) = config_file.parent().and_then(Path::parent) {
+            interpreter.env.set(
+                "HISTFILE",
+                root.join("data").join("history").to_string_lossy().into_owned(),
+            );
+        }
 
         let mut engine = Self {
             interpreter,

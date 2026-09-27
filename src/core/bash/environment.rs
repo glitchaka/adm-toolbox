@@ -15,6 +15,10 @@ pub struct LocalBinding {
     associative: Option<HashMap<String, String>>,
     nameref: Option<String>,
     readonly: bool,
+    integer: bool,
+    uppercase: bool,
+    lowercase: bool,
+    trace: bool,
 }
 
 #[derive(Clone)]
@@ -27,6 +31,10 @@ pub struct ShellEnvironment {
     pub assoc_arrays: HashMap<String, HashMap<String, String>>,
     pub namerefs: HashMap<String, String>,
     pub readonly: HashSet<String>,
+    pub integer_vars: HashSet<String>,
+    pub uppercase_vars: HashSet<String>,
+    pub lowercase_vars: HashSet<String>,
+    pub trace_vars: HashSet<String>,
     pub shell_options: HashSet<String>,
     pub shopt_options: HashSet<String>,
     pub traps: HashMap<String, String>,
@@ -47,6 +55,11 @@ impl ShellEnvironment {
         let mut vars = exported.clone();
         vars.entry("IFS".to_owned()).or_insert_with(|| " \t\n".to_owned());
         vars.insert("BASH_VERSION".to_owned(), "5.3.0(1)-sst".to_owned());
+        vars.entry("BASH_TRAPSIG".to_owned()).or_insert_with(|| "0".to_owned());
+        vars.entry("BASH_SUBSHELL".to_owned()).or_insert_with(|| "0".to_owned());
+        vars.entry("BASH_COMMAND".to_owned()).or_default();
+        vars.entry("HISTSIZE".to_owned()).or_insert_with(|| "500".to_owned());
+        vars.entry("HISTFILESIZE".to_owned()).or_insert_with(|| "500".to_owned());
 
         let mut arrays = HashMap::new();
         arrays.insert(
@@ -72,6 +85,10 @@ impl ShellEnvironment {
             assoc_arrays: HashMap::new(),
             namerefs: HashMap::new(),
             readonly,
+            integer_vars: HashSet::new(),
+            uppercase_vars: HashSet::new(),
+            lowercase_vars: HashSet::new(),
+            trace_vars: HashSet::new(),
             shell_options: ["braceexpand", "hashall"].into_iter().map(str::to_owned).collect(),
             shopt_options: ["globskipdots", "patsub_replacement", "progcomp", "sourcepath"]
                 .into_iter()
@@ -161,6 +178,17 @@ impl ShellEnvironment {
             }
             "$" => std::process::id().to_string(),
             "SECONDS" => self.started_at.elapsed().as_secs().to_string(),
+            "BASH_MONOSECONDS" => self.started_at.elapsed().as_secs().to_string(),
+            "SRANDOM" => {
+                let nanos = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .map(|duration| duration.as_nanos() as u64)
+                    .unwrap_or(0);
+                let mixed = nanos
+                    ^ (std::process::id() as u64).rotate_left(17)
+                    ^ self.started_at.elapsed().as_nanos() as u64;
+                ((mixed ^ mixed.rotate_left(13) ^ mixed.rotate_right(7)) & 0xffff_ffff).to_string()
+            }
             "EPOCHSECONDS" => SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .map(|duration| duration.as_secs().to_string())
@@ -212,7 +240,12 @@ impl ShellEnvironment {
         let original = name.into();
         let name = self.dereference_name(&original);
         if self.readonly.contains(&name) { return false; }
-        let value = value.into();
+        let mut value = value.into();
+        if self.uppercase_vars.contains(&name) {
+            value = value.to_uppercase();
+        } else if self.lowercase_vars.contains(&name) {
+            value = value.to_lowercase();
+        }
 
         if let Some((base, subscript)) = split_subscript_owned(&name) {
             if self.readonly.contains(&base) { return false; }
@@ -339,6 +372,10 @@ impl ShellEnvironment {
             associative: self.assoc_arrays.get(name).cloned(),
             nameref: self.namerefs.get(name).cloned(),
             readonly: self.readonly.contains(name),
+            integer: self.integer_vars.contains(name),
+            uppercase: self.uppercase_vars.contains(name),
+            lowercase: self.lowercase_vars.contains(name),
+            trace: self.trace_vars.contains(name),
         }
     }
 
@@ -356,6 +393,10 @@ impl ShellEnvironment {
         self.assoc_arrays.remove(name);
         self.namerefs.remove(name);
         self.readonly.remove(name);
+        self.integer_vars.remove(name);
+        self.uppercase_vars.remove(name);
+        self.lowercase_vars.remove(name);
+        self.trace_vars.remove(name);
     }
 
     pub fn pop_local_scope(&mut self) {
@@ -378,7 +419,19 @@ impl ShellEnvironment {
                     self.namerefs.insert(name.clone(), value);
                 }
                 if previous.readonly {
-                    self.readonly.insert(name);
+                    self.readonly.insert(name.clone());
+                }
+                if previous.integer {
+                    self.integer_vars.insert(name.clone());
+                }
+                if previous.uppercase {
+                    self.uppercase_vars.insert(name.clone());
+                }
+                if previous.lowercase {
+                    self.lowercase_vars.insert(name.clone());
+                }
+                if previous.trace {
+                    self.trace_vars.insert(name);
                 }
             }
         }
@@ -432,7 +485,12 @@ impl ShellEnvironment {
     pub fn export(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
         let name = name.into();
         if self.readonly.contains(&name) { return false; }
-        let value = value.into();
+        let mut value = value.into();
+        if self.uppercase_vars.contains(&name) {
+            value = value.to_uppercase();
+        } else if self.lowercase_vars.contains(&name) {
+            value = value.to_lowercase();
+        }
         self.vars.insert(name.clone(), value.clone());
         self.exported.insert(name, value);
         true
@@ -445,6 +503,45 @@ impl ShellEnvironment {
 
     pub fn set_readonly(&mut self, name: &str) {
         self.readonly.insert(name.to_owned());
+    }
+
+    pub fn set_integer(&mut self, name: &str, enabled: bool) {
+        if enabled { self.integer_vars.insert(name.to_owned()); }
+        else { self.integer_vars.remove(name); }
+    }
+
+    pub fn set_uppercase(&mut self, name: &str, enabled: bool) {
+        if enabled {
+            self.lowercase_vars.remove(name);
+            self.uppercase_vars.insert(name.to_owned());
+            if let Some(value) = self.vars.get(name).cloned() {
+                let _ = self.set(name.to_owned(), value);
+            }
+        } else {
+            self.uppercase_vars.remove(name);
+        }
+    }
+
+    pub fn set_lowercase(&mut self, name: &str, enabled: bool) {
+        if enabled {
+            self.uppercase_vars.remove(name);
+            self.lowercase_vars.insert(name.to_owned());
+            if let Some(value) = self.vars.get(name).cloned() {
+                let _ = self.set(name.to_owned(), value);
+            }
+        } else {
+            self.lowercase_vars.remove(name);
+        }
+    }
+
+    pub fn set_trace(&mut self, name: &str, enabled: bool) {
+        if enabled { self.trace_vars.insert(name.to_owned()); }
+        else { self.trace_vars.remove(name); }
+    }
+
+    pub fn is_integer(&self, name: &str) -> bool {
+        let resolved = self.dereference_name(name);
+        self.integer_vars.contains(&resolved)
     }
 
     pub fn option_enabled(&self, name: &str) -> bool {

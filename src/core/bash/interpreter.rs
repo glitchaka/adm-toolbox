@@ -182,6 +182,7 @@ pub struct Interpreter {
     pending_expansion_exits: Vec<i32>,
     completion_specs: HashMap<String, CompletionSpec>,
     active_completion_options: Option<HashSet<String>>,
+    key_bindings: HashMap<String, String>,
 }
 
 impl Interpreter {
@@ -203,6 +204,15 @@ impl Interpreter {
             pending_expansion_exits: Vec::new(),
             completion_specs: HashMap::new(),
             active_completion_options: None,
+            key_bindings: [
+                ("\\C-a".to_owned(), "beginning-of-line".to_owned()),
+                ("\\C-e".to_owned(), "end-of-line".to_owned()),
+                ("\\C-b".to_owned(), "backward-char".to_owned()),
+                ("\\C-f".to_owned(), "forward-char".to_owned()),
+                ("\\C-p".to_owned(), "previous-history".to_owned()),
+                ("\\C-n".to_owned(), "next-history".to_owned()),
+                ("\\C-l".to_owned(), "clear-screen".to_owned()),
+            ].into_iter().collect(),
         }
     }
 
@@ -574,6 +584,8 @@ impl Interpreter {
             AstNode::Group(body) => self.execute(body, stdin)?,
             AstNode::Subshell(body) => {
                 let saved = self.env.clone();
+                let subshell = self.env.get("BASH_SUBSHELL").parse::<u32>().unwrap_or(0).saturating_add(1);
+                self.env.set("BASH_SUBSHELL", subshell.to_string());
                 let result = self.execute(body, stdin);
                 self.env = saved;
                 let mut result = result?;
@@ -816,7 +828,11 @@ impl Interpreter {
         let mut index = 0;
         while index < raw.len() && is_assignment(&raw[index]) {
             let (name, value) = raw[index].split_once('=').unwrap();
-            let value = self.expand_scalar(value)?;
+            let value = if self.env.is_integer(name) {
+                self.evaluate_arithmetic_command(value)?.to_string()
+            } else {
+                self.expand_scalar(value)?
+            };
             self.env.set(name.to_owned(), value);
             index += 1;
         }
@@ -832,6 +848,10 @@ impl Interpreter {
 
         let name = words[0].clone();
         let args = &words[1..];
+        self.env.set("BASH_COMMAND", words.iter().map(|word| shell_quote(word)).collect::<Vec<_>>().join(" "));
+        if let Some(last) = words.last() {
+            self.env.set("_", last.clone());
+        }
 
         let mut trace = String::new();
         if self.env.option_enabled("xtrace") {
@@ -1078,6 +1098,15 @@ impl Interpreter {
                 }
             }
             "enable" => self.builtin_enable(args),
+            "history" => self.builtin_history(args)?,
+            "fc" => self.builtin_fc(args)?,
+            "bind" => self.builtin_bind(args)?,
+            "coproc" => self.builtin_coproc(args)?,
+            "suspend" => self.builtin_suspend(args),
+            "help" => self.host.execute_builtin("help", args, &self.env.cwd, stdin)?
+                .unwrap_or_else(|| ExecutionResult::from_parts(String::new(), "help: builtin no disponible\n".to_owned(), 1)),
+            "kill" => self.host.execute_builtin("kill", args, &self.env.cwd, stdin)?
+                .unwrap_or_else(|| ExecutionResult::from_parts(String::new(), "kill: builtin no disponible\n".to_owned(), 1)),
             "exit" | "logout" => {
                 let status = args.first()
                     .and_then(|value| value.parse::<i32>().ok())
@@ -1368,7 +1397,8 @@ impl Interpreter {
                 | "wait" | "fg" | "bg" | "disown" | "command" | "builtin" | "type" | "hash"
                 | "complete" | "compgen" | "compopt" | "getopts"
                 | "dirs" | "pushd" | "popd" | "umask" | "ulimit" | "times" | "caller"
-                | "enable" | ":" | "true" | "false"
+                | "enable" | "history" | "fc" | "bind" | "coproc" | "suspend"
+                | "help" | "kill" | ":" | "true" | "false"
         )
     }
 
@@ -1398,6 +1428,396 @@ impl Interpreter {
         };
 
         Ok(selected.map(|index| (index + 1, jobs[index].clone())))
+    }
+
+
+    fn history_file_path(&self) -> Option<PathBuf> {
+        let histfile = self.env.get("HISTFILE");
+        if !histfile.is_empty() {
+            return Some(self.resolve_path(&histfile));
+        }
+        let config = self.env.get("ADM_CONFIG");
+        if config.is_empty() {
+            return None;
+        }
+        let config = PathBuf::from(config);
+        let root = config.parent()?.parent()?;
+        Some(root.join("data").join("history"))
+    }
+
+    fn read_history_entries(&self) -> Vec<String> {
+        self.history_file_path()
+            .and_then(|path| fs::read_to_string(path).ok())
+            .map(|text| text.lines()
+                .filter(|line| !line.starts_with('#'))
+                .map(str::to_owned)
+                .collect())
+            .unwrap_or_default()
+    }
+
+    fn write_history_entries(&self, entries: &[String]) -> Result<()> {
+        let Some(path) = self.history_file_path() else {
+            return Ok(());
+        };
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let mut body = entries.join("\n");
+        if !body.is_empty() {
+            body.push('\n');
+        }
+        fs::write(path, body)?;
+        Ok(())
+    }
+
+    fn builtin_history(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let mut entries = self.read_history_entries();
+        if args.is_empty() {
+            let stdout = entries.iter().enumerate()
+                .map(|(index, command)| format!("{:5}  {}\n", index + 1, command))
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        let mut index = 0usize;
+        let mut show_count: Option<usize> = None;
+        while index < args.len() {
+            match args[index].as_str() {
+                "-c" => {
+                    entries.clear();
+                    self.write_history_entries(&entries)?;
+                }
+                "-d" => {
+                    index += 1;
+                    let Some(offset) = args.get(index).and_then(|value| value.parse::<isize>().ok()) else {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "history: -d requiere un desplazamiento válido\n".to_owned(),
+                            2,
+                        ));
+                    };
+                    let actual = if offset < 0 {
+                        entries.len().checked_sub(offset.unsigned_abs())
+                    } else {
+                        usize::try_from(offset).ok().and_then(|value| value.checked_sub(1))
+                    };
+                    if let Some(position) = actual.filter(|position| *position < entries.len()) {
+                        entries.remove(position);
+                        self.write_history_entries(&entries)?;
+                    } else {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("history: {offset}: posición fuera de rango\n"),
+                            1,
+                        ));
+                    }
+                }
+                "-w" => {
+                    index += 1;
+                    let path = args.get(index).map(PathBuf::from)
+                        .or_else(|| self.history_file_path());
+                    let Some(path) = path else {
+                        return Ok(ExecutionResult::from_parts(String::new(), "history: no hay archivo de historial\n".to_owned(), 1));
+                    };
+                    let mut body = entries.join("\n");
+                    if !body.is_empty() { body.push('\n'); }
+                    fs::write(path, body)?;
+                }
+                "-r" | "-n" => {
+                    let only_new = args[index] == "-n";
+                    index += 1;
+                    let path = args.get(index).map(PathBuf::from)
+                        .or_else(|| self.history_file_path());
+                    let Some(path) = path else {
+                        return Ok(ExecutionResult::from_parts(String::new(), "history: no hay archivo de historial\n".to_owned(), 1));
+                    };
+                    let incoming = fs::read_to_string(path).unwrap_or_default();
+                    for command in incoming.lines().filter(|line| !line.starts_with('#')) {
+                        if !only_new || !entries.iter().any(|entry| entry == command) {
+                            entries.push(command.to_owned());
+                        }
+                    }
+                    self.write_history_entries(&entries)?;
+                }
+                "-a" => {
+                    index += 1;
+                    if let Some(path) = args.get(index) {
+                        let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+                        for entry in &entries {
+                            writeln!(file, "{entry}")?;
+                        }
+                    } else {
+                        self.write_history_entries(&entries)?;
+                        index = index.saturating_sub(1);
+                    }
+                }
+                value if value.starts_with('-') => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("history: opción no válida: {value}\n"),
+                        2,
+                    ));
+                }
+                value => {
+                    show_count = value.parse::<usize>().ok();
+                    if show_count.is_none() {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("history: argumento inválido: {value}\n"),
+                            2,
+                        ));
+                    }
+                }
+            }
+            index += 1;
+        }
+
+        if let Some(count) = show_count {
+            let start = entries.len().saturating_sub(count);
+            let stdout = entries[start..].iter().enumerate()
+                .map(|(offset, command)| format!("{:5}  {}\n", start + offset + 1, command))
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        Ok(ExecutionResult::success())
+    }
+
+    fn history_selector(entries: &[String], selector: Option<&str>, default: usize) -> Option<usize> {
+        let Some(selector) = selector else {
+            return (default < entries.len()).then_some(default);
+        };
+        if let Ok(number) = selector.parse::<isize>() {
+            if number < 0 {
+                return entries.len().checked_sub(number.unsigned_abs());
+            }
+            return usize::try_from(number).ok()?.checked_sub(1)
+                .filter(|index| *index < entries.len());
+        }
+        entries.iter().rposition(|entry| entry.starts_with(selector))
+    }
+
+    fn builtin_fc(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let mut entries = self.read_history_entries();
+        while entries.last().is_some_and(|line| line.trim_start().starts_with("fc")) {
+            entries.pop();
+        }
+        if entries.is_empty() {
+            return Ok(ExecutionResult::from_parts(String::new(), "fc: historial vacío\n".to_owned(), 1));
+        }
+
+        let mut list = false;
+        let mut no_numbers = false;
+        let mut reverse = false;
+        let mut substitute_mode = false;
+        let mut editor: Option<String> = None;
+        let mut rest = Vec::new();
+        let mut index = 0usize;
+        while index < args.len() {
+            match args[index].as_str() {
+                "-l" => list = true,
+                "-n" => no_numbers = true,
+                "-r" => reverse = true,
+                "-s" => substitute_mode = true,
+                "-e" => {
+                    index += 1;
+                    editor = args.get(index).cloned();
+                }
+                "--" => {
+                    rest.extend(args[index + 1..].iter().cloned());
+                    break;
+                }
+                value if value.starts_with('-') && value.parse::<isize>().is_err() => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("fc: opción no válida: {value}\n"),
+                        2,
+                    ));
+                }
+                value => rest.push(value.to_owned()),
+            }
+            index += 1;
+        }
+
+        if substitute_mode {
+            let mut selector: Option<&str> = None;
+            let mut replacement: Option<(&str, &str)> = None;
+            for item in &rest {
+                if replacement.is_none() {
+                    if let Some((old, new)) = item.split_once('=') {
+                        replacement = Some((old, new));
+                        continue;
+                    }
+                }
+                selector = Some(item);
+            }
+            let position = Self::history_selector(&entries, selector, entries.len() - 1)
+                .ok_or_else(|| anyhow!("fc: evento no encontrado"))?;
+            let mut command = entries[position].clone();
+            if let Some((old, new)) = replacement {
+                command = command.replacen(old, new, 1);
+            }
+            let mut result = self.execute_text(&command)?;
+            result.stdout = format!("{command}\n{}", result.stdout);
+            return Ok(result);
+        }
+
+        let default_first = if list { entries.len().saturating_sub(16) } else { entries.len() - 1 };
+        let first = Self::history_selector(&entries, rest.first().map(String::as_str), default_first)
+            .ok_or_else(|| anyhow!("fc: evento inicial no encontrado"))?;
+        let last = Self::history_selector(&entries, rest.get(1).map(String::as_str), if list { entries.len() - 1 } else { first })
+            .ok_or_else(|| anyhow!("fc: evento final no encontrado"))?;
+        let (low, high) = if first <= last { (first, last) } else { (last, first) };
+        let mut selected: Vec<(usize, String)> = entries[low..=high].iter()
+            .enumerate()
+            .map(|(offset, command)| (low + offset, command.clone()))
+            .collect();
+        if reverse ^ (first > last) {
+            selected.reverse();
+        }
+
+        if list {
+            let stdout = selected.into_iter()
+                .map(|(position, command)| {
+                    if no_numbers { format!("{command}\n") }
+                    else { format!("{:5}\t{command}\n", position + 1) }
+                })
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        let _ = editor; // Native Shell Shock Tool executes the selected commands directly.
+        let source = selected.into_iter().map(|(_, command)| command).collect::<Vec<_>>().join("\n");
+        self.execute_text(&source)
+    }
+
+    fn builtin_bind(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-P" | "-p" | "-S" | "-s")) {
+            let mut rows: Vec<_> = self.key_bindings.iter().collect();
+            rows.sort_by_key(|(key, _)| *key);
+            let stdout = rows.into_iter()
+                .map(|(key, action)| format!("\"{key}\": {action}\n"))
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        if let Some(position) = args.iter().position(|arg| arg == "-q") {
+            let Some(function) = args.get(position + 1) else {
+                return Ok(ExecutionResult::from_parts(String::new(), "bind: -q requiere función\n".to_owned(), 2));
+            };
+            let mut matches = self.key_bindings.iter()
+                .filter(|(_, action)| *action == function)
+                .map(|(key, _)| key.clone())
+                .collect::<Vec<_>>();
+            matches.sort();
+            if matches.is_empty() {
+                return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
+            }
+            let stdout = matches.into_iter()
+                .map(|key| format!("{function} se puede invocar mediante \"{key}\"\n"))
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        if let Some(position) = args.iter().position(|arg| arg == "-u") {
+            let Some(function) = args.get(position + 1) else {
+                return Ok(ExecutionResult::from_parts(String::new(), "bind: -u requiere función\n".to_owned(), 2));
+            };
+            self.key_bindings.retain(|_, action| action != function);
+            return Ok(ExecutionResult::success());
+        }
+
+        if let Some(position) = args.iter().position(|arg| arg == "-r") {
+            let Some(key) = args.get(position + 1) else {
+                return Ok(ExecutionResult::from_parts(String::new(), "bind: -r requiere secuencia\n".to_owned(), 2));
+            };
+            self.key_bindings.remove(key.trim_matches('"'));
+            return Ok(ExecutionResult::success());
+        }
+
+        if let Some(position) = args.iter().position(|arg| arg == "-f") {
+            let Some(path) = args.get(position + 1) else {
+                return Ok(ExecutionResult::from_parts(String::new(), "bind: -f requiere archivo\n".to_owned(), 2));
+            };
+            let source = fs::read_to_string(self.resolve_path(path))?;
+            for line in source.lines().map(str::trim).filter(|line| !line.is_empty() && !line.starts_with('#')) {
+                if let Some((key, action)) = line.split_once(':') {
+                    self.key_bindings.insert(
+                        key.trim().trim_matches('"').to_owned(),
+                        action.trim().trim_matches('"').to_owned(),
+                    );
+                }
+            }
+            return Ok(ExecutionResult::success());
+        }
+
+        let mut definitions = args;
+        let shell_command = args.first().map(String::as_str) == Some("-x");
+        if shell_command {
+            definitions = &args[1..];
+        }
+        let mut status = 0;
+        let mut stderr = String::new();
+        for definition in definitions {
+            let definition = definition.trim_matches('"');
+            let Some((key, action)) = definition.split_once(':') else {
+                status = 1;
+                stderr.push_str(&format!("bind: definición inválida: {definition}\n"));
+                continue;
+            };
+            self.key_bindings.insert(
+                key.trim().trim_matches('"').to_owned(),
+                if shell_command { format!("shell:{}", action.trim()) } else { action.trim().to_owned() },
+            );
+        }
+        Ok(ExecutionResult::from_parts(String::new(), stderr, status))
+    }
+
+    fn builtin_coproc(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if args.is_empty() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "coproc: falta comando\n".to_owned(),
+                2,
+            ));
+        }
+
+        let (name, command_args) = if args.len() > 1 && is_variable_name(&args[0]) {
+            (args[0].clone(), &args[1..])
+        } else {
+            ("COPROC".to_owned(), args)
+        };
+        if command_args.is_empty() {
+            return Ok(ExecutionResult::from_parts(String::new(), "coproc: falta comando\n".to_owned(), 2));
+        }
+
+        let source = command_args.iter().map(|word| shell_quote(word)).collect::<Vec<_>>().join(" ");
+        let pid = self.host.execute_shell_background(&source, &self.env.cwd, &self.env.exported)?;
+        self.env.last_background_pid = Some(pid);
+        self.env.set(format!("{name}_PID"), pid.to_string());
+        if name != "COPROC" {
+            self.env.set("COPROC_PID", pid.to_string());
+        }
+        // Shell Shock Tool tracks coprocesses as jobs. The two array entries retain
+        // Bash's descriptor-shaped interface; descriptor-backed reads become usable
+        // when the command is connected through an explicit shell redirection.
+        self.env.set_array(name, vec!["0".to_owned(), "1".to_owned()]);
+        Ok(ExecutionResult::from_parts(format!("[{}] {pid}\n", self.host.jobs()?.len()), String::new(), 0))
+    }
+
+    fn builtin_suspend(&self, args: &[String]) -> ExecutionResult {
+        if args.iter().any(|arg| arg != "-f") {
+            return ExecutionResult::from_parts(
+                String::new(),
+                "suspend: uso: suspend [-f]\n".to_owned(),
+                2,
+            );
+        }
+        ExecutionResult::from_parts(
+            String::new(),
+            "suspend: Windows no proporciona SIGTSTP/SIGCONT para suspender esta shell de forma segura\n".to_owned(),
+            1,
+        )
     }
 
     fn builtin_jobs(&self, args: &[String]) -> Result<ExecutionResult> {
@@ -2488,13 +2908,14 @@ impl Interpreter {
 
         if print_all && names.is_empty() {
             let known = [
-                ":", ".", "alias", "bg", "break", "builtin", "caller", "cd",
-                "command", "continue", "declare", "dirs", "disown", "echo", "enable",
-                "eval", "exec", "exit", "export", "false", "fg", "getopts", "hash",
-                "jobs", "let", "local", "logout", "mapfile", "popd", "printf", "pushd",
-                "pwd", "read", "readarray", "readonly", "return", "set", "shift",
-                "shopt", "source", "test", "times", "trap", "true", "type", "typeset",
-                "ulimit", "umask", "unalias", "unset", "wait",
+                ":", ".", "alias", "bg", "bind", "break", "builtin", "caller", "cd",
+                "command", "compgen", "complete", "compopt", "continue", "coproc",
+                "declare", "dirs", "disown", "echo", "enable", "eval", "exec", "exit",
+                "export", "false", "fc", "fg", "getopts", "hash", "help", "history",
+                "jobs", "kill", "let", "local", "logout", "mapfile", "popd", "printf",
+                "pushd", "pwd", "read", "readarray", "readonly", "return", "set",
+                "shift", "shopt", "source", "suspend", "test", "times", "trap", "true",
+                "type", "typeset", "ulimit", "umask", "unalias", "unset", "wait",
             ];
             let mut stdout = String::new();
             for name in known {
@@ -2598,6 +3019,30 @@ impl Interpreter {
             }
 
             i += 1;
+
+            if chars.get(i) == Some(&'(') {
+                let mut end = i + 1;
+                while end < chars.len() && chars[end] != ')' {
+                    end += 1;
+                }
+                if end < chars.len() && chars.get(end + 1) == Some(&'T') {
+                    let date_format: String = chars[i + 1..end].iter().collect();
+                    let value = values.get(value_index).cloned().unwrap_or_else(|| "-1".to_owned());
+                    value_index += 1;
+                    let epoch = value.parse::<i64>().unwrap_or(-1);
+                    let rendered = if epoch == -1 || epoch == -2 {
+                        chrono::Local::now().format(&date_format).to_string()
+                    } else {
+                        chrono::DateTime::<chrono::Utc>::from_timestamp(epoch, 0)
+                            .map(|time| time.with_timezone(&chrono::Local).format(&date_format).to_string())
+                            .unwrap_or_default()
+                    };
+                    output.push_str(&rendered);
+                    i = end + 2;
+                    continue;
+                }
+            }
+
             let mut width = String::new();
             while i < chars.len() && (chars[i].is_ascii_digit() || matches!(chars[i], '-' | '+' | '0' | ' ' | '.')) {
                 width.push(chars[i]);
@@ -2794,10 +3239,14 @@ impl Interpreter {
         let mut readonly = false;
         let mut export = false;
         let mut print = false;
-        let mut integer = false;
-        let mut nameref = false;
-        let mut remove_nameref = false;
+        let mut integer: Option<bool> = None;
+        let mut nameref: Option<bool> = None;
+        let mut uppercase: Option<bool> = None;
+        let mut lowercase: Option<bool> = None;
+        let mut trace: Option<bool> = None;
         let mut global = false;
+        let mut function_body = false;
+        let mut function_names = false;
         let mut names = Vec::new();
 
         for arg in args {
@@ -2808,12 +3257,16 @@ impl Interpreter {
                         'a' if enable => indexed = true,
                         'A' if enable => associative = true,
                         'r' if enable => readonly = true,
-                        'x' if enable => export = true,
+                        'x' => export = enable,
                         'p' if enable => print = true,
-                        'i' if enable => integer = true,
-                        'n' if enable => nameref = true,
-                        'n' => remove_nameref = true,
+                        'i' => integer = Some(enable),
+                        'n' => nameref = Some(enable),
+                        'u' => uppercase = Some(enable),
+                        'l' => lowercase = Some(enable),
+                        't' => trace = Some(enable),
                         'g' if enable => global = true,
+                        'f' if enable => function_body = true,
+                        'F' if enable => function_names = true,
                         _ => {}
                     }
                 }
@@ -2822,28 +3275,77 @@ impl Interpreter {
             }
         }
 
-        if print || names.is_empty() {
+        if function_body || function_names {
+            let mut selected: Vec<String> = if names.is_empty() {
+                self.env.functions.keys().cloned().collect()
+            } else {
+                names.clone()
+            };
+            selected.sort();
             let mut stdout = String::new();
+            let mut status = 0;
+            for name in selected {
+                if let Some(body) = self.env.functions.get(&name) {
+                    if function_names {
+                        stdout.push_str(&format!("declare -f {name}\n"));
+                    } else {
+                        stdout.push_str(&format!("{name} ()\n{{\n    {}\n}}\n", render_ast(body)));
+                    }
+                } else {
+                    status = 1;
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), status));
+        }
+
+        if print || names.is_empty() {
+            let selected: Option<HashSet<String>> = (!names.is_empty()).then(|| names.iter().cloned().collect());
+            let include = |name: &str| selected.as_ref().is_none_or(|set| set.contains(name));
+            let mut stdout = String::new();
+
             let mut all: Vec<_> = self.env.vars.keys().cloned().collect();
             all.sort();
             for name in all {
-                stdout.push_str(&format!("declare -- {}={}\n", name, shell_quote(&self.env.get(&name))));
+                if !include(&name) { continue; }
+                let mut flags = String::new();
+                if self.env.readonly.contains(&name) { flags.push('r'); }
+                if self.env.exported.contains_key(&name) { flags.push('x'); }
+                if self.env.integer_vars.contains(&name) { flags.push('i'); }
+                if self.env.uppercase_vars.contains(&name) { flags.push('u'); }
+                if self.env.lowercase_vars.contains(&name) { flags.push('l'); }
+                if self.env.trace_vars.contains(&name) { flags.push('t'); }
+                if flags.is_empty() {
+                    stdout.push_str(&format!("declare -- {}={}\n", name, shell_quote(&self.env.get(&name))));
+                } else {
+                    stdout.push_str(&format!("declare -{flags} {}={}\n", name, shell_quote(&self.env.get(&name))));
+                }
             }
+
             let mut refs: Vec<_> = self.env.namerefs.iter().collect();
             refs.sort_by_key(|(name, _)| *name);
             for (name, target) in refs {
-                stdout.push_str(&format!("declare -n {name}={}\n", shell_quote(target)));
+                if include(name) {
+                    stdout.push_str(&format!("declare -n {name}={}\n", shell_quote(target)));
+                }
             }
-            for (name, values) in &self.env.arrays {
+            let mut arrays: Vec<_> = self.env.arrays.iter().collect();
+            arrays.sort_by_key(|(name, _)| *name);
+            for (name, values) in arrays {
+                if !include(name) { continue; }
                 stdout.push_str(&format!("declare -a {name}=("));
                 for (index, value) in values.iter().enumerate() {
                     if !value.is_empty() { stdout.push_str(&format!("[{index}]={} ", shell_quote(value))); }
                 }
                 stdout.push_str(")\n");
             }
-            for (name, values) in &self.env.assoc_arrays {
+            let mut assoc: Vec<_> = self.env.assoc_arrays.iter().collect();
+            assoc.sort_by_key(|(name, _)| *name);
+            for (name, values) in assoc {
+                if !include(name) { continue; }
                 stdout.push_str(&format!("declare -A {name}=("));
-                for (key, value) in values {
+                let mut pairs: Vec<_> = values.iter().collect();
+                pairs.sort_by_key(|(key, _)| *key);
+                for (key, value) in pairs {
                     stdout.push_str(&format!("[{}]={} ", shell_quote(key), shell_quote(value)));
                 }
                 stdout.push_str(")\n");
@@ -2858,16 +3360,15 @@ impl Interpreter {
                 .map(|(n,v)| (n.to_owned(), Some(v.to_owned())))
                 .unwrap_or((item.clone(), None));
 
-            if remove_nameref {
+            if nameref == Some(false) {
                 if let Some(target) = self.env.namerefs.get(&name).cloned() {
                     let _ = self.env.unset_nameref(&name);
                     if effective_local { self.env.set_local(name.clone(), target); }
                     else { self.env.set(name.clone(), target); }
                 }
-                continue;
             }
 
-            if nameref {
+            if nameref == Some(true) {
                 let target = if let Some(raw) = value.take() {
                     self.expand_scalar(&raw)?
                 } else {
@@ -2879,6 +3380,7 @@ impl Interpreter {
                     self.env.set_nameref(name.clone(), target);
                 }
                 if readonly { self.env.set_readonly(&name); }
+                if export { self.env.mark_exported(&name); }
                 continue;
             }
 
@@ -2888,7 +3390,15 @@ impl Interpreter {
             } else if indexed {
                 if effective_local { self.env.set_local_array(name.clone(), Vec::new()); }
                 else { self.env.set_array(name.clone(), Vec::new()); }
+            } else if effective_local && value.is_none() {
+                let current = self.env.get(&name);
+                self.env.set_local(name.clone(), current);
             }
+
+            if let Some(enabled) = integer { self.env.set_integer(&name, enabled); }
+            if let Some(enabled) = uppercase { self.env.set_uppercase(&name, enabled); }
+            if let Some(enabled) = lowercase { self.env.set_lowercase(&name, enabled); }
+            if let Some(enabled) = trace { self.env.set_trace(&name, enabled); }
 
             if let Some(raw_value) = value.take() {
                 if raw_value.starts_with('(') && raw_value.ends_with(')') && (indexed || associative) {
@@ -2917,7 +3427,7 @@ impl Interpreter {
                         else { self.env.set_array(name.clone(), values); }
                     }
                 } else {
-                    let expanded = if integer {
+                    let expanded = if self.env.is_integer(&name) {
                         self.evaluate_arithmetic_command(&raw_value)?.to_string()
                     } else {
                         self.expand_scalar(&raw_value)?
@@ -2925,13 +3435,13 @@ impl Interpreter {
                     if effective_local { self.env.set_local(name.clone(), expanded); }
                     else { self.env.set(name.clone(), expanded); }
                 }
-            } else if effective_local && !indexed && !associative {
-                let current = self.env.get(&name);
-                self.env.set_local(name.clone(), current);
             }
 
             if readonly { self.env.set_readonly(&name); }
             if export { self.env.mark_exported(&name); }
+            if !export && args.iter().any(|arg| arg.starts_with("+x")) {
+                self.env.exported.remove(&name);
+            }
         }
 
         Ok(ExecutionResult::success())
@@ -3373,7 +3883,7 @@ impl Interpreter {
                         &left,
                         self.env.option_enabled("extglob"),
                         nocase,
-                    )
+                    ),
                     "=~" => {
                         match regex::RegexBuilder::new(&right)
                             .case_insensitive(nocase)
@@ -4875,7 +5385,9 @@ fn contains_glob_meta(value: &str) -> bool {
 fn special_parameter(name: &str) -> bool {
     matches!(
         name,
-        "?" | "#" | "@" | "*" | "!" | "$" | "-" | "RANDOM" | "BASH_VERSION" | "BASHPID" | "PPID"
+        "?" | "#" | "@" | "*" | "!" | "$" | "-"
+            | "RANDOM" | "SRANDOM" | "SECONDS" | "EPOCHSECONDS" | "EPOCHREALTIME"
+            | "BASH_MONOSECONDS" | "BASH_VERSION" | "BASHPID" | "PPID"
     ) || name.chars().all(|ch| ch.is_ascii_digit())
 }
 
