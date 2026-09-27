@@ -16,14 +16,21 @@ use anyhow::{Context, Result};
 use std::os::windows::{ffi::OsStrExt, io::AsRawHandle};
 #[cfg(windows)]
 use windows_sys::Win32::{
-    Foundation::{CloseHandle, FILETIME, HANDLE, INVALID_HANDLE_VALUE},
+    Foundation::{CloseHandle, GetLastError, FILETIME, HANDLE, INVALID_HANDLE_VALUE},
     Storage::FileSystem::{
-        CreateFileW, GetFileInformationByHandleEx, GetFileType, FILE_ATTRIBUTE_TAG_INFO,
-        FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT, FILE_READ_ATTRIBUTES,
-        FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE, FILE_TYPE_CHAR, FILE_TYPE_PIPE,
-        FileAttributeTagInfo, OPEN_EXISTING,
+        CreateFileW, FlushFileBuffers, GetFileInformationByHandleEx, GetFileType, ReadFile,
+        WriteFile, FILE_ATTRIBUTE_TAG_INFO, FILE_FLAG_BACKUP_SEMANTICS,
+        FILE_FLAG_OPEN_REPARSE_POINT, FILE_READ_ATTRIBUTES, FILE_SHARE_DELETE,
+        FILE_SHARE_READ, FILE_SHARE_WRITE, FILE_TYPE_CHAR, FILE_TYPE_PIPE,
+        FileAttributeTagInfo, OPEN_EXISTING, PIPE_ACCESS_INBOUND, PIPE_ACCESS_OUTBOUND,
     },
-    System::Threading::{GetCurrentProcess, GetProcessTimes},
+    System::{
+        Pipes::{
+            ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, PIPE_READMODE_BYTE,
+            PIPE_REJECT_REMOTE_CLIENTS, PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES, PIPE_WAIT,
+        },
+        Threading::{GetCurrentProcess, GetProcessTimes},
+    },
 };
 
 use crate::{
@@ -278,6 +285,181 @@ impl ShellCommandHost for WindowsShellHost {
             output.stderr,
             output.status,
         )))
+    }
+
+    fn create_process_substitution_pipe(
+        &self,
+        direction: char,
+        source: &str,
+        cwd: &Path,
+        env: &HashMap<String, String>,
+    ) -> Result<Option<PathBuf>> {
+        #[cfg(windows)]
+        {
+            let id = self.next_fd.fetch_add(1, Ordering::SeqCst);
+            let pipe_name = format!(
+                r"\\.\pipe\shell-shock-ps-{}-{}",
+                std::process::id(),
+                id
+            );
+            let wide: Vec<u16> = std::ffi::OsStr::new(&pipe_name)
+                .encode_wide()
+                .chain(Some(0))
+                .collect();
+            let access = if direction == '<' {
+                PIPE_ACCESS_OUTBOUND
+            } else {
+                PIPE_ACCESS_INBOUND
+            };
+            let handle = unsafe {
+                CreateNamedPipeW(
+                    wide.as_ptr(),
+                    access,
+                    PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
+                    PIPE_UNLIMITED_INSTANCES,
+                    65_536,
+                    65_536,
+                    0,
+                    std::ptr::null(),
+                )
+            };
+            if handle == INVALID_HANDLE_VALUE {
+                return Err(std::io::Error::last_os_error().into());
+            }
+
+            let handle_value = handle as isize;
+            let source = source.to_owned();
+            let cwd = cwd.to_path_buf();
+            let env = env.clone();
+            let display = crate::adapters::terminal::io::output_sender();
+
+            std::thread::spawn(move || {
+                let handle = handle_value as HANDLE;
+                let connected = unsafe { ConnectNamedPipe(handle, std::ptr::null_mut()) };
+                if connected == 0 {
+                    // ERROR_PIPE_CONNECTED means the client won the race between
+                    // CreateNamedPipe and ConnectNamedPipe and is already usable.
+                    let error = unsafe { GetLastError() };
+                    if error != 535 {
+                        unsafe { CloseHandle(handle); }
+                        return;
+                    }
+                }
+
+                if direction == '<' {
+                    let mut command = match std::env::current_exe() {
+                        Ok(exe) => Command::new(exe),
+                        Err(_) => {
+                            unsafe {
+                                DisconnectNamedPipe(handle);
+                                CloseHandle(handle);
+                            }
+                            return;
+                        }
+                    };
+                    command.arg("-c")
+                        .arg(&source)
+                        .current_dir(&cwd)
+                        .envs(&env)
+                        .stdin(Stdio::null())
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::piped());
+
+                    if let Ok(mut child) = command.spawn() {
+                        let stderr = child.stderr.take();
+                        let display_stderr = display.clone();
+                        let stderr_thread = stderr.map(|mut stderr| std::thread::spawn(move || {
+                            let mut bytes = Vec::new();
+                            let _ = stderr.read_to_end(&mut bytes);
+                            send_async_terminal_output(display_stderr, &bytes, true);
+                        }));
+
+                        if let Some(mut stdout) = child.stdout.take() {
+                            let mut buffer = [0u8; 8192];
+                            loop {
+                                match stdout.read(&mut buffer) {
+                                    Ok(0) | Err(_) => break,
+                                    Ok(size) => {
+                                        let mut offset = 0usize;
+                                        while offset < size {
+                                            let mut written = 0u32;
+                                            let ok = unsafe {
+                                                WriteFile(
+                                                    handle,
+                                                    buffer[offset..size].as_ptr(),
+                                                    (size - offset) as u32,
+                                                    &mut written,
+                                                    std::ptr::null_mut(),
+                                                )
+                                            };
+                                            if ok == 0 || written == 0 { break; }
+                                            offset += written as usize;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        let _ = child.wait();
+                        if let Some(thread) = stderr_thread { let _ = thread.join(); }
+                    }
+                } else {
+                    let mut command = match std::env::current_exe() {
+                        Ok(exe) => Command::new(exe),
+                        Err(_) => {
+                            unsafe {
+                                DisconnectNamedPipe(handle);
+                                CloseHandle(handle);
+                            }
+                            return;
+                        }
+                    };
+                    command.arg("-c")
+                        .arg(&source)
+                        .current_dir(&cwd)
+                        .envs(&env)
+                        .stdin(Stdio::piped())
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::piped());
+
+                    if let Ok(mut child) = command.spawn() {
+                        if let Some(mut stdin) = child.stdin.take() {
+                            let mut buffer = [0u8; 8192];
+                            loop {
+                                let mut read = 0u32;
+                                let ok = unsafe {
+                                    ReadFile(
+                                        handle,
+                                        buffer.as_mut_ptr(),
+                                        buffer.len() as u32,
+                                        &mut read,
+                                        std::ptr::null_mut(),
+                                    )
+                                };
+                                if ok == 0 || read == 0 { break; }
+                                if stdin.write_all(&buffer[..read as usize]).is_err() { break; }
+                            }
+                        }
+                        if let Ok(output) = child.wait_with_output() {
+                            send_async_terminal_output(display.clone(), &output.stdout, false);
+                            send_async_terminal_output(display.clone(), &output.stderr, true);
+                        }
+                    }
+                }
+
+                unsafe {
+                    FlushFileBuffers(handle);
+                    DisconnectNamedPipe(handle);
+                    CloseHandle(handle);
+                }
+            });
+
+            return Ok(Some(PathBuf::from(pipe_name)));
+        }
+        #[cfg(not(windows))]
+        {
+            let _ = (direction, source, cwd, env);
+            Ok(None)
+        }
     }
 
     fn process_times(&self) -> Result<(f64, f64, f64, f64)> {
@@ -857,6 +1039,30 @@ impl ShellCommandHost for WindowsShellHost {
         } else {
             Ok(false)
         }
+    }
+}
+
+fn send_async_terminal_output(
+    sender: Option<mpsc::Sender<Vec<u8>>>,
+    bytes: &[u8],
+    stderr: bool,
+) {
+    if bytes.is_empty() { return; }
+    if let Some(sender) = sender {
+        let mut translated = Vec::with_capacity(bytes.len());
+        for (index, byte) in bytes.iter().copied().enumerate() {
+            if byte == b'\n' && (index == 0 || bytes[index - 1] != b'\r') {
+                translated.push(b'\r');
+            }
+            translated.push(byte);
+        }
+        let _ = sender.send(translated);
+    } else if stderr {
+        let _ = std::io::stderr().write_all(bytes);
+        let _ = std::io::stderr().flush();
+    } else {
+        let _ = std::io::stdout().write_all(bytes);
+        let _ = std::io::stdout().flush();
     }
 }
 

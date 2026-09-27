@@ -191,6 +191,16 @@ pub trait ShellCommandHost: Send + Sync {
         Ok(None)
     }
 
+    fn create_process_substitution_pipe(
+        &self,
+        _direction: char,
+        _source: &str,
+        _cwd: &Path,
+        _env: &HashMap<String, String>,
+    ) -> Result<Option<PathBuf>> {
+        Ok(None)
+    }
+
     fn fd_is_terminal(&self, fd: i32) -> bool { (0..=2).contains(&fd) }
 
     fn command_is_builtin(&self, _name: &str) -> bool { false }
@@ -4309,6 +4319,16 @@ impl Interpreter {
 
 
     fn create_process_substitution(&mut self, direction: char, source: &str) -> Result<PathBuf> {
+        if let Some(path) = self.host.create_process_substitution_pipe(
+            direction,
+            source,
+            &self.env.cwd,
+            &self.env.exported,
+        )? {
+            return Ok(path);
+        }
+
+        // Portable fallback for hosts without stream-backed process substitution.
         self.process_substitution_counter = self.process_substitution_counter.wrapping_add(1);
         let path = std::env::temp_dir().join(format!(
             "sst-process-substitution-{}-{}.tmp",

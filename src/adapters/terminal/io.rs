@@ -35,6 +35,11 @@ pub fn force_abort_flag() -> Arc<AtomicBool> {
     WINDOW.with(|slot| slot.borrow().as_ref().map(|io| Arc::clone(&io.force_abort)))
         .unwrap_or_default()
 }
+
+pub fn output_sender() -> Option<mpsc::Sender<Vec<u8>>> {
+    WINDOW.with(|slot| slot.borrow().as_ref().map(|io| io.output.clone()))
+}
+
 pub fn write(bytes: &[u8]) -> Result<()> {
     WINDOW.with(|slot| -> Result<()> {
         if let Some(io) = slot.borrow().as_ref() {
