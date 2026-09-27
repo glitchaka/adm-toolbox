@@ -1202,6 +1202,29 @@ impl Interpreter {
         let checkpoint = self.expansion_checkpoint();
         let mut local_stdin = stdin.map(ToOwned::to_owned);
 
+        if self.env.option_enabled("restricted_shell")
+            && command.redirects.iter().any(|redirect| matches!(
+                redirect.kind,
+                RedirectKind::Write
+                    | RedirectKind::Append
+                    | RedirectKind::ReadWrite
+                    | RedirectKind::Clobber
+                    | RedirectKind::BothWrite
+                    | RedirectKind::BothAppend
+                    | RedirectKind::DupOutput
+            ))
+        {
+            return self.finish_simple_result(
+                checkpoint,
+                false,
+                ExecutionResult::from_parts(
+                    String::new(),
+                    "bash: shell restringida: redirección de salida no permitida\n".to_owned(),
+                    1,
+                ),
+            );
+        }
+
         for redirect in &command.redirects {
             match redirect.kind {
                 RedirectKind::Read | RedirectKind::ReadWrite if redirect.fd == 0 => {
@@ -1250,6 +1273,17 @@ impl Interpreter {
         let mut index = 0;
         while index < raw.len() && is_assignment(&raw[index]) {
             let (name, value) = raw[index].split_once('=').unwrap();
+            if self.env.option_enabled("restricted_shell") && restricted_variable(name) {
+                return self.finish_simple_result(
+                    checkpoint,
+                    false,
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        format!("bash: {name}: variable restringida\n"),
+                        1,
+                    ),
+                );
+            }
             let value = if self.env.is_integer(name) {
                 self.evaluate_arithmetic_command(value)?.to_string()
             } else {
@@ -1270,6 +1304,19 @@ impl Interpreter {
 
         let name = words[0].clone();
         let args = &words[1..];
+        if self.env.option_enabled("restricted_shell")
+            && (name.contains('/') || name.contains('\\'))
+        {
+            return self.finish_simple_result(
+                checkpoint,
+                false,
+                ExecutionResult::from_parts(
+                    String::new(),
+                    format!("bash: {name}: nombres de comando con '/' no permitidos en shell restringida\n"),
+                    1,
+                ),
+            );
+        }
         self.env.set("BASH_COMMAND", words.iter().map(|word| shell_quote(word)).collect::<Vec<_>>().join(" "));
         if let Some(last) = words.last() {
             self.env.set("_", last.clone());
@@ -1407,6 +1454,13 @@ impl Interpreter {
     ) -> Result<Option<ExecutionResult>> {
         let result = match name {
             "cd" => {
+                if self.env.option_enabled("restricted_shell") {
+                    return Ok(Some(ExecutionResult::from_parts(
+                        String::new(),
+                        "bash: cd: restringido\n".to_owned(),
+                        1,
+                    )));
+                }
                 let raw = args.first().map(String::as_str).unwrap_or("~");
                 if args.first().is_some_and(|value| value.is_empty()) {
                     return Ok(Some(ExecutionResult::from_parts(
@@ -1454,6 +1508,20 @@ impl Interpreter {
                                 }
                             }
                         }
+                        if found.is_none() && self.env.option_enabled("cdspell") {
+                            if let Ok(entries) = fs::read_dir(&self.env.cwd) {
+                                found = entries.flatten()
+                                    .filter(|entry| entry.path().is_dir())
+                                    .find(|entry| spelling_distance_at_most_one(
+                                        &entry.file_name().to_string_lossy(),
+                                        raw,
+                                    ))
+                                    .map(|entry| {
+                                        used_cdpath = true;
+                                        entry.path()
+                                    });
+                            }
+                        }
                         found.unwrap_or(direct)
                     }
                 };
@@ -1498,6 +1566,12 @@ impl Interpreter {
                     let mut status = 0;
                     let mut stderr = String::new();
                     for arg in args.iter().filter(|arg| !arg.starts_with('-')) {
+                        let candidate_name = arg.split_once('=').map(|(name, _)| name).unwrap_or(arg);
+                        if self.env.option_enabled("restricted_shell") && restricted_variable(candidate_name) {
+                            status = 1;
+                            stderr.push_str(&format!("export: {candidate_name}: variable restringida\n"));
+                            continue;
+                        }
                         if let Some((name, value)) = arg.split_once('=') {
                             let value = self.expand_scalar(value)?;
                             if !self.env.export(name.to_owned(), value) {
@@ -1518,6 +1592,11 @@ impl Interpreter {
                 let mut status = 0;
                 let mut stderr = String::new();
                 for item in args.iter().filter(|arg| !arg.starts_with('-')) {
+                    if self.env.option_enabled("restricted_shell") && restricted_variable(item) {
+                        status = 1;
+                        stderr.push_str(&format!("unset: {item}: variable restringida\n"));
+                        continue;
+                    }
                     if nameref_only {
                         if !self.env.unset_nameref(item) {
                             status = 1;
@@ -1571,7 +1650,13 @@ impl Interpreter {
             ":" | "true" => ExecutionResult::success(),
             "false" => ExecutionResult::from_parts(String::new(), String::new(), 1),
             "exec" => {
-                if args.is_empty() {
+                if self.env.option_enabled("restricted_shell") && !args.is_empty() {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "bash: exec: restringido\n".to_owned(),
+                        1,
+                    )
+                } else if args.is_empty() {
                     ExecutionResult::success()
                 } else {
                     let mut command_index = 0usize;
@@ -1659,6 +1744,15 @@ impl Interpreter {
                         2,
                     )));
                 };
+                if self.env.option_enabled("restricted_shell")
+                    && (path.contains('/') || path.contains('\\'))
+                {
+                    return Ok(Some(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("{name}: {path}: ruta restringida\n"),
+                        1,
+                    )));
+                }
                 let resolved = self.resolve_source_path(path, search_path);
                 let source = fs::read_to_string(&resolved)?;
                 let saved_positional = self.env.positional.clone();
@@ -1752,9 +1846,18 @@ impl Interpreter {
             "shift" => {
                 let count = args.first().and_then(|v| v.parse::<usize>().ok()).unwrap_or(1);
                 if count > self.env.positional.len() {
-                    ExecutionResult::from_parts(String::new(), format!("shift: {count}: cantidad fuera de rango\n"), 1)
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        if self.env.option_enabled("shift_verbose") {
+                            format!("shift: {count}: cantidad fuera de rango\n")
+                        } else {
+                            String::new()
+                        },
+                        1,
+                    )
                 } else {
                     self.env.positional.drain(..count);
+                    self.sync_argument_stack_vars();
                     ExecutionResult::success()
                 }
             }
@@ -3848,7 +3951,7 @@ impl Interpreter {
 
     fn builtin_echo(&self, args: &[String]) -> ExecutionResult {
         let mut newline = true;
-        let mut escapes = false;
+        let mut escapes = self.env.option_enabled("xpg_echo");
         let mut index = 0usize;
 
         while index < args.len() {
@@ -6486,6 +6589,51 @@ impl Interpreter {
 }
 
 
+
+fn restricted_variable(name: &str) -> bool {
+    matches!(name, "SHELL" | "PATH" | "HISTFILE" | "ENV" | "BASH_ENV")
+}
+
+fn spelling_distance_at_most_one(left: &str, right: &str) -> bool {
+    let left = left.to_ascii_lowercase();
+    let right = right.to_ascii_lowercase();
+    if left == right { return true; }
+    let a: Vec<char> = left.chars().collect();
+    let b: Vec<char> = right.chars().collect();
+    if a.len().abs_diff(b.len()) > 1 { return false; }
+
+    if a.len() == b.len() {
+        let differences = a.iter().zip(&b).filter(|(x, y)| x != y).count();
+        if differences <= 1 { return true; }
+        for i in 0..a.len().saturating_sub(1) {
+            if a[i] != b[i]
+                && a[i] == b[i + 1]
+                && a[i + 1] == b[i]
+                && a.iter().enumerate().all(|(j, ch)| {
+                    j == i || j == i + 1 || *ch == b[j]
+                })
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    let (short, long) = if a.len() < b.len() { (&a, &b) } else { (&b, &a) };
+    let mut i = 0usize;
+    let mut j = 0usize;
+    let mut skipped = false;
+    while i < short.len() && j < long.len() {
+        if short[i] == long[j] {
+            i += 1; j += 1;
+        } else if skipped {
+            return false;
+        } else {
+            skipped = true; j += 1;
+        }
+    }
+    true
+}
 
 #[derive(Debug, Clone)]
 struct HeredocSpec {
