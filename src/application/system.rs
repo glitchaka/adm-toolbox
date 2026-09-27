@@ -34,6 +34,7 @@ impl SystemService {
             "whoami" => whoami(),
             "uname" => uname(&args[1..]),
             "kill" => kill_process(&args[1..]),
+            "fetch" | "neofetch" | "fastfetch" => fetch(),
             "services" => Ok(CommandOutput::error(
                 "sys services: usa 'sc query' por ahora; proveedor Rust pendiente",
                 2,
@@ -55,6 +56,7 @@ impl SystemService {
             "whoami" => whoami(),
             "uname" => uname(args),
             "kill" => kill_process(args),
+            "fetch" | "neofetch" | "fastfetch" => fetch(),
             _ => Ok(CommandOutput::error(
                 format!("comando de sistema desconocido: {name}"),
                 127,
@@ -151,6 +153,72 @@ fn info() -> anyhow::Result<CommandOutput> {
         system.total_memory() / 1024 / 1024,
         system.used_memory() / 1024 / 1024,
     )))
+}
+
+
+fn fetch() -> anyhow::Result<CommandOutput> {
+    let mut system = System::new_all();
+    system.refresh_all();
+
+    let user = env::var("USERNAME").unwrap_or_else(|_| "user".to_owned());
+    let host = System::host_name().unwrap_or_else(|| "windows".to_owned());
+    let os = System::long_os_version().unwrap_or_else(|| "Windows".to_owned());
+    let kernel = System::kernel_version().unwrap_or_else(|| "desconocido".to_owned());
+    let arch = env::consts::ARCH;
+    let uptime = System::uptime();
+    let hours = uptime / 3600;
+    let minutes = (uptime % 3600) / 60;
+    let cpu = system
+        .cpus()
+        .first()
+        .map(|cpu| cpu.brand().trim().to_owned())
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| format!("{} cores", system.cpus().len()));
+    let used = system.used_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
+    let total = system.total_memory() as f64 / 1024.0 / 1024.0 / 1024.0;
+
+    let logo = [
+        "       ████████       ",
+        "    ██████████████    ",
+        "  ████          ████  ",
+        " ███    ADM       ███ ",
+        " ███   TOOLBOX    ███ ",
+        "  ████          ████  ",
+        "    ██████████████    ",
+        "       ████████       ",
+        "                      ",
+        "                      ",
+        "                      ",
+        "                      ",
+    ];
+
+    let info = [
+        format!("\x1b[1;38;5;203m{user}@{host}\x1b[0m"),
+        "------------------------------".to_owned(),
+        format!("\x1b[1;38;5;222mOS:\x1b[0m {os}"),
+        format!("\x1b[1;38;5;222mHost:\x1b[0m {host}"),
+        format!("\x1b[1;38;5;222mKernel:\x1b[0m {kernel}"),
+        format!("\x1b[1;38;5;222mUptime:\x1b[0m {hours}h {minutes}m"),
+        format!("\x1b[1;38;5;222mShell:\x1b[0m ADM Toolbox"),
+        format!("\x1b[1;38;5;222mTerminal:\x1b[0m ADM Native Terminal"),
+        format!("\x1b[1;38;5;222mCPU:\x1b[0m {cpu}"),
+        format!("\x1b[1;38;5;222mMemory:\x1b[0m {used:.2} GiB / {total:.2} GiB"),
+        format!("\x1b[1;38;5;222mArch:\x1b[0m {arch}"),
+        "\x1b[41m  \x1b[42m  \x1b[43m  \x1b[44m  \x1b[45m  \x1b[46m  \x1b[47m  \x1b[0m".to_owned(),
+    ];
+
+    let mut out = String::new();
+    for index in 0..logo.len().max(info.len()) {
+        let left = logo.get(index).copied().unwrap_or("");
+        let right = info.get(index).map(String::as_str).unwrap_or("");
+        out.push_str("\x1b[38;5;203m");
+        out.push_str(left);
+        out.push_str("\x1b[0m  ");
+        out.push_str(right);
+        out.push('\n');
+    }
+
+    Ok(CommandOutput::ok(out))
 }
 
 fn processes() -> anyhow::Result<CommandOutput> {
