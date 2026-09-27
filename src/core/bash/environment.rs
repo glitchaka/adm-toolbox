@@ -288,6 +288,11 @@ impl ShellEnvironment {
         let original = name.into();
         let name = self.dereference_name(&original);
         if self.readonly.contains(&name) { return false; }
+        if self.shopt_options.contains("restricted_shell")
+            && matches!(name.as_str(), "PATH" | "SHELL" | "ENV" | "BASH_ENV")
+        {
+            return false;
+        }
         let mut value = value.into();
 
         if name == "RANDOM" {
@@ -347,6 +352,11 @@ impl ShellEnvironment {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
         if self.readonly.contains(name) { return false; }
+        if self.shopt_options.contains("restricted_shell")
+            && matches!(name, "PATH" | "SHELL" | "ENV" | "BASH_ENV")
+        {
+            return false;
+        }
         if let Some((base, subscript)) = split_subscript(name) {
             if self.readonly.contains(base) { return false; }
             if let Some(array) = self.arrays.get_mut(base) {
@@ -573,6 +583,11 @@ impl ShellEnvironment {
     pub fn export(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
         let name = name.into();
         if self.readonly.contains(&name) { return false; }
+        if self.shopt_options.contains("restricted_shell")
+            && matches!(name.as_str(), "PATH" | "SHELL" | "ENV" | "BASH_ENV")
+        {
+            return false;
+        }
         let mut value = value.into();
         if self.uppercase_vars.contains(&name) {
             value = value.to_uppercase();
@@ -585,6 +600,11 @@ impl ShellEnvironment {
     }
 
     pub fn mark_exported(&mut self, name: &str) {
+        if self.shopt_options.contains("restricted_shell")
+            && matches!(name, "PATH" | "SHELL" | "ENV" | "BASH_ENV")
+        {
+            return;
+        }
         let value = self.get(name);
         self.exported.insert(name.to_owned(), value);
     }

@@ -1028,6 +1028,25 @@ impl Interpreter {
     fn execute_simple(&mut self, command: &SimpleCommand, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
         let mut local_stdin = stdin.map(ToOwned::to_owned);
 
+        if self.env.option_enabled("restricted_shell")
+            && command.redirects.iter().any(|redirect| matches!(
+                redirect.kind,
+                RedirectKind::Write
+                    | RedirectKind::Append
+                    | RedirectKind::ReadWrite
+                    | RedirectKind::Clobber
+                    | RedirectKind::BothWrite
+                    | RedirectKind::BothAppend
+                    | RedirectKind::DupOutput
+            ))
+        {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "bash: modo restringido: redirección de salida no permitida\n".to_owned(),
+                1,
+            ));
+        }
+
         for redirect in &command.redirects {
             match redirect.kind {
                 RedirectKind::Read | RedirectKind::ReadWrite => {
@@ -1091,7 +1110,13 @@ impl Interpreter {
         while index < raw.len() && is_assignment(&raw[index]) {
             let (name, value) = raw[index].split_once('=').unwrap();
             let value = self.expand_scalar(value)?;
-            self.env.set(name.to_owned(), value);
+            if !self.env.set(name.to_owned(), value) {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("{name}: asignación no permitida o variable de solo lectura\n"),
+                    1,
+                ));
+            }
             index += 1;
         }
 
@@ -1106,6 +1131,16 @@ impl Interpreter {
 
         let name = words[0].clone();
         let args = &words[1..];
+
+        if self.env.option_enabled("restricted_shell")
+            && (name.contains('/') || name.contains('\\'))
+        {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("bash: {name}: modo restringido: no se permite '/' en nombres de comando\n"),
+                1,
+            ));
+        }
 
         let command_text = words.iter()
             .map(|word| shell_quote(word))
@@ -1218,24 +1253,77 @@ impl Interpreter {
         }
         let result = match name {
             "cd" => {
-                let raw = args.first().map(String::as_str).unwrap_or("~");
-                let target = if raw == "-" {
-                    self.env.oldpwd.clone().unwrap_or_else(|| self.env.cwd.clone())
+                if self.env.option_enabled("restricted_shell") {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "cd: modo restringido: operación no permitida\n".to_owned(),
+                        1,
+                    )
                 } else {
-                    self.resolve_path(raw)
-                };
-                match fs::canonicalize(&target) {
-                    Ok(path) if path.is_dir() => {
-                        let previous = self.env.cwd.clone();
-                        self.env.cwd = path.clone();
-                        self.env.oldpwd = Some(previous.clone());
-                        self.env.set("OLDPWD", previous.to_string_lossy().into_owned());
-                        self.env.set("PWD", path.to_string_lossy().into_owned());
-                        let stdout = if raw == "-" { format!("{}\n", path.display()) } else { String::new() };
-                        ExecutionResult::from_parts(stdout, String::new(), 0)
+                    let raw = args.first().map(String::as_str).unwrap_or("~");
+                    let mut print_target = raw == "-";
+                    let mut target = if raw == "-" {
+                        self.env.oldpwd.clone().unwrap_or_else(|| self.env.cwd.clone())
+                    } else {
+                        self.resolve_path(raw)
+                    };
+
+                    if raw != "-"
+                        && !raw.contains('/')
+                        && !raw.contains('\\')
+                        && !target.is_dir()
+                    {
+                        let cdpath = self.env.get("CDPATH");
+                        for entry in cdpath.split(';').flat_map(|chunk| chunk.split(':')) {
+                            let base = if entry.is_empty() {
+                                self.env.cwd.clone()
+                            } else {
+                                self.resolve_path(entry)
+                            };
+                            let candidate = base.join(raw);
+                            if candidate.is_dir() {
+                                target = candidate;
+                                print_target = !entry.is_empty();
+                                break;
+                            }
+                        }
                     }
-                    Ok(_) => ExecutionResult::from_parts(String::new(), format!("cd: {raw}: no es un directorio\n"), 1),
-                    Err(error) => ExecutionResult::from_parts(String::new(), format!("cd: {raw}: {error}\n"), 1),
+
+                    if !target.is_dir() && self.env.option_enabled("cdable_vars") {
+                        let variable = self.env.get(raw);
+                        if !variable.is_empty() {
+                            let candidate = self.resolve_path(&variable);
+                            if candidate.is_dir() {
+                                target = candidate;
+                            }
+                        }
+                    }
+
+                    match fs::canonicalize(&target) {
+                        Ok(path) if path.is_dir() => {
+                            let previous = self.env.cwd.clone();
+                            self.env.cwd = path.clone();
+                            self.env.oldpwd = Some(previous.clone());
+                            self.env.set("OLDPWD", previous.to_string_lossy().into_owned());
+                            self.env.set("PWD", path.to_string_lossy().into_owned());
+                            let stdout = if print_target {
+                                format!("{}\n", path.display())
+                            } else {
+                                String::new()
+                            };
+                            ExecutionResult::from_parts(stdout, String::new(), 0)
+                        }
+                        Ok(_) => ExecutionResult::from_parts(
+                            String::new(),
+                            format!("cd: {raw}: no es un directorio\n"),
+                            1,
+                        ),
+                        Err(error) => ExecutionResult::from_parts(
+                            String::new(),
+                            format!("cd: {raw}: {error}\n"),
+                            1,
+                        ),
+                    }
                 }
             }
             "pwd" => {
@@ -1567,39 +1655,9 @@ impl Interpreter {
             "compgen" => self.builtin_compgen(args)?,
             "compopt" => self.builtin_compopt(args)?,
             "suspend" => self.builtin_suspend(args)?,
-            "dirs" => {
-                let mut stdout = self.env.cwd.to_string_lossy().into_owned();
-                for path in self.env.dir_stack.iter().rev() {
-                    stdout.push(' ');
-                    stdout.push_str(&path.to_string_lossy());
-                }
-                stdout.push('\n');
-                ExecutionResult::from_parts(stdout, String::new(), 0)
-            }
-            "pushd" => {
-                let target = args.first().map(|arg| self.resolve_path(arg))
-                    .or_else(|| self.env.dir_stack.pop());
-                if let Some(target) = target {
-                    if target.is_dir() {
-                        let current = self.env.cwd.clone();
-                        self.env.dir_stack.push(current);
-                        self.env.cwd = fs::canonicalize(target)?;
-                        ExecutionResult::from_parts(format!("{}\n", self.env.cwd.display()), String::new(), 0)
-                    } else {
-                        ExecutionResult::from_parts(String::new(), "pushd: directorio inválido\n".to_owned(), 1)
-                    }
-                } else {
-                    ExecutionResult::from_parts(String::new(), "pushd: pila vacía\n".to_owned(), 1)
-                }
-            }
-            "popd" => {
-                if let Some(target) = self.env.dir_stack.pop() {
-                    self.env.cwd = target;
-                    ExecutionResult::from_parts(format!("{}\n", self.env.cwd.display()), String::new(), 0)
-                } else {
-                    ExecutionResult::from_parts(String::new(), "popd: pila vacía\n".to_owned(), 1)
-                }
-            }
+            "dirs" => self.builtin_dirs(args)?,
+            "pushd" => self.builtin_pushd(args)?,
+            "popd" => self.builtin_popd(args)?,
             "umask" => {
                 if let Some(value) = args.first() {
                     self.env.set("__UMASK", value.clone());
@@ -1963,6 +2021,13 @@ impl Interpreter {
 
 
     fn builtin_exec(&mut self, args: &[String], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
+        if self.env.option_enabled("restricted_shell") {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "exec: modo restringido: operación no permitida\n".to_owned(),
+                1,
+            ));
+        }
         let mut index = 0usize;
         while index < args.len() {
             match args[index].as_str() {
@@ -2345,10 +2410,36 @@ impl Interpreter {
     }
 
     fn builtin_compgen(&mut self, args: &[String]) -> Result<ExecutionResult> {
-        let (spec, names) = self.parse_completion_spec(args)?;
+        let mut array_target = None;
+        let mut filtered = Vec::new();
+        let mut index = 0usize;
+        while index < args.len() {
+            if args[index] == "-V" {
+                index += 1;
+                let Some(name) = args.get(index) else {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        "compgen: -V requiere nombre de array\n".to_owned(),
+                        2,
+                    ));
+                };
+                array_target = Some(name.clone());
+            } else {
+                filtered.push(args[index].clone());
+            }
+            index += 1;
+        }
+
+        let (spec, names) = self.parse_completion_spec(&filtered)?;
         let prefix = names.last().cloned().unwrap_or_default();
         let values = self.generate_completions(&spec, &prefix, &prefix)?;
         let status = if values.is_empty() { 1 } else { 0 };
+
+        if let Some(name) = array_target {
+            self.env.set_array(name, values);
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), status));
+        }
+
         let stdout = if values.is_empty() {
             String::new()
         } else {
@@ -2407,6 +2498,176 @@ impl Interpreter {
             "suspend: opción inválida\n".to_owned(),
             2,
         ))
+    }
+
+    fn install_directory_stack(&mut self, stack: Vec<PathBuf>) -> Result<()> {
+        let Some(target) = stack.first().cloned() else { return Ok(()); };
+        let previous = self.env.cwd.clone();
+        self.env.cwd = fs::canonicalize(&target).unwrap_or(target);
+        self.env.oldpwd = Some(previous.clone());
+        self.env.set("OLDPWD", previous.to_string_lossy().into_owned());
+        self.env.set("PWD", self.env.cwd.to_string_lossy().into_owned());
+        self.env.dir_stack = stack.into_iter().skip(1).rev().collect();
+        Ok(())
+    }
+
+    fn builtin_dirs(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if args.iter().any(|arg| arg == "-c") {
+            self.env.dir_stack.clear();
+            return Ok(ExecutionResult::success());
+        }
+
+        let stack = self.directory_stack();
+        let selector = args.iter().find(|arg| {
+            arg.starts_with('+') || (arg.starts_with('-')
+                && arg.len() > 1 && arg[1..].chars().all(|ch| ch.is_ascii_digit()))
+        });
+        let selected = selector.and_then(|arg| {
+            let number = arg[1..].parse::<usize>().ok()?;
+            if arg.starts_with('+') {
+                stack.get(number)
+            } else {
+                stack.len().checked_sub(number + 1).and_then(|index| stack.get(index))
+            }
+        });
+
+        if selector.is_some() && selected.is_none() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "dirs: índice fuera de rango\n".to_owned(),
+                1,
+            ));
+        }
+
+        let paths: Vec<&PathBuf> = selected.map(|path| vec![path]).unwrap_or_else(|| stack.iter().collect());
+        let stdout = if args.iter().any(|arg| arg == "-v") {
+            paths.iter().enumerate()
+                .map(|(index, path)| format!("{index}  {}\n", path.display()))
+                .collect()
+        } else if args.iter().any(|arg| arg == "-p") {
+            paths.iter().map(|path| format!("{}\n", path.display())).collect()
+        } else {
+            format!(
+                "{}\n",
+                paths.iter().map(|path| path.to_string_lossy()).collect::<Vec<_>>().join(" ")
+            )
+        };
+        Ok(ExecutionResult::from_parts(stdout, String::new(), 0))
+    }
+
+    fn builtin_pushd(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if self.env.option_enabled("restricted_shell") {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "pushd: modo restringido: operación no permitida\n".to_owned(),
+                1,
+            ));
+        }
+
+        let no_cd = args.iter().any(|arg| arg == "-n");
+        let operand = args.iter().find(|arg| arg.as_str() != "-n").map(String::as_str);
+        let mut stack = self.directory_stack();
+
+        match operand {
+            None => {
+                if stack.len() < 2 {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        "pushd: no hay otro directorio\n".to_owned(),
+                        1,
+                    ));
+                }
+                stack.swap(0, 1);
+            }
+            Some(value) if value.starts_with('+') || (value.starts_with('-')
+                && value.len() > 1 && value[1..].chars().all(|ch| ch.is_ascii_digit())) =>
+            {
+                let number = value[1..].parse::<usize>().unwrap_or(usize::MAX);
+                if number >= stack.len() {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(), "pushd: índice fuera de rango\n".to_owned(), 1,
+                    ));
+                }
+                let rotate = if value.starts_with('+') {
+                    number
+                } else {
+                    stack.len() - number - 1
+                };
+                stack.rotate_left(rotate);
+            }
+            Some(value) => {
+                let target = self.resolve_path(value);
+                if !target.is_dir() {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("pushd: {value}: directorio inválido\n"),
+                        1,
+                    ));
+                }
+                let target = fs::canonicalize(target).unwrap_or_else(|_| self.resolve_path(value));
+                if no_cd {
+                    stack.insert(1.min(stack.len()), target);
+                } else {
+                    stack.insert(0, target);
+                }
+            }
+        }
+
+        if !no_cd {
+            self.install_directory_stack(stack)?;
+        } else {
+            self.env.dir_stack = stack.into_iter().skip(1).rev().collect();
+        }
+        self.builtin_dirs(&[])
+    }
+
+    fn builtin_popd(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if self.env.option_enabled("restricted_shell") {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "popd: modo restringido: operación no permitida\n".to_owned(),
+                1,
+            ));
+        }
+
+        let no_cd = args.iter().any(|arg| arg == "-n");
+        let operand = args.iter().find(|arg| arg.as_str() != "-n").map(String::as_str);
+        let mut stack = self.directory_stack();
+        if stack.len() <= 1 {
+            return Ok(ExecutionResult::from_parts(
+                String::new(), "popd: pila vacía\n".to_owned(), 1,
+            ));
+        }
+
+        let index = match operand {
+            None => 0,
+            Some(value) if value.starts_with('+') => value[1..].parse::<usize>().unwrap_or(usize::MAX),
+            Some(value) if value.starts_with('-') => {
+                let number = value[1..].parse::<usize>().unwrap_or(usize::MAX);
+                stack.len().checked_sub(number + 1).unwrap_or(usize::MAX)
+            }
+            Some(value) => {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(), format!("popd: opción inválida: {value}\n"), 2,
+                ));
+            }
+        };
+
+        if index >= stack.len() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(), "popd: índice fuera de rango\n".to_owned(), 1,
+            ));
+        }
+        stack.remove(index);
+
+        if !no_cd && index == 0 {
+            self.install_directory_stack(stack)?;
+        } else {
+            let current = stack.remove(0);
+            self.env.cwd = current;
+            self.env.dir_stack = stack.into_iter().rev().collect();
+        }
+        self.builtin_dirs(&[])
     }
 
     fn builtin_ulimit(&mut self, args: &[String]) -> Result<ExecutionResult> {
@@ -2571,6 +2832,32 @@ impl Interpreter {
             }
 
             i += 1;
+
+            if chars.get(i) == Some(&'(') {
+                let mut end = i + 1;
+                while end < chars.len() && chars[end] != ')' { end += 1; }
+                if end < chars.len() && chars.get(end + 1) == Some(&'T') {
+                    let date_format: String = chars[i + 1..end].iter().collect();
+                    let value = values.get(value_index).cloned().unwrap_or_else(|| "-1".to_owned());
+                    value_index += 1;
+                    let timestamp = value.parse::<i64>().unwrap_or(-1);
+                    let rendered = if timestamp == -1 {
+                        chrono::Local::now().format(&date_format).to_string()
+                    } else if timestamp == -2 {
+                        chrono::DateTime::<chrono::Local>::from(std::time::UNIX_EPOCH)
+                            .format(&date_format)
+                            .to_string()
+                    } else if let Some(utc) = chrono::DateTime::from_timestamp(timestamp, 0) {
+                        utc.with_timezone(&chrono::Local).format(&date_format).to_string()
+                    } else {
+                        String::new()
+                    };
+                    output.push_str(&rendered);
+                    i = end + 2;
+                    continue;
+                }
+            }
+
             let mut width = String::new();
             while i < chars.len() && (chars[i].is_ascii_digit() || matches!(chars[i], '-' | '+' | '0' | ' ' | '.')) {
                 width.push(chars[i]);
@@ -4186,7 +4473,8 @@ impl Interpreter {
 
     fn tilde_expand(&self, raw: &str) -> String {
         if raw == "~" || raw.starts_with("~/") || raw.starts_with("~\\") {
-            let home = self.env.get("USERPROFILE");
+            let home = self.env.get("HOME");
+            let home = if home.is_empty() { self.env.get("USERPROFILE") } else { home };
             if !home.is_empty() {
                 return format!("{home}{}", &raw[1..]);
             }
@@ -4195,9 +4483,39 @@ impl Interpreter {
             return self.env.cwd.to_string_lossy().into_owned();
         }
         if raw == "~-" {
-            return self.env.oldpwd.as_ref().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default();
+            return self.env.oldpwd.as_ref()
+                .map(|p| p.to_string_lossy().into_owned())
+                .unwrap_or_default();
         }
+
+        if let Some(number) = raw.strip_prefix("~+").and_then(|value| value.parse::<usize>().ok()) {
+            let stack = self.directory_stack();
+            return stack.get(number)
+                .map(|path| path.to_string_lossy().into_owned())
+                .unwrap_or_else(|| raw.to_owned());
+        }
+        if let Some(number) = raw.strip_prefix("~-").and_then(|value| value.parse::<usize>().ok()) {
+            let stack = self.directory_stack();
+            return stack.len().checked_sub(number + 1)
+                .and_then(|index| stack.get(index))
+                .map(|path| path.to_string_lossy().into_owned())
+                .unwrap_or_else(|| raw.to_owned());
+        }
+
+        if let Some(user) = raw.strip_prefix('~').filter(|value| !value.is_empty() && !value.contains(['/', '\\'])) {
+            if user.eq_ignore_ascii_case(&self.env.get("USERNAME")) {
+                let home = self.env.get("USERPROFILE");
+                if !home.is_empty() { return home; }
+            }
+        }
+
         raw.to_owned()
+    }
+
+    fn directory_stack(&self) -> Vec<PathBuf> {
+        let mut stack = vec![self.env.cwd.clone()];
+        stack.extend(self.env.dir_stack.iter().rev().cloned());
+        stack
     }
 
     fn glob(&self, value: &str) -> Result<Vec<String>> {
