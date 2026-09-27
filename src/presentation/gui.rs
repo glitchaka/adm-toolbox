@@ -128,7 +128,7 @@ pub fn run() -> Result<()> {
         let ptr = Box::into_raw(state);
         let style = WS_POPUP | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
         let hwnd = CreateWindowExW(
-            WS_EX_APPWINDOW | WS_EX_LAYERED,
+            WS_EX_APPWINDOW,
             class.as_ptr(),
             wide("Shell Shock Tool").as_ptr(),
             style,
@@ -229,8 +229,9 @@ unsafe fn apply_window_effects(hwnd: HWND) {
         };
         let _ = DwmExtendFrameIntoClientArea(hwnd, &margins);
 
-        // Keeps the terminal readable while still letting the compositor show through.
-        SetLayeredWindowAttributes(hwnd, 0, 244, LWA_ALPHA);
+        // Do not apply a global layered alpha: it would fade text, cursor and icons.
+        // The client area is extended into DWM and the renderer leaves the default
+        // terminal background as glass while drawing glyphs at full opacity.
     }
 }
 
@@ -414,14 +415,17 @@ impl Terminal {
             let bitmap = CreateCompatibleBitmap(dc, bounds.right.max(1), bounds.bottom.max(1));
             let old_bitmap = SelectObject(mem, bitmap);
 
-            let background = CreateSolidBrush(BG);
-            FillRect(mem, &bounds, background);
-            DeleteObject(background);
+            // On an extended DWM frame, black is the glass key for the client area.
+            // Keeping the default terminal background black lets the system backdrop
+            // remain visible without reducing glyph opacity.
+            let glass = CreateSolidBrush(0x000000);
+            FillRect(mem, &bounds, glass);
+            DeleteObject(glass);
 
             self.paint_titlebar(hwnd, mem, &bounds);
 
             let old_font = SelectObject(mem, self.font);
-            SetBkMode(mem, OPAQUE as i32);
+            SetBkMode(mem, TRANSPARENT as i32);
 
             let screen = self.parser.screen();
             let (rows, cols) = screen.size();
@@ -438,6 +442,8 @@ impl Terminal {
 
                     let mut fg = color(cell.fgcolor(), FG);
                     let mut bg = color(cell.bgcolor(), BG);
+                    let mut paint_background =
+                        !matches!(cell.bgcolor(), vt100::Color::Default) || cell.inverse();
 
                     if cell.inverse() {
                         std::mem::swap(&mut fg, &mut bg);
@@ -450,6 +456,7 @@ impl Terminal {
                     {
                         fg = 0xFFFFFF;
                         bg = 0x704B37;
+                        paint_background = true;
                     }
 
                     if screen.scrollback() == 0
@@ -459,6 +466,7 @@ impl Terminal {
                     {
                         fg = BG;
                         bg = ACCENT_BLUE;
+                        paint_background = true;
                     }
 
                     let rect = RECT {
@@ -472,17 +480,25 @@ impl Terminal {
                             + (row as i32 + 1) * self.cell_height,
                     };
 
+                    if paint_background {
+                        let brush = CreateSolidBrush(bg);
+                        FillRect(mem, &rect, brush);
+                        DeleteObject(brush);
+                    }
+
                     let content = cell.contents();
-                    let text = wide(if content.is_empty() { " " } else { content });
+                    if content.is_empty() {
+                        continue;
+                    }
+                    let text = wide(content);
 
                     SetTextColor(mem, fg);
-                    SetBkColor(mem, bg);
                     SelectObject(mem, if cell.bold() { self.bold } else { self.font });
                     ExtTextOutW(
                         mem,
                         rect.left,
                         rect.top,
-                        ETO_OPAQUE | ETO_CLIPPED,
+                        ETO_CLIPPED,
                         &rect,
                         text.as_ptr(),
                         (text.len() - 1) as u32,
