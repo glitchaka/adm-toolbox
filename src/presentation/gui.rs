@@ -10,7 +10,7 @@ use windows_sys::Win32::{
     Foundation::*,
     Graphics::{Dwm::*, Gdi::*},
     System::{DataExchange::*, LibraryLoader::GetModuleHandleW, Memory::*},
-    UI::{Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
+    UI::{Controls::MARGINS, Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
 };
 
 use crate::adapters::terminal::embedded::EmbeddedSession;
@@ -350,7 +350,7 @@ impl Terminal {
         lines.join("\r\n")
     }
 
-    unsafe fn paint_titlebar(&self, hwnd: HWND, dc: HDC, bounds: &RECT) {
+    unsafe fn paint_titlebar(&self, _hwnd: HWND, dc: HDC, bounds: &RECT) {
         unsafe {
             let title_rect = RECT {
                 left: 0,
@@ -802,7 +802,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                 if let Some(button) = title_button_at(hwnd, x, y) {
                     ReleaseCapture();
                     match button {
-                        0 => ShowWindow(hwnd, SW_MINIMIZE),
+                        0 => { ShowWindow(hwnd, SW_MINIMIZE); }
                         1 => {
                             if IsZoomed(hwnd) != 0 {
                                 ShowWindow(hwnd, SW_RESTORE);
