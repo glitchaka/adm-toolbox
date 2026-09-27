@@ -1,8 +1,9 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
+    time::Duration,
 };
 
 use anyhow::{anyhow, bail, Result};
@@ -28,6 +29,13 @@ pub struct ExecutionResult {
     pub status: i32,
     pub exit_requested: bool,
     flow: FlowSignal,
+}
+
+#[derive(Debug, Clone)]
+pub struct JobInfo {
+    pub pid: u32,
+    pub command: String,
+    pub running: bool,
 }
 
 impl ExecutionResult {
@@ -63,6 +71,20 @@ pub trait ShellCommandHost: Send + Sync {
         while line.ends_with(['\r', '\n']) { line.pop(); }
         let _ = silent;
         Ok(Some(line))
+    }
+
+    fn read_line_with_options(
+        &self,
+        prompt: &str,
+        silent: bool,
+        initial: &str,
+        timeout: Option<Duration>,
+        delimiter: Option<char>,
+        max_chars: Option<usize>,
+        exact_chars: bool,
+    ) -> Result<Option<String>> {
+        let _ = (initial, timeout, delimiter, max_chars, exact_chars);
+        self.read_line(prompt, silent)
     }
 
     fn execute_builtin(
@@ -103,8 +125,11 @@ pub trait ShellCommandHost: Send + Sync {
         bail!("background de shell no disponible en este host")
     }
 
-    fn jobs(&self) -> Result<Vec<(u32, String, bool)>> { Ok(Vec::new()) }
+    fn command_is_builtin(&self, _name: &str) -> bool { false }
+    fn jobs(&self) -> Result<Vec<JobInfo>> { Ok(Vec::new()) }
     fn wait_job(&self, _pid: Option<u32>) -> Result<i32> { Ok(127) }
+    fn wait_next_job(&self) -> Result<Option<(u32, i32)>> { Ok(None) }
+    fn disown_job(&self, _pid: u32) -> Result<bool> { Ok(false) }
 }
 
 pub struct Interpreter {
@@ -112,11 +137,20 @@ pub struct Interpreter {
     host: Box<dyn ShellCommandHost>,
     loop_depth: usize,
     source_depth: usize,
+    command_hash: HashMap<String, String>,
+    disabled_builtins: HashSet<String>,
 }
 
 impl Interpreter {
     pub fn new(host: Box<dyn ShellCommandHost>) -> Self {
-        Self { env: ShellEnvironment::new(), host, loop_depth: 0, source_depth: 0 }
+        Self {
+            env: ShellEnvironment::new(),
+            host,
+            loop_depth: 0,
+            source_depth: 0,
+            command_hash: HashMap::new(),
+            disabled_builtins: HashSet::new(),
+        }
     }
 
     pub fn execute_text(&mut self, input: &str) -> Result<ExecutionResult> {
@@ -500,10 +534,80 @@ impl Interpreter {
     }
 
     fn execute_background_node(&mut self, node: &AstNode) -> Result<ExecutionResult> {
-        let source = render_ast(node);
-        let pid = self.host.execute_shell_background(&source, &self.env.cwd, &self.env.exported)?;
+        // A plain external command can be launched directly by the host. Shell
+        // constructs (pipelines, functions, builtins, redirects, groups, etc.)
+        // still go through a child Shell Shock Tool interpreter so Bash semantics
+        // remain centralized in this module.
+        let pid = if let AstNode::Simple(command) = node {
+            if command.redirects.is_empty() {
+                let mut raw = command.words.clone();
+                if let Some(alias) = raw.first()
+                    .and_then(|name| self.env.aliases.get(name))
+                    .cloned()
+                {
+                    let mut alias_words = super::lexer::lex(&alias)?
+                        .into_iter()
+                        .filter_map(|token| {
+                            if let super::lexer::Token::Word(word) = token { Some(word) } else { None }
+                        })
+                        .collect::<Vec<_>>();
+                    alias_words.extend(raw.into_iter().skip(1));
+                    raw = alias_words;
+                }
+
+                let mut index = 0usize;
+                let mut child_env = self.env.exported.clone();
+                while index < raw.len() && is_assignment(&raw[index]) {
+                    let (name, value) = raw[index].split_once('=').unwrap();
+                    child_env.insert(name.to_owned(), self.expand_scalar(value)?);
+                    index += 1;
+                }
+
+                let words = self.expand_words(&raw[index..])?;
+                if let Some((name, args)) = words.split_first() {
+                    if !self.shell_builtin_name(name)
+                        && !self.env.functions.contains_key(name)
+                        && !self.host.command_is_builtin(name)
+                    {
+                        Some(self.host.execute_external_background(
+                            name,
+                            args,
+                            &self.env.cwd,
+                            &child_env,
+                        )?)
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        let pid = match pid {
+            Some(pid) => pid,
+            None => self.host.execute_shell_background(
+                &render_ast(node),
+                &self.env.cwd,
+                &self.env.exported,
+            )?,
+        };
+
         self.env.last_background_pid = Some(pid);
-        Ok(ExecutionResult::from_parts(format!("[{}] {}\n", pid, pid), String::new(), 0))
+        let job_number = self.host.jobs()?
+            .iter()
+            .position(|job| job.pid == pid)
+            .map(|index| index + 1)
+            .unwrap_or(1);
+        Ok(ExecutionResult::from_parts(
+            format!("[{job_number}] {pid}\n"),
+            String::new(),
+            0,
+        ))
     }
 
     fn execute_pipeline(&mut self, parts: &[AstNode], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
@@ -511,6 +615,7 @@ impl Interpreter {
         let mut stderr = String::new();
         let mut last = ExecutionResult::success();
         let mut last_nonzero = 0;
+        let mut statuses = Vec::new();
 
         for part in parts {
             let saved = self.env.clone();
@@ -521,9 +626,11 @@ impl Interpreter {
             last.flow = FlowSignal::None;
             stderr.push_str(&last.stderr);
             if last.status != 0 { last_nonzero = last.status; }
+            statuses.push(last.status.to_string());
             input = Some(last.stdout.as_bytes().to_vec());
         }
 
+        self.env.set_array("PIPESTATUS", statuses);
         last.stderr = stderr;
         if self.env.option_enabled("pipefail") && last_nonzero != 0 {
             last.status = last_nonzero;
@@ -595,9 +702,7 @@ impl Interpreter {
             trace.push('\n');
         }
 
-        let mut result = if let Some(result) = self.shell_builtin(&name, args, local_stdin.as_deref())? {
-            result
-        } else if let Some(body) = self.env.functions.get(&name).cloned() {
+        let mut result = if let Some(body) = self.env.functions.get(&name).cloned() {
             let saved = self.env.positional.clone();
             self.env.positional = args.to_vec();
             self.env.push_local_scope();
@@ -609,6 +714,36 @@ impl Interpreter {
                 result.flow = FlowSignal::None;
             }
             result
+        } else if !self.disabled_builtins.contains(&name) {
+            if let Some(result) = self.shell_builtin(&name, args, local_stdin.as_deref())? {
+                result
+            } else if let Some(result) = self.host.execute_builtin(
+                &name,
+                args,
+                &self.env.cwd,
+                local_stdin.as_deref(),
+            )? {
+                result
+            } else if self.env.option_enabled("autocd") && args.is_empty() && self.resolve_path(&name).is_dir() {
+                self.shell_builtin("cd", &[name.clone()], None)?
+                    .unwrap_or_else(ExecutionResult::success)
+            } else {
+                let program = self.command_hash.get(&name).cloned().unwrap_or_else(|| name.clone());
+                match self.host.execute_external(
+                    &program,
+                    args,
+                    &self.env.cwd,
+                    &self.env.exported,
+                    local_stdin.as_deref(),
+                ) {
+                    Ok(result) => result,
+                    Err(error) => ExecutionResult::from_parts(
+                        String::new(),
+                        format!("{name}: {error}\n"),
+                        127,
+                    ),
+                }
+            }
         } else if let Some(result) = self.host.execute_builtin(
             &name,
             args,
@@ -617,8 +752,9 @@ impl Interpreter {
         )? {
             result
         } else {
+            let program = self.command_hash.get(&name).cloned().unwrap_or_else(|| name.clone());
             match self.host.execute_external(
-                &name,
+                &program,
                 args,
                 &self.env.cwd,
                 &self.env.exported,
@@ -706,9 +842,17 @@ impl Interpreter {
             "unset" => {
                 let functions_only = args.iter().any(|arg| arg == "-f");
                 let variables_only = args.iter().any(|arg| arg == "-v");
+                let nameref_only = args.iter().any(|arg| arg == "-n");
                 let mut status = 0;
                 let mut stderr = String::new();
                 for item in args.iter().filter(|arg| !arg.starts_with('-')) {
+                    if nameref_only {
+                        if !self.env.unset_nameref(item) {
+                            status = 1;
+                            stderr.push_str(&format!("unset: {item}: no es nameref o es de solo lectura\n"));
+                        }
+                        continue;
+                    }
                     if !variables_only && self.env.functions.remove(item).is_some() {
                         if functions_only { continue; }
                     }
@@ -752,6 +896,42 @@ impl Interpreter {
                 }
                 ExecutionResult::success()
             }
+            ":" | "true" => ExecutionResult::success(),
+            "false" => ExecutionResult::from_parts(String::new(), String::new(), 1),
+            "exec" => {
+                if args.is_empty() {
+                    ExecutionResult::success()
+                } else {
+                    let mut command_index = 0usize;
+                    while command_index < args.len() && args[command_index].starts_with('-') {
+                        if args[command_index] == "--" {
+                            command_index += 1;
+                            break;
+                        }
+                        // -a/-c/-l are accepted syntactically; process replacement
+                        // semantics are represented by terminating this shell after
+                        // the command completes on Windows.
+                        if args[command_index] == "-a" {
+                            command_index += 2;
+                        } else {
+                            command_index += 1;
+                        }
+                    }
+                    let Some(command) = args.get(command_index) else {
+                        return Ok(Some(ExecutionResult::success()));
+                    };
+                    let mut execution = self.execute_command_direct(
+                        command,
+                        &args[command_index + 1..],
+                        stdin,
+                    )?;
+                    if execution.status == 0 || !self.env.option_enabled("execfail") {
+                        execution.exit_requested = true;
+                    }
+                    execution
+                }
+            }
+            "enable" => self.builtin_enable(args),
             "exit" | "logout" => {
                 let status = args.first()
                     .and_then(|value| value.parse::<i32>().ok())
@@ -774,18 +954,37 @@ impl Interpreter {
                 result
             }
             "source" | "." => {
-                let Some(path) = args.first() else {
+                let mut index = 0usize;
+                let mut search_path: Option<&str> = None;
+                if args.get(index).map(String::as_str) == Some("-p") {
+                    index += 1;
+                    let Some(path) = args.get(index) else {
+                        return Ok(Some(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("{name}: -p requiere PATH\n"),
+                            2,
+                        )));
+                    };
+                    search_path = Some(path);
+                    index += 1;
+                }
+                if args.get(index).map(String::as_str) == Some("--") {
+                    index += 1;
+                }
+                let Some(path) = args.get(index) else {
                     return Ok(Some(ExecutionResult::from_parts(
                         String::new(),
                         format!("{name}: falta archivo\n"),
                         2,
                     )));
                 };
-                let source = fs::read_to_string(self.resolve_path(path))?;
+                let resolved = self.resolve_source_path(path, search_path);
+                let source = fs::read_to_string(&resolved)?;
                 let saved_positional = self.env.positional.clone();
                 let saved_name = self.env.script_name.clone();
-                if args.len() > 1 {
-                    self.env.positional = args[1..].to_vec();
+                let source_args = &args[index + 1..];
+                if !source_args.is_empty() {
+                    self.env.positional = source_args.to_vec();
                 }
                 self.source_depth += 1;
                 let execution = self.execute_text(&source);
@@ -896,31 +1095,11 @@ impl Interpreter {
                 }
             }
             "mapfile" | "readarray" => self.builtin_mapfile(args, stdin)?,
-            "jobs" => {
-                let rows = self.host.jobs()?;
-                let mut stdout = String::new();
-                for (index, (pid, command, running)) in rows.iter().enumerate() {
-                    stdout.push_str(&format!(
-                        "[{}] {} {} {}\n",
-                        index + 1,
-                        if *running { "Running" } else { "Done" },
-                        pid,
-                        command
-                    ));
-                }
-                ExecutionResult::from_parts(stdout, String::new(), 0)
-            }
-            "wait" => {
-                let pid = args.first().and_then(|value| value.trim_start_matches('%').parse::<u32>().ok());
-                let status = self.host.wait_job(pid)?;
-                ExecutionResult::from_parts(String::new(), String::new(), status)
-            }
-            "fg" => {
-                let pid = args.first().and_then(|value| value.trim_start_matches('%').parse::<u32>().ok());
-                let status = self.host.wait_job(pid)?;
-                ExecutionResult::from_parts(String::new(), String::new(), status)
-            }
-            "bg" => ExecutionResult::success(),
+            "jobs" => self.builtin_jobs(args)?,
+            "wait" => self.builtin_wait(args)?,
+            "fg" => self.builtin_fg(args)?,
+            "bg" => self.builtin_bg(args)?,
+            "disown" => self.builtin_disown(args)?,
             "command" => {
                 if args.first().map(String::as_str) == Some("-v") || args.first().map(String::as_str) == Some("-V") {
                     let mut stdout = String::new();
@@ -952,7 +1131,7 @@ impl Interpreter {
                     .unwrap_or_else(|| ExecutionResult::from_parts(String::new(), format!("builtin: {command}: no es builtin\n"), 1))
             }
             "type" => self.builtin_type(args)?,
-            "hash" => ExecutionResult::success(),
+            "hash" => self.builtin_hash(args)?,
             "getopts" => self.builtin_getopts(args)?,
             "dirs" => {
                 let mut stdout = self.env.cwd.to_string_lossy().into_owned();
@@ -1032,12 +1211,364 @@ impl Interpreter {
         matches!(
             name,
             "cd" | "pwd" | "echo" | "printf" | "export" | "unset" | "alias" | "unalias"
-                | "exit" | "logout" | "source" | "." | "read" | "local" | "declare" | "typeset"
+                | "exit" | "logout" | "exec" | "source" | "." | "read" | "local" | "declare" | "typeset"
                 | "readonly" | "break" | "continue" | "return" | "shift" | "set" | "shopt"
                 | "trap" | "eval" | "let" | "test" | "[" | "mapfile" | "readarray" | "jobs"
-                | "wait" | "fg" | "bg" | "command" | "builtin" | "type" | "hash" | "getopts"
+                | "wait" | "fg" | "bg" | "disown" | "command" | "builtin" | "type" | "hash" | "getopts"
                 | "dirs" | "pushd" | "popd" | "umask" | "ulimit" | "times" | "caller"
+                | "enable" | ":" | "true" | "false"
         )
+    }
+
+    fn resolve_jobspec(&self, spec: Option<&str>) -> Result<Option<(usize, JobInfo)>> {
+        let jobs = self.host.jobs()?;
+        if jobs.is_empty() {
+            return Ok(None);
+        }
+
+        let selected = match spec {
+            None | Some("%") | Some("%%") | Some("%+") => jobs.len().checked_sub(1),
+            Some("%-") => jobs.len().checked_sub(2),
+            Some(value) if value.starts_with("%?") => {
+                let needle = &value[2..];
+                jobs.iter().position(|job| job.command.contains(needle))
+            }
+            Some(value) if value.starts_with('%') => {
+                let tail = &value[1..];
+                if let Ok(number) = tail.parse::<usize>() {
+                    number.checked_sub(1).filter(|index| *index < jobs.len())
+                } else {
+                    jobs.iter().position(|job| job.command.starts_with(tail))
+                }
+            }
+            Some(value) => value.parse::<u32>().ok()
+                .and_then(|pid| jobs.iter().position(|job| job.pid == pid)),
+        };
+
+        Ok(selected.map(|index| (index + 1, jobs[index].clone())))
+    }
+
+    fn builtin_jobs(&self, args: &[String]) -> Result<ExecutionResult> {
+        let jobs = self.host.jobs()?;
+        let pids_only = args.iter().any(|arg| arg == "-p");
+        let running_only = args.iter().any(|arg| arg == "-r");
+        let stopped_only = args.iter().any(|arg| arg == "-s");
+        let requested: Vec<&str> = args.iter()
+            .filter(|arg| !arg.starts_with('-'))
+            .map(String::as_str)
+            .collect();
+
+        let mut stdout = String::new();
+        for (index, job) in jobs.iter().enumerate() {
+            if running_only && !job.running { continue; }
+            // Native Windows jobs currently have Running/Done states. There is no
+            // synthetic "Stopped" state: -s therefore reports none rather than lying.
+            if stopped_only { continue; }
+            if !requested.is_empty() {
+                let number = format!("%{}", index + 1);
+                if !requested.iter().any(|spec| {
+                    *spec == number
+                        || spec.parse::<u32>().ok() == Some(job.pid)
+                        || spec.strip_prefix("%?").is_some_and(|needle| job.command.contains(needle))
+                        || spec.strip_prefix('%').is_some_and(|prefix| job.command.starts_with(prefix))
+                }) {
+                    continue;
+                }
+            }
+            if pids_only {
+                stdout.push_str(&format!("{}\n", job.pid));
+            } else {
+                stdout.push_str(&format!(
+                    "[{}] {} {} {}\n",
+                    index + 1,
+                    if job.running { "Running" } else { "Done" },
+                    job.pid,
+                    job.command
+                ));
+            }
+        }
+        Ok(ExecutionResult::from_parts(stdout, String::new(), 0))
+    }
+
+    fn builtin_wait(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let mut wait_next = false;
+        let mut assign_to: Option<String> = None;
+        let mut targets = Vec::new();
+        let mut index = 0usize;
+
+        while index < args.len() {
+            match args[index].as_str() {
+                "-n" => wait_next = true,
+                "-f" => {}
+                "-p" => {
+                    index += 1;
+                    assign_to = args.get(index).cloned();
+                    if assign_to.is_none() {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "wait: -p requiere una variable\n".to_owned(),
+                            2,
+                        ));
+                    }
+                }
+                "--" => {
+                    targets.extend(args[index + 1..].iter().cloned());
+                    break;
+                }
+                value if value.starts_with('-') => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("wait: opción no válida: {value}\n"),
+                        2,
+                    ));
+                }
+                value => targets.push(value.to_owned()),
+            }
+            index += 1;
+        }
+
+        if wait_next {
+            let Some((pid, status)) = self.host.wait_next_job()? else {
+                return Ok(ExecutionResult::from_parts(String::new(), String::new(), 127));
+            };
+            if let Some(name) = assign_to {
+                self.env.set(name, pid.to_string());
+            }
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), status));
+        }
+
+        if targets.is_empty() {
+            let status = self.host.wait_job(None)?;
+            return Ok(ExecutionResult::from_parts(String::new(), String::new(), status));
+        }
+
+        let mut status = 0;
+        let mut stderr = String::new();
+        for target in targets {
+            let pid = if target.starts_with('%') {
+                match self.resolve_jobspec(Some(&target))? {
+                    Some((_, job)) => job.pid,
+                    None => {
+                        stderr.push_str(&format!("wait: {target}: no existe ese job\n"));
+                        status = 127;
+                        continue;
+                    }
+                }
+            } else if let Ok(pid) = target.parse::<u32>() {
+                pid
+            } else {
+                stderr.push_str(&format!("wait: {target}: identificador inválido\n"));
+                status = 127;
+                continue;
+            };
+            status = self.host.wait_job(Some(pid))?;
+            if let Some(name) = assign_to.as_ref() {
+                self.env.set(name.clone(), pid.to_string());
+            }
+        }
+        Ok(ExecutionResult::from_parts(String::new(), stderr, status))
+    }
+
+    fn builtin_fg(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let spec = args.first().map(String::as_str);
+        let Some((_, job)) = self.resolve_jobspec(spec)? else {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "fg: no hay job actual\n".to_owned(),
+                1,
+            ));
+        };
+        let status = self.host.wait_job(Some(job.pid))?;
+        Ok(ExecutionResult::from_parts(
+            format!("{}\n", job.command),
+            String::new(),
+            status,
+        ))
+    }
+
+    fn builtin_bg(&self, args: &[String]) -> Result<ExecutionResult> {
+        let spec = args.first().map(String::as_str);
+        let Some((number, job)) = self.resolve_jobspec(spec)? else {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "bg: no hay job actual\n".to_owned(),
+                1,
+            ));
+        };
+        if !job.running {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("bg: %{number}: el proceso ya terminó\n"),
+                1,
+            ));
+        }
+        Ok(ExecutionResult::from_parts(
+            format!("[{number}] {} &\n", job.command),
+            String::new(),
+            0,
+        ))
+    }
+
+    fn builtin_disown(&self, args: &[String]) -> Result<ExecutionResult> {
+        let all = args.iter().any(|arg| arg == "-a");
+        let running_only = args.iter().any(|arg| arg == "-r");
+        let hup_only = args.iter().any(|arg| arg == "-h");
+        let targets: Vec<&str> = args.iter()
+            .filter(|arg| !arg.starts_with('-'))
+            .map(String::as_str)
+            .collect();
+
+        // Shell Shock Tool does not send SIGHUP to Windows child processes on exit,
+        // so "disown -h" is already satisfied without removing the job.
+        if hup_only {
+            return Ok(ExecutionResult::success());
+        }
+
+        let jobs = self.host.jobs()?;
+        let mut pids = Vec::new();
+        if all || running_only {
+            pids.extend(jobs.iter()
+                .filter(|job| !running_only || job.running)
+                .map(|job| job.pid));
+        } else if targets.is_empty() {
+            if let Some((_, job)) = self.resolve_jobspec(None)? {
+                pids.push(job.pid);
+            }
+        } else {
+            for target in targets {
+                if let Some((_, job)) = self.resolve_jobspec(Some(target))? {
+                    pids.push(job.pid);
+                } else {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("disown: {target}: no existe ese job\n"),
+                        1,
+                    ));
+                }
+            }
+        }
+
+        for pid in pids {
+            let _ = self.host.disown_job(pid)?;
+        }
+        Ok(ExecutionResult::success())
+    }
+
+    fn builtin_hash(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if args.is_empty() {
+            let mut entries: Vec<_> = self.command_hash.iter().collect();
+            entries.sort_by_key(|(name, _)| *name);
+            let stdout = entries.into_iter()
+                .map(|(_, path)| format!("0\t{path}\n"))
+                .collect();
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+        }
+
+        if args.iter().any(|arg| arg == "-r") {
+            self.command_hash.clear();
+            return Ok(ExecutionResult::success());
+        }
+
+        if args.first().map(String::as_str) == Some("-d") {
+            for name in &args[1..] {
+                self.command_hash.remove(name);
+            }
+            return Ok(ExecutionResult::success());
+        }
+
+        if args.first().map(String::as_str) == Some("-t") {
+            let mut stdout = String::new();
+            let mut stderr = String::new();
+            let mut status = 0;
+            for name in &args[1..] {
+                if let Some(path) = self.command_hash.get(name) {
+                    stdout.push_str(path);
+                    stdout.push('\n');
+                } else {
+                    stderr.push_str(&format!("hash: {name}: no encontrado\n"));
+                    status = 1;
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, stderr, status));
+        }
+
+        if args.first().map(String::as_str) == Some("-p") {
+            if args.len() < 3 {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    "hash: uso: hash -p ruta nombre\n".to_owned(),
+                    2,
+                ));
+            }
+            self.command_hash.insert(args[2].clone(), args[1].clone());
+            return Ok(ExecutionResult::success());
+        }
+
+        let mut stderr = String::new();
+        let mut status = 0;
+        for name in args.iter().filter(|arg| !arg.starts_with('-')) {
+            match self.host.execute_builtin("which", &[name.clone()], &self.env.cwd, None)? {
+                Some(result) if result.status == 0 => {
+                    if let Some(path) = result.stdout.lines().next().filter(|line| !line.is_empty()) {
+                        self.command_hash.insert(name.clone(), path.to_owned());
+                    } else {
+                        status = 1;
+                        stderr.push_str(&format!("hash: {name}: no encontrado\n"));
+                    }
+                }
+                _ => {
+                    status = 1;
+                    stderr.push_str(&format!("hash: {name}: no encontrado\n"));
+                }
+            }
+        }
+        Ok(ExecutionResult::from_parts(String::new(), stderr, status))
+    }
+
+    fn builtin_enable(&mut self, args: &[String]) -> ExecutionResult {
+        let disable = args.iter().any(|arg| arg == "-n");
+        let print_all = args.is_empty() || args.iter().any(|arg| arg == "-a" || arg == "-p");
+        let names: Vec<&str> = args.iter()
+            .filter(|arg| !arg.starts_with('-'))
+            .map(String::as_str)
+            .collect();
+
+        if print_all && names.is_empty() {
+            let known = [
+                ":", ".", "alias", "bg", "break", "builtin", "caller", "cd",
+                "command", "continue", "declare", "dirs", "disown", "echo", "enable",
+                "eval", "exec", "exit", "export", "false", "fg", "getopts", "hash",
+                "jobs", "let", "local", "logout", "mapfile", "popd", "printf", "pushd",
+                "pwd", "read", "readarray", "readonly", "return", "set", "shift",
+                "shopt", "source", "test", "times", "trap", "true", "type", "typeset",
+                "ulimit", "umask", "unalias", "unset", "wait",
+            ];
+            let mut stdout = String::new();
+            for name in known {
+                stdout.push_str(&format!(
+                    "enable {}{}\n",
+                    if self.disabled_builtins.contains(name) { "-n " } else { "" },
+                    name,
+                ));
+            }
+            return ExecutionResult::from_parts(stdout, String::new(), 0);
+        }
+
+        let mut status = 0;
+        let mut stderr = String::new();
+        for name in names {
+            if !self.shell_builtin_name(name) {
+                status = 1;
+                stderr.push_str(&format!("enable: {name}: no es builtin de shell\n"));
+                continue;
+            }
+            if disable {
+                self.disabled_builtins.insert(name.to_owned());
+            } else {
+                self.disabled_builtins.remove(name);
+            }
+        }
+        ExecutionResult::from_parts(String::new(), stderr, status)
     }
 
     fn builtin_echo(&self, args: &[String]) -> ExecutionResult {
@@ -1152,7 +1683,12 @@ impl Interpreter {
         let mut silent = false;
         let mut raw = false;
         let mut max_chars: Option<usize> = None;
+        let mut exact_chars = false;
         let mut array_name: Option<String> = None;
+        let mut delimiter: Option<char> = None;
+        let mut timeout: Option<Duration> = None;
+        let mut input_fd = 0i32;
+        let mut initial = String::new();
         let mut variables = Vec::new();
         let mut index = 0usize;
 
@@ -1164,9 +1700,54 @@ impl Interpreter {
                 }
                 "-s" => silent = true,
                 "-r" => raw = true,
-                "-n" | "-N" => {
+                "-e" | "-E" => {
+                    // The native terminal already supplies line editing. -E selects
+                    // the shell's standard completion set, while -e permits current
+                    // Readline-style bindings; both use the same native editor here.
+                }
+                "-i" => {
                     index += 1;
-                    max_chars = args.get(index).and_then(|v| v.parse::<usize>().ok());
+                    initial = args.get(index).cloned().unwrap_or_default();
+                }
+                "-d" => {
+                    index += 1;
+                    delimiter = Some(
+                        args.get(index)
+                            .and_then(|value| value.chars().next())
+                            .unwrap_or('\0'),
+                    );
+                }
+                "-t" => {
+                    index += 1;
+                    let Some(value) = args.get(index).and_then(|value| value.parse::<f64>().ok()) else {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "read: -t requiere un número de segundos válido\n".to_owned(),
+                            2,
+                        ));
+                    };
+                    if value.is_sign_negative() {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "read: timeout negativo\n".to_owned(),
+                            2,
+                        ));
+                    }
+                    timeout = Some(Duration::from_secs_f64(value));
+                }
+                "-u" => {
+                    index += 1;
+                    input_fd = args.get(index).and_then(|value| value.parse::<i32>().ok()).unwrap_or(-1);
+                }
+                "-n" => {
+                    index += 1;
+                    max_chars = args.get(index).and_then(|value| value.parse::<usize>().ok());
+                    exact_chars = false;
+                }
+                "-N" => {
+                    index += 1;
+                    max_chars = args.get(index).and_then(|value| value.parse::<usize>().ok());
+                    exact_chars = true;
                 }
                 "-a" => {
                     index += 1;
@@ -1176,17 +1757,51 @@ impl Interpreter {
                     variables.extend(args[index + 1..].iter().cloned());
                     break;
                 }
-                value if value.starts_with('-') => {}
+                value if value.starts_with('-') => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("read: opción no válida: {value}\n"),
+                        2,
+                    ));
+                }
                 value => variables.push(value.to_owned()),
             }
             index += 1;
         }
 
+        if input_fd != 0 {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("read: descriptor {input_fd}: no disponible en esta sesión\n"),
+                1,
+            ));
+        }
+
         let source = if let Some(bytes) = stdin {
-            Some(String::from_utf8_lossy(bytes).lines().next().unwrap_or("").to_owned())
+            let text = String::from_utf8_lossy(bytes);
+            let mut value = if exact_chars {
+                text.chars().take(max_chars.unwrap_or(usize::MAX)).collect::<String>()
+            } else if let Some(delim) = delimiter {
+                text.split(delim).next().unwrap_or("").to_owned()
+            } else {
+                text.lines().next().unwrap_or("").to_owned()
+            };
+            if !initial.is_empty() {
+                value.insert_str(0, &initial);
+            }
+            Some(value)
         } else {
-            self.host.read_line(&prompt, silent)?
+            self.host.read_line_with_options(
+                &prompt,
+                silent,
+                &initial,
+                timeout,
+                delimiter,
+                max_chars,
+                exact_chars,
+            )?
         };
+
         let Some(mut value) = source else {
             return Ok(ExecutionResult::from_parts(String::new(), String::new(), 1));
         };
@@ -1227,18 +1842,25 @@ impl Interpreter {
         let mut export = false;
         let mut print = false;
         let mut integer = false;
+        let mut nameref = false;
+        let mut remove_nameref = false;
+        let mut global = false;
         let mut names = Vec::new();
 
         for arg in args {
-            if arg.starts_with('-') && arg.len() > 1 {
+            if (arg.starts_with('-') || arg.starts_with('+')) && arg.len() > 1 {
+                let enable = arg.starts_with('-');
                 for flag in arg[1..].chars() {
                     match flag {
-                        'a' => indexed = true,
-                        'A' => associative = true,
-                        'r' => readonly = true,
-                        'x' => export = true,
-                        'p' => print = true,
-                        'i' => integer = true,
+                        'a' if enable => indexed = true,
+                        'A' if enable => associative = true,
+                        'r' if enable => readonly = true,
+                        'x' if enable => export = true,
+                        'p' if enable => print = true,
+                        'i' if enable => integer = true,
+                        'n' if enable => nameref = true,
+                        'n' => remove_nameref = true,
+                        'g' if enable => global = true,
                         _ => {}
                     }
                 }
@@ -1253,6 +1875,11 @@ impl Interpreter {
             all.sort();
             for name in all {
                 stdout.push_str(&format!("declare -- {}={}\n", name, shell_quote(&self.env.get(&name))));
+            }
+            let mut refs: Vec<_> = self.env.namerefs.iter().collect();
+            refs.sort_by_key(|(name, _)| *name);
+            for (name, target) in refs {
+                stdout.push_str(&format!("declare -n {name}={}\n", shell_quote(target)));
             }
             for (name, values) in &self.env.arrays {
                 stdout.push_str(&format!("declare -a {name}=("));
@@ -1271,20 +1898,50 @@ impl Interpreter {
             return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
         }
 
+        let effective_local = local || (!global && !self.env.local_scopes.is_empty());
+
         for item in names {
             let (name, mut value) = item.split_once('=')
                 .map(|(n,v)| (n.to_owned(), Some(v.to_owned())))
                 .unwrap_or((item.clone(), None));
 
-            if associative { self.env.declare_assoc(name.clone()); }
-            else if indexed { self.env.set_array(name.clone(), Vec::new()); }
+            if remove_nameref {
+                if let Some(target) = self.env.namerefs.get(&name).cloned() {
+                    let _ = self.env.unset_nameref(&name);
+                    if effective_local { self.env.set_local(name.clone(), target); }
+                    else { self.env.set(name.clone(), target); }
+                }
+                continue;
+            }
+
+            if nameref {
+                let target = if let Some(raw) = value.take() {
+                    self.expand_scalar(&raw)?
+                } else {
+                    String::new()
+                };
+                if effective_local {
+                    self.env.set_local_nameref(name.clone(), target);
+                } else {
+                    self.env.set_nameref(name.clone(), target);
+                }
+                if readonly { self.env.set_readonly(&name); }
+                continue;
+            }
+
+            if associative {
+                if effective_local { self.env.declare_local_assoc(name.clone()); }
+                else { self.env.declare_assoc(name.clone()); }
+            } else if indexed {
+                if effective_local { self.env.set_local_array(name.clone(), Vec::new()); }
+                else { self.env.set_array(name.clone(), Vec::new()); }
+            }
 
             if let Some(raw_value) = value.take() {
                 if raw_value.starts_with('(') && raw_value.ends_with(')') && (indexed || associative) {
                     let body = &raw_value[1..raw_value.len() - 1];
                     let items = split_shell_words_relaxed(body)?;
                     if associative {
-                        self.env.declare_assoc(name.clone());
                         for item in items {
                             if let Some((key, value)) = parse_array_entry(&item) {
                                 let expanded = self.expand_scalar(&value)?;
@@ -1303,7 +1960,8 @@ impl Interpreter {
                                 values.push(self.expand_scalar(&item)?);
                             }
                         }
-                        self.env.set_array(name.clone(), values);
+                        if effective_local { self.env.set_local_array(name.clone(), values); }
+                        else { self.env.set_array(name.clone(), values); }
                     }
                 } else {
                     let expanded = if integer {
@@ -1311,10 +1969,10 @@ impl Interpreter {
                     } else {
                         self.expand_scalar(&raw_value)?
                     };
-                    if local { self.env.set_local(name.clone(), expanded); }
+                    if effective_local { self.env.set_local(name.clone(), expanded); }
                     else { self.env.set(name.clone(), expanded); }
                 }
-            } else if local {
+            } else if effective_local && !indexed && !associative {
                 let current = self.env.get(&name);
                 self.env.set_local(name.clone(), current);
             }
@@ -1365,6 +2023,13 @@ impl Interpreter {
                         'n' => set_shell_option(&mut self.env, "noexec", enable),
                         'C' => set_shell_option(&mut self.env, "noclobber", enable),
                         'a' => set_shell_option(&mut self.env, "allexport", enable),
+                        'm' => set_shell_option(&mut self.env, "monitor", enable),
+                        'b' => set_shell_option(&mut self.env, "notify", enable),
+                        'h' => set_shell_option(&mut self.env, "hashall", enable),
+                        'B' => set_shell_option(&mut self.env, "braceexpand", enable),
+                        'H' => set_shell_option(&mut self.env, "histexpand", enable),
+                        'P' => set_shell_option(&mut self.env, "physical", enable),
+                        'v' => set_shell_option(&mut self.env, "verbose", enable),
                         _ => {}
                     }
                 }
@@ -1389,8 +2054,10 @@ impl Interpreter {
 
         if print && names.is_empty() {
             let known = [
-                "autocd", "cdspell", "checkwinsize", "dotglob", "extglob", "failglob",
-                "globstar", "nocaseglob", "nocasematch", "nullglob", "sourcepath",
+                "array_expand_once", "autocd", "cdspell", "checkwinsize", "dotglob",
+                "execfail", "expand_aliases", "extglob", "failglob", "globstar",
+                "inherit_errexit", "lastpipe", "nocaseglob", "nocasematch", "nullglob",
+                "patsub_replacement", "progcomp", "sourcepath",
             ];
             let mut stdout = String::new();
             for option in known {
@@ -1438,20 +2105,77 @@ impl Interpreter {
     }
 
     fn builtin_mapfile(&mut self, args: &[String], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
-        let mut trim_newline = false;
+        let mut trim_delimiter = false;
         let mut skip = 0usize;
         let mut count: Option<usize> = None;
+        let mut origin: Option<usize> = None;
+        let mut delimiter = '\n';
+        let mut input_fd = 0i32;
+        let mut callback: Option<String> = None;
+        let mut quantum = 5000usize;
         let mut name = "MAPFILE".to_owned();
         let mut index = 0usize;
+
         while index < args.len() {
             match args[index].as_str() {
-                "-t" => trim_newline = true,
-                "-s" => { index += 1; skip = args.get(index).and_then(|v| v.parse().ok()).unwrap_or(0); }
-                "-n" => { index += 1; count = args.get(index).and_then(|v| v.parse().ok()); }
-                value if !value.starts_with('-') => name = value.to_owned(),
-                _ => {}
+                "-t" => trim_delimiter = true,
+                "-s" => {
+                    index += 1;
+                    skip = args.get(index).and_then(|value| value.parse().ok()).unwrap_or(0);
+                }
+                "-n" => {
+                    index += 1;
+                    count = args.get(index).and_then(|value| value.parse().ok());
+                }
+                "-O" => {
+                    index += 1;
+                    origin = args.get(index).and_then(|value| value.parse().ok());
+                }
+                "-d" => {
+                    index += 1;
+                    delimiter = args.get(index)
+                        .and_then(|value| value.chars().next())
+                        .unwrap_or('\0');
+                }
+                "-u" => {
+                    index += 1;
+                    input_fd = args.get(index).and_then(|value| value.parse().ok()).unwrap_or(-1);
+                }
+                "-C" => {
+                    index += 1;
+                    callback = args.get(index).cloned();
+                }
+                "-c" => {
+                    index += 1;
+                    quantum = args.get(index)
+                        .and_then(|value| value.parse::<usize>().ok())
+                        .filter(|value| *value > 0)
+                        .unwrap_or(5000);
+                }
+                "--" => {
+                    if let Some(value) = args.get(index + 1) {
+                        name = value.clone();
+                    }
+                    break;
+                }
+                value if value.starts_with('-') => {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("mapfile: opción no válida: {value}\n"),
+                        2,
+                    ));
+                }
+                value => name = value.to_owned(),
             }
             index += 1;
+        }
+
+        if input_fd != 0 {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("mapfile: descriptor {input_fd}: no disponible en esta sesión\n"),
+                1,
+            ));
         }
 
         let text = if let Some(bytes) = stdin {
@@ -1464,15 +2188,61 @@ impl Interpreter {
             }
             all
         };
-        let mut lines: Vec<String> = text.split_inclusive('\n')
-            .skip(skip)
-            .map(|line| {
-                if trim_newline { line.trim_end_matches(['\r','\n']).to_owned() }
-                else { line.to_owned() }
-            })
-            .collect();
-        if let Some(count) = count { lines.truncate(count); }
-        self.env.set_array(name, lines);
+
+        let mut rows = Vec::new();
+        let mut current = String::new();
+        for ch in text.chars() {
+            current.push(ch);
+            if ch == delimiter {
+                if trim_delimiter {
+                    current.pop();
+                }
+                rows.push(std::mem::take(&mut current));
+            }
+        }
+        if !current.is_empty() {
+            rows.push(current);
+        }
+
+        let mut rows: Vec<String> = rows.into_iter().skip(skip).collect();
+        if let Some(limit) = count {
+            if limit > 0 {
+                rows.truncate(limit);
+            }
+        }
+
+        let start_index = origin.unwrap_or(0);
+        let mut target = if origin.is_some() {
+            self.env.array_values(&name)
+        } else {
+            Vec::new()
+        };
+
+        for (offset, row) in rows.into_iter().enumerate() {
+            let array_index = start_index + offset;
+            if target.len() <= array_index {
+                target.resize(array_index + 1, String::new());
+            }
+
+            if let Some(action) = callback.as_ref() {
+                if offset % quantum == 0 {
+                    let command = format!(
+                        "{} {} {}",
+                        action,
+                        array_index,
+                        shell_quote(&row),
+                    );
+                    let callback_result = self.execute_text(&command)?;
+                    if callback_result.status != 0 {
+                        return Ok(callback_result);
+                    }
+                }
+            }
+
+            target[array_index] = row;
+        }
+
+        self.env.set_array(name, target);
         Ok(ExecutionResult::success())
     }
 
@@ -1560,7 +2330,8 @@ impl Interpreter {
         if let Some(result) = self.host.execute_builtin(name, args, &self.env.cwd, stdin)? {
             return Ok(result);
         }
-        match self.host.execute_external(name, args, &self.env.cwd, &self.env.exported, stdin) {
+        let program = self.command_hash.get(name).cloned().unwrap_or_else(|| name.to_owned());
+        match self.host.execute_external(&program, args, &self.env.cwd, &self.env.exported, stdin) {
             Ok(result) => Ok(result),
             Err(error) => Ok(ExecutionResult::from_parts(String::new(), format!("{name}: {error}\n"), 127)),
         }
@@ -1658,9 +2429,31 @@ impl Interpreter {
                             .map(|pattern| !pattern.matches(&l))
                             .unwrap_or(l != r)
                     }
-                    "=~" => regex::Regex::new(&right)
-                        .map(|pattern| pattern.is_match(&left))
-                        .unwrap_or(false),
+                    "=~" => {
+                        match regex::RegexBuilder::new(&right)
+                            .case_insensitive(nocase)
+                            .build()
+                        {
+                            Ok(pattern) => {
+                                if let Some(captures) = pattern.captures(&left) {
+                                    let values = (0..captures.len())
+                                        .map(|index| captures.get(index)
+                                            .map(|value| value.as_str().to_owned())
+                                            .unwrap_or_default())
+                                        .collect();
+                                    self.env.set_array("BASH_REMATCH", values);
+                                    true
+                                } else {
+                                    self.env.set_array("BASH_REMATCH", Vec::new());
+                                    false
+                                }
+                            }
+                            Err(_) => {
+                                self.env.set_array("BASH_REMATCH", Vec::new());
+                                false
+                            }
+                        }
+                    },
                     "<" => if nocase { left.to_lowercase() < right.to_lowercase() } else { left < right },
                     ">" => if nocase { left.to_lowercase() > right.to_lowercase() } else { left > right },
                     "-eq" => eval_arithmetic(&left, &self.env)? == eval_arithmetic(&right, &self.env)?,
@@ -2169,7 +2962,7 @@ impl Interpreter {
                     .unwrap_or(0);
                 (nanos % 32768).to_string()
             }
-            "BASH_VERSION" => "5.2-compatible-sst".to_owned(),
+            "BASH_VERSION" => "5.3.0(1)-sst".to_owned(),
             "BASHPID" | "$" => std::process::id().to_string(),
             "PPID" => std::process::id().saturating_sub(1).to_string(),
             _ => self.env.get(name),
@@ -2219,8 +3012,48 @@ impl Interpreter {
             }
         }
 
-        if let Some(name) = expression.strip_suffix("@Q") {
-            return Ok(shell_quote(&self.env.get(name)));
+        for suffix in ["@Q", "@E", "@U", "@u", "@L", "@A", "@a"] {
+            if let Some(name) = expression.strip_suffix(suffix) {
+                let value = self.env.get(name);
+                return Ok(match suffix {
+                    "@Q" => shell_quote(&value),
+                    "@E" => decode_backslash_escapes(&value, false).0,
+                    "@U" => value.to_uppercase(),
+                    "@u" => capitalize_first(&value),
+                    "@L" => value.to_lowercase(),
+                    "@A" => {
+                        if self.env.arrays.contains_key(name) {
+                            format!("declare -a {name}=({})",
+                                self.env.array_values(name)
+                                    .iter()
+                                    .enumerate()
+                                    .map(|(index, item)| format!("[{index}]={}", shell_quote(item)))
+                                    .collect::<Vec<_>>()
+                                    .join(" "))
+                        } else if self.env.assoc_arrays.contains_key(name) {
+                            let mut entries: Vec<_> = self.env.assoc_arrays[name].iter().collect();
+                            entries.sort_by_key(|(key, _)| *key);
+                            format!("declare -A {name}=({})",
+                                entries.into_iter()
+                                    .map(|(key, item)| format!("[{}]={}", shell_quote(key), shell_quote(item)))
+                                    .collect::<Vec<_>>()
+                                    .join(" "))
+                        } else {
+                            format!("declare -- {name}={}", shell_quote(&value))
+                        }
+                    }
+                    "@a" => {
+                        let mut attrs = String::new();
+                        if self.env.arrays.contains_key(name) { attrs.push('a'); }
+                        if self.env.assoc_arrays.contains_key(name) { attrs.push('A'); }
+                        if self.env.is_nameref(name) { attrs.push('n'); }
+                        if self.env.readonly.contains(name) { attrs.push('r'); }
+                        if self.env.exported.contains_key(name) { attrs.push('x'); }
+                        attrs
+                    }
+                    _ => value,
+                });
+            }
         }
 
         for operator in [":-", ":+", ":=", ":?", "-", "+", "=", "?"] {
@@ -2318,13 +3151,23 @@ impl Interpreter {
 
     fn glob(&self, value: &str) -> Result<Vec<String>> {
         if !contains_glob_meta(value) { return Ok(Vec::new()); }
-        let pattern = if Path::new(value).is_absolute() {
+        let mut pattern = if Path::new(value).is_absolute() {
             value.to_owned()
         } else {
             self.env.cwd.join(value).to_string_lossy().into_owned()
         };
+        if !self.env.option_enabled("globstar") {
+            while pattern.contains("**") {
+                pattern = pattern.replace("**", "*");
+            }
+        }
         let mut result = Vec::new();
-        for entry in glob::glob(&pattern)? {
+        let options = glob::MatchOptions {
+            case_sensitive: !self.env.option_enabled("nocaseglob"),
+            require_literal_separator: false,
+            require_literal_leading_dot: false,
+        };
+        for entry in glob::glob_with(&pattern, options)? {
             let Ok(path) = entry else { continue };
             if !self.env.option_enabled("dotglob") {
                 let hidden = path.file_name().and_then(|n| n.to_str()).is_some_and(|n| n.starts_with('.'));
@@ -2339,6 +3182,30 @@ impl Interpreter {
         }
         result.sort();
         Ok(result)
+    }
+
+    fn resolve_source_path(&self, raw: &str, override_path: Option<&str>) -> PathBuf {
+        let explicit = Path::new(raw).is_absolute()
+            || raw.contains('/')
+            || raw.contains('\\');
+        if explicit {
+            return self.resolve_path(raw);
+        }
+
+        let path_value = override_path
+            .map(str::to_owned)
+            .unwrap_or_else(|| self.env.get("PATH"));
+
+        if override_path.is_some() || self.env.option_enabled("sourcepath") {
+            for directory in std::env::split_paths(&path_value) {
+                let candidate = directory.join(raw);
+                if candidate.is_file() {
+                    return candidate;
+                }
+            }
+        }
+
+        self.resolve_path(raw)
     }
 
     fn resolve_path(&self, raw: &str) -> PathBuf {

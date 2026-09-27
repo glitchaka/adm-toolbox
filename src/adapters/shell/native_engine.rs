@@ -13,7 +13,7 @@ use crate::{
     core::{
         CommandContext,
         ShellExecution,
-        bash::{ExecutionResult, Interpreter, ShellCommandHost},
+        bash::{ExecutionResult, Interpreter, JobInfo, ShellCommandHost},
         ports::ShellEngine,
     },
 };
@@ -85,6 +85,124 @@ impl ShellCommandHost for WindowsShellHost {
             }
         }
     }
+    fn read_line_with_options(
+        &self,
+        prompt: &str,
+        silent: bool,
+        initial: &str,
+        timeout: Option<std::time::Duration>,
+        delimiter: Option<char>,
+        max_chars: Option<usize>,
+        exact_chars: bool,
+    ) -> Result<Option<String>> {
+        use crossterm::event::{Event, KeyCode, KeyModifiers};
+
+        crate::adapters::terminal::io::write(prompt.as_bytes())?;
+        crate::adapters::terminal::io::enter_raw()?;
+        struct RawGuard;
+        impl Drop for RawGuard {
+            fn drop(&mut self) { crate::adapters::terminal::io::leave_raw(); }
+        }
+        let _guard = RawGuard;
+
+        let mut line = initial.to_owned();
+        if !silent && !initial.is_empty() {
+            crate::adapters::terminal::io::write(initial.as_bytes())?;
+        }
+        if max_chars == Some(0) {
+            return Ok(Some(String::new()));
+        }
+        if max_chars.is_some_and(|max| line.chars().count() >= max) {
+            return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
+        }
+
+        let started = std::time::Instant::now();
+        loop {
+            if let Some(limit) = timeout {
+                let elapsed = started.elapsed();
+                if elapsed >= limit {
+                    return Ok(None);
+                }
+                if !crate::adapters::terminal::io::poll(limit - elapsed)? {
+                    return Ok(None);
+                }
+            }
+
+            match crate::adapters::terminal::io::read()? {
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('d') && line.is_empty() =>
+                {
+                    return Ok(None);
+                }
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('c') =>
+                {
+                    crate::adapters::terminal::io::write(b"^C\r\n")?;
+                    return Ok(None);
+                }
+                Event::Key(key) => match key.code {
+                    KeyCode::Enter => {
+                        if exact_chars {
+                            line.push('\n');
+                            if !silent {
+                                crate::adapters::terminal::io::write(b"\r\n")?;
+                            }
+                            if max_chars.is_some_and(|max| line.chars().count() >= max) {
+                                return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
+                            }
+                        } else if delimiter.is_none() || delimiter == Some('\n') {
+                            crate::adapters::terminal::io::write(b"\r\n")?;
+                            return Ok(Some(line));
+                        }
+                    }
+                    KeyCode::Backspace => {
+                        if line.pop().is_some() && !silent {
+                            crate::adapters::terminal::io::write(b"\x08 \x08")?;
+                        }
+                    }
+                    KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        if !exact_chars && delimiter == Some(ch) {
+                            if !silent {
+                                let mut buf = [0u8; 4];
+                                crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                                crate::adapters::terminal::io::write(b"\r\n")?;
+                            }
+                            return Ok(Some(line));
+                        }
+
+                        line.push(ch);
+                        if !silent {
+                            let mut buf = [0u8; 4];
+                            crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                        }
+                        if max_chars.is_some_and(|max| line.chars().count() >= max) {
+                            return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
+                        }
+                    }
+                    _ => {}
+                },
+                Event::Paste(text) => {
+                    for ch in text.chars() {
+                        if !exact_chars && delimiter == Some(ch) {
+                            return Ok(Some(line));
+                        }
+                        line.push(ch);
+                        if max_chars.is_some_and(|max| line.chars().count() >= max) {
+                            break;
+                        }
+                    }
+                    if !silent {
+                        crate::adapters::terminal::io::write(text.as_bytes())?;
+                    }
+                    if max_chars.is_some_and(|max| line.chars().count() >= max) {
+                        return Ok(Some(line.chars().take(max_chars.unwrap()).collect()));
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
     fn execute_builtin(
         &self,
         name: &str,
@@ -111,6 +229,10 @@ impl ShellCommandHost for WindowsShellHost {
             output.stderr,
             output.status,
         )))
+    }
+
+    fn command_is_builtin(&self, name: &str) -> bool {
+        name == "help" || name == "man" || self.registry.names().iter().any(|candidate| candidate == name)
     }
 
     fn execute_external(
@@ -230,14 +352,18 @@ impl ShellCommandHost for WindowsShellHost {
         Ok(pid)
     }
 
-    fn jobs(&self) -> Result<Vec<(u32, String, bool)>> {
+    fn jobs(&self) -> Result<Vec<JobInfo>> {
         let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
         let mut rows = Vec::new();
         for (pid, job) in jobs.iter_mut() {
             let running = job.child.try_wait()?.is_none();
-            rows.push((*pid, job.command.clone(), running));
+            rows.push(JobInfo {
+                pid: *pid,
+                command: job.command.clone(),
+                running,
+            });
         }
-        rows.sort_by_key(|row| row.0);
+        rows.sort_by_key(|job| job.pid);
         Ok(rows)
     }
 
@@ -256,6 +382,45 @@ impl ShellCommandHost for WindowsShellHost {
             }
         }
         Ok(status)
+    }
+
+    fn wait_next_job(&self) -> Result<Option<(u32, i32)>> {
+        loop {
+            let completed = {
+                let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
+                if jobs.is_empty() {
+                    return Ok(None);
+                }
+
+                let mut completed = None;
+                for (pid, job) in jobs.iter_mut() {
+                    if let Some(status) = job.child.try_wait()? {
+                        completed = Some((*pid, status.code().unwrap_or(1)));
+                        break;
+                    }
+                }
+
+                if let Some((pid, status)) = completed {
+                    jobs.remove(&pid);
+                    Some((pid, status))
+                } else {
+                    None
+                }
+            };
+
+            if completed.is_some() {
+                return Ok(completed);
+            }
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
+    }
+
+    fn disown_job(&self, pid: u32) -> Result<bool> {
+        Ok(self.jobs
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .remove(&pid)
+            .is_some())
     }
 }
 
