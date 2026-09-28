@@ -1,18 +1,16 @@
-# Shell Shock Tool
+# Shell Shock Tool (SST)
 
-**Shell Shock Tool** es una consola portable de administración y soporte técnico para Windows, construida en Rust.
+**Shell Shock Tool**, o **SST**, es una consola portable para Windows escrita en Rust. Combina una terminal Win32 propia, un intérprete Bash-compatible, utilidades Unix integradas y herramientas de soporte técnico, diagnóstico, inventario y red.
 
-Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de tráfico, consulta de dominio, localización de puertos de switch y herramientas de línea de comandos de uso cotidiano.
+El ejecutable actual se llama:
 
-## Release actual
+```text
+sst.exe
+```
 
-El corte publicado actualmente es **Shell Shock Tool v0.1.4**, correspondiente al commit `70d0fc737b66156769319a096560bb177b266de1`.
+SST está pensado para poder llevarse como herramienta portable y trabajar desde una única consola sin depender de PowerShell para las tareas que ya incorpora de forma nativa.
 
-Este release congela el corte publicado de la capa Bash nativa. El workflow de publicación terminó correctamente.
-
-La rama `main` contiene además la integración posterior de `helix-sst 0.1.1`; por tanto, compilar `main` actualmente produce un estado más nuevo que el tag `v0.1.4`.
-
-La preparación del release `v0.1.4` se realizó **sin compilar ni ejecutar la suite de pruebas**.
+---
 
 ## Construcción
 
@@ -20,161 +18,66 @@ La preparación del release `v0.1.4` se realizó **sin compilar ni ejecutar la s
 cargo build --release
 ```
 
-El ejecutable se genera dentro de:
+El ejecutable se genera en:
 
 ```text
-target\release\
+target\release\sst.exe
 ```
 
-La aplicación mantiene una configuración portable local que puede editarse desde la propia shell:
-
-```bash
-config edit
-config reload
-```
-
-## Interfaz gráfica y tipografía
-
-La terminal nativa de Shell Shock Tool tiene interfaz propia Win32:
-
-- barra de título personalizada con el icono/mascota;
-- controles de minimizar, maximizar y cerrar inspirados en los tres botones de la mascota;
-- fondo oscuro translúcido con backdrop DWM en Windows 11;
-- prompt Nerd Font;
-- selección con mouse y scrollback;
-- `Ctrl+C` copia cuando hay selección y conserva la interrupción cuando no la hay;
-- `Ctrl+V`, `Ctrl+Shift+V` y `Shift+Insert` pegan texto;
-- `Ctrl+Insert` copia.
-
-La terminal lleva **JetBrainsMono Nerd Font Mono embebida dentro del ejecutable**. Se carga de forma privada en memoria al iniciar y se libera al cerrar, por lo que no requiere instalar fuentes en el PC y funciona desde un pendrive.
-
-Durante la compilación, `build.rs` obtiene la fuente oficial de Nerd Fonts y la incorpora al binario. Para compilar sin Internet puede definirse `SST_NERD_FONT_FILE` apuntando a una copia local compatible.
-
-El icono de Shell Shock Tool se genera e incrusta como recurso de Windows a partir del diseño de la mascota. El SVG fuente está en `assets/shell-shock-mascot.svg`.
-
-## Shell Bash-compatible
-
-Shell Shock Tool incluye un intérprete Bash propio escrito en Rust. La versión `v0.1.4` amplía de forma importante la cobertura de Bash 5.3, pero no pretende afirmar compatibilidad binaria ni semántica total con GNU Bash sobre Unix.
-
-Ejemplos básicos:
-
-```bash
-name="laboratorio"
-echo "$name"
-
-for host in 1 2 3; do
-    echo "192.168.1.$host"
-done
-
-scan_lab() {
-    net scan 192.168.1.0/24 --unknown
-}
-
-scan_lab
-
-cat archivo.txt | grep -i error | sort
-net scan --unknown --json > desconocidos.json
-command_that_works && echo ok
-command_that_fails || echo fallo
-```
-
-### Cobertura Bash actual
-
-El motor actual incluye, entre otras capacidades:
-
-- variables, parámetros posicionales y variables especiales de Bash;
-- aliases y funciones;
-- scopes locales, `local`, `return`, `break`, `continue` y atributos de variables;
-- arrays indexados, arrays asociativos, namerefs y arrays dispersos;
-- `declare`, `typeset`, `readonly`, `mapfile` y `readarray`;
-- `if`, `for`, `for ((...))`, `select`, `while`, `until` y `case ... esac`;
-- grupos `{ ...; }`, subshells `(...)`, `[[ ... ]]` y `(( ... ))`;
-- sustitución de comandos, expansiones aritméticas y de parámetros;
-- brace expansion, tilde expansion, IFS y quoting ANSI-C/localizado;
-- globbing, `extglob`, `globstar`, `GLOBIGNORE`, `GLOBSORT`, `dotglob`, `nullglob`, `failglob` y opciones relacionadas;
-- heredocs, here-strings, duplicación de descriptores, redirecciones combinadas y descriptores asignados a variables;
-- pipes, `|&`, pipelines paralelos, `pipefail`, operadores `&&`, `||`, `!` y background con `&`;
-- coprocesos y process substitution `<(...) / >(...)`;
-- jobs con `jobs`, `fg`, `bg`, `wait`, `wait -n` y `disown`;
-- traps, incluidos `ERR`, `EXIT`, `DEBUG` y `RETURN` dentro de las capacidades de Windows;
-- historial, `history`, `fc`, `bind` y programmable completion con `complete`, `compgen` y `compopt`;
-- `set`, `shopt`, opciones de compatibilidad y `compat53`;
-- builtins como `hash`, `getopts`, `exec`, `enable`, `suspend`, `dirs`, `pushd`, `popd`, `umask`, `ulimit`, `times` y `caller`;
-- variables y estado especiales como `PIPESTATUS`, `BASHPID`, `BASH_SUBSHELL`, `BASH_ARGC`, `BASH_ARGV`, `FUNCNAME`, `BASH_SOURCE`, `BASH_LINENO`, `RANDOM`, `SRANDOM`, `SECONDS`, `EPOCHSECONDS`, `EPOCHREALTIME`, `BASH_MONOSECONDS`, `BASH_ALIASES` y `BASH_CMDS`;
-- cambios específicos de Bash 5.3 ya incorporados en el motor, como `read -E`, `compgen -V`, `source -p`, `trap -P`, `array_expand_once`, `bash_source_fullpath` y sustituciones ejecutadas en el shell actual.
-
-### Scripts
-
-Shell Shock Tool reconoce archivos `.sh` y archivos con shebang Bash/sh, además de aceptar un script como argumento del ejecutable.
-
-```bash
-test.sh
-./test.sh
-sst.exe test.sh
-```
-
-En el estado actual de `main`, los scripts Bash/sh locales se ejecutan directamente en el intérprete activo de Shell Shock Tool. Esto permite que `read` y otras operaciones interactivas utilicen la terminal Win32 de la sesión sin relanzar otra instancia del ejecutable.
-
-### Diferencias deliberadas o pendientes frente a GNU Bash 5.3
-
-- el control de jobs y las señales se adaptan a procesos y APIs de Windows; no existe un controlling TTY POSIX idéntico al de Unix;
-- pruebas de archivo ligadas a permisos/propietario Unix, como setuid, setgid, sticky bit y ejecutabilidad POSIX, solo pueden aproximarse o carecen de equivalente directo;
-- `disown -h` no reproduce literalmente el comportamiento de SIGHUP de Unix;
-- los builtins cargables dinámicamente mediante `enable -f/-d` no están disponibles;
-- la edición interactiva emula interfaces de Bash/Readline, pero no incorpora GNU Readline 8.3 completo;
-- la conformidad amplia con GNU Bash 5.3 todavía no ha sido certificada mediante una suite exhaustiva comparativa.
-
-Las rutas del prompt se presentan al estilo Unix:
+Durante la compilación, `build.rs` incorpora la Nerd Font y el paquete oficial de Helix utilizados por la aplicación. Para compilaciones sin Internet pueden definirse:
 
 ```text
-C:\Users\manuel       -> ~
-C:\Windows\System32   -> /c/Windows/System32
+SST_NERD_FONT_FILE
+SST_HELIX_ARCHIVE
 ```
 
-Y `cd /c/...` se traduce a la ruta Windows correspondiente.
+No es necesario distribuir los directorios internos de Cargo como `build/`, `deps/`, `incremental/` o los archivos `.pdb`/`.d` para ejecutar SST.
 
-## Utilidades Unix integradas
+---
 
-Además de los builtins Bash del motor, Shell Shock Tool implementa/utiliza comandos familiares:
+# Mapa de herramientas
+
+SST tiene cuatro grupos principales de herramientas:
+
+1. **Shell Bash-compatible**: scripting, variables, pipes, redirecciones, jobs, arrays, funciones, traps, historial y completion.
+2. **Utilidades Unix integradas**: archivos, texto, compresión, hashes, búsqueda y navegación.
+3. **Herramientas SST para Windows y red**: sistema, red, inventario, Wake-on-LAN, dominio, switches, tráfico y diagnósticos.
+4. **Herramientas auxiliares**: configuración portable, traducción de rutas y editor Helix integrado.
+
+Puedes obtener ayuda desde la propia shell con:
 
 ```bash
-ls
-cat
-head
-tail
-grep
-wc
-sort
-uniq
-cut
-tee
-less
-more
-sed
-awk
-diff
-find
-basename
-dirname
-realpath
-date
-sleep
-sha256sum
-base64
-touch
-mkdir
-rm
-cp
-mv
-which
+help
+help COMANDO
 ```
 
-También:
+---
 
-```bash
-fetch
-neofetch
-fastfetch
+# Herramientas SST
+
+## `sys` — sistema y administración local
+
+`sys` agrupa consultas del equipo y herramientas de auditoría local.
+
+### Información del equipo
+
+| Comando | Qué hace |
+|---|---|
+| `sys info` | Muestra un resumen del sistema operativo, CPU, memoria y equipo. |
+| `sys processes` | Lista procesos y su consumo de CPU/RAM. |
+| `sys top` | Abre un monitor TUI de procesos. Permite ordenar por CPU o memoria. |
+| `sys disks` | Muestra discos, capacidad y uso. |
+| `sys memory` | Muestra memoria física y swap. |
+| `sys uptime` | Indica cuánto tiempo lleva Windows desde el último arranque. |
+| `sys hostname` | Muestra el nombre del equipo. |
+| `sys whoami` | Muestra el usuario actual. |
+| `sys uname [-a]` | Muestra identificación del sistema en formato familiar para usuarios Unix. |
+| `sys kill PID` | Termina un proceso por PID. |
+| `sys fetch [--small|--full]` | Muestra información del sistema acompañada por la mascota de SST. |
+
+También existen como comandos directos:
+
+```text
 ps
 top
 df
@@ -184,13 +87,498 @@ hostname
 whoami
 uname
 kill
+fetch
+neofetch
+fastfetch
 ```
 
-`fetch`, `neofetch` y `fastfetch` muestran la mascota de Shell Shock Tool como ASCII art junto con la información del sistema. Usa `fetch --small` para una variante compacta.
+### Servicios de Windows
 
-`top` y `less` funcionan como TUI dentro de la terminal y regresan al prompt al cerrarse.
+```bash
+sys services
+sys services --running
+sys services --stopped
+sys services NOMBRE
+```
 
-La shell puede ejecutar directamente programas disponibles en Windows:
+Permite listar servicios, filtrar por estado o consultar un servicio concreto. Usa `sc.exe` como backend y actualmente es de consulta.
+
+### Usuarios
+
+```bash
+sys users
+sys users USUARIO
+sys users --domain
+sys users USUARIO --domain
+```
+
+Consulta cuentas locales o del dominio mediante las herramientas nativas de Windows.
+
+### Drivers y dispositivos PnP
+
+```bash
+sys drivers
+sys drivers --verbose
+sys drivers --signed
+sys drivers --csv
+sys drivers --pnp
+sys drivers --devices
+```
+
+- `--verbose`: información detallada de los drivers.
+- `--signed`: añade información de firma.
+- `--csv`: salida CSV.
+- `--pnp`: enumera paquetes de drivers PnP.
+- `--devices`: enumera dispositivos PnP conectados.
+
+### Windows Event Log
+
+```bash
+sys events
+sys events Application
+sys events --log Security
+sys events --count 50
+sys events --query XPATH
+sys events --format text
+sys events --format xml
+sys events --logs
+sys events --publishers
+```
+
+Permite consultar eventos recientes, elegir log, limitar cantidad, aplicar filtros XPath, obtener XML y enumerar logs o publishers.
+
+### Registro de Windows
+
+```bash
+sys registry "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+sys registry CLAVE --value NOMBRE
+sys registry CLAVE --default
+sys registry CLAVE --recursive
+sys registry CLAVE --find TEXTO
+sys registry CLAVE --find TEXTO --keys
+sys registry CLAVE --find TEXTO --data
+```
+
+La integración actual es **de solo lectura** y utiliza `reg.exe query`.
+
+### Tareas programadas
+
+```bash
+sys tasks
+sys tasks --verbose
+sys tasks --csv
+sys tasks NOMBRE
+sys tasks NOMBRE --xml
+```
+
+Consulta tareas programadas, detalles o su definición XML mediante `schtasks.exe`.
+
+---
+
+## `net` — diagnóstico, descubrimiento y tráfico de red
+
+### Interfaces
+
+```bash
+net interfaces
+```
+
+Muestra las interfaces de red del equipo.
+
+### Conexiones
+
+```bash
+net connections
+```
+
+Muestra protocolo, dirección local, dirección remota, estado y PID de las conexiones activas.
+
+### Rutas
+
+```bash
+net routes
+```
+
+Muestra la tabla de rutas de Windows.
+
+### DNS
+
+```bash
+net dns HOST
+net dns IP
+```
+
+Resuelve nombres a direcciones IP y realiza resolución inversa cuando se entrega una IP.
+
+### Ping
+
+```bash
+net ping HOST
+net ping HOST -c 10
+```
+
+Envía ICMP desde el motor nativo de SST. `-c` acepta entre 1 y 100 intentos.
+
+### Trace
+
+```bash
+net trace HOST
+net traceroute HOST
+```
+
+Realiza un trazado ICMP de hasta 30 saltos.
+
+### Vecinos / ARP
+
+```bash
+net neighbors
+net arp
+```
+
+Muestra la relación IP → MAC conocida por el equipo.
+
+### Escaneo de puertos
+
+```bash
+net ports HOST
+net ports HOST 22,80,443,445,3389
+```
+
+Comprueba conectividad TCP contra los puertos indicados. Si no se especifican puertos usa un conjunto habitual.
+
+### Descubrimiento de red
+
+```bash
+net scan
+net scan 192.168.1.0/24
+net scan --unknown
+net scan --authorized
+net scan --known
+net scan --json
+net scan --csv
+```
+
+Escanea una red IPv4 y relaciona los equipos encontrados con:
+
+- dirección IP;
+- MAC;
+- hostname;
+- latencia;
+- estado conocido/desconocido;
+- nombre del inventario SST, si existe.
+
+Sin red explícita, SST intenta determinar la red IPv4 local y usa una /24. Por seguridad, el escaneo está limitado a redes /20 o más pequeñas.
+
+`--unknown` muestra solo equipos que no están en el inventario.  
+`--authorized` y `--known` muestran solo equipos conocidos.
+
+### Monitor de presencia
+
+```bash
+net monitor
+net monitor 192.168.1.0/24
+net monitor --unknown
+```
+
+Abre una vista TUI que repite el descubrimiento y registra:
+
+- aparición de equipos;
+- desaparición;
+- cambios de IP;
+- primera y última vez vistos.
+
+Se sale con `q` o `Esc`.
+
+### Historial de presencia
+
+```bash
+net presence
+net presence --json
+net presence --csv
+```
+
+Consulta el historial persistente generado por `net monitor`.
+
+### Tráfico por proceso
+
+```bash
+net traffic
+net traffic --watch
+net traffic --top 20
+net traffic --pid 4120
+net traffic --process chrome
+net traffic --background
+net traffic --high-usage
+net traffic --connections
+net traffic --json
+net traffic --csv
+```
+
+Correlaciona:
+
+- PID y PPID;
+- nombre del proceso;
+- proceso en primer plano;
+- ejecutable;
+- CPU;
+- RAM;
+- número de conexiones;
+- subida y bajada por segundo.
+
+La medición de bytes por PID utiliza ETW de Windows. Si ETW no está disponible, SST lo indica explícitamente en vez de inventar datos.
+
+`--connections` cambia la vista para mostrar protocolo, extremos local/remoto, estado, PID y proceso.
+
+`--watch` abre una vista TUI actualizada periódicamente y se cierra con `q` o `Esc`.
+
+### Proveedores de red
+
+```bash
+net provider list
+net provider list --json
+net provider add NOMBRE --type TIPO --host HOST
+net provider use NOMBRE
+net provider current
+net provider remove NOMBRE
+net provider capabilities
+net provider capabilities NOMBRE
+net provider path
+```
+
+Permite registrar routers, firewalls, controladores o fuentes externas de telemetría.
+
+Tipos contemplados por la capa de capacidades:
+
+```text
+openwrt
+opnsense
+pfsense
+unifi
+snmp
+generic
+```
+
+Esta capa guarda la configuración del proveedor y describe qué integración sería posible.
+
+### Uso de Internet de toda la LAN
+
+```bash
+net usage
+```
+
+**Estado actual: pendiente.** La infraestructura para elegir un proveedor existe, pero todavía no está implementado el driver que obtiene contadores por cliente desde OpenWrt, OPNsense, pfSense, UniFi u otro equipo. SST no intenta inferir esos datos a partir de ARP o ping.
+
+---
+
+## `device` — inventario local de equipos
+
+```bash
+device list
+device list --json
+device list --csv
+device show MAC
+device show NOMBRE
+device add AA:BB:CC:DD:EE:FF NOMBRE
+device add AA:BB:CC:DD:EE:FF NOMBRE --note "texto"
+device remove AA:BB:CC:DD:EE:FF
+device path
+```
+
+El inventario guarda MAC, nombre y notas. Se utiliza para identificar dispositivos durante escaneos, Wake-on-LAN y localización en switches.
+
+---
+
+## `wol` — Wake-on-LAN
+
+```bash
+wol AA:BB:CC:DD:EE:FF
+wol NOMBRE-INVENTARIADO
+wol NOMBRE-INVENTARIADO 192.168.1.255:9
+```
+
+Envía un Magic Packet. El destino puede ser una MAC directa o el nombre de un equipo registrado con `device add`.
+
+Si no se indica broadcast utiliza:
+
+```text
+255.255.255.255:9
+```
+
+---
+
+## `domain` — estado de dominio
+
+```bash
+domain status
+domain status EQUIPO
+domain status EQUIPO --verify
+domain status EQUIPO --cim
+domain status EQUIPO --json
+```
+
+Para el equipo local consulta la pertenencia al dominio. Para equipos remotos puede obtener información básica y, con `--verify`/`--cim`, solicitar una comprobación más explícita.
+
+La salida distingue:
+
+- hostname;
+- dominio;
+- si está unido o no;
+- fuente de la información;
+- nivel de confianza;
+- logon server.
+
+---
+
+## `switch` — MAC → switch → puerto físico
+
+### Configuración
+
+```bash
+switch add SW-PISO2 --host 10.0.0.12 --community-env SW_CORE_COMMUNITY
+switch add SW-PISO2 --host 10.0.0.12 --community-env SW_CORE_COMMUNITY --description "Core piso 2"
+switch list
+switch list --json
+switch show SW-PISO2
+switch remove SW-PISO2
+switch path
+switch capabilities
+```
+
+La comunidad SNMP **no se guarda en texto plano**. El perfil guarda el nombre de una variable de entorno:
+
+```bash
+export SW_CORE_COMMUNITY='comunidad-snmp'
+```
+
+### Localización
+
+```bash
+switch locate AA:BB:CC:DD:EE:FF
+switch locate NOMBRE-INVENTARIADO
+switch locate NOMBRE --switch SW-PISO2
+switch locate NOMBRE --vlan 20
+switch locate NOMBRE --json
+```
+
+SST consulta el switch por SNMP de solo lectura y resuelve, cuando el equipo lo permite:
+
+```text
+MAC
+  ↓
+switch
+  ↓
+bridge port
+  ↓
+ifIndex
+  ↓
+interfaz física
+```
+
+La salida puede incluir VLAN, PVID, alias, velocidad y estado operativo. La implementación utiliza Bridge-MIB, Q-BRIDGE-MIB e IF-MIB.
+
+---
+
+## `diag` — diagnósticos compuestos
+
+```bash
+diag network
+diag dns
+diag dns HOST
+diag hardware
+diag storage
+diag traffic
+diag domain
+```
+
+Agrupa varias herramientas para obtener una vista rápida:
+
+- `diag network`: interfaces, vecinos y conexiones.
+- `diag dns`: prueba resolución DNS; usa `example.com` si no se especifica destino.
+- `diag hardware`: información general, memoria y discos.
+- `diag storage`: estado de discos.
+- `diag traffic`: tráfico de red por proceso.
+- `diag domain`: pertenencia al dominio local.
+
+---
+
+# Utilidades Unix integradas
+
+Estas herramientas están escritas o integradas dentro de SST y no requieren instalar GNU coreutils. La intención es ofrecer una experiencia familiar, no afirmar equivalencia completa con cada implementación GNU original.
+
+## Navegación, entorno y utilidades básicas
+
+| Comando | Función |
+|---|---|
+| `pwd` | Muestra el directorio actual. |
+| `echo` | Imprime argumentos. |
+| `env` | Lista variables de entorno. |
+| `clear` | Limpia la terminal. |
+| `basename` | Extrae el último componente de una ruta. |
+| `dirname` | Extrae el directorio de una ruta. |
+| `realpath` | Resuelve una ruta absoluta. |
+| `date` | Muestra fecha y hora. |
+| `sleep` | Espera un intervalo. |
+| `true` | Termina con estado 0. |
+| `false` | Termina con estado 1. |
+
+## Archivos y directorios
+
+| Comando | Función |
+|---|---|
+| `ls` | Lista archivos y directorios. |
+| `cat` | Concatena archivos o stdin. |
+| `head` | Muestra las primeras líneas. |
+| `tail` | Muestra las últimas líneas. |
+| `find` | Busca archivos. |
+| `touch` | Crea un archivo vacío o actualiza su presencia. |
+| `mkdir` | Crea directorios. |
+| `rm` | Elimina archivos o directorios. |
+| `cp` | Copia archivos. |
+| `mv` | Mueve o renombra archivos. |
+
+## Texto y pipelines
+
+| Comando | Función |
+|---|---|
+| `grep` | Filtra líneas por texto. |
+| `wc` | Cuenta líneas, palabras y bytes. |
+| `sort` | Ordena líneas. |
+| `uniq` | Elimina líneas adyacentes repetidas. |
+| `cut` | Selecciona campos. |
+| `xargs` | Construye y ejecuta comandos a partir de stdin. |
+| `tee` | Copia stdin simultáneamente a archivo y stdout. |
+| `less` | Paginador interactivo. |
+| `more` | Alias del paginador. |
+| `sed` | Sustitución de texto. |
+| `awk` | Selección simple de campos. |
+| `diff` | Compara dos archivos. |
+| `printf` | Imprime texto con formato. |
+
+## Integridad y codificación
+
+| Comando | Función |
+|---|---|
+| `sha256sum` | Calcula SHA-256. |
+| `base64` | Codifica o decodifica Base64. |
+
+## Archivos comprimidos
+
+| Comando | Función |
+|---|---|
+| `tar` | Crea, lista y extrae TAR/TAR.GZ. |
+| `gzip` | Comprime archivos con gzip. |
+| `gunzip` | Descomprime archivos `.gz`. |
+| `zip` | Crea archivos ZIP. |
+| `unzip` | Lista o extrae ZIP. |
+
+## Resolución de comandos
+
+| Comando | Función |
+|---|---|
+| `which` | Localiza un comando ejecutable. |
+| `type` | Indica cómo se resolverá un nombre de comando. |
+
+SST también puede ejecutar programas externos accesibles desde `PATH`, por ejemplo:
 
 ```bash
 ipconfig /all
@@ -203,261 +591,535 @@ ssh
 curl
 ```
 
-## Sistema y administración local
+---
 
-Las consultas administrativas habituales están disponibles como subcomandos propios de `sys`. Shell Shock Tool usa las utilidades nativas de Windows como backend, manteniendo una interfaz única dentro de la shell.
+# Configuración portable
 
-```bash
-sys info
-sys processes
-sys top
-sys disks
-sys memory
-sys uptime
-sys hostname
-sys whoami
-
-sys services
-sys services --running
-sys services Spooler
-
-sys users
-sys users Administrador
-sys users --domain
-
-sys drivers
-sys drivers --verbose
-sys drivers --signed
-sys drivers --pnp
-sys drivers --devices
-
-sys events
-sys events Application --count 50
-sys events --log Security --count 20
-sys events --logs
-
-sys registry "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
-sys registry "HKLM\\SOFTWARE\\Microsoft" --recursive
-sys registry "HKCU\\Software" --find Shell
-
-sys tasks
-sys tasks --verbose
-sys tasks "\\Microsoft\\Windows\\Defrag\\ScheduledDefrag"
-```
-
-Estas vistas son de consulta/diagnóstico. No modifican servicios, cuentas, drivers, Event Log, Registro ni tareas programadas. Las operaciones destructivas se mantendrán separadas hasta que exista una capa central de privilegios, confirmación y auditoría.
-
-Los backends utilizados son `sc.exe`, `net.exe`, `driverquery.exe`, `pnputil.exe`, `wevtutil.exe`, `reg.exe` y `schtasks.exe`; por tanto siguen disponibles también directamente desde la shell cuando se necesiten opciones avanzadas.
-
-
-## Red
-
-```bash
-net interfaces
-net connections
-net routes
-net neighbors
-net dns equipo
-net ping equipo
-net trace equipo
-net scan
-net scan 192.168.1.0/24
-net scan --unknown
-net scan --authorized
-net scan --json
-net scan --csv
-net monitor
-net monitor --unknown
-net presence
-net ports 192.168.1.25 22,80,443,3389
-```
-
-`net monitor` mantiene historial de presencia y registra aparición, desaparición y cambios de IP.
-
-## Tráfico local
-
-```bash
-net traffic
-net traffic --watch
-net traffic --top 20
-net traffic --process chrome
-net traffic --pid 4120
-net traffic --connections
-net traffic --json
-net traffic --csv
-```
-
-Actualmente correlaciona procesos, PID, ejecutable, CPU, RAM, conexiones locales/remotas y tráfico de red por proceso. La medición de subida y bajada por PID usa ETW de Windows y calcula tasas a partir de los eventos de red; si ETW no está disponible, la vista degrada de forma explícita sin fingir contadores de red.
-
-La detección de proceso en primer plano también está implementada mediante `GetForegroundWindow` y `GetWindowThreadProcessId`, lo que permite distinguir el proceso activo en las vistas de tráfico.
-
-## Uso de Internet de toda la LAN
-
-```bash
-net provider add home-router --type openwrt --host 192.168.1.1
-net provider list
-net provider use home-router
-net provider current
-net provider capabilities
-net usage
-```
-
-`net usage` solo mostrará consumo por dispositivo cuando el router/AP/firewall configurado entregue esos contadores. No inventa tráfico a partir de ARP o ping.
-
-## Inventario
-
-```bash
-device add AA:BB:CC:DD:EE:FF LAB-PC-01
-device add AA:BB:CC:DD:EE:FF LAB-PC-01 --note "Sala 3"
-device list
-device list --json
-device list --csv
-device show LAB-PC-01
-device remove AA:BB:CC:DD:EE:FF
-```
-
-El inventario se integra con:
-
-```bash
-net scan --unknown
-net scan --authorized
-wol LAB-PC-01
-```
-
-## Wake-on-LAN
-
-```bash
-wol AA:BB:CC:DD:EE:FF
-wol LAB-PC-01
-wol LAB-PC-01 192.168.1.255
-```
-
-## Dominio
-
-```bash
-domain status
-domain status EQUIPO
-domain status EQUIPO --verify
-domain status EQUIPO --json
-```
-
-Para el equipo local intenta obtener una respuesta confirmada desde `Win32_ComputerSystem`. Para un host remoto, sin `--verify`, distingue explícitamente una inferencia DNS de una comprobación real.
-
-## Switch / boca física
-
-Perfiles de switch:
-
-```bash
-export SW_CORE_COMMUNITY='comunidad-snmp'
-
-switch add SW-PISO2 --host 10.0.0.12 --community-env SW_CORE_COMMUNITY
-switch list
-switch show SW-PISO2
-```
-
-Localización:
-
-```bash
-switch locate AA:BB:CC:DD:EE:FF
-switch locate LAB-PC-01
-switch locate LAB-PC-01 --switch SW-PISO2
-switch locate LAB-PC-01 --vlan 20
-switch locate LAB-PC-01 --json
-```
-
-La primera integración es **solo lectura** mediante SNMPv2c y consulta Bridge-MIB/Q-BRIDGE-MIB/IF-MIB para resolver:
+El archivo de configuración actual es:
 
 ```text
-MAC -> switch -> bridge port -> ifIndex -> interfaz
+config/sstrc
 ```
 
-y, cuando el equipo lo expone, PVID, velocidad, alias y estado operativo.
+Usa sintaxis Bash-compatible.
 
-La comunidad SNMP no se guarda en el inventario. El perfil guarda únicamente el nombre de una variable de entorno que contiene la credencial.
-
-## Diagnóstico
+### Comando amigable
 
 ```bash
-diag network
-diag dns
-diag hardware
-diag storage
-diag traffic
-diag domain
+config path
+config edit
+config reload
 ```
 
-## Editor integrado: helix-sst
+- `config path`: muestra la ruta del archivo.
+- `config edit`: lo abre con el editor integrado.
+- `config reload`: vuelve a ejecutar el archivo sin reiniciar SST.
 
-Shell Shock Tool incluye una integración en desarrollo de `helix-sst 0.1.1`, basada en **Helix 25.07.1**. **La edición interactiva todavía no se considera funcional en el estado actual de `main`**: el empaquetado, despliegue y puente PTY están implementados, pero el transporte de entrada/edición dentro del editor sigue pendiente de corrección.
-
-Los comandos `helix` y `hx` están conectados al editor integrado, pero hasta corregir el transporte interactivo no debe darse por cerrada esta funcionalidad. La documentación de teclas y flujo de edición describe el comportamiento objetivo, no una garantía de funcionamiento del corte actual.
+### Builtin interno
 
 ```bash
-helix
-helix archivo.conf
-helix script.sh
-hx script.sh
+sst-config path
+sst-config edit
+```
+
+La variable que contiene la ruta es:
+
+```text
+SST_CONFIG
+```
+
+---
+
+# Traducción de rutas
+
+```bash
+sst-path /c/Windows/System32
+```
+
+Convierte rutas estilo Unix a rutas Windows.
+
+SST también muestra rutas del prompt de forma familiar:
+
+```text
+C:\Users\usuario       → ~
+C:\Windows\System32    → /c/Windows/System32
+```
+
+---
+
+# Editor integrado: helix-sst
+
+Comandos registrados:
+
+```bash
+helix archivo.txt
+hx archivo.txt
+helix-sst archivo.txt
 helix --version
 helix --credits
+helix --help
 ```
 
-La distribución oficial de Helix 25.07.1 para Windows queda embebida durante la compilación y se despliega de forma portable al primer uso. Shell Shock Tool añade su propio tema, configuración portable, puente PTY e integración de comandos.
+La distribución portable está basada en **Helix 25.07.1** y SST aporta:
 
-Proyecto original: `helix-editor/helix`  
-Versión upstream integrada: `25.07.1`  
-Licencia upstream: Mozilla Public License 2.0 (MPL-2.0)  
-Créditos: Helix contributors.
+- empaquetado dentro de la aplicación;
+- configuración portable;
+- tema propio;
+- puente PTY/ConPTY;
+- integración de clipboard;
+- transporte VT;
+- integración con la terminal nativa.
 
-Los avisos y la licencia correspondientes se conservan en `THIRD_PARTY_NOTICES.md` y `licenses/HELIX-MPL-2.0.txt`.
+### Estado actual
 
-Para una compilación sin Internet puede definirse `SST_HELIX_ARCHIVE` apuntando al ZIP oficial `helix-25.07.1-x86_64-windows.zip`.
+**La edición interactiva de Helix todavía no se considera funcional.**
 
-## Estado actual de `main`
+El editor se encuentra integrado y puede iniciarse, pero el transporte de entrada/teclado/PTY todavía requiere corrección antes de considerarlo terminado. Por ello no debe usarse todavía como única vía para editar archivos importantes.
 
-Implementado actualmente:
-
-- intérprete Bash propio en Rust con cobertura amplia de Bash 5.3;
-- scripts `.sh` y shebang Bash/sh reconocidos y despachados por Shell Shock Tool;
-- terminal Win32 propia, historial, autocompletado y configuración portable;
-- jobs/background, pipelines paralelos, coprocesos y process substitution;
-- arrays, namerefs, atributos, globbing avanzado, history, completion y variables especiales de Bash;
-- información de sistema, procesos, discos, memoria y uptime;
-- consultas administrativas de servicios, usuarios, drivers/PnP, Event Log, Registro y tareas programadas;
-- diagnóstico y descubrimiento de red;
-- inventario y presencia persistente de dispositivos;
-- Wake-on-LAN;
-- estado de dominio local/remoto;
-- localización MAC → switch → puerto mediante SNMP de solo lectura;
-- tráfico por proceso mediante ETW y detección del proceso foreground;
-- integración portable `helix-sst` presente, con edición interactiva todavía pendiente de corrección.
-
-Pendiente o conocido en el estado actual:
-
-- corregir la edición interactiva de `helix-sst` y su transporte PTY/teclado;
-
-- ampliar la suite de conformidad contra GNU Bash 5.3 antes de declarar compatibilidad completa;
-- proveedores reales de `net usage` para obtener consumo por dispositivo desde router/AP/firewall;
-- verificación Authenticode;
-- auditoría estructurada de comandos y acciones administrativas;
-- indicador central de elevación/UAC;
-- confirmación centralizada para operaciones destructivas;
-- proveedores adicionales de infraestructura;
-- diferencias de plataforma inevitables o todavía no emuladas respecto de permisos, señales, TTY POSIX y GNU Readline completo.
-
-## Arquitectura
+El log queda en:
 
 ```text
-Shell Shock Tool
-│
-├── intérprete Bash propio en Rust
-├── terminal nativa Win32
-│   ├── renderer VT100
-│   ├── Nerd Font embebida
-│   ├── backdrop/transparencia
-│   └── branding Shell Shock Tool
-├── builtins administrativos escritos en Rust
-├── utilidades Unix integradas
-└── helix-sst 0.1.1 (basado en Helix 25.07.1)
+config/helix-sst/helix.log
 ```
 
-El alcance completo está en `SHELL_SHOCK_TOOL_PLAN.md`.
+---
+
+# Estado de Bash
+
+SST **no ejecuta un Bash externo**. Tiene un intérprete propio escrito en Rust con objetivo de compatibilidad con **Bash 5.3**.
+
+No debe confundirse “compatible con Bash” con “GNU Bash recompilado para Windows”: SST implementa la sintaxis y semántica dentro de su propio motor y adapta al modelo de procesos y archivos de Windows las partes que dependen de Unix.
+
+## Lenguaje implementado
+
+Actualmente están implementados:
+
+- comandos simples y secuencias;
+- `&&`, `||` y `!`;
+- pipes `|` y `|&`;
+- pipelines paralelos;
+- ejecución en background con `&`;
+- grupos `{ ...; }`;
+- subshells `(...)`;
+- `if / elif / else / fi`;
+- `for`;
+- `for ((...))`;
+- `while`;
+- `until`;
+- `select`;
+- `case` con `;;`, `;&` y `;;&`;
+- funciones;
+- `[[ ... ]]`;
+- `(( ... ))`;
+- `time`;
+- `coproc`;
+- asignaciones simples y arrays;
+- variables locales y scopes;
+- parámetros posicionales `$0`, `$1`, `$@`, `$*`, `$#`;
+- arrays indexados;
+- arrays asociativos;
+- namerefs;
+- arrays dispersos;
+- atributos de variables;
+- funciones exportadas.
+
+## Expansiones
+
+Incluye:
+
+- expansión de variables;
+- valores por defecto y operadores de parámetros;
+- sustitución de comandos `$(...)`;
+- expansión aritmética `$((...))`;
+- brace expansion;
+- tilde expansion;
+- globbing;
+- `extglob`;
+- `globstar`;
+- `GLOBIGNORE`;
+- `GLOBSORT`;
+- `dotglob`;
+- `nullglob`;
+- `failglob`;
+- `nocaseglob`;
+- IFS;
+- quoting simple y doble;
+- quoting ANSI-C;
+- sustituciones modernas de Bash 5.3 ejecutadas en el shell actual.
+
+## Redirecciones
+
+Se implementan:
+
+- `>`;
+- `>>`;
+- `<`;
+- `<>`;
+- `2>` y otros descriptores;
+- duplicación `2>&1`;
+- cierre de descriptores;
+- `&>`;
+- `&>>`;
+- heredocs;
+- here-strings;
+- descriptores asignados a variables, por ejemplo `{fd}>archivo`;
+- redirecciones sobre comandos compuestos.
+
+## Process substitution y coprocesos
+
+```bash
+diff <(comando1) <(comando2)
+coproc mi_proceso { comando; }
+```
+
+SST implementa process substitution y coprocesos usando mecanismos compatibles con Windows.
+
+## Job control
+
+Implementado:
+
+```text
+jobs
+fg
+bg
+wait
+wait -n
+disown
+kill
+```
+
+También reconoce job specs como `%1`, `%+`, `%-` y búsquedas por nombre.
+
+El control de jobs está adaptado a procesos y threads de Windows, por lo que no existe un controlling TTY POSIX idéntico al de Linux.
+
+## Scripts `.sh`
+
+SST reconoce scripts Bash/sh:
+
+```bash
+test.sh
+./test.sh
+sst.exe test.sh
+```
+
+En el estado actual de `main`, un script local Bash/sh puede ejecutarse directamente dentro del intérprete activo. Esto evita relanzar otra instancia de SST y permite que `read` utilice el transporte de entrada de la terminal actual.
+
+SST acepta deliberadamente un `.sh` del directorio actual por nombre, por ejemplo `test.sh`.
+
+## Builtins Bash disponibles
+
+```text
+:
+.
+[
+alias
+bg
+bind
+break
+builtin
+caller
+cd
+command
+compgen
+complete
+compopt
+continue
+declare
+dirs
+disown
+echo
+enable
+eval
+exec
+exit
+export
+false
+fc
+fg
+getopts
+hash
+help
+history
+jobs
+kill
+let
+local
+logout
+mapfile
+popd
+printf
+pushd
+pwd
+read
+readarray
+readonly
+return
+set
+shift
+shopt
+source
+suspend
+test
+times
+trap
+true
+type
+typeset
+ulimit
+umask
+unalias
+unset
+wait
+```
+
+Entre las funciones relevantes se encuentran:
+
+- `read -e` y `read -E`;
+- `source -p`;
+- `trap -P`;
+- `compgen -V`;
+- programmable completion con `complete`, `compgen` y `compopt`;
+- historial con `history` y `fc`;
+- bindings con `bind`;
+- `mapfile`/`readarray`;
+- `getopts`;
+- `hash`;
+- pila de directorios con `dirs`, `pushd`, `popd`.
+
+## Variables especiales
+
+SST implementa, entre otras:
+
+```text
+BASH_VERSION
+BASH_VERSINFO
+BASHPID
+PPID
+BASH_SUBSHELL
+BASH_ARGC
+BASH_ARGV
+BASH_ARGV0
+BASH_COMMAND
+BASH_SOURCE
+BASH_LINENO
+FUNCNAME
+PIPESTATUS
+BASH_ALIASES
+BASH_CMDS
+SHELLOPTS
+BASHOPTS
+RANDOM
+SRANDOM
+SECONDS
+EPOCHSECONDS
+EPOCHREALTIME
+BASH_MONOSECONDS
+```
+
+## Opciones `set -o`
+
+Reconocidas actualmente:
+
+```text
+allexport
+braceexpand
+emacs
+errexit
+errtrace
+functrace
+hashall
+histexpand
+history
+ignoreeof
+interactive-comments
+keyword
+monitor
+noclobber
+noexec
+noglob
+nolog
+notify
+nounset
+onecmd
+physical
+pipefail
+posix
+privileged
+verbose
+vi
+xtrace
+```
+
+## Opciones `shopt`
+
+Reconocidas actualmente:
+
+```text
+array_expand_once
+assoc_expand_once
+autocd
+bash_source_fullpath
+cdable_vars
+cdspell
+checkhash
+checkjobs
+checkwinsize
+cmdhist
+compat31
+compat32
+compat40
+compat41
+compat42
+compat43
+compat44
+compat50
+compat51
+compat52
+compat53
+complete_fullquote
+direxpand
+dirspell
+dotglob
+execfail
+expand_aliases
+extdebug
+extglob
+extquote
+failglob
+force_fignore
+globasciiranges
+globskipdots
+globstar
+gnu_errfmt
+histappend
+histreedit
+histverify
+hostcomplete
+huponexit
+inherit_errexit
+interactive_comments
+lastpipe
+lithist
+localvar_inherit
+localvar_unset
+login_shell
+mailwarn
+no_empty_cmd_completion
+nocaseglob
+nocasematch
+noexpand_translation
+nullglob
+patsub_replacement
+progcomp
+progcomp_alias
+promptvars
+restricted_shell
+shift_verbose
+sourcepath
+varredir_close
+xpg_echo
+```
+
+## Estado real de compatibilidad Bash 5.3
+
+La cobertura es amplia, pero **todavía no debe declararse equivalencia total con GNU Bash 5.3**.
+
+Pendientes o diferencias conocidas:
+
+| Área | Estado |
+|---|---|
+| `enable -f` / `enable -d` | No hay sistema de builtins cargables dinámicamente. |
+| GNU Readline completo | SST implementa edición, history, completion y bindings propios, pero no replica toda GNU Readline 8.3. |
+| `/dev/tcp/HOST/PORT` | No implementado actualmente. |
+| `/dev/udp/HOST/PORT` | No implementado actualmente. |
+| `test -u`, `test -g`, `test -k` | No tienen equivalente directo en NTFS y actualmente devuelven falso. |
+| `test -O`, `test -G` | Aproximados; Windows no usa el modelo POSIX de propietario/grupo. |
+| `test -x` | Aproximado al modelo de archivos de Windows. |
+| `umask` | SST mantiene el valor lógico, pero Windows no aplica permisos POSIX al crear archivos. |
+| `ulimit` | Mantiene los límites dentro del estado de la shell; no impone límites POSIX al proceso Windows. |
+| `suspend` | Emulación interactiva, no suspensión POSIX real de la shell. |
+| señales | Traducidas/adaptadas a procesos Windows; no existe equivalencia completa con las señales Unix. |
+| `disown -h` | No reproduce literalmente la semántica SIGHUP de Unix. |
+| controlling TTY | Windows/ConPTY no ofrece el mismo modelo de controlling terminal POSIX. |
+| conformidad exhaustiva | Existe una suite comparativa básica, pero todavía no se ha certificado toda la semántica contra GNU Bash 5.3. |
+
+---
+
+# Terminal nativa
+
+La interfaz gráfica de SST es una terminal Win32 propia e incluye:
+
+- barra de título personalizada;
+- controles propios de minimizar, maximizar y cerrar;
+- backdrop/transparencia en Windows compatible;
+- renderer VT;
+- scrollback;
+- selección con mouse;
+- Nerd Font privada embebida;
+- historial;
+- autocompletado;
+- soporte para TUIs;
+- clipboard.
+
+Atajos relevantes:
+
+- `Ctrl+C`: copia cuando existe una selección; sin selección conserva el uso de interrupción.
+- `Ctrl+V` / `Ctrl+Shift+V` / `Shift+Insert`: pegar.
+- `Ctrl+Insert`: copiar.
+
+---
+
+# Datos portables
+
+SST crea junto al ejecutable:
+
+```text
+config/
+data/
+```
+
+Entre los datos persistentes se encuentran:
+
+- `config/sstrc`: configuración de la shell;
+- inventario de dispositivos;
+- historial de presencia;
+- perfiles de proveedores de red;
+- perfiles de switches;
+- historial de comandos;
+- configuración y log de helix-sst.
+
+---
+
+# Estado general del proyecto
+
+### Funcional
+
+- terminal Win32 propia;
+- intérprete Bash nativo con cobertura amplia de Bash 5.3;
+- ejecución de scripts `.sh`;
+- utilidades Unix incluidas;
+- información y auditoría local de Windows;
+- diagnóstico de red;
+- escaneo y monitor de presencia;
+- inventario de dispositivos;
+- Wake-on-LAN;
+- dominio;
+- localización MAC → switch → puerto mediante SNMP;
+- tráfico por proceso mediante ETW;
+- configuración portable.
+
+### Pendiente o parcial
+
+- edición interactiva de helix-sst;
+- drivers reales de `net usage` para routers/AP/firewalls;
+- equivalencia completa con GNU Readline;
+- builtins dinámicos de Bash;
+- `/dev/tcp` y `/dev/udp`;
+- semántica Unix que no tiene equivalente directo en Windows;
+- suite exhaustiva de conformidad Bash.
+
+El documento de alcance y arquitectura está en:
+
+```text
+SHELL_SHOCK_TOOL_PLAN.md
+```
