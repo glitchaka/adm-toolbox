@@ -388,27 +388,9 @@ diag domain
 
 ## Editor integrado: helix-sst
 
-Shell Shock Tool integra `helix-sst 0.1.1`, basado en **Helix 25.07.1**.
+Shell Shock Tool incluye una integración en desarrollo de `helix-sst 0.1.1`, basada en **Helix 25.07.1**. **La edición interactiva todavía no se considera funcional en el estado actual de `main`**: el empaquetado, despliegue y puente PTY están implementados, pero el transporte de entrada/edición dentro del editor sigue pendiente de corrección.
 
-La guía está disponible dentro de la consola con `help helix`, `man helix` o
-`helix --help`. `helix --tutor` abre el tutorial incluido en el editor.
-
-Para crear un script: `helix mi-script.sh`, pulsa `i`, escribe el texto y pulsa
-`Esc`. Escribe `:wq` y pulsa Enter para guardar y regresar a la consola. Allí
-puedes ejecutarlo con `./mi-script.sh`. Helix abre en modo normal: pulsa `i`
-para escribir; la barra inferior indica el modo activo.
-
-Dentro del editor, `F1` abre la guía. `Esc`, `:bc`, Enter cierra la guía y vuelve
-al script. `Ctrl+V` pega en el cursor en modo inserción. `Ctrl+Q` aborta el editor
-si se bloquea y descarta los cambios sin guardar. La [guía completa](docs/helix-sst.txt)
-también se distribuye junto a la configuración portable.
-
-La integración responde a las consultas de cursor de ConPTY desde el arranque,
-transfiere su salida VT sin modificar saltos de línea, adapta el teclado al modo
-Win32 solicitado y conserva el código de salida del editor. La configuración
-personal en `config/helix-sst/config.toml` se conserva; los enlaces de integración
-se aplican mediante un archivo temporal por sesión. El registro de Helix queda
-en `config/helix-sst/helix.log`.
+Los comandos `helix` y `hx` están conectados al editor integrado, pero hasta corregir el transporte interactivo no debe darse por cerrada esta funcionalidad. La documentación de teclas y flujo de edición describe el comportamiento objetivo, no una garantía de funcionamiento del corte actual.
 
 ```bash
 helix
@@ -447,9 +429,11 @@ Implementado actualmente:
 - estado de dominio local/remoto;
 - localización MAC → switch → puerto mediante SNMP de solo lectura;
 - tráfico por proceso mediante ETW y detección del proceso foreground;
-- editor portable `helix-sst`.
+- integración portable `helix-sst` presente, con edición interactiva todavía pendiente de corrección.
 
 Pendiente o conocido en el estado actual:
+
+- corregir la edición interactiva de `helix-sst` y su transporte PTY/teclado;
 
 - corregir el `stdin` interactivo de scripts `.sh` lanzados desde la terminal Win32;
 - ampliar la suite de conformidad contra GNU Bash 5.3 antes de declarar compatibilidad completa;
