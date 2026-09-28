@@ -330,6 +330,25 @@ impl Interpreter {
         if interactive && !self.env.option_enabled("vi") {
             set_shell_option(&mut self.env, "emacs", true);
         }
+
+        if interactive {
+            let inputrc = {
+                let configured = self.env.get("INPUTRC");
+                if !configured.is_empty() {
+                    Some(PathBuf::from(configured))
+                } else {
+                    let home = self.env.get("HOME");
+                    let home = if home.is_empty() { self.env.get("USERPROFILE") } else { home };
+                    (!home.is_empty()).then(|| PathBuf::from(home).join(".inputrc"))
+                }
+            };
+            if let Some(path) = inputrc.filter(|path| path.is_file()) {
+                let _ = self.builtin_bind(&[
+                    "-f".to_owned(),
+                    path.to_string_lossy().into_owned(),
+                ]);
+            }
+        }
     }
 
     pub fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
@@ -445,10 +464,12 @@ impl Interpreter {
     pub fn complete_line(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
         let cursor = cursor.min(line.len());
         let before = &line[..cursor];
-        let start = before.rfind(|ch: char| ch.is_whitespace() || matches!(ch, ';' | '|' | '&' | '(' | ')'))
-            .map_or(0, |index| index + 1);
+        let wordbreaks = self.env.get("COMP_WORDBREAKS");
+        let start = before.rfind(|ch: char| {
+            ch.is_whitespace() || wordbreaks.contains(ch)
+        }).map_or(0, |index| index + 1);
         let prefix = &before[start..];
-        let words = split_shell_words_relaxed(before).unwrap_or_default();
+        let words = completion_words(before, &wordbreaks);
         let command = words.first().map(String::as_str).unwrap_or(prefix);
         self.env.set("COMP_LINE", line.to_owned());
         self.env.set("COMP_POINT", cursor.to_string());
@@ -459,7 +480,7 @@ impl Interpreter {
 
         if self.env.option_enabled("hostcomplete") {
             if let Some((left, host_prefix)) = prefix.rsplit_once('@') {
-                let mut hosts = host_completion_candidates(host_prefix);
+                let mut hosts = host_completion_candidates(host_prefix, &self.env.get("HOSTFILE"));
                 hosts = hosts.into_iter()
                     .map(|host| format!("{left}@{host}"))
                     .collect();
@@ -8208,15 +8229,25 @@ fn bash_keywords() -> &'static [&'static str] {
     ]
 }
 
-fn host_completion_candidates(prefix: &str) -> Vec<String> {
+fn host_completion_candidates(prefix: &str, hostfile: &str) -> Vec<String> {
     let mut hosts = Vec::new();
     if let Ok(host) = std::env::var("COMPUTERNAME") {
         hosts.push(host);
     }
 
-    #[cfg(windows)]
-    if let Some(root) = std::env::var_os("SystemRoot") {
-        let path = PathBuf::from(root).join("System32").join("drivers").join("etc").join("hosts");
+    let mut files = Vec::new();
+    if !hostfile.is_empty() {
+        files.push(PathBuf::from(hostfile));
+    } else {
+        #[cfg(windows)]
+        if let Some(root) = std::env::var_os("SystemRoot") {
+            files.push(PathBuf::from(root).join("System32").join("drivers").join("etc").join("hosts"));
+        }
+        #[cfg(not(windows))]
+        files.push(PathBuf::from("/etc/hosts"));
+    }
+
+    for path in files {
         if let Ok(contents) = fs::read_to_string(path) {
             for line in contents.lines() {
                 let content = line.split('#').next().unwrap_or("").trim();
@@ -8234,6 +8265,49 @@ fn host_completion_candidates(prefix: &str) -> Vec<String> {
     hosts.dedup();
     hosts
 }
+
+fn completion_words(input: &str, wordbreaks: &str) -> Vec<String> {
+    let mut words = Vec::new();
+    let mut current = String::new();
+    let mut single = false;
+    let mut double = false;
+    let mut escaped = false;
+
+    for ch in input.chars() {
+        if escaped {
+            current.push(ch);
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' && !single {
+            current.push(ch);
+            escaped = true;
+            continue;
+        }
+        if ch == '\'' && !double {
+            single = !single;
+            current.push(ch);
+            continue;
+        }
+        if ch == '"' && !single {
+            double = !double;
+            current.push(ch);
+            continue;
+        }
+        if !single && !double && (ch.is_whitespace() || wordbreaks.contains(ch)) {
+            if !current.is_empty() {
+                words.push(std::mem::take(&mut current));
+            }
+            continue;
+        }
+        current.push(ch);
+    }
+    if !current.is_empty() {
+        words.push(current);
+    }
+    words
+}
+
 
 fn completion_files(cwd: &Path, prefix: &str, directories_only: bool) -> Vec<String> {
     let typed = PathBuf::from(prefix);
