@@ -650,8 +650,8 @@ mod tests {
         let mut install = ensure_installed()?;
         let debug_dir = std::env::current_exe()?.parent().and_then(Path::parent)
             .context("directorio del binario de pruebas")?.to_path_buf();
-        install.launcher = debug_dir.join("adm-toolbox.exe");
-        anyhow::ensure!(install.launcher.is_file(), "Compila adm-toolbox antes de esta prueba");
+        install.launcher = debug_dir.join("sst.exe");
+        anyhow::ensure!(install.launcher.is_file(), "Compila sst antes de esta prueba");
         let tag = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
         let directory = debug_dir.join(format!("helix-live-{tag}"));
         fs::create_dir_all(&directory)?;
