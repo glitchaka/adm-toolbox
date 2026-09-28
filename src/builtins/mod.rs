@@ -4,6 +4,7 @@ mod config;
 mod editor;
 mod registry;
 mod system;
+mod sudo;
 mod unix;
 
 pub use admin::{
@@ -15,4 +16,5 @@ pub use config::{ConfigBuiltin, PathBuiltin};
 pub use editor::EditorBuiltin;
 pub use registry::CommandRegistry;
 pub use system::SystemBuiltin;
+pub use sudo::SudoBuiltin;
 pub use unix::{UNIX_COMMANDS, UnixBuiltin};
