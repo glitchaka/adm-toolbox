@@ -16,6 +16,15 @@ use app::ShellShockTool;
 
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
+
+    if args.first().map(String::as_str) == Some("--xilem") {
+        if let Err(error) = presentation::gui_xilem::run() {
+            eprintln!("Shell Shock Tool Xilem no pudo iniciarse: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
+
     #[cfg(windows)]
     if args.is_empty() || args.first().is_some_and(|arg| matches!(arg.as_str(), "--gui" | "--console")) {
         if let Err(error) = presentation::gui::run() {
