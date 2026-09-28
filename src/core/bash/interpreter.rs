@@ -1052,6 +1052,9 @@ impl Interpreter {
                 result.flow = FlowSignal::None;
                 result
             }
+            AstNode::Redirected { body, redirects } => {
+                self.execute_redirected(body, redirects, stdin)?
+            }
         };
 
         self.env.last_status = result.status;
@@ -1340,6 +1343,59 @@ impl Interpreter {
         self.env.set(format!("{variable}_PID"), pid.to_string());
         self.env.set_array(variable.to_owned(), vec![String::new(), String::new()]);
         Ok(ExecutionResult::success())
+    }
+
+    fn execute_redirected(
+        &mut self,
+        body: &AstNode,
+        redirects: &[super::ast::Redirect],
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
+        let mut local_stdin = stdin.map(ToOwned::to_owned);
+        for redirect in redirects {
+            match redirect.kind {
+                RedirectKind::Read | RedirectKind::ReadWrite => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    let path = self.resolve_path(&target);
+                    if redirect.kind == RedirectKind::ReadWrite && !path.exists() {
+                        OpenOptions::new().create(true).write(true).open(&path)?;
+                    }
+                    local_stdin = Some(fs::read(path)?);
+                }
+                RedirectKind::DupInput => {
+                    let target = self.expand_scalar(&redirect.target)?;
+                    if target == "-" {
+                        local_stdin = Some(Vec::new());
+                    } else if target != "0" {
+                        let fd = target.parse::<i32>()
+                            .map_err(|_| anyhow!("{}<&{}: descriptor inválido", redirect.fd, target))?;
+                        let Some(value) = self.host.read_fd(fd, '\0', None, None)? else {
+                            return Ok(ExecutionResult::from_parts(
+                                String::new(),
+                                format!("{}<&{}: descriptor no disponible\n", redirect.fd, target),
+                                1,
+                            ));
+                        };
+                        local_stdin = Some(value.into_bytes());
+                    }
+                }
+                RedirectKind::HereString => {
+                    let mut value = self.expand_scalar(&redirect.target)?;
+                    value.push('\n');
+                    local_stdin = Some(value.into_bytes());
+                }
+                _ => {}
+            }
+        }
+
+        let mut result = self.execute(body, local_stdin.as_deref())?;
+        let command = SimpleCommand {
+            words: Vec::new(),
+            redirects: redirects.to_vec(),
+        };
+        self.apply_output_redirects(&command, &mut result)?;
+        self.finalize_process_substitutions(&mut result)?;
+        Ok(result)
     }
 
     fn execute_simple(&mut self, command: &SimpleCommand, stdin: Option<&[u8]>) -> Result<ExecutionResult> {
@@ -7854,6 +7910,10 @@ fn render_ast(node: &AstNode) -> String {
         AstNode::FunctionDef { name, body } => format!("{name}() {{ {}; }}", render_ast(body)),
         AstNode::Group(body) => format!("{{ {}; }}", render_ast(body)),
         AstNode::Subshell(body) => format!("( {} )", render_ast(body)),
+        AstNode::Redirected { body, redirects } => {
+            let suffix = redirects.iter().map(render_redirect).collect::<Vec<_>>().join(" ");
+            if suffix.is_empty() { render_ast(body) } else { format!("{} {suffix}", render_ast(body)) }
+        }
     }
 }
 

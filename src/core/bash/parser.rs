@@ -104,34 +104,34 @@ impl Parser {
     }
 
     fn parse_command(&mut self) -> Result<AstNode> {
-        match self.peek() {
+        let mut node = match self.peek() {
             Token::Arithmetic(expression) => {
                 let expression = expression.clone();
                 self.pos += 1;
-                Ok(AstNode::ArithmeticCommand(expression))
+                AstNode::ArithmeticCommand(expression)
             }
-            Token::Word(word) if word == "coproc" => self.parse_coproc(),
-            Token::Word(word) if word == "if" => self.parse_if(),
-            Token::Word(word) if word == "for" => self.parse_for(),
-            Token::Word(word) if word == "select" => self.parse_select(),
-            Token::Word(word) if word == "while" || word == "until" => self.parse_while(),
-            Token::Word(word) if word == "case" => self.parse_case(),
-            Token::Word(word) if word == "[[" => self.parse_conditional(),
-            Token::Word(word) if word == "function" => self.parse_function_keyword(),
+            Token::Word(word) if word == "coproc" => self.parse_coproc()?,
+            Token::Word(word) if word == "if" => self.parse_if()?,
+            Token::Word(word) if word == "for" => self.parse_for()?,
+            Token::Word(word) if word == "select" => self.parse_select()?,
+            Token::Word(word) if word == "while" || word == "until" => self.parse_while()?,
+            Token::Word(word) if word == "case" => self.parse_case()?,
+            Token::Word(word) if word == "[[" => self.parse_conditional()?,
+            Token::Word(word) if word == "function" => self.parse_function_keyword()?,
             Token::LParen if self.tokens.get(self.pos + 1) == Some(&Token::LParen) => {
-                self.parse_arithmetic_command()
+                self.parse_arithmetic_command()?
             }
             Token::LParen => {
                 self.pos += 1;
                 let body = self.parse_list(&[])?;
                 self.expect_token(Token::RParen)?;
-                Ok(AstNode::Subshell(Box::new(body)))
+                AstNode::Subshell(Box::new(body))
             }
             Token::LBrace => {
                 self.pos += 1;
                 let body = self.parse_list(&[])?;
                 self.expect_token(Token::RBrace)?;
-                Ok(AstNode::Group(Box::new(body)))
+                AstNode::Group(Box::new(body))
             }
             Token::Word(name)
                 if self.tokens.get(self.pos + 1) == Some(&Token::LParen)
@@ -141,16 +141,50 @@ impl Parser {
                 self.pos += 3;
                 self.skip_semi();
                 let body = self.parse_function_body()?;
-                Ok(AstNode::FunctionDef { name, body: Box::new(body) })
+                AstNode::FunctionDef { name, body: Box::new(body) }
             }
             Token::Word(word)
                 if word.ends_with('=')
                     && self.tokens.get(self.pos + 1) == Some(&Token::LParen) =>
             {
-                self.parse_array_assignment()
+                self.parse_array_assignment()?
             }
-            _ => self.parse_simple(),
+            _ => return self.parse_simple(),
+        };
+
+        let redirects = self.parse_trailing_redirects()?;
+        if !redirects.is_empty() {
+            node = AstNode::Redirected {
+                body: Box::new(node),
+                redirects,
+            };
         }
+        Ok(node)
+    }
+
+    fn parse_trailing_redirects(&mut self) -> Result<Vec<Redirect>> {
+        let mut redirects = Vec::new();
+        while let Token::Redirect { fd, op } = self.peek().clone() {
+            self.pos += 1;
+            let target = self.take_word()?;
+            redirects.push(Redirect {
+                fd,
+                kind: match op {
+                    RedirectOp::Read => RedirectKind::Read,
+                    RedirectOp::Write => RedirectKind::Write,
+                    RedirectOp::Append => RedirectKind::Append,
+                    RedirectOp::DupInput => RedirectKind::DupInput,
+                    RedirectOp::DupOutput => RedirectKind::DupOutput,
+                    RedirectOp::HereString => RedirectKind::HereString,
+                    RedirectOp::ReadWrite => RedirectKind::ReadWrite,
+                    RedirectOp::Clobber => RedirectKind::Clobber,
+                    RedirectOp::BothWrite => RedirectKind::BothWrite,
+                    RedirectOp::BothAppend => RedirectKind::BothAppend,
+                },
+                target,
+            });
+        }
+        Ok(redirects)
     }
 
     fn parse_coproc(&mut self) -> Result<AstNode> {

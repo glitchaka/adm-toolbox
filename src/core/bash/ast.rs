@@ -61,6 +61,10 @@ pub enum AstNode {
     },
     Group(Box<AstNode>),
     Subshell(Box<AstNode>),
+    Redirected {
+        body: Box<AstNode>,
+        redirects: Vec<Redirect>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
