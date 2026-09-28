@@ -402,7 +402,34 @@ impl Interpreter {
                 'u' => out.push_str(&self.env.get("USERNAME")),
                 'v' => out.push_str("5.3"),
                 'V' => out.push_str("5.3.0"),
-                'w' => out.push_str(&self.env.cwd.to_string_lossy()),
+                'w' => {
+                    let mut display = self.env.cwd.to_string_lossy().into_owned();
+                    let home = self.env.get("HOME");
+                    let home = if home.is_empty() { self.env.get("USERPROFILE") } else { home };
+                    if !home.is_empty() {
+                        let home_path = Path::new(&home);
+                        if let Ok(relative) = self.env.cwd.strip_prefix(home_path) {
+                            display = if relative.as_os_str().is_empty() {
+                                "~".to_owned()
+                            } else {
+                                format!("~/{}", relative.to_string_lossy().replace('\\', "/"))
+                            };
+                        }
+                    }
+                    let trim = self.env.get("PROMPT_DIRTRIM").parse::<usize>().unwrap_or(0);
+                    if trim > 0 {
+                        let normalized = display.replace('\\', "/");
+                        let prefix = if normalized.starts_with("~/") { "~/" } else if normalized.starts_with('/') { "/" } else { "" };
+                        let body = normalized.strip_prefix(prefix).unwrap_or(&normalized);
+                        let parts = body.split('/').filter(|part| !part.is_empty()).collect::<Vec<_>>();
+                        if parts.len() > trim {
+                            display = format!("{prefix}.../{}", parts[parts.len() - trim..].join("/"));
+                        } else {
+                            display = normalized;
+                        }
+                    }
+                    out.push_str(&display);
+                },
                 'W' => out.push_str(self.env.cwd.file_name().and_then(|name| name.to_str()).unwrap_or("/")),
                 '!' | '#' => out.push_str(&(self.history_lines().len() + 1).to_string()),
                 '$' => out.push(if self.env.get("EUID") == "0" { '#' } else { '$' }),
@@ -553,6 +580,7 @@ impl Interpreter {
             .and_then(|duration| i64::try_from(duration.as_secs()).ok());
         let entry = HistoryEntry { timestamp, command: line.to_owned() };
         entries.push(entry.clone());
+        self.env.set("HISTCMD", entries.len().to_string());
 
         let histsize = self.env.get("HISTSIZE").parse::<usize>().unwrap_or(500);
         if entries.len() > histsize {
@@ -597,6 +625,8 @@ impl Interpreter {
     ) -> Result<(String, usize, String, String)> {
         self.env.set("READLINE_LINE", line.to_owned());
         self.env.set("READLINE_POINT", cursor.to_string());
+        self.env.set("READLINE_MARK", cursor.to_string());
+        self.env.set("READLINE_ARGUMENT", "1");
         let result = self.execute_text(command)?;
         let updated = self.env.get("READLINE_LINE");
         let point = self.env.get("READLINE_POINT").parse::<usize>()
@@ -2905,13 +2935,54 @@ impl Interpreter {
             ));
         }
 
-        let list = args.iter().any(|arg| arg == "-l");
-        let substitute = args.iter().any(|arg| arg == "-s");
-        let reverse = args.iter().any(|arg| arg == "-r");
-        let number_lines = !args.iter().any(|arg| arg == "-n");
-        let operands: Vec<&String> = args.iter().filter(|arg| !arg.starts_with('-')).collect();
+        let mut list = false;
+        let mut substitute = false;
+        let mut reverse = false;
+        let mut number_lines = true;
+        let mut editor: Option<String> = None;
+        let mut operands = Vec::new();
+        let mut index = 0usize;
 
-        let resolve = |value: Option<&&String>, default: usize| -> usize {
+        while index < args.len() {
+            let arg = &args[index];
+            if arg == "--" {
+                operands.extend(args[index + 1..].iter().cloned());
+                break;
+            }
+            if arg == "-e" {
+                index += 1;
+                let Some(value) = args.get(index) else {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        "fc: -e requiere editor\n".to_owned(),
+                        2,
+                    ));
+                };
+                editor = Some(value.clone());
+            } else if arg.starts_with('-')
+                && arg.len() > 1
+                && !arg[1..].chars().all(|ch| ch.is_ascii_digit())
+            {
+                for flag in arg[1..].chars() {
+                    match flag {
+                        'l' => list = true,
+                        'n' => number_lines = false,
+                        'r' => reverse = true,
+                        's' => substitute = true,
+                        _ => return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("fc: -{flag}: opción inválida\n"),
+                            2,
+                        )),
+                    }
+                }
+            } else {
+                operands.push(arg.clone());
+            }
+            index += 1;
+        }
+
+        let resolve = |value: Option<&String>, default: usize| -> usize {
             let Some(value) = value else { return default; };
             if let Ok(number) = value.parse::<isize>() {
                 if number < 0 {
@@ -2923,29 +2994,46 @@ impl Interpreter {
                 return (number as usize).clamp(1, history.len());
             }
             history.iter()
-                .position(|line| line.starts_with(value.as_str()))
+                .rposition(|line| line.starts_with(value))
                 .map(|index| index + 1)
                 .unwrap_or(default)
         };
 
         if substitute {
-            let mut command = history.last().cloned().unwrap_or_default();
-            if let Some((from, to)) = operands.first().and_then(|value| value.split_once('=')) {
-                command = command.replacen(from, to, 1);
+            let mut substitution = None;
+            let mut selector = None;
+            for operand in &operands {
+                if substitution.is_none() && operand.contains('=') {
+                    substitution = operand.split_once('=')
+                        .map(|(from, to)| (from.to_owned(), to.to_owned()));
+                } else if selector.is_none() {
+                    selector = Some(operand);
+                }
+            }
+            let position = resolve(selector, history.len());
+            let mut command = history.get(position.saturating_sub(1)).cloned().unwrap_or_default();
+            if let Some((from, to)) = substitution {
+                command = command.replacen(&from, &to, 1);
             }
             return self.execute_text(&command);
         }
 
-        let first = resolve(operands.first(), history.len().saturating_sub(15).max(1));
-        let last = resolve(operands.get(1), history.len());
+        let default_first = if list {
+            history.len().saturating_sub(15).max(1)
+        } else {
+            history.len()
+        };
+        let first = resolve(operands.first(), default_first);
+        let last = resolve(operands.get(1), if list { history.len() } else { first });
+
+        let mut rows: Vec<(usize, String)> = (first.min(last)..=first.max(last))
+            .filter_map(|number| history.get(number - 1).cloned().map(|line| (number, line)))
+            .collect();
+        if reverse || first > last {
+            rows.reverse();
+        }
 
         if list {
-            let mut rows: Vec<(usize, String)> = (first.min(last)..=first.max(last))
-                .filter_map(|number| history.get(number - 1).cloned().map(|line| (number, line)))
-                .collect();
-            if reverse || first > last {
-                rows.reverse();
-            }
             let stdout = rows.into_iter()
                 .map(|(number, line)| {
                     if number_lines { format!("{number}\t{line}\n") } else { format!("{line}\n") }
@@ -2954,8 +3042,51 @@ impl Interpreter {
             return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
         }
 
-        let command = history.get(first.saturating_sub(1)).cloned().unwrap_or_default();
-        self.execute_text(&command)
+        let mut source = rows.into_iter().map(|(_, line)| line).collect::<Vec<_>>().join("\n");
+        let selected_editor = editor
+            .or_else(|| {
+                let value = self.env.get("FCEDIT");
+                (!value.is_empty()).then_some(value)
+            })
+            .or_else(|| {
+                let value = self.env.get("EDITOR");
+                (!value.is_empty()).then_some(value)
+            })
+            .unwrap_or_else(|| "vi".to_owned());
+
+        if selected_editor != "-" {
+            let path = std::env::temp_dir().join(format!(
+                "sst-fc-{}-{}.sh",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|duration| duration.as_nanos())
+                    .unwrap_or(0)
+            ));
+            fs::write(&path, &source)?;
+            let editor_words = split_shell_words_relaxed(&selected_editor)
+                .unwrap_or_else(|_| vec![selected_editor.clone()]);
+            let Some((program, editor_args)) = editor_words.split_first() else {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    "fc: editor vacío\n".to_owned(),
+                    1,
+                ));
+            };
+            let mut edit_args = editor_args.to_vec();
+            edit_args.push(path.to_string_lossy().into_owned());
+            let edit_result = self.execute_command_direct(program, &edit_args, None)?;
+            if edit_result.status != 0 {
+                let _ = fs::remove_file(&path);
+                return Ok(edit_result);
+            }
+            source = fs::read_to_string(&path)?;
+            let _ = fs::remove_file(&path);
+        }
+
+        let mut result = self.execute_text(&source)?;
+        result.stdout = format!("{source}\n{}", result.stdout);
+        Ok(result)
     }
 
     fn builtin_bind(&mut self, args: &[String]) -> Result<ExecutionResult> {
@@ -6721,9 +6852,15 @@ fn set_shell_option(env: &mut ShellEnvironment, name: &str, enabled: bool) {
         if name == "posix" {
             env.shopt_options.insert("inherit_errexit".to_owned());
             env.shopt_options.insert("expand_aliases".to_owned());
+            env.vars.insert("POSIXLY_CORRECT".to_owned(), "y".to_owned());
+            env.exported.insert("POSIXLY_CORRECT".to_owned(), "y".to_owned());
         }
     } else {
         env.shell_options.remove(name);
+        if name == "posix" {
+            env.vars.remove("POSIXLY_CORRECT");
+            env.exported.remove("POSIXLY_CORRECT");
+        }
     }
 }
 

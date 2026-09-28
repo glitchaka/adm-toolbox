@@ -82,6 +82,10 @@ impl ShellEnvironment {
         vars.entry("BASH_COMPAT".to_owned()).or_insert_with(|| "5.3".to_owned());
         vars.entry("HISTSIZE".to_owned()).or_insert_with(|| "500".to_owned());
         vars.entry("HISTFILESIZE".to_owned()).or_insert_with(|| "500".to_owned());
+        vars.entry("COMP_WORDBREAKS".to_owned())
+            .or_insert_with(|| " \t\n\"'><=;|&(:".to_owned());
+        vars.entry("HISTTIMEFORMAT".to_owned()).or_default();
+        vars.entry("PROMPT_DIRTRIM".to_owned()).or_insert_with(|| "0".to_owned());
         let shlvl = vars.get("SHLVL")
             .and_then(|value| value.parse::<u32>().ok())
             .unwrap_or(0)
@@ -217,7 +221,7 @@ impl ShellEnvironment {
 
     pub fn get(&self, name: &str) -> String {
         match name {
-            "0" => self.script_name.clone(),
+            "0" | "BASH_ARGV0" => self.script_name.clone(),
             "?" => self.last_status.to_string(),
             "#" => self.positional.len().to_string(),
             "@" => self.positional.join(" "),
@@ -339,6 +343,13 @@ impl ShellEnvironment {
 
     pub fn set(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
         let original = name.into();
+        if original == "BASH_ARGV0" {
+            if self.readonly.contains("BASH_ARGV0") { return false; }
+            let value = value.into();
+            self.script_name = value.clone();
+            self.vars.insert("BASH_ARGV0".to_owned(), value);
+            return true;
+        }
         let name = self.dereference_name(&original);
         if self.readonly.contains(&name) { return false; }
         if self.shopt_options.contains("restricted_shell")

@@ -303,6 +303,13 @@ fn run_cli(args: &[String]) -> Result<i32> {
     let (mut engine, command_names, paths) = composition::build_engine()?;
     engine.set_interactive(invocation.interactive);
     apply_invocation_options(engine.as_mut(), &invocation)?;
+    if let Some(command) = invocation.command.as_ref() {
+        let assignment = format!("BASH_EXECUTION_STRING={}", shell_quote(command));
+        let result = engine.execute(&assignment)?;
+        if result.status != 0 {
+            anyhow::bail!("{}", result.stderr.trim());
+        }
+    }
     load_bash_startup(engine.as_mut(), &invocation)?;
 
     if invocation.interactive && invocation.command.is_none() && invocation.operands.is_empty() && !invocation.stdin_script {
