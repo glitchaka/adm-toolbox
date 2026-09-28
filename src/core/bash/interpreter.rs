@@ -2660,7 +2660,7 @@ impl Interpreter {
                     }
                     "edit" => {
                         let edit_args = vec!["edit".to_owned()];
-                        self.host.execute_builtin("adm-config", &edit_args, &self.env.cwd, stdin)?
+                        self.host.execute_builtin("sst-config", &edit_args, &self.env.cwd, stdin)?
                             .unwrap_or_else(|| ExecutionResult::from_parts(String::new(), "config edit: builtin no disponible\n".to_owned(), 127))
                     }
                     _ => return Ok(None),
