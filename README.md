@@ -113,7 +113,7 @@ test.sh
 adm-toolbox.exe test.sh
 ```
 
-**Limitación conocida de v0.1.4:** los scripts lanzados desde la shell todavía se despachan mediante una segunda instancia de `adm-toolbox.exe`. En la terminal Win32 propia, un script que necesite entrada interactiva mediante `read` puede fallar al heredar `stdin` con `Controlador no válido (os error 6)`. El reconocimiento y despacho de scripts está implementado; el puente de entrada interactiva de ese proceso hijo sigue pendiente de corrección.
+En el estado actual de `main`, los scripts Bash/sh locales se ejecutan directamente en el intérprete activo de Shell Shock Tool. Esto permite que `read` y otras operaciones interactivas utilicen la terminal Win32 de la sesión sin relanzar otra instancia del ejecutable.
 
 ### Diferencias deliberadas o pendientes frente a GNU Bash 5.3
 
@@ -435,7 +435,6 @@ Pendiente o conocido en el estado actual:
 
 - corregir la edición interactiva de `helix-sst` y su transporte PTY/teclado;
 
-- corregir el `stdin` interactivo de scripts `.sh` lanzados desde la terminal Win32;
 - ampliar la suite de conformidad contra GNU Bash 5.3 antes de declarar compatibilidad completa;
 - proveedores reales de `net usage` para obtener consumo por dispositivo desde router/AP/firewall;
 - verificación Authenticode;
