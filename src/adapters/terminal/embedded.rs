@@ -136,7 +136,7 @@ impl EmbeddedSession {
                                     io::write(result.stderr.as_bytes())?;
                                     if result.exit_requested { break; }
                                 }
-                                Err(error) => io::write(format!("adm: {error}\n").as_bytes())?,
+                                Err(error) => io::write(format!("sst: {error}\n").as_bytes())?,
                             }
                             *worker_bindings.lock().unwrap_or_else(|error| error.into_inner()) = engine.readline_bindings();
                             let (prompt_stdout, prompt_stderr, bash_prompt) = engine.prepare_prompt(false)?;
