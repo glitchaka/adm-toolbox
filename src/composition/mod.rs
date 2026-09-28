@@ -102,7 +102,10 @@ pub fn build_engine() -> Result<(Box<dyn crate::core::ports::ShellEngine>, Vec<S
     let wol_sender: Arc<dyn WakeOnLanSender> = Arc::new(UdpWakeOnLanSender);
     let editor: Arc<dyn TextEditor> = Arc::new(HelixSstEditor);
 
-    let device_service = Arc::new(DeviceService::new(Arc::clone(&devices)));
+    let device_service = Arc::new(DeviceService::new(
+        Arc::clone(&devices),
+        Arc::clone(&presence),
+    ));
     let domain_service = Arc::new(DomainService::new(domain_probe));
     let system_service = Arc::new(SystemService::new(Arc::clone(&terminal)));
     let unix_service = Arc::new(UnixService);
