@@ -109,7 +109,7 @@ impl ShellEnvironment {
         );
         arrays.insert("GROUPS".to_owned(), vec!["0".to_owned()]);
         arrays.insert("FUNCNAME".to_owned(), vec!["main".to_owned()]);
-        arrays.insert("BASH_SOURCE".to_owned(), vec!["adm-toolbox".to_owned()]);
+        arrays.insert("BASH_SOURCE".to_owned(), vec!["sst".to_owned()]);
         arrays.insert("BASH_LINENO".to_owned(), vec!["0".to_owned()]);
         arrays.insert("BASH_ARGC".to_owned(), vec!["0".to_owned()]);
         arrays.insert("BASH_ARGV".to_owned(), Vec::new());
@@ -186,7 +186,7 @@ impl ShellEnvironment {
             last_status: 0,
             last_background_pid: None,
             positional: Vec::new(),
-            script_name: "adm-toolbox".to_owned(),
+            script_name: "sst".to_owned(),
             local_scopes: Vec::new(),
             local_shell_options: Vec::new(),
             started_at: Instant::now(),
