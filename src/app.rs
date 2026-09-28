@@ -2,11 +2,11 @@ use anyhow::Result;
 
 use crate::{composition, presentation::shell::ShellSession};
 
-pub struct AdmToolbox {
+pub struct ShellShockTool {
     shell: ShellSession,
 }
 
-impl AdmToolbox {
+impl ShellShockTool {
     pub fn new() -> Result<Self> {
         Ok(Self {
             shell: composition::build_shell()?,
