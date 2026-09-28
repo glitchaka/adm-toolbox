@@ -8,6 +8,15 @@ use std::{
 
 use sysinfo::{Disks, Pid, System};
 
+#[cfg(windows)]
+use windows_sys::Win32::{
+    Foundation::{CloseHandle, GetLastError},
+    System::Threading::{
+        GetExitCodeProcess, OpenProcess, TerminateProcess,
+        PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_TERMINATE,
+    },
+};
+
 use crate::{
     core::{
         CommandOutput,
@@ -711,10 +720,10 @@ fn uname(args: &[String]) -> anyhow::Result<CommandOutput> {
 fn kill_process(args: &[String]) -> anyhow::Result<CommandOutput> {
     if args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
         return Ok(CommandOutput::ok(
-            "sys kill — termina un proceso de Windows\n\
+            "sys kill — termina un proceso mediante la API Win32\n\
              uso:\n\
                sys kill PID          termina exactamente ese PID\n\
-               sys kill PID --tree   termina el PID y su árbol de procesos\n"
+               sys kill PID --tree   termina el PID y sus descendientes\n"
         ));
     }
 
@@ -742,50 +751,27 @@ fn kill_process(args: &[String]) -> anyhow::Result<CommandOutput> {
     let process_name = process.name().to_string_lossy().into_owned();
     let tree = args.iter().any(|arg| matches!(arg.as_str(), "--tree" | "-t"));
 
-    let mut command = Command::new("taskkill.exe");
-    command.args(["/PID", &pid_value.to_string(), "/F"]);
     if tree {
-        command.arg("/T");
-    }
+        let mut descendants = process_descendants(&system, pid);
+        descendants.reverse();
 
-    let output = command.output()?;
-    if !output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        let detail = if !stderr.trim().is_empty() {
-            stderr.trim()
-        } else {
-            stdout.trim()
-        };
-
-        return Ok(CommandOutput::error(
-            if detail.is_empty() {
-                format!("kill: Windows no pudo terminar {pid_value} ({process_name})")
-            } else {
-                format!(
-                    "kill: Windows no pudo terminar {pid_value} ({process_name}): {detail}"
-                )
-            },
-            output.status.code().unwrap_or(1),
-        ));
-    }
-
-    let mut terminated = false;
-    for _ in 0..10 {
-        let mut verify = System::new_all();
-        verify.refresh_processes(sysinfo::ProcessesToUpdate::Some(&[pid]), true);
-        if verify.process(pid).is_none() {
-            terminated = true;
-            break;
+        for child in descendants {
+            if let Err(error) = terminate_pid_native(child.as_u32()) {
+                return Ok(CommandOutput::error(
+                    format!(
+                        "kill: no se pudo terminar el proceso hijo {} de {}: {error}",
+                        child.as_u32(),
+                        pid_value
+                    ),
+                    1,
+                ));
+            }
         }
-        std::thread::sleep(Duration::from_millis(50));
     }
 
-    if !terminated {
+    if let Err(error) = terminate_pid_native(pid_value) {
         return Ok(CommandOutput::error(
-            format!(
-                "kill: Windows aceptó la terminación, pero el PID {pid_value} ({process_name}) sigue activo"
-            ),
+            format!("kill: no se pudo terminar {pid_value} ({process_name}): {error}"),
             1,
         ));
     }
@@ -796,4 +782,77 @@ fn kill_process(args: &[String]) -> anyhow::Result<CommandOutput> {
         process_name,
         if tree { " (process tree)" } else { "" }
     )))
+}
+
+fn process_descendants(system: &System, root: Pid) -> Vec<Pid> {
+    let mut result = Vec::new();
+    let mut pending = vec![root];
+
+    while let Some(parent) = pending.pop() {
+        let children: Vec<Pid> = system
+            .processes()
+            .iter()
+            .filter_map(|(pid, process)| (process.parent() == Some(parent)).then_some(*pid))
+            .collect();
+
+        for child in children {
+            result.push(child);
+            pending.push(child);
+        }
+    }
+
+    result
+}
+
+#[cfg(windows)]
+fn terminate_pid_native(pid: u32) -> anyhow::Result<()> {
+    const STILL_ACTIVE_CODE: u32 = 259;
+
+    unsafe {
+        let handle = OpenProcess(
+            PROCESS_TERMINATE | PROCESS_QUERY_LIMITED_INFORMATION,
+            0,
+            pid,
+        );
+
+        if handle.is_null() {
+            anyhow::bail!("OpenProcess falló con error Win32 {}", GetLastError());
+        }
+
+        if TerminateProcess(handle, 1) == 0 {
+            let error = GetLastError();
+            CloseHandle(handle);
+            anyhow::bail!("TerminateProcess falló con error Win32 {error}");
+        }
+
+        let mut terminated = false;
+        for _ in 0..20 {
+            let mut exit_code = STILL_ACTIVE_CODE;
+            if GetExitCodeProcess(handle, &mut exit_code) == 0 {
+                let error = GetLastError();
+                CloseHandle(handle);
+                anyhow::bail!("GetExitCodeProcess falló con error Win32 {error}");
+            }
+
+            if exit_code != STILL_ACTIVE_CODE {
+                terminated = true;
+                break;
+            }
+
+            std::thread::sleep(Duration::from_millis(25));
+        }
+
+        CloseHandle(handle);
+
+        if !terminated {
+            anyhow::bail!("el proceso sigue activo después de TerminateProcess");
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(not(windows))]
+fn terminate_pid_native(pid: u32) -> anyhow::Result<()> {
+    anyhow::bail!("la terminación nativa por PID solo está disponible en Windows: {pid}")
 }
