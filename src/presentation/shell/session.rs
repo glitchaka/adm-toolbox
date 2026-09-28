@@ -114,7 +114,7 @@ impl ShellSession {
                                 self.running = false;
                             }
                         }
-                        Err(error) => eprintln!("adm: {error}"),
+                        Err(error) => eprintln!("sst: {error}"),
                     }
                 }
                 Err(ReadlineError::Interrupted) => {
