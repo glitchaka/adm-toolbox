@@ -5938,6 +5938,34 @@ impl Interpreter {
             }
         }
 
+        // Shell Shock Tool deliberately accepts a Bash/sh script from the
+        // current directory by bare name (for example, "test.sh"). This
+        // preserves the native script-launch behavior that predates the stricter
+        // PATH/EXECIGNORE resolver while keeping ordinary unknown commands under
+        // normal PATH lookup.
+        if !name.contains('/') && !name.contains('\\') {
+            let candidate = self.env.cwd.join(name);
+            if candidate.is_file() {
+                let sh_extension = candidate
+                    .extension()
+                    .and_then(|value| value.to_str())
+                    .is_some_and(|value| value.eq_ignore_ascii_case("sh"));
+                let bash_shebang = if sh_extension {
+                    true
+                } else {
+                    fs::read(&candidate).ok().is_some_and(|bytes| {
+                        let first = bytes.split(|byte| *byte == b'\n').next().unwrap_or(&[]);
+                        let shebang = String::from_utf8_lossy(first).to_ascii_lowercase();
+                        shebang.starts_with("#!")
+                            && (shebang.contains("bash") || shebang.contains("/sh"))
+                    })
+                };
+                if bash_shebang {
+                    return Ok(Some(name.to_owned()));
+                }
+            }
+        }
+
         // Commands containing an explicit path are not PATH search results and
         // therefore are not filtered by EXECIGNORE.
         if name.contains('/') || name.contains('\\') {
