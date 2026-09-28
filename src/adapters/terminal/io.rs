@@ -57,6 +57,18 @@ pub fn write(bytes: &[u8]) -> Result<()> {
         Ok(())
     })
 }
+/// ConPTY already emits VT output with its own cursor and CR/LF handling.
+pub fn write_raw(bytes: &[u8]) -> Result<()> {
+    WINDOW.with(|slot| -> Result<()> {
+        if let Some(io) = slot.borrow().as_ref() { io.output.send(bytes.to_vec())?; }
+        else {
+            let mut output = std::io::stdout().lock();
+            output.write_all(bytes)?;
+            output.flush()?;
+        }
+        Ok(())
+    })
+}
 pub fn size() -> Result<(u16,u16)> {
     WINDOW.with(|slot| if let Some(io) = slot.borrow().as_ref() {
         Ok(*io.size.lock().unwrap_or_else(|e| e.into_inner()))

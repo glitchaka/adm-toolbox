@@ -386,7 +386,27 @@ diag domain
 
 ## Editor integrado: helix-sst
 
-Shell Shock Tool integra `helix-sst 0.1.0`, basado en **Helix 25.07.1**.
+Shell Shock Tool integra `helix-sst 0.1.1`, basado en **Helix 25.07.1**.
+
+La guía está disponible dentro de la consola con `help helix`, `man helix` o
+`helix --help`. `helix --tutor` abre el tutorial incluido en el editor.
+
+Para crear un script: `helix mi-script.sh`, pulsa `i`, escribe el texto y pulsa
+`Esc`. Escribe `:wq` y pulsa Enter para guardar y regresar a la consola. Allí
+puedes ejecutarlo con `./mi-script.sh`. Helix abre en modo normal: pulsa `i`
+para escribir; la barra inferior indica el modo activo.
+
+Dentro del editor, `F1` abre la guía. `Esc`, `:bc`, Enter cierra la guía y vuelve
+al script. `Ctrl+V` pega en el cursor en modo inserción. `Ctrl+Q` aborta el editor
+si se bloquea y descarta los cambios sin guardar. La [guía completa](docs/helix-sst.txt)
+también se distribuye junto a la configuración portable.
+
+La integración responde a las consultas de cursor de ConPTY desde el arranque,
+transfiere su salida VT sin modificar saltos de línea, adapta el teclado al modo
+Win32 solicitado y conserva el código de salida del editor. La configuración
+personal en `config/helix-sst/config.toml` se conserva; los enlaces de integración
+se aplican mediante un archivo temporal por sesión. El registro de Helix queda
+en `config/helix-sst/helix.log`.
 
 ```bash
 helix

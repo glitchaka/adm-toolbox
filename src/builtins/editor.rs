@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::{
     core::{CommandContext, CommandOutput, ports::TextEditor},
-    presentation::helix_sst::{HELIX_SST_VERSION, HELIX_UPSTREAM_VERSION},
+    presentation::helix_sst::{HELIX_SST_VERSION, HELIX_UPSTREAM_VERSION, HELP},
 };
 
 use super::BuiltinCommand;
@@ -25,11 +25,11 @@ impl BuiltinCommand for EditorBuiltin {
     }
 
     fn aliases(&self) -> &'static [&'static str] {
-        &["hx"]
+        &["hx", "helix-sst"]
     }
 
     fn help(&self) -> &'static str {
-        "helix [FILE...] — helix-sst, integración portable basada en Helix 25.07.1"
+        HELP
     }
 
     fn execute(
@@ -38,6 +38,9 @@ impl BuiltinCommand for EditorBuiltin {
         args: &[String],
         context: CommandContext<'_>,
     ) -> Result<CommandOutput> {
+        if args.first().is_some_and(|arg| matches!(arg.as_str(), "--help" | "-h" | "--guide")) {
+            return Ok(CommandOutput::ok(HELP));
+        }
         if args.iter().any(|arg| matches!(arg.as_str(), "--version" | "-V")) {
             return Ok(CommandOutput::ok(format!(
                 "helix-sst {HELIX_SST_VERSION}\nBased on Helix {HELIX_UPSTREAM_VERSION}\nUpstream: helix-editor/helix\nLicense: MPL-2.0\n"
@@ -50,7 +53,12 @@ impl BuiltinCommand for EditorBuiltin {
             )));
         }
 
-        self.editor.edit(args, context.cwd)?;
-        Ok(CommandOutput::ok(""))
+        let status = self.editor.edit(args, context.cwd)?;
+        let stderr = match status {
+            0 => String::new(),
+            130 => "helix-sst: editor abortado; los cambios sin guardar se descartaron.\n".to_owned(),
+            _ => format!("helix-sst terminó con código {status}. Revisa config/helix-sst/helix.log; ayuda: help helix.\n"),
+        };
+        Ok(CommandOutput { status, stdout: String::new(), stderr })
     }
 }

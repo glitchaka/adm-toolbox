@@ -1,0 +1,63 @@
+helix [ARCHIVO...] — editor de scripts integrado en Shell Shock Tool
+
+PRIMEROS PASOS
+
+  helix mi-script.sh      Abre el archivo o crea un buffer nuevo.
+  hx mi-script.sh         Hace lo mismo.
+  helix --tutor           Abre el tutorial interactivo incluido en Helix.
+  helix --help            Muestra esta guía sin abrir el editor.
+  help helix             Muestra esta guía desde la consola.
+
+Helix es un editor modal. Al abrirlo estás en modo NORMAL: las letras son
+órdenes del editor. Pulsa i para entrar en modo INSERTAR y escribir texto.
+La barra inferior indica NORMAL, INSERTAR o SELECCIÓN (SST NOR, SST INS y
+SST SEL si conservas la configuración de una versión anterior).
+
+CREAR, GUARDAR Y EJECUTAR UN SCRIPT
+
+  1. En el prompt escribe: helix mi-script.sh
+  2. Pulsa i y escribe, o pega con Ctrl+V:
+
+       #!/usr/bin/env bash
+       read -p '¿Cómo te llamas? ' nombre
+       printf 'Hola, %s\n' "$nombre"
+
+  3. Pulsa Esc para volver a NORMAL.
+  4. Escribe :w y pulsa Enter para guardar.
+  5. Escribe :q y pulsa Enter para regresar al prompt.
+     También puedes usar :wq seguido de Enter para guardar y salir.
+  6. Desde Shell Shock Tool ejecuta: ./mi-script.sh
+
+TECLAS Y ÓRDENES ESENCIALES
+
+  i                  Entrar en modo INSERTAR.
+  Esc                Volver a NORMAL; cerrar un menú o cancelar una orden.
+  Flechas            Mover el cursor.
+  Backspace / Supr   Borrar texto en modo INSERTAR.
+  Ctrl+V             Pegar en la posición del cursor en modo INSERTAR.
+  u                  Deshacer en modo NORMAL.
+  Ctrl+r             Rehacer en modo NORMAL.
+  /texto, Enter      Buscar en modo NORMAL; n avanza al siguiente resultado.
+  :w, Enter          Guardar el archivo actual.
+  :w otro.sh, Enter  Guardar con otro nombre.
+  :q, Enter          Salir; si hay cambios sin guardar, Helix lo advierte.
+  :q!, Enter         Salir descartando los cambios sin guardar.
+  :wq, Enter         Guardar y salir.
+  F1                 Abrir esta guía dentro del editor.
+  :bc, Enter         Cerrar el buffer de la guía y volver al script.
+  Ctrl+Q             Abortar el editor si queda bloqueado; no guarda cambios.
+
+Las órdenes que empiezan por : se escriben después de pulsar Esc.
+Ctrl+C no reemplaza a :q. Los comandos de shell se escriben al volver al prompt.
+
+CONFIGURACIÓN Y DIAGNÓSTICO
+
+  helix --version    Versión de la integración y de Helix.
+  helix --credits    Créditos y licencia.
+
+La configuración se conserva junto al ejecutable, en config/helix-sst/config.toml.
+El registro del editor está en config/helix-sst/helix.log.
+Los archivos se guardan en el directorio desde el que abriste el editor, salvo
+que escribas una ruta explícita. No necesitas abrir Windows Terminal.
+
+Helix upstream 25.07.1 · https://helix-editor.com · MPL-2.0

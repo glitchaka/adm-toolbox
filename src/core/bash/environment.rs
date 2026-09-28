@@ -42,6 +42,7 @@ pub struct ShellEnvironment {
     pub uppercase_vars: HashSet<String>,
     pub lowercase_vars: HashSet<String>,
     pub trace_vars: HashSet<String>,
+    disabled_special_vars: HashSet<String>,
     pub shell_options: HashSet<String>,
     pub shopt_options: HashSet<String>,
     pub traps: HashMap<String, String>,

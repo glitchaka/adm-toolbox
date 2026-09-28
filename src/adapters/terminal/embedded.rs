@@ -1,5 +1,5 @@
 //! In-process interpreter session. The window talks to a Rust worker through channels.
-use std::{collections::HashMap, fs, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread, time::{Duration, Instant}};
+use std::{collections::HashMap, fs, path::PathBuf, sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}, mpsc}, thread, time::{Duration, Instant}};
 use anyhow::Result;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use super::io::{self, WindowIo};
@@ -193,6 +193,15 @@ impl EmbeddedSession {
     pub fn send_raw_key(&self, key: KeyEvent) -> Result<()> {
         self.keys.send(Event::Key(key))?;
         Ok(())
+    }
+
+    pub fn paste(&mut self, text: &str) -> Result<()> {
+        if self.raw_mode() {
+            self.keys.send(Event::Paste(text.replace("\r\n", "\n")))?;
+            Ok(())
+        } else {
+            self.write(text.replace("\r\n", "\r").replace('\n', "\r").as_bytes())
+        }
     }
 
     pub fn force_abort(&self) {
@@ -394,7 +403,7 @@ impl EmbeddedSession {
                 KeyCode::Char('d') if event.modifiers.contains(KeyModifiers::CONTROL) && self.line.is_empty() => {
                     self.busy.store(true, Ordering::SeqCst);
                     self.commands.send(WorkerRequest::Execute(
-                        "__SST_EOF_CHECK=:; if [[ -o ignoreeof ]]; then (( __SST_IGNOREEOF += 1 )); if [[ $__SST_IGNOREEOF -ge ${IGNOREEOF:-10} ]]; then exit; else echo 'Use "exit" to leave the shell.'; fi; else exit; fi".to_owned()
+                        r#"__SST_EOF_CHECK=:; if [[ -o ignoreeof ]]; then (( __SST_IGNOREEOF += 1 )); if [[ $__SST_IGNOREEOF -ge ${IGNOREEOF:-10} ]]; then exit; else echo 'Use "exit" to leave the shell.'; fi; else exit; fi"#.to_owned()
                     ))?;
                 }
                 KeyCode::Char('l') if event.modifiers.contains(KeyModifiers::CONTROL) => self.emit("\x1b[2J\x1b[H"),

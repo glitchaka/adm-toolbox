@@ -624,12 +624,7 @@ unsafe fn paste(hwnd: HWND, state: &mut Terminal) {
                 let text = String::from_utf16_lossy(&slice[..len]);
                 GlobalUnlock(handle);
 
-                let text = text.replace("\r\n", "\r").replace('\n', "\r");
-                if state.parser.screen().bracketed_paste() {
-                    state.input(format!("\x1b[200~{text}\x1b[201~").as_bytes());
-                } else {
-                    state.input(text.as_bytes());
-                }
+                let _ = state.pty.paste(&text);
             }
         }
 
@@ -722,6 +717,9 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
             }
 
             WM_SIZE => {
+                // A minimized window has no usable viewport; retain the editor's
+                // last size until Windows supplies its restored dimensions.
+                if wp == SIZE_MINIMIZED as usize { return 0; }
                 let width = (lp as u32 & 0xffff) as i32;
                 let height = ((lp as u32 >> 16) & 0xffff) as i32;
                 let cols = ((width - 2 * PAD) / state.cell_width).clamp(2, 500) as u16;
@@ -768,9 +766,15 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                 0
             }
 
-            WM_KEYDOWN => {
-                let ctrl = GetKeyState(VK_CONTROL as i32) < 0;
+            WM_KEYDOWN | WM_SYSKEYDOWN => {
+                // A previous shortcut without WM_CHAR (e.g. Shift+Insert) must
+                // not swallow the first character typed after it.
+                state.suppress_char = false;
+                let alt = GetKeyState(VK_MENU as i32) < 0;
+                let altgr = GetKeyState(VK_RMENU as i32) < 0 && GetKeyState(VK_CONTROL as i32) < 0;
+                let ctrl = GetKeyState(VK_CONTROL as i32) < 0 && !altgr;
                 let shift = GetKeyState(VK_SHIFT as i32) < 0;
+                if alt && wp == VK_F4 as usize { return DefWindowProcW(hwnd, msg, wp, lp); }
 
                 // Ctrl+Q is reserved by Shell Shock Tool as a hard abort.
                 // It must never be forwarded to the foreground application.
@@ -796,6 +800,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     }
 
                     let mut modifiers = CtKeyModifiers::NONE;
+                    if alt && !altgr { modifiers |= CtKeyModifiers::ALT; }
                     if ctrl {
                         modifiers |= CtKeyModifiers::CONTROL;
                     }
@@ -819,6 +824,8 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                         VK_INSERT => Some(CtKeyCode::Insert),
                         VK_PRIOR => Some(CtKeyCode::PageUp),
                         VK_NEXT => Some(CtKeyCode::PageDown),
+                        key if (VK_F1..=VK_F12).contains(&key) => Some(CtKeyCode::F((key - VK_F1 + 1) as u8)),
+                        VK_SPACE if ctrl => Some(CtKeyCode::Char(' ')),
                         _ if ctrl && wp >= b'A' as usize && wp <= b'Z' as usize => {
                             Some(CtKeyCode::Char((wp as u8).to_ascii_lowercase() as char))
                         }
@@ -895,7 +902,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                 0
             }
 
-            WM_CHAR => {
+            WM_CHAR | WM_SYSCHAR => {
                 if state.suppress_char {
                     state.suppress_char = false;
                     return 0;
@@ -915,7 +922,14 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     String::from_utf16_lossy(&[ch])
                 };
 
-                state.input(text.as_bytes());
+                if state.pty.raw_mode() {
+                    let mut modifiers = CtKeyModifiers::NONE;
+                    if msg == WM_SYSCHAR { modifiers |= CtKeyModifiers::ALT; }
+                    if GetKeyState(VK_SHIFT as i32) < 0 { modifiers |= CtKeyModifiers::SHIFT; }
+                    for ch in text.chars() {
+                        let _ = state.pty.send_raw_key(CtKeyEvent::new(CtKeyCode::Char(ch), modifiers));
+                    }
+                } else { state.input(text.as_bytes()); }
                 0
             }
 

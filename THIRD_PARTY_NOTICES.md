@@ -2,7 +2,7 @@
 
 ## Helix
 
-Shell Shock Tool includes **helix-sst 0.1.0**, an integration based on the official
+Shell Shock Tool includes **helix-sst 0.1.1**, an integration based on the official
 **Helix 25.07.1** Windows distribution.
 
 - Upstream project: https://github.com/helix-editor/helix

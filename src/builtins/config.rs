@@ -39,8 +39,8 @@ impl BuiltinCommand for ConfigBuiltin {
             "path" => Ok(CommandOutput::ok(format!("{}\n", self.config_file.display()))),
             "edit" => {
                 let args = vec![self.config_file.to_string_lossy().into_owned()];
-                self.editor.edit(&args, context.cwd)?;
-                Ok(CommandOutput::ok(""))
+                let status = self.editor.edit(&args, context.cwd)?;
+                Ok(CommandOutput { status, stdout: String::new(), stderr: String::new() })
             }
             "reload" => Ok(CommandOutput::error(
                 "config reload debe ejecutarse mediante la función Bash 'config'",

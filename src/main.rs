@@ -289,6 +289,10 @@ fn load_bash_startup(
 
 fn run_cli(args: &[String]) -> Result<i32> {
     #[cfg(windows)]
+    if args.first().map(String::as_str) == Some("--editor-clipboard") {
+        return presentation::editor_clipboard::helper(args);
+    }
+    #[cfg(windows)]
     if args.first().map(String::as_str) == Some("--verify-terminal") {
         presentation::gui::verify_transport()?;
         return Ok(0);

@@ -68,7 +68,7 @@ impl CommandRegistry {
         }
 
         let mut out = String::from(
-            "ADM Toolbox\n\nShell Bash-compatible con comandos administrativos nativos.\n\nComandos ADM:\n",
+            "Shell Shock Tool\n\nConsola con comandos administrativos nativos.\nEditor de scripts: helix archivo.sh. Primeros pasos: help helix.\n\nComandos:\n",
         );
 
         for name in &self.primary_names {
