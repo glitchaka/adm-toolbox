@@ -114,7 +114,7 @@ impl NetworkProbe for WindowsNetworkProbe {
             let handle = IcmpCreateFile();
             if handle == INVALID_HANDLE_VALUE { return Err(std::io::Error::last_os_error().into()); }
             let options = IP_OPTION_INFORMATION { Ttl: ttl, ..Default::default() };
-            let data = b"ADM Toolbox native ICMP";
+            let data = b"Shell Shock Tool native ICMP";
             let bytes = size_of::<ICMP_ECHO_REPLY>() + data.len() + 8;
             let mut reply = vec![0usize; bytes.div_ceil(size_of::<usize>())];
             let count = IcmpSendEcho(handle, u32::from_ne_bytes(destination.octets()), data.as_ptr().cast(), data.len() as u16,
