@@ -2,7 +2,7 @@ use std::{env, fs, path::PathBuf};
 
 use anyhow::Result;
 
-const DEFAULT_TERMINAL_CONFIG: &str = r#"# Shell Shock Tool native terminal appearance
+const DEFAULT_TERMINAL_CONFIG: &str = r##"# Shell Shock Tool native terminal appearance
 # Se aplica al iniciar una nueva ventana de SST.
 
 [appearance]
@@ -14,7 +14,7 @@ background_opacity = 82
 
 # Color del tinte de fondo.
 background_color = "#111629"
-"#;
+"##;
 
 const DEFAULT_CONFIG: &str = r#"# Shell Shock Tool portable shell configuration
 # Bash-compatible syntax.
