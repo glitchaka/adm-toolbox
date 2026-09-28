@@ -899,7 +899,15 @@ impl Interpreter {
                     )
                 } else {
                     self.env.functions.insert(name.clone(), (**body).clone());
-                    self.function_sources.insert(name.clone(), self.env.script_name.clone());
+                    let source = if self.env.option_enabled("bash_source_fullpath") {
+                        let path = PathBuf::from(&self.env.script_name);
+                        (if path.is_absolute() { path } else { self.env.cwd.join(path) })
+                            .to_string_lossy()
+                            .into_owned()
+                    } else {
+                        self.env.script_name.clone()
+                    };
+                    self.function_sources.insert(name.clone(), source);
                     ExecutionResult::success()
                 }
             }
@@ -2354,6 +2362,12 @@ impl Interpreter {
                 ));
             }
         }
+
+        // Bash 5.3 removes terminated jobs after the jobs builtin reports them.
+        for job in jobs.iter().filter(|job| !job.running && !job.stopped) {
+            let _ = self.host.disown_job(job.pid)?;
+        }
+
         Ok(ExecutionResult::from_parts(stdout, String::new(), 0))
     }
 
@@ -3106,8 +3120,13 @@ impl Interpreter {
         }
 
         values.retain(|value| value.starts_with(prefix));
+        let fullquote = spec.options.contains("fullquote")
+            || self.env.option_enabled("complete_fullquote");
         values = values.into_iter()
-            .map(|value| format!("{}{}{}", spec.prefix, value, spec.suffix))
+            .map(|value| {
+                let value = format!("{}{}{}", spec.prefix, value, spec.suffix);
+                if fullquote { shell_quote(&value) } else { value }
+            })
             .collect();
         values.sort();
         values.dedup();
@@ -4419,10 +4438,30 @@ impl Interpreter {
             return ExecutionResult::from_parts(stdout, String::new(), 0);
         }
 
+        if args.first().map(String::as_str) == Some("-P") {
+            let mut stdout = String::new();
+            let mut status = 0;
+            for raw in &args[1..] {
+                let signal = normalize_signal(raw);
+                if let Some(action) = self.env.traps.get(&signal) {
+                    stdout.push_str(&format!("{}\n", shell_quote(action)));
+                } else {
+                    status = 1;
+                }
+            }
+            return ExecutionResult::from_parts(stdout, String::new(), status);
+        }
+
         if args.is_empty() || args.first().map(String::as_str) == Some("-p") {
+            let requested: Vec<String> = if args.first().map(String::as_str) == Some("-p") {
+                args[1..].iter().map(|value| normalize_signal(value)).collect()
+            } else {
+                Vec::new()
+            };
             let mut traps = self.env.traps.iter().collect::<Vec<_>>();
             traps.sort_by_key(|(signal, _)| *signal);
             let stdout = traps.into_iter()
+                .filter(|(signal, _)| requested.is_empty() || requested.iter().any(|item| item == *signal))
                 .map(|(signal, action)| format!("trap -- {} {}\n", shell_quote(action), signal))
                 .collect();
             return ExecutionResult::from_parts(stdout, String::new(), 0);
@@ -4734,6 +4773,14 @@ impl Interpreter {
                     if short { stdout.push_str("builtin\n"); }
                     else { stdout.push_str(&format!("{name} es un builtin de shell\n")); }
                     if !all { continue; }
+                }
+            }
+
+            if force_path && all {
+                if let Some(path) = self.command_hash.get(&name) {
+                    found_any = true;
+                    if short { stdout.push_str("file\n"); }
+                    else { stdout.push_str(path); stdout.push('\n'); }
                 }
             }
 
@@ -6271,13 +6318,62 @@ fn split_ifs(input: &str, ifs: &str) -> Vec<String> {
 }
 
 fn render_timeformat(format: &str, real_seconds: f64, user_seconds: f64, system_seconds: f64) -> String {
-    let mut out = format.to_owned();
-    out = out.replace("%R", &format!("{real_seconds:.3}"));
-    out = out.replace("%U", &format!("{user_seconds:.3}"));
-    out = out.replace("%S", &format!("{system_seconds:.3}"));
-    let cpu = user_seconds + system_seconds;
-    let percentage = if real_seconds > 0.0 { cpu * 100.0 / real_seconds } else { 0.0 };
-    out = out.replace("%P", &format!("{percentage:.2}"));
+    let chars: Vec<char> = format.chars().collect();
+    let mut out = String::new();
+    let mut i = 0usize;
+
+    while i < chars.len() {
+        if chars[i] != '%' {
+            out.push(chars[i]);
+            i += 1;
+            continue;
+        }
+        if chars.get(i + 1) == Some(&'%') {
+            out.push('%');
+            i += 2;
+            continue;
+        }
+
+        i += 1;
+        let mut precision = 3usize;
+        if chars.get(i).is_some_and(|ch| ch.is_ascii_digit()) {
+            precision = chars[i].to_digit(10).unwrap_or(3).min(6) as usize;
+            i += 1;
+        }
+        let long = if chars.get(i) == Some(&'l') {
+            i += 1;
+            true
+        } else {
+            false
+        };
+        let spec = chars.get(i).copied().unwrap_or('%');
+        if i < chars.len() { i += 1; }
+
+        let seconds = match spec {
+            'R' => Some(real_seconds),
+            'U' => Some(user_seconds),
+            'S' => Some(system_seconds),
+            _ => None,
+        };
+
+        if let Some(value) = seconds {
+            if long {
+                let minutes = (value / 60.0).floor() as u64;
+                let remainder = value - minutes as f64 * 60.0;
+                out.push_str(&format!("{minutes}m{remainder:.precision$}s"));
+            } else {
+                out.push_str(&format!("{value:.precision$}"));
+            }
+        } else if spec == 'P' {
+            let cpu = user_seconds + system_seconds;
+            let percentage = if real_seconds > 0.0 { cpu * 100.0 / real_seconds } else { 0.0 };
+            out.push_str(&format!("{percentage:.precision$}"));
+        } else {
+            out.push('%');
+            if long { out.push('l'); }
+            out.push(spec);
+        }
+    }
     out.push('\n');
     out
 }
@@ -7562,7 +7658,7 @@ fn bash_shell_options() -> &'static [&'static str] {
 
 fn bash_shopt_options() -> &'static [&'static str] {
     &[
-        "array_expand_once", "assoc_expand_once", "autocd", "cdable_vars", "cdspell",
+        "array_expand_once", "assoc_expand_once", "autocd", "bash_source_fullpath", "cdable_vars", "cdspell",
         "checkhash", "checkjobs", "checkwinsize", "cmdhist", "compat31", "compat32",
         "compat40", "compat41", "compat42", "compat43", "compat44", "compat50",
         "compat51", "compat52", "compat53", "complete_fullquote", "direxpand",
@@ -7743,6 +7839,42 @@ fn negative_extglob_rejects(pattern: &str, candidate: &str, nocase: bool) -> boo
     false
 }
 
+fn natural_numeric_cmp(left: &str, right: &str) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    let a = left.as_bytes();
+    let b = right.as_bytes();
+    let mut i = 0usize;
+    let mut j = 0usize;
+
+    while i < a.len() && j < b.len() {
+        if a[i].is_ascii_digit() && b[j].is_ascii_digit() {
+            let ai = i;
+            let bj = j;
+            while i < a.len() && a[i].is_ascii_digit() { i += 1; }
+            while j < b.len() && b[j].is_ascii_digit() { j += 1; }
+            let an = &left[ai..i];
+            let bn = &right[bj..j];
+            let at = an.trim_start_matches('0');
+            let bt = bn.trim_start_matches('0');
+            let at = if at.is_empty() { "0" } else { at };
+            let bt = if bt.is_empty() { "0" } else { bt };
+            match at.len().cmp(&bt.len())
+                .then_with(|| at.cmp(bt))
+                .then_with(|| an.len().cmp(&bn.len()))
+            {
+                Ordering::Equal => {}
+                ordering => return ordering,
+            }
+        } else {
+            match a[i].cmp(&b[j]) {
+                Ordering::Equal => { i += 1; j += 1; }
+                ordering => return ordering,
+            }
+        }
+    }
+    a.len().cmp(&b.len())
+}
+
 fn sort_glob_results(values: &mut [String], sort: &str, cwd: &Path) {
     let mut mode = sort.trim();
     let mut reverse = false;
@@ -7778,6 +7910,7 @@ fn sort_glob_results(values: &mut [String], sort: &str, cwd: &Path) {
                 .cmp(&right_meta.as_ref().and_then(|m| m.accessed().ok())),
             "ctime" => left_meta.as_ref().and_then(|m| m.created().ok())
                 .cmp(&right_meta.as_ref().and_then(|m| m.created().ok())),
+            "numeric" => natural_numeric_cmp(left, right),
             _ => left.cmp(right),
         }.then_with(|| left.cmp(right));
 
