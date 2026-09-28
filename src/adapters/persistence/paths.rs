@@ -2,7 +2,7 @@ use std::{env, fs, path::PathBuf};
 
 use anyhow::Result;
 
-const DEFAULT_CONFIG: &str = r#"# ADM Toolbox portable shell configuration
+const DEFAULT_CONFIG: &str = r#"# Shell Shock Tool portable shell configuration
 # Bash-compatible syntax.
 
 alias ll='ls -la'
@@ -10,7 +10,7 @@ alias la='ls -a'
 alias cls='clear'
 
 # Ejemplos:
-# export ADM_SITE='laboratorio'
+# export SST_SITE='laboratorio'
 # alias scanlab='net scan 192.168.1.0/24'
 "#;
 
@@ -42,7 +42,7 @@ impl AppPaths {
 
     pub fn data_dir(&self) -> PathBuf { self.root.join("data") }
     pub fn config_dir(&self) -> PathBuf { self.root.join("config") }
-    pub fn config_file(&self) -> PathBuf { self.config_dir().join("admrc") }
+    pub fn config_file(&self) -> PathBuf { self.config_dir().join("sstrc") }
     pub fn devices_file(&self) -> PathBuf { self.data_dir().join("devices.json") }
     pub fn presence_file(&self) -> PathBuf { self.data_dir().join("network_presence.json") }
     pub fn providers_file(&self) -> PathBuf { self.data_dir().join("network_providers.json") }
