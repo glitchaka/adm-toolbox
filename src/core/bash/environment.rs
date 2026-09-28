@@ -29,6 +29,9 @@ pub struct ShellEnvironment {
     pub exported: HashMap<String, String>,
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, AstNode>,
+    pub readonly_functions: HashSet<String>,
+    pub exported_functions: HashSet<String>,
+    pub trace_functions: HashSet<String>,
     pub arrays: HashMap<String, Vec<String>>,
     pub array_present: HashMap<String, HashSet<usize>>,
     pub assoc_arrays: HashMap<String, HashMap<String, String>>,
@@ -118,6 +121,9 @@ impl ShellEnvironment {
             exported,
             aliases: HashMap::new(),
             functions: HashMap::new(),
+            readonly_functions: HashSet::new(),
+            exported_functions: HashSet::new(),
+            trace_functions: HashSet::new(),
             arrays,
             array_present,
             assoc_arrays: HashMap::new(),
@@ -287,6 +293,9 @@ impl ShellEnvironment {
                 if let Some((base, subscript)) = split_subscript(&resolved) {
                     return self.get_array_value(base, subscript);
                 }
+                if self.arrays.contains_key(&resolved) || self.assoc_arrays.contains_key(&resolved) {
+                    return self.get_array_value(&resolved, "0");
+                }
                 resolved.parse::<usize>().ok()
                     .and_then(|i| if i == 0 { None } else { self.positional.get(i - 1).cloned() })
                     .unwrap_or_else(|| self.vars.get(&resolved).cloned().unwrap_or_default())
@@ -317,7 +326,13 @@ impl ShellEnvironment {
             }
             return false;
         }
-        self.vars.contains_key(name) || self.arrays.contains_key(name) || self.assoc_arrays.contains_key(name)
+        if self.arrays.contains_key(name) {
+            return self.array_present.get(name).is_some_and(|indices| indices.contains(&0));
+        }
+        if let Some(array) = self.assoc_arrays.get(name) {
+            return array.contains_key("0");
+        }
+        self.vars.contains_key(name)
     }
 
     pub fn set(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
@@ -376,6 +391,17 @@ impl ShellEnvironment {
                 self.array_present.entry(base).or_default().insert(resolved);
                 return true;
             }
+        }
+
+        if let Some(array) = self.arrays.get_mut(&name) {
+            if array.is_empty() { array.push(String::new()); }
+            array[0] = value;
+            self.array_present.entry(name).or_default().insert(0);
+            return true;
+        }
+        if let Some(array) = self.assoc_arrays.get_mut(&name) {
+            array.insert("0".to_owned(), value);
+            return true;
         }
 
         self.vars.insert(name.clone(), value.clone());

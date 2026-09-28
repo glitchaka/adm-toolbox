@@ -245,7 +245,7 @@ pub struct Interpreter {
 
 impl Interpreter {
     pub fn new(host: Box<dyn ShellCommandHost>) -> Self {
-        Self {
+        let mut interpreter = Self {
             env: ShellEnvironment::new(),
             host,
             loop_depth: 0,
@@ -262,7 +262,41 @@ impl Interpreter {
             ulimits: HashMap::new(),
             checkjobs_warned: false,
             errexit_suppression: 0,
+        };
+        interpreter.import_exported_functions();
+        interpreter
+    }
+
+    fn import_exported_functions(&mut self) {
+        let imported = self.env.exported.iter()
+            .filter_map(|(name, value)| {
+                let function = name.strip_prefix("BASH_FUNC_")?.strip_suffix("%%")?;
+                let body = value.strip_prefix("() {")?.trim().strip_suffix('}')?.trim();
+                Some((function.to_owned(), body.to_owned()))
+            })
+            .collect::<Vec<_>>();
+
+        for (name, body) in imported {
+            if let Ok(ast) = parse(&body) {
+                self.env.functions.insert(name.clone(), ast);
+                self.function_sources.insert(name.clone(), "environment".to_owned());
+                self.env.exported_functions.insert(name);
+            }
         }
+    }
+
+    fn execution_environment(&self) -> HashMap<String, String> {
+        let mut env = self.env.exported.clone();
+        env.retain(|name, _| !name.starts_with("BASH_FUNC_"));
+        for name in &self.env.exported_functions {
+            if let Some(body) = self.env.functions.get(name) {
+                env.insert(
+                    format!("BASH_FUNC_{name}%%"),
+                    format!("() {{ {}; }}", render_ast(body)),
+                );
+            }
+        }
+        env
     }
 
 
@@ -841,9 +875,17 @@ impl Interpreter {
                 ExecutionResult::from_parts(String::new(), String::new(), if value != 0 { 0 } else { 1 })
             }
             AstNode::FunctionDef { name, body } => {
-                self.env.functions.insert(name.clone(), (**body).clone());
-                self.function_sources.insert(name.clone(), self.env.script_name.clone());
-                ExecutionResult::success()
+                if self.env.readonly_functions.contains(name) {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        format!("{name}: función de solo lectura\n"),
+                        1,
+                    )
+                } else {
+                    self.env.functions.insert(name.clone(), (**body).clone());
+                    self.function_sources.insert(name.clone(), self.env.script_name.clone());
+                    ExecutionResult::success()
+                }
             }
             AstNode::Group(body) => self.execute(body, stdin)?,
             AstNode::Subshell(body) => {
@@ -968,7 +1010,7 @@ impl Interpreter {
                 }
 
                 let mut index = 0usize;
-                let mut child_env = self.env.exported.clone();
+                let mut child_env = self.execution_environment();
                 while index < raw.len() && is_assignment(&raw[index]) {
                     let (name, value) = raw[index].split_once('=').unwrap();
                     child_env.insert(name.to_owned(), self.expand_scalar(value)?);
@@ -1006,7 +1048,7 @@ impl Interpreter {
             self.host.execute_shell_background(
                 &render_ast(node),
                 &self.env.cwd,
-                &self.env.exported,
+                &child_env,
             )?
         };
 
@@ -1033,12 +1075,13 @@ impl Interpreter {
             && !self.env.option_enabled("monitor")
             && parts.len() > 1;
         let commands: Vec<String> = parts.iter().map(render_ast).collect();
+        let child_env = self.execution_environment();
         if !use_lastpipe {
             if let Some((mut result, statuses)) = self.host.execute_shell_pipeline(
                 &commands,
                 stderr_to_pipe,
                 &self.env.cwd,
-                &self.env.exported,
+                &child_env,
                 stdin,
             )? {
             self.env.set_array(
@@ -1126,11 +1169,12 @@ impl Interpreter {
     fn execute_coproc(&mut self, name: Option<&str>, body: &AstNode) -> Result<ExecutionResult> {
         let source = render_ast(body);
         let variable = name.unwrap_or("COPROC");
+        let child_env = self.execution_environment();
 
         if let Some((pid, read_fd, write_fd)) = self.host.start_coproc(
             &source,
             &self.env.cwd,
-            &self.env.exported,
+            &child_env,
         )? {
             self.env.last_background_pid = Some(pid);
             self.env.set(format!("{variable}_PID"), pid.to_string());
@@ -1334,11 +1378,12 @@ impl Interpreter {
             result
         } else {
             let program = self.resolve_hashed_program(&name)?;
+            let child_env = self.execution_environment();
             match self.host.execute_external(
                 &program,
                 args,
                 &self.env.cwd,
-                &self.env.exported,
+                &child_env,
                 local_stdin.as_deref(),
             ) {
                 Ok(result) => result,
@@ -1490,17 +1535,58 @@ impl Interpreter {
             "echo" => self.builtin_echo(args),
             "printf" => self.builtin_printf(args)?,
             "export" => {
-                if args.is_empty() || args.iter().any(|arg| arg == "-p") {
-                    let mut values = self.env.exported.iter().collect::<Vec<_>>();
-                    values.sort_by_key(|(name, _)| *name);
-                    let stdout = values.into_iter()
-                        .map(|(name, value)| format!("declare -x {}={}\n", name, shell_quote(value)))
-                        .collect();
-                    ExecutionResult::from_parts(stdout, String::new(), 0)
+                let functions = args.iter().any(|arg| arg == "-f");
+                let unexport = args.iter().any(|arg| arg == "-n");
+                let print = args.is_empty() || args.iter().any(|arg| arg == "-p");
+                let operands = args.iter().filter(|arg| !arg.starts_with('-')).collect::<Vec<_>>();
+
+                if print {
+                    if functions {
+                        let mut names = self.env.exported_functions.iter().cloned().collect::<Vec<_>>();
+                        names.sort();
+                        let mut stdout = String::new();
+                        for name in names {
+                            if let Some(body) = self.env.functions.get(&name) {
+                                stdout.push_str(&format!(
+                                    "declare -fx {name}\n{name} () {{\n    {}\n}}\n",
+                                    render_ast(body)
+                                ));
+                            }
+                        }
+                        ExecutionResult::from_parts(stdout, String::new(), 0)
+                    } else {
+                        let mut values = self.env.exported.iter()
+                            .filter(|(name, _)| !name.starts_with("BASH_FUNC_"))
+                            .collect::<Vec<_>>();
+                        values.sort_by_key(|(name, _)| *name);
+                        let stdout = values.into_iter()
+                            .map(|(name, value)| format!("declare -x {}={}\n", name, shell_quote(value)))
+                            .collect();
+                        ExecutionResult::from_parts(stdout, String::new(), 0)
+                    }
                 } else {
                     let mut status = 0;
                     let mut stderr = String::new();
-                    for arg in args.iter().filter(|arg| !arg.starts_with('-')) {
+                    for arg in operands {
+                        if functions {
+                            let name = arg.as_str();
+                            if !self.env.functions.contains_key(name) {
+                                status = 1;
+                                stderr.push_str(&format!("export: {name}: no es una función\n"));
+                            } else if unexport {
+                                self.env.exported_functions.remove(name);
+                            } else {
+                                self.env.exported_functions.insert(name.to_owned());
+                            }
+                            continue;
+                        }
+
+                        if unexport {
+                            let name = arg.split_once('=').map(|(name, _)| name).unwrap_or(arg);
+                            self.env.exported.remove(name);
+                            continue;
+                        }
+
                         if let Some((name, value)) = arg.split_once('=') {
                             let value = self.expand_scalar(value)?;
                             if !self.env.export(name.to_owned(), value) {
@@ -1527,8 +1613,17 @@ impl Interpreter {
                         }
                         continue;
                     }
-                    if !variables_only && self.env.functions.remove(item).is_some() {
-                        if functions_only { continue; }
+                    if !variables_only && self.env.functions.contains_key(item) {
+                        if self.env.readonly_functions.contains(item) {
+                            status = 1;
+                            stderr.push_str(&format!("unset: {item}: función de solo lectura\n"));
+                            if functions_only { continue; }
+                        } else {
+                            self.env.functions.remove(item);
+                            self.function_sources.remove(item);
+                            self.env.exported_functions.remove(item);
+                            if functions_only { continue; }
+                        }
                     }
                     if !functions_only && !self.env.unset(item) {
                         status = 1;
@@ -1715,25 +1810,72 @@ impl Interpreter {
             }
             "declare" | "typeset" => self.builtin_declare(args, false)?,
             "readonly" => {
-                let mut stdout = String::new();
-                if args.is_empty() || args.iter().any(|arg| arg == "-p") {
+                let functions = args.iter().any(|arg| arg == "-f");
+                let indexed = args.iter().any(|arg| arg == "-a");
+                let associative = args.iter().any(|arg| arg == "-A");
+                let print = args.is_empty() || args.iter().any(|arg| arg == "-p");
+                let operands = args.iter().filter(|arg| !arg.starts_with('-')).collect::<Vec<_>>();
+
+                if functions {
+                    if print || operands.is_empty() {
+                        let mut names = self.env.readonly_functions.iter().cloned().collect::<Vec<_>>();
+                        names.sort();
+                        let stdout = names.into_iter()
+                            .map(|name| format!("declare -fr {name}\n"))
+                            .collect();
+                        ExecutionResult::from_parts(stdout, String::new(), 0)
+                    } else {
+                        let mut status = 0;
+                        let mut stderr = String::new();
+                        for name in operands {
+                            if self.env.functions.contains_key(name.as_str()) {
+                                self.env.readonly_functions.insert(name.to_string());
+                            } else {
+                                status = 1;
+                                stderr.push_str(&format!("readonly: {name}: no es una función\n"));
+                            }
+                        }
+                        ExecutionResult::from_parts(String::new(), stderr, status)
+                    }
+                } else if print {
                     let mut names = self.env.readonly.iter().cloned().collect::<Vec<_>>();
                     names.sort();
+                    let mut stdout = String::new();
                     for name in names {
-                        stdout.push_str(&format!("declare -r {}={}\n", name, shell_quote(&self.env.get(&name))));
+                        if self.env.arrays.contains_key(&name) {
+                            stdout.push_str(&format!("declare -ar {name}\n"));
+                        } else if self.env.assoc_arrays.contains_key(&name) {
+                            stdout.push_str(&format!("declare -Ar {name}\n"));
+                        } else {
+                            stdout.push_str(&format!("declare -r {}={}\n", name, shell_quote(&self.env.get(&name))));
+                        }
                     }
                     ExecutionResult::from_parts(stdout, String::new(), 0)
                 } else {
-                    for arg in args.iter().filter(|arg| !arg.starts_with('-')) {
-                        if let Some((name, value)) = arg.split_once('=') {
-                            let value = self.expand_scalar(value)?;
-                            self.env.set(name.to_owned(), value);
-                            self.env.set_readonly(name);
-                        } else {
-                            self.env.set_readonly(arg);
+                    let mut status = 0;
+                    let mut stderr = String::new();
+                    for arg in operands {
+                        let (name, value) = arg.split_once('=')
+                            .map(|(name, value)| (name.to_owned(), Some(value.to_owned())))
+                            .unwrap_or_else(|| (arg.to_string(), None));
+
+                        if indexed && !self.env.arrays.contains_key(&name) {
+                            self.env.set_array(name.clone(), Vec::new());
                         }
+                        if associative && !self.env.assoc_arrays.contains_key(&name) {
+                            self.env.declare_assoc(name.clone());
+                        }
+                        if let Some(value) = value {
+                            let expanded = self.expand_scalar(&value)?;
+                            if !self.env.set(name.clone(), expanded) {
+                                status = 1;
+                                stderr.push_str(&format!("readonly: {name}: variable de solo lectura\n"));
+                                continue;
+                            }
+                        }
+                        self.env.set_readonly(&name);
                     }
-                    ExecutionResult::success()
+                    ExecutionResult::from_parts(String::new(), stderr, status)
                 }
             }
             "break" => {
@@ -3773,6 +3915,8 @@ impl Interpreter {
         let mut uppercase = false;
         let mut trace = false;
         let mut global = false;
+        let mut functions = false;
+        let mut function_names_only = false;
         let mut remove_attrs = Vec::new();
         let mut names = Vec::new();
 
@@ -3796,12 +3940,75 @@ impl Interpreter {
                         'u' => uppercase = true,
                         't' => trace = true,
                         'g' => global = true,
+                        'f' => functions = true,
+                        'F' => { functions = true; function_names_only = true; },
                         _ => {}
                     }
                 }
             } else {
                 names.push(arg.clone());
             }
+        }
+
+        if functions {
+            let selected = if names.is_empty() {
+                let mut values = self.env.functions.keys().cloned().collect::<Vec<_>>();
+                values.sort();
+                values
+            } else {
+                names.clone()
+            };
+
+            let mut stdout = String::new();
+            let mut stderr = String::new();
+            let mut status = 0;
+            let mut mutate = readonly || export || trace;
+            mutate |= remove_attrs.iter().any(|flag| matches!(flag, 'r' | 'x' | 't'));
+
+            for name in selected {
+                let Some(body) = self.env.functions.get(&name) else {
+                    status = 1;
+                    stderr.push_str(&format!("declare: {name}: no es una función\n"));
+                    continue;
+                };
+
+                if remove_attrs.contains(&'r') && self.env.readonly_functions.contains(&name) {
+                    status = 1;
+                    stderr.push_str(&format!("declare: {name}: no se puede quitar readonly\n"));
+                    continue;
+                }
+                if remove_attrs.contains(&'x') { self.env.exported_functions.remove(&name); }
+                if remove_attrs.contains(&'t') { self.env.trace_functions.remove(&name); }
+                if readonly { self.env.readonly_functions.insert(name.clone()); }
+                if export { self.env.exported_functions.insert(name.clone()); }
+                if trace { self.env.trace_functions.insert(name.clone()); }
+
+                if function_names_only || print {
+                    let mut attrs = String::from("-f");
+                    if self.env.readonly_functions.contains(&name) { attrs.push('r'); }
+                    if self.env.trace_functions.contains(&name) { attrs.push('t'); }
+                    if self.env.exported_functions.contains(&name) { attrs.push('x'); }
+                    if function_names_only && self.env.option_enabled("extdebug") {
+                        let source = self.function_sources.get(&name)
+                            .cloned()
+                            .unwrap_or_else(|| self.env.script_name.clone());
+                        stdout.push_str(&format!("declare {attrs} {name} 0 {source}\n"));
+                    } else if function_names_only {
+                        stdout.push_str(&format!("declare {attrs} {name}\n"));
+                    } else {
+                        stdout.push_str(&format!(
+                            "{name} () {{\n    {}\n}}\n",
+                            render_ast(body)
+                        ));
+                    }
+                } else if !mutate {
+                    stdout.push_str(&format!(
+                        "{name} () {{\n    {}\n}}\n",
+                        render_ast(body)
+                    ));
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, stderr, status));
         }
 
         if print || names.is_empty() {
@@ -4404,11 +4611,12 @@ impl Interpreter {
                     PathBuf::from(&root).join(name),
                 ];
                 if let Some(path) = candidates.into_iter().find(|path| path.is_file()) {
+                    let child_env = self.execution_environment();
                     return self.host.execute_external(
                         &path.to_string_lossy(),
                         &args[index + 1..],
                         &self.env.cwd,
-                        &self.env.exported,
+                        &child_env,
                         stdin,
                     );
                 }
@@ -4646,7 +4854,8 @@ impl Interpreter {
             return Ok(result);
         }
         let program = self.resolve_hashed_program(name)?;
-        match self.host.execute_external(&program, args, &self.env.cwd, &self.env.exported, stdin) {
+        let child_env = self.execution_environment();
+        match self.host.execute_external(&program, args, &self.env.cwd, &child_env, stdin) {
             Ok(result) => Ok(result),
             Err(error) => Ok(ExecutionResult::from_parts(String::new(), format!("{name}: {error}\n"), 127)),
         }
@@ -5329,11 +5538,12 @@ impl Interpreter {
 
 
     fn create_process_substitution(&mut self, direction: char, source: &str) -> Result<PathBuf> {
+        let child_env = self.execution_environment();
         if let Some(path) = self.host.create_process_substitution_pipe(
             direction,
             source,
             &self.env.cwd,
-            &self.env.exported,
+            &child_env,
         )? {
             return Ok(path);
         }
