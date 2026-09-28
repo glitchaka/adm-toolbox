@@ -28,6 +28,7 @@ pub struct ExecutionResult {
     pub status: i32,
     pub exit_requested: bool,
     flow: FlowSignal,
+    errexit_exempt: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -74,13 +75,21 @@ impl ExecutionResult {
         if next.flow != FlowSignal::None {
             self.flow = next.flow;
         }
+        self.errexit_exempt = next.errexit_exempt;
     }
     pub fn success() -> Self {
         Self::from_parts(String::new(), String::new(), 0)
     }
 
     pub fn from_parts(stdout: String, stderr: String, status: i32) -> Self {
-        Self { stdout, stderr, status, exit_requested: false, flow: FlowSignal::None }
+        Self {
+            stdout,
+            stderr,
+            status,
+            exit_requested: false,
+            flow: FlowSignal::None,
+            errexit_exempt: false,
+        }
     }
 }
 
@@ -231,6 +240,7 @@ pub struct Interpreter {
     trap_depth: usize,
     ulimits: HashMap<char, String>,
     checkjobs_warned: bool,
+    errexit_suppression: usize,
 }
 
 impl Interpreter {
@@ -251,6 +261,7 @@ impl Interpreter {
             trap_depth: 0,
             ulimits: HashMap::new(),
             checkjobs_warned: false,
+            errexit_suppression: 0,
         }
     }
 
@@ -497,7 +508,10 @@ impl Interpreter {
             self.env.unset(&name);
         }
 
-        if result.status != 0 {
+        if result.status != 0
+            && !result.errexit_exempt
+            && self.errexit_suppression == 0
+        {
             if let Some(mut trap_result) = self.run_trap_action("ERR", result.status)? {
                 trap_result.status = result.status;
                 return Ok(trap_result);
@@ -530,21 +544,31 @@ impl Interpreter {
                 for node in nodes {
                     last.append(self.execute(node, stdin)?);
                     if last.exit_requested || last.flow != FlowSignal::None { break; }
-                    if last.status != 0 && self.env.option_enabled("errexit") { break; }
+                    if last.status != 0
+                        && self.env.option_enabled("errexit")
+                        && self.errexit_suppression == 0
+                        && !last.errexit_exempt
+                    {
+                        break;
+                    }
                 }
                 last
             }
             AstNode::And(left, right) => {
-                let mut left = self.execute(left, stdin)?;
+                let mut left = self.execute_errexit_ignored(left, stdin)?;
                 if !left.exit_requested && left.flow == FlowSignal::None && left.status == 0 {
                     left.append(self.execute(right, stdin)?);
+                } else {
+                    left.errexit_exempt = true;
                 }
                 left
             }
             AstNode::Or(left, right) => {
-                let mut left = self.execute(left, stdin)?;
+                let mut left = self.execute_errexit_ignored(left, stdin)?;
                 if !left.exit_requested && left.flow == FlowSignal::None && left.status != 0 {
                     left.append(self.execute(right, stdin)?);
+                } else {
+                    left.errexit_exempt = true;
                 }
                 left
             }
@@ -554,10 +578,11 @@ impl Interpreter {
             AstNode::Time { body, posix } => self.execute_timed(body, *posix, stdin)?,
             AstNode::Coproc { name, body } => self.execute_coproc(name.as_deref(), body)?,
             AstNode::Negate(body) => {
-                let mut result = self.execute(body, stdin)?;
+                let mut result = self.execute_errexit_ignored(body, stdin)?;
                 if !result.exit_requested {
                     result.status = if result.status == 0 { 1 } else { 0 };
                 }
+                result.errexit_exempt = true;
                 result
             }
             AstNode::Background(body) => self.execute_background_node(body)?,
@@ -575,24 +600,45 @@ impl Interpreter {
                     }
                     ExecutionResult::success()
                 } else {
-                    let mut normalized = if append {
-                        self.env.array_values(&actual_name)
+                    let mut slots: Vec<Option<String>> = if append {
+                        self.env.arrays.get(&actual_name)
+                            .map(|values| {
+                                let present = self.env.array_present.get(&actual_name);
+                                values.iter().enumerate()
+                                    .map(|(index, value)| {
+                                        present.is_some_and(|indices| indices.contains(&index))
+                                            .then(|| value.clone())
+                                    })
+                                    .collect()
+                            })
+                            .unwrap_or_default()
                     } else {
                         Vec::new()
                     };
+                    let mut next_index = if append {
+                        self.env.max_array_index(&actual_name).map(|index| index + 1).unwrap_or(0)
+                    } else {
+                        0
+                    };
+
                     for value in values {
                         if let Some((key, item)) = parse_array_entry(&value) {
                             if let Ok(index) = key.parse::<usize>() {
-                                if normalized.len() <= index { normalized.resize(index + 1, String::new()); }
-                                normalized[index] = item;
+                                if slots.len() <= index { slots.resize(index + 1, None); }
+                                slots[index] = Some(item);
+                                next_index = index.saturating_add(1);
                             } else {
-                                normalized.push(value);
+                                if slots.len() <= next_index { slots.resize(next_index + 1, None); }
+                                slots[next_index] = Some(value);
+                                next_index += 1;
                             }
                         } else {
-                            normalized.push(value);
+                            if slots.len() <= next_index { slots.resize(next_index + 1, None); }
+                            slots[next_index] = Some(value);
+                            next_index += 1;
                         }
                     }
-                    if self.env.set_array(actual_name.clone(), normalized) {
+                    if self.env.set_sparse_array(actual_name.clone(), slots) {
                         ExecutionResult::success()
                     } else {
                         ExecutionResult::from_parts(
@@ -604,7 +650,7 @@ impl Interpreter {
                 }
             }
             AstNode::If { condition, then_branch, else_branch } => {
-                let mut condition = self.execute(condition, stdin)?;
+                let mut condition = self.execute_errexit_ignored(condition, stdin)?;
                 if condition.exit_requested { condition }
                 else if condition.status == 0 {
                     condition.append(self.execute(then_branch, stdin)?);
@@ -722,7 +768,7 @@ impl Interpreter {
                 let mut last = ExecutionResult::success();
                 self.loop_depth += 1;
                 loop {
-                    let condition_result = self.execute(condition, None)?;
+                    let condition_result = self.execute_errexit_ignored(condition, None)?;
                     let should_run = if *until {
                         condition_result.status != 0
                     } else {
@@ -817,6 +863,19 @@ impl Interpreter {
         };
 
         self.env.last_status = result.status;
+        Ok(result)
+    }
+
+    fn execute_errexit_ignored(
+        &mut self,
+        node: &AstNode,
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
+        self.errexit_suppression += 1;
+        let result = self.execute(node, stdin);
+        self.errexit_suppression = self.errexit_suppression.saturating_sub(1);
+        let mut result = result?;
+        result.errexit_exempt = true;
         Ok(result)
     }
 
@@ -1563,6 +1622,7 @@ impl Interpreter {
                             status,
                             exit_requested: true,
                             flow: FlowSignal::None,
+                            errexit_exempt: false,
                         };
                         if let Some(action) = self.env.traps.get("EXIT").cloned().or_else(|| self.env.traps.get("0").cloned()) {
                             let mut trap_result = self.execute_text(&action)?;
@@ -3774,8 +3834,11 @@ impl Interpreter {
             }
             for (name, values) in &self.env.arrays {
                 stdout.push_str(&format!("declare -a {name}=("));
+                let present = self.env.array_present.get(name);
                 for (index, value) in values.iter().enumerate() {
-                    if !value.is_empty() { stdout.push_str(&format!("[{index}]={} ", shell_quote(value))); }
+                    if present.is_some_and(|indices| indices.contains(&index)) {
+                        stdout.push_str(&format!("[{index}]={} ", shell_quote(value)));
+                    }
                 }
                 stdout.push_str(")\n");
             }
@@ -3816,11 +3879,17 @@ impl Interpreter {
                     self.env.set_nameref(name.clone(), expanded);
                 }
             } else if associative {
-                if make_local { self.env.declare_local_assoc(name.clone()); }
-                else { self.env.declare_assoc(name.clone()); }
+                if make_local {
+                    self.env.declare_local_assoc(name.clone());
+                } else if !self.env.assoc_arrays.contains_key(&name) {
+                    self.env.declare_assoc(name.clone());
+                }
             } else if indexed {
-                if make_local { self.env.set_local_array(name.clone(), Vec::new()); }
-                else { self.env.set_array(name.clone(), Vec::new()); }
+                if make_local {
+                    self.env.set_local_array(name.clone(), Vec::new());
+                } else if !self.env.arrays.contains_key(&name) {
+                    self.env.set_array(name.clone(), Vec::new());
+                }
             }
 
             if let Some(raw_value) = value.take() {
@@ -3837,19 +3906,27 @@ impl Interpreter {
                             }
                         }
                     } else {
-                        let mut values = Vec::new();
+                        let mut slots: Vec<Option<String>> = Vec::new();
+                        let mut next_index = 0usize;
                         for item in items {
                             if let Some((key, value)) = parse_array_entry(&item) {
                                 if let Ok(index) = key.parse::<usize>() {
-                                    if values.len() <= index { values.resize(index + 1, String::new()); }
-                                    values[index] = self.expand_scalar(&value)?;
+                                    if slots.len() <= index { slots.resize(index + 1, None); }
+                                    slots[index] = Some(self.expand_scalar(&value)?);
+                                    next_index = index.saturating_add(1);
+                                } else {
+                                    if slots.len() <= next_index { slots.resize(next_index + 1, None); }
+                                    slots[next_index] = Some(self.expand_scalar(&item)?);
+                                    next_index += 1;
                                 }
                             } else {
-                                values.push(self.expand_scalar(&item)?);
+                                if slots.len() <= next_index { slots.resize(next_index + 1, None); }
+                                slots[next_index] = Some(self.expand_scalar(&item)?);
+                                next_index += 1;
                             }
                         }
-                        if make_local { self.env.set_local_array(name.clone(), values); }
-                        else { self.env.set_array(name.clone(), values); }
+                        if make_local { self.env.set_local_sparse_array(name.clone(), slots); }
+                        else { self.env.set_sparse_array(name.clone(), slots); }
                     }
                 } else if !nameref {
                     let expanded = if integer {
@@ -4193,8 +4270,22 @@ impl Interpreter {
         }
 
         let start = origin.unwrap_or(0);
-        let mut target = if origin.is_some() { self.env.array_values(&name) } else { Vec::new() };
-        if target.len() < start { target.resize(start, String::new()); }
+        let mut target: Vec<Option<String>> = if origin.is_some() {
+            self.env.arrays.get(&name)
+                .map(|values| {
+                    let present = self.env.array_present.get(&name);
+                    values.iter().enumerate()
+                        .map(|(index, value)| {
+                            present.is_some_and(|indices| indices.contains(&index))
+                                .then(|| value.clone())
+                        })
+                        .collect()
+                })
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+        if target.len() < start { target.resize(start, None); }
 
         for (offset, record) in records.into_iter().enumerate() {
             let array_index = start + offset;
@@ -4205,11 +4296,11 @@ impl Interpreter {
                     if callback_result.status != 0 { return Ok(callback_result); }
                 }
             }
-            if target.len() <= array_index { target.resize(array_index + 1, String::new()); }
-            target[array_index] = record;
+            if target.len() <= array_index { target.resize(array_index + 1, None); }
+            target[array_index] = Some(record);
         }
 
-        self.env.set_array(name, target);
+        self.env.set_sparse_array(name, target);
         Ok(ExecutionResult::success())
     }
 

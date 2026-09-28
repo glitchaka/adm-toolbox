@@ -13,6 +13,7 @@ pub struct LocalBinding {
     scalar: Option<String>,
     exported: Option<String>,
     array: Option<Vec<String>>,
+    array_present: Option<HashSet<usize>>,
     associative: Option<HashMap<String, String>>,
     nameref: Option<String>,
     readonly: bool,
@@ -29,6 +30,7 @@ pub struct ShellEnvironment {
     pub aliases: HashMap<String, String>,
     pub functions: HashMap<String, AstNode>,
     pub arrays: HashMap<String, Vec<String>>,
+    pub array_present: HashMap<String, HashSet<usize>>,
     pub assoc_arrays: HashMap<String, HashMap<String, String>>,
     pub namerefs: HashMap<String, String>,
     pub readonly: HashSet<String>,
@@ -101,6 +103,12 @@ impl ShellEnvironment {
         arrays.insert("BASH_ARGC".to_owned(), vec!["0".to_owned()]);
         arrays.insert("BASH_ARGV".to_owned(), Vec::new());
 
+        let array_present: HashMap<String, HashSet<usize>> = arrays.iter()
+            .map(|(name, values)| {
+                (name.clone(), (0..values.len()).collect::<HashSet<_>>())
+            })
+            .collect();
+
         let mut readonly = HashSet::new();
         readonly.insert("BASH_VERSINFO".to_owned());
         readonly.insert("SHELLOPTS".to_owned());
@@ -111,6 +119,7 @@ impl ShellEnvironment {
             aliases: HashMap::new(),
             functions: HashMap::new(),
             arrays,
+            array_present,
             assoc_arrays: HashMap::new(),
             namerefs: HashMap::new(),
             readonly,
@@ -291,8 +300,16 @@ impl ShellEnvironment {
         if name == "DIRSTACK" { return true; }
         if let Some((base, subscript)) = split_subscript(name) {
             if let Some(array) = self.arrays.get(base) {
-                if subscript == "@" || subscript == "*" { return !array.is_empty(); }
-                return subscript.parse::<usize>().ok().is_some_and(|i| i < array.len());
+                let present = self.array_present.get(base);
+                if subscript == "@" || subscript == "*" {
+                    return present.is_some_and(|indices| !indices.is_empty());
+                }
+                if let Ok(index) = subscript.parse::<isize>() {
+                    let resolved = if index < 0 { array.len() as isize + index } else { index };
+                    return resolved >= 0
+                        && present.is_some_and(|indices| indices.contains(&(resolved as usize)));
+                }
+                return false;
             }
             if let Some(array) = self.assoc_arrays.get(base) {
                 if subscript == "@" || subscript == "*" { return !array.is_empty(); }
@@ -346,7 +363,7 @@ impl ShellEnvironment {
                 return true;
             }
             if let Ok(index) = subscript.parse::<isize>() {
-                let array = self.arrays.entry(base).or_default();
+                let array = self.arrays.entry(base.clone()).or_default();
                 let resolved = if index < 0 {
                     let candidate = array.len() as isize + index;
                     if candidate < 0 { return false; }
@@ -356,6 +373,7 @@ impl ShellEnvironment {
                 };
                 if array.len() <= resolved { array.resize(resolved + 1, String::new()); }
                 array[resolved] = value;
+                self.array_present.entry(base).or_default().insert(resolved);
                 return true;
             }
         }
@@ -382,7 +400,11 @@ impl ShellEnvironment {
                 if let Ok(index) = subscript.parse::<isize>() {
                     let resolved = if index < 0 { array.len() as isize + index } else { index };
                     if resolved >= 0 && (resolved as usize) < array.len() {
-                        array[resolved as usize].clear();
+                        let resolved = resolved as usize;
+                        array[resolved].clear();
+                        if let Some(present) = self.array_present.get_mut(base) {
+                            present.remove(&resolved);
+                        }
                     }
                     return true;
                 }
@@ -395,6 +417,7 @@ impl ShellEnvironment {
         self.vars.remove(name);
         self.exported.remove(name);
         self.arrays.remove(name);
+        self.array_present.remove(name);
         self.assoc_arrays.remove(name);
         self.namerefs.remove(name);
         true
@@ -405,8 +428,42 @@ impl ShellEnvironment {
         if self.readonly.contains(&name) { return false; }
         self.vars.remove(&name);
         self.assoc_arrays.remove(&name);
+        let present = (0..values.len()).collect::<HashSet<_>>();
+        self.array_present.insert(name.clone(), present);
         self.arrays.insert(name, values);
         true
+    }
+
+    pub fn set_sparse_array(
+        &mut self,
+        name: impl Into<String>,
+        values: Vec<Option<String>>,
+    ) -> bool {
+        let name = name.into();
+        if self.readonly.contains(&name) { return false; }
+        self.vars.remove(&name);
+        self.assoc_arrays.remove(&name);
+
+        let mut storage = Vec::with_capacity(values.len());
+        let mut present = HashSet::new();
+        for (index, value) in values.into_iter().enumerate() {
+            match value {
+                Some(value) => {
+                    present.insert(index);
+                    storage.push(value);
+                }
+                None => storage.push(String::new()),
+            }
+        }
+        self.array_present.insert(name.clone(), present);
+        self.arrays.insert(name, storage);
+        true
+    }
+
+    pub fn max_array_index(&self, name: &str) -> Option<usize> {
+        let resolved = self.dereference_name(name);
+        self.array_present.get(&resolved)
+            .and_then(|indices| indices.iter().copied().max())
     }
 
     pub fn declare_assoc(&mut self, name: impl Into<String>) -> bool {
@@ -414,6 +471,7 @@ impl ShellEnvironment {
         if self.readonly.contains(&name) { return false; }
         self.vars.remove(&name);
         self.arrays.remove(&name);
+        self.array_present.remove(&name);
         self.assoc_arrays.entry(name).or_default();
         true
     }
@@ -427,7 +485,11 @@ impl ShellEnvironment {
             return stack;
         }
         if let Some(values) = self.arrays.get(name) {
-            return values.clone();
+            let present = self.array_present.get(name);
+            return values.iter().enumerate()
+                .filter(|(index, _)| present.is_some_and(|indices| indices.contains(index)))
+                .map(|(_, value)| value.clone())
+                .collect();
         }
         if let Some(values) = self.assoc_arrays.get(name) {
             let mut keys: Vec<_> = values.keys().cloned().collect();
@@ -440,8 +502,12 @@ impl ShellEnvironment {
     pub fn array_keys(&self, name: &str) -> Vec<String> {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
-        if let Some(values) = self.arrays.get(name) {
-            return values.iter().enumerate().filter_map(|(i,v)| (!v.is_empty()).then(|| i.to_string())).collect();
+        if self.arrays.contains_key(name) {
+            let mut indices = self.array_present.get(name)
+                .map(|indices| indices.iter().copied().collect::<Vec<_>>())
+                .unwrap_or_default();
+            indices.sort_unstable();
+            return indices.into_iter().map(|index| index.to_string()).collect();
         }
         if let Some(values) = self.assoc_arrays.get(name) {
             let mut keys: Vec<_> = values.keys().cloned().collect();
@@ -470,13 +536,12 @@ impl ShellEnvironment {
         }
         if let Some(array) = self.arrays.get(base) {
             if let Ok(index) = subscript.parse::<isize>() {
-                let resolved = if index < 0 {
-                    array.len() as isize + index
-                } else {
-                    index
-                };
+                let resolved = if index < 0 { array.len() as isize + index } else { index };
                 if resolved >= 0 {
-                    return array.get(resolved as usize).cloned().unwrap_or_default();
+                    let resolved = resolved as usize;
+                    if self.array_present.get(base).is_some_and(|indices| indices.contains(&resolved)) {
+                        return array.get(resolved).cloned().unwrap_or_default();
+                    }
                 }
             }
             return String::new();
@@ -503,6 +568,7 @@ impl ShellEnvironment {
             scalar: self.vars.get(name).cloned(),
             exported: self.exported.get(name).cloned(),
             array: self.arrays.get(name).cloned(),
+            array_present: self.array_present.get(name).cloned(),
             associative: self.assoc_arrays.get(name).cloned(),
             nameref: self.namerefs.get(name).cloned(),
             readonly: self.readonly.contains(name),
@@ -524,6 +590,7 @@ impl ShellEnvironment {
         self.vars.remove(name);
         self.exported.remove(name);
         self.arrays.remove(name);
+        self.array_present.remove(name);
         self.assoc_arrays.remove(name);
         self.namerefs.remove(name);
         self.readonly.remove(name);
@@ -545,6 +612,9 @@ impl ShellEnvironment {
                 }
                 if let Some(value) = previous.array {
                     self.arrays.insert(name.clone(), value);
+                }
+                if let Some(value) = previous.array_present {
+                    self.array_present.insert(name.clone(), value);
                 }
                 if let Some(value) = previous.associative {
                     self.assoc_arrays.insert(name.clone(), value);
@@ -596,6 +666,19 @@ impl ShellEnvironment {
         }
         self.remember_local(&name);
         self.set_array(name, values)
+    }
+
+    pub fn set_local_sparse_array(
+        &mut self,
+        name: impl Into<String>,
+        values: Vec<Option<String>>,
+    ) -> bool {
+        let name = name.into();
+        if self.local_scopes.is_empty() || self.readonly.contains(&name) {
+            return false;
+        }
+        self.remember_local(&name);
+        self.set_sparse_array(name, values)
     }
 
     pub fn declare_local_assoc(&mut self, name: impl Into<String>) -> bool {
