@@ -5735,7 +5735,13 @@ impl Interpreter {
         patterns.split(':')
             .filter(|pattern| !pattern.is_empty())
             .any(|pattern| {
-                glob::Pattern::new(&normalize_glob_path(pattern))
+                let pattern = normalize_glob_path(pattern);
+                if self.env.option_enabled("extglob") && contains_extglob(&pattern) {
+                    return bash_glob_regex(&pattern, false)
+                        .map(|compiled| compiled.is_match(&normalized))
+                        .unwrap_or(false);
+                }
+                glob::Pattern::new(&pattern)
                     .map(|compiled| compiled.matches(&normalized))
                     .unwrap_or(false)
             })
@@ -5743,13 +5749,12 @@ impl Interpreter {
 
     fn resolve_hashed_program(&mut self, name: &str) -> Result<Option<String>> {
         if let Some(path) = self.command_hash.get(name).cloned() {
-            if self.executable_ignored(&path) {
-                self.command_hash.remove(name);
-            } else if !self.env.option_enabled("checkhash") || Path::new(&path).exists() {
+            // Bash does not apply EXECIGNORE to commands already present in the
+            // command hash table.
+            if !self.env.option_enabled("checkhash") || Path::new(&path).exists() {
                 return Ok(Some(path));
-            } else {
-                self.command_hash.remove(name);
             }
+            self.command_hash.remove(name);
         }
 
         if let Some(found) = self.host.execute_builtin(
