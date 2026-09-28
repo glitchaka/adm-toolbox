@@ -1991,7 +1991,6 @@ impl Interpreter {
 
         if let Some(last) = words.last() {
             self.env.set("_", last.clone());
-            self.env.mark_exported("_");
         }
 
         if !trace.is_empty() {
@@ -2004,6 +2003,15 @@ impl Interpreter {
         }
         self.apply_output_redirects(command, &mut result)?;
         self.finalize_process_substitutions(&mut result)?;
+
+        if self.env.option_enabled("posix")
+            && !self.env.option_enabled("interactive")
+            && bash_special_builtin_names().contains(&name.as_str())
+            && result.status != 0
+        {
+            result.exit_requested = true;
+        }
+
         if !preserve_assignments {
             for (variable, previous) in temporary_assignments.into_iter().rev() {
                 self.env.restore_binding(&variable, previous);
@@ -3450,6 +3458,14 @@ impl Interpreter {
                 operands.push(arg.clone());
             }
             index += 1;
+        }
+
+        if self.env.option_enabled("posix") && operands.len() > 2 {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("fc: demasiados argumentos: {}\n", operands[2..].join(" ")),
+                2,
+            ));
         }
 
         let resolve = |value: Option<&String>, default: usize| -> usize {
