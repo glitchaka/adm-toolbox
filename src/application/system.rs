@@ -162,7 +162,8 @@ fn system_help() -> CommandOutput {
            sys uptime                   tiempo desde el último arranque\n\
            sys hostname                 nombre del equipo\n\
            sys whoami                   usuario actual\n\
-           sys uname [-a]               identificación del sistema\n\n\
+           sys uname [-a]               identificación del sistema\n\
+           sys kill PID [--tree]         termina un proceso o su árbol\n\n\
          Administración / auditoría de solo lectura:\n\
            sys services [NOMBRE]        servicios de Windows\n\
            sys users [USUARIO]          cuentas locales (o --domain)\n\
@@ -708,12 +709,23 @@ fn uname(args: &[String]) -> anyhow::Result<CommandOutput> {
 }
 
 fn kill_process(args: &[String]) -> anyhow::Result<CommandOutput> {
-    let Some(pid_text) = args.first() else {
-        return Ok(CommandOutput::error("kill: uso: kill PID", 2));
+    if args.iter().any(|arg| matches!(arg.as_str(), "-h" | "--help")) {
+        return Ok(CommandOutput::ok(
+            "sys kill — termina un proceso de Windows\n\
+             uso:\n\
+               sys kill PID          termina exactamente ese PID\n\
+               sys kill PID --tree   termina el PID y su árbol de procesos\n"
+        ));
+    }
+
+    let Some(pid_text) = args.iter().find(|arg| !arg.starts_with('-')) else {
+        return Ok(CommandOutput::error(
+            "kill: uso: sys kill PID [--tree]",
+            2,
+        ));
     };
 
     let pid_value = pid_text
-        .trim_start_matches('-')
         .parse::<u32>()
         .map_err(|_| anyhow::anyhow!("kill: PID inválido: {pid_text}"))?;
 
@@ -727,12 +739,61 @@ fn kill_process(args: &[String]) -> anyhow::Result<CommandOutput> {
         ));
     };
 
-    if process.kill() {
-        Ok(CommandOutput::ok(""))
-    } else {
-        Ok(CommandOutput::error(
-            format!("kill: no se pudo terminar {pid_value}"),
-            1,
-        ))
+    let process_name = process.name().to_string_lossy().into_owned();
+    let tree = args.iter().any(|arg| matches!(arg.as_str(), "--tree" | "-t"));
+
+    let mut command = Command::new("taskkill.exe");
+    command.args(["/PID", &pid_value.to_string(), "/F"]);
+    if tree {
+        command.arg("/T");
     }
+
+    let output = command.output()?;
+    if !output.status.success() {
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let detail = if !stderr.trim().is_empty() {
+            stderr.trim()
+        } else {
+            stdout.trim()
+        };
+
+        return Ok(CommandOutput::error(
+            if detail.is_empty() {
+                format!("kill: Windows no pudo terminar {pid_value} ({process_name})")
+            } else {
+                format!(
+                    "kill: Windows no pudo terminar {pid_value} ({process_name}): {detail}"
+                )
+            },
+            output.status.code().unwrap_or(1),
+        ));
+    }
+
+    let mut terminated = false;
+    for _ in 0..10 {
+        let mut verify = System::new_all();
+        verify.refresh_processes(sysinfo::ProcessesToUpdate::Some(&[pid]), true);
+        if verify.process(pid).is_none() {
+            terminated = true;
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(50));
+    }
+
+    if !terminated {
+        return Ok(CommandOutput::error(
+            format!(
+                "kill: Windows aceptó la terminación, pero el PID {pid_value} ({process_name}) sigue activo"
+            ),
+            1,
+        ));
+    }
+
+    Ok(CommandOutput::ok(format!(
+        "terminated: {} {}{}\n",
+        pid_value,
+        process_name,
+        if tree { " (process tree)" } else { "" }
+    )))
 }
