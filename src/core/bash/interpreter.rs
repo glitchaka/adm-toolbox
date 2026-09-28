@@ -1165,11 +1165,13 @@ impl Interpreter {
                 let saved = self.env.clone();
                 let saved_routes = self.persistent_output_routes.clone();
                 let saved_persist = self.persist_next_redirections;
-                let depth = self.env.get("BASH_SUBSHELL")
-                    .parse::<u32>()
-                    .unwrap_or(0)
-                    .saturating_add(1);
-                self.env.set("BASH_SUBSHELL", depth.to_string());
+                if self.env.special_variable_active("BASH_SUBSHELL") {
+                    let depth = self.env.get("BASH_SUBSHELL")
+                        .parse::<u32>()
+                        .unwrap_or(0)
+                        .saturating_add(1);
+                    self.env.set("BASH_SUBSHELL", depth.to_string());
+                }
                 let result = self.execute(body, stdin);
                 self.env = saved;
                 self.persistent_output_routes = saved_routes;
@@ -1907,7 +1909,10 @@ impl Interpreter {
 
         let mut result = if let Some(result) = self.shell_builtin(&name, args, local_stdin.as_deref())? {
             result
-        } else if let Some(body) = self.env.functions.get(&name).cloned() {
+        } else if !(self.env.option_enabled("posix") && name.contains('/'))
+            && self.env.functions.contains_key(&name)
+        {
+            let body = self.env.functions.get(&name).cloned().unwrap();
             if let Ok(limit) = self.env.get("FUNCNEST").parse::<usize>()
                 && limit > 0
                 && self.call_stack.len() >= limit
