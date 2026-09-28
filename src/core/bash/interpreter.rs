@@ -2794,6 +2794,7 @@ impl Interpreter {
             "beginning-of-line", "end-of-line", "forward-char", "backward-char",
             "delete-char", "backward-delete-char", "previous-history", "next-history",
             "complete", "clear-screen", "unix-line-discard", "quoted-insert",
+            "bash-vi-complete", "execute-named-command", "export-completions",
         ];
 
         if args.first().map(String::as_str) == Some("-l") {
@@ -2846,7 +2847,13 @@ impl Interpreter {
         }
 
         if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-p" | "-P" | "-s" | "-S" | "-v" | "-V")) {
-            let mut entries: Vec<_> = self.readline_bindings.iter().collect();
+            let filter_names: Vec<&str> = args.iter()
+                .skip_while(|arg| arg.starts_with('-'))
+                .map(String::as_str)
+                .collect();
+            let mut entries: Vec<_> = self.readline_bindings.iter()
+                .filter(|(_, value)| filter_names.is_empty() || filter_names.iter().any(|name| value.trim() == *name))
+                .collect();
             entries.sort_by_key(|(key, _)| *key);
             let stdout = entries.into_iter()
                 .map(|(key, value)| format!("\"{}\": {}\n", key.replace('"', "\\\""), value))
@@ -2867,10 +2874,28 @@ impl Interpreter {
         }
         if args.get(offset).map(String::as_str) == Some("-x") { offset += 1; }
 
-        for binding in &args[offset..] {
+        let remaining = &args[offset..];
+        let mut index = 0usize;
+        while index < remaining.len() {
+            let binding = &remaining[index];
             if let Some((key, command)) = binding.split_once(':') {
-                self.readline_bindings.insert(strip_outer_quotes(key.trim()), command.trim().to_owned());
+                let command = strip_outer_quotes(command.trim());
+                self.readline_bindings.insert(
+                    strip_outer_quotes(key.trim()),
+                    if args.iter().any(|arg| arg == "-x") { format!("shell:{command}") } else { command },
+                );
+                index += 1;
+                continue;
             }
+
+            if args.iter().any(|arg| arg == "-x") && index + 1 < remaining.len() {
+                let key = strip_outer_quotes(binding.trim());
+                let command = strip_outer_quotes(remaining[index + 1].trim());
+                self.readline_bindings.insert(key, format!("shell:{command}"));
+                index += 2;
+                continue;
+            }
+            index += 1;
         }
         Ok(ExecutionResult::success())
     }
@@ -3711,15 +3736,28 @@ impl Interpreter {
                     None
                 };
 
-                let spec = chars.get(i).copied().unwrap_or(' ');
+                let long_modifier = if chars.get(i) == Some(&'l') {
+                    i += 1;
+                    true
+                } else {
+                    false
+                };
+                let mut spec = chars.get(i).copied().unwrap_or(' ');
                 if i < chars.len() { i += 1; }
+                if long_modifier {
+                    spec = match spec {
+                        's' => 'S',
+                        'c' => 'C',
+                        other => other,
+                    };
+                }
 
                 let value = values.get(value_index).cloned().unwrap_or_default();
                 if spec != '%' { value_index += 1; }
 
                 let mut numeric = false;
                 let mut rendered = match spec {
-                    's' => precision
+                    's' | 'S' => precision
                         .map(|limit| value.chars().take(limit).collect())
                         .unwrap_or(value),
                     'q' | 'Q' => {
@@ -3730,14 +3768,14 @@ impl Interpreter {
                         } else {
                             value
                         };
-                        shell_quote(&raw)
+                        if alternate { shell_single_quote(&raw) } else { shell_quote(&raw) }
                     }
                     'b' => {
                         let (decoded, stop) = decode_backslash_escapes(&value, true);
                         if stop { stop_all = true; }
                         decoded
                     }
-                    'c' => value.chars().next().map(|ch| ch.to_string()).unwrap_or_default(),
+                    'c' | 'C' => value.chars().next().map(|ch| ch.to_string()).unwrap_or_default(),
                     'd' | 'i' => {
                         numeric = true;
                         let number = parse_printf_integer(&value).unwrap_or(0);
@@ -6713,6 +6751,10 @@ fn replace_glob_anchored(
         }
     }
     value.to_owned()
+}
+
+fn shell_single_quote(value: &str) -> String {
+    format!("'{}'", value.replace('\'', "'\\''"))
 }
 
 fn shell_quote(value: &str) -> String {
