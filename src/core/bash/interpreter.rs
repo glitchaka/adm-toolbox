@@ -1187,6 +1187,19 @@ impl Interpreter {
         };
 
         self.env.last_status = result.status;
+        if matches!(
+            node,
+            AstNode::Simple(_)
+                | AstNode::ArrayAssign { .. }
+                | AstNode::Conditional(_)
+                | AstNode::ArithmeticCommand(_)
+                | AstNode::FunctionDef { .. }
+                | AstNode::Subshell(_)
+                | AstNode::Background(_)
+                | AstNode::Coproc { .. }
+        ) {
+            self.env.set_array("PIPESTATUS", vec![result.status.to_string()]);
+        }
         Ok(result)
     }
 
@@ -1955,7 +1968,8 @@ impl Interpreter {
                     127,
                 ));
             };
-            let child_env = self.execution_environment();
+            let mut child_env = self.execution_environment();
+            child_env.insert("_".to_owned(), program.clone());
             match self.host.execute_external(
                 &program,
                 args,
@@ -1971,6 +1985,11 @@ impl Interpreter {
                 ),
             }
         };
+
+        if let Some(last) = words.last() {
+            self.env.set("_", last.clone());
+            self.env.mark_exported("_");
+        }
 
         if !trace.is_empty() {
             let trace_fd = self.env.get("BASH_XTRACEFD").parse::<i32>().ok().unwrap_or(2);
@@ -2014,11 +2033,13 @@ impl Interpreter {
             .flat_map(|frame| frame.args.iter().rev().cloned())
             .collect::<Vec<_>>();
 
-        self.env.set_array("FUNCNAME", functions);
-        self.env.set_array("BASH_SOURCE", sources);
-        self.env.set_array("BASH_LINENO", lines);
-        self.env.set_array("BASH_ARGC", argc);
-        self.env.set_array("BASH_ARGV", argv);
+        if self.env.special_variable_active("FUNCNAME") {
+            self.env.set_internal_array("FUNCNAME", functions);
+        }
+        self.env.set_internal_array("BASH_SOURCE", sources);
+        self.env.set_internal_array("BASH_LINENO", lines);
+        self.env.set_internal_array("BASH_ARGC", argc);
+        self.env.set_internal_array("BASH_ARGV", argv);
     }
 
     fn shell_builtin(

@@ -245,6 +245,12 @@ impl ShellEnvironment {
 
     pub fn get(&self, name: &str) -> String {
         if self.disabled_special_vars.contains(name) {
+            if let Some((base, subscript)) = split_subscript(name) {
+                return self.get_array_value(base, subscript);
+            }
+            if self.arrays.contains_key(name) || self.assoc_arrays.contains_key(name) {
+                return self.get_array_value(name, "0");
+            }
             return self.vars.get(name).cloned().unwrap_or_default();
         }
         match name {
@@ -342,7 +348,7 @@ impl ShellEnvironment {
         if resettable_special_variable(name) && !self.disabled_special_vars.contains(name) {
             return true;
         }
-        if name == "DIRSTACK" { return true; }
+        if name == "DIRSTACK" && !self.disabled_special_vars.contains("DIRSTACK") { return true; }
         if let Some((base, subscript)) = split_subscript(name) {
             if let Some(array) = self.arrays.get(base) {
                 let present = self.array_present.get(base);
@@ -382,6 +388,13 @@ impl ShellEnvironment {
         }
         let name = self.dereference_name(&original);
         if self.readonly.contains(&name) { return false; }
+        let base_name = split_subscript(&name).map(|(base, _)| base).unwrap_or(&name);
+        if immutable_call_stack_array(base_name) {
+            return true;
+        }
+        if base_name == "FUNCNAME" && !self.disabled_special_vars.contains("FUNCNAME") {
+            return true;
+        }
         if self.shopt_options.contains("restricted_shell")
             && matches!(name.as_str(), "PATH" | "SHELL" | "ENV" | "BASH_ENV")
         {
@@ -471,8 +484,12 @@ impl ShellEnvironment {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
         if self.readonly.contains(name) { return false; }
-        if resettable_special_variable(name) {
-            self.disabled_special_vars.insert(name.to_owned());
+        let base_name = split_subscript(name).map(|(base, _)| base).unwrap_or(name);
+        if immutable_call_stack_array(base_name) {
+            return false;
+        }
+        if resettable_special_variable(base_name) {
+            self.disabled_special_vars.insert(base_name.to_owned());
         }
         if self.shopt_options.contains("restricted_shell")
             && matches!(name, "PATH" | "SHELL" | "ENV" | "BASH_ENV")
@@ -528,6 +545,11 @@ impl ShellEnvironment {
     pub fn set_array(&mut self, name: impl Into<String>, values: Vec<String>) -> bool {
         let name = name.into();
         if self.readonly.contains(&name) { return false; }
+        if immutable_call_stack_array(&name)
+            || (name == "FUNCNAME" && !self.disabled_special_vars.contains("FUNCNAME"))
+        {
+            return true;
+        }
         self.vars.remove(&name);
         self.assoc_arrays.remove(&name);
         let present = (0..values.len()).collect::<HashSet<_>>();
@@ -562,6 +584,15 @@ impl ShellEnvironment {
         true
     }
 
+    pub fn set_internal_array(&mut self, name: impl Into<String>, values: Vec<String>) {
+        let name = name.into();
+        self.vars.remove(&name);
+        self.assoc_arrays.remove(&name);
+        let present = (0..values.len()).collect::<HashSet<_>>();
+        self.array_present.insert(name.clone(), present);
+        self.arrays.insert(name, values);
+    }
+
     pub fn max_array_index(&self, name: &str) -> Option<usize> {
         let resolved = self.dereference_name(name);
         self.array_present.get(&resolved)
@@ -581,7 +612,7 @@ impl ShellEnvironment {
     pub fn array_values(&self, name: &str) -> Vec<String> {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
-        if name == "DIRSTACK" {
+        if name == "DIRSTACK" && !self.disabled_special_vars.contains("DIRSTACK") {
             let mut stack = vec![self.cwd.to_string_lossy().into_owned()];
             stack.extend(self.dir_stack.iter().rev().map(|path| path.to_string_lossy().into_owned()));
             return stack;
@@ -620,7 +651,7 @@ impl ShellEnvironment {
     }
 
     fn get_array_value(&self, base: &str, subscript: &str) -> String {
-        if base == "DIRSTACK" {
+        if base == "DIRSTACK" && !self.disabled_special_vars.contains("DIRSTACK") {
             let values = self.array_values("DIRSTACK");
             if subscript == "@" { return values.join(" "); }
             if subscript == "*" { return values.join(&self.ifs_first().to_string()); }
@@ -972,8 +1003,13 @@ fn resettable_special_variable(name: &str) -> bool {
     matches!(
         name,
         "BASHPID" | "BASH_ARGV0" | "BASH_COMMAND" | "BASH_MONOSECONDS"
-            | "EPOCHSECONDS" | "EPOCHREALTIME" | "RANDOM" | "SRANDOM" | "SECONDS"
+            | "BASH_SUBSHELL" | "DIRSTACK" | "EPOCHSECONDS" | "EPOCHREALTIME"
+            | "FUNCNAME" | "RANDOM" | "SRANDOM" | "SECONDS"
     )
+}
+
+fn immutable_call_stack_array(name: &str) -> bool {
+    matches!(name, "BASH_ARGC" | "BASH_ARGV" | "BASH_LINENO" | "BASH_SOURCE")
 }
 
 impl Default for ShellEnvironment {
