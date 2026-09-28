@@ -1655,7 +1655,13 @@ impl Interpreter {
         )? {
             result
         } else {
-            let program = self.resolve_hashed_program(&name)?;
+            let Some(program) = self.resolve_hashed_program(&name)? else {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("{name}: comando no encontrado\n"),
+                    127,
+                ));
+            };
             let child_env = self.execution_environment();
             match self.host.execute_external(
                 &program,
@@ -5184,7 +5190,7 @@ impl Interpreter {
         match self.host.execute_builtin("which", &[name.to_owned()], &self.env.cwd, None)? {
             Some(result) if result.status == 0 => {
                 let path = result.stdout.lines().next().unwrap_or("").trim().to_owned();
-                Ok((!path.is_empty()).then_some(path))
+                Ok((!path.is_empty() && !self.executable_ignored(&path)).then_some(path))
             }
             _ => Ok(None),
         }
@@ -5459,31 +5465,57 @@ impl Interpreter {
         Ok(ExecutionResult::success())
     }
 
-    fn resolve_hashed_program(&mut self, name: &str) -> Result<String> {
+    fn executable_ignored(&self, path: &str) -> bool {
+        let patterns = self.env.get("EXECIGNORE");
+        if patterns.is_empty() { return false; }
+        let normalized = normalize_glob_path(path);
+        patterns.split(':')
+            .filter(|pattern| !pattern.is_empty())
+            .any(|pattern| {
+                glob::Pattern::new(&normalize_glob_path(pattern))
+                    .map(|compiled| compiled.matches(&normalized))
+                    .unwrap_or(false)
+            })
+    }
+
+    fn resolve_hashed_program(&mut self, name: &str) -> Result<Option<String>> {
         if let Some(path) = self.command_hash.get(name).cloned() {
-            if !self.env.option_enabled("checkhash") || Path::new(&path).exists() {
-                return Ok(path);
+            if self.executable_ignored(&path) {
+                self.command_hash.remove(name);
+            } else if !self.env.option_enabled("checkhash") || Path::new(&path).exists() {
+                return Ok(Some(path));
+            } else {
+                self.command_hash.remove(name);
             }
-            self.command_hash.remove(name);
         }
 
-        if self.env.option_enabled("hashall") {
-            if let Some(found) = self.host.execute_builtin(
-                "which",
-                &[name.to_owned()],
-                &self.env.cwd,
-                None,
-            )? {
-                if found.status == 0 {
-                    if let Some(path) = found.stdout.lines().next().filter(|line| !line.is_empty()) {
-                        self.command_hash.insert(name.to_owned(), path.to_owned());
-                        return Ok(path.to_owned());
+        if let Some(found) = self.host.execute_builtin(
+            "which",
+            &[name.to_owned()],
+            &self.env.cwd,
+            None,
+        )? {
+            if found.status == 0 {
+                if let Some(path) = found.stdout.lines().next().map(str::trim).filter(|line| !line.is_empty()) {
+                    if self.executable_ignored(path) {
+                        return Ok(None);
                     }
+                    if self.env.option_enabled("hashall") {
+                        self.command_hash.insert(name.to_owned(), path.to_owned());
+                    }
+                    return Ok(Some(path.to_owned()));
                 }
             }
         }
-        Ok(name.to_owned())
+
+        // Commands containing an explicit path are not PATH search results and
+        // therefore are not filtered by EXECIGNORE.
+        if name.contains('/') || name.contains('\\') {
+            return Ok(Some(name.to_owned()));
+        }
+        Ok(None)
     }
+
 
     fn execute_command_direct(
         &mut self,
@@ -5499,7 +5531,13 @@ impl Interpreter {
         if let Some(result) = self.host.execute_builtin(name, args, &self.env.cwd, stdin)? {
             return Ok(result);
         }
-        let program = self.resolve_hashed_program(name)?;
+        let Some(program) = self.resolve_hashed_program(name)? else {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("{name}: comando no encontrado\n"),
+                127,
+            ));
+        };
         let child_env = self.execution_environment();
         match self.host.execute_external(&program, args, &self.env.cwd, &child_env, stdin) {
             Ok(result) => Ok(result),
