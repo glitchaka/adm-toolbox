@@ -26,6 +26,9 @@ use crate::adapters::{
 
 const PAD: i32 = 14;
 const TITLE_BAR_HEIGHT: i32 = 32;
+const TITLE_ISLAND_WIDTH: i32 = 760;
+const TITLE_ISLAND_TOP: i32 = 6;
+const TITLE_ISLAND_RADIUS: i32 = 12;
 const RESIZE_BORDER: i32 = 7;
 const WINDOW_WIDTH: i32 = 1240;
 const WINDOW_HEIGHT: i32 = 820;
@@ -449,30 +452,42 @@ unsafe fn screen_point_to_client(hwnd: HWND, x: i32, y: i32) -> (i32, i32) {
     }
 }
 
+fn title_island_rect(hwnd: HWND) -> RECT {
+    unsafe {
+        let mut client: RECT = std::mem::zeroed();
+        GetClientRect(hwnd, &mut client);
+        let available = (client.right - 24).max(220);
+        let width = TITLE_ISLAND_WIDTH.min(available);
+        let left = ((client.right - width) / 2).max(12);
+
+        RECT {
+            left,
+            top: TITLE_ISLAND_TOP,
+            right: left + width,
+            bottom: TITLE_ISLAND_TOP + TITLE_BAR_HEIGHT,
+        }
+    }
+}
+
 fn title_button_at(hwnd: HWND, x: i32, y: i32) -> Option<TitleButton> {
-    if !(0..TITLE_BAR_HEIGHT).contains(&y) {
+    let island = title_island_rect(hwnd);
+    if x < island.left || x >= island.right || y < island.top || y >= island.bottom {
         return None;
     }
 
-    unsafe {
-        let mut rect: RECT = std::mem::zeroed();
-        GetClientRect(hwnd, &mut rect);
-        let right = rect.right;
-
-        [
-            (TitleButton::Minimize, right - 109, right - 75),
-            (TitleButton::Maximize, right - 75, right - 41),
-            (TitleButton::Close, right - 41, right - 7),
-        ]
-        .into_iter()
-        .find_map(|(button, left, right)| {
-            if x >= left && x < right {
-                Some(button)
-            } else {
-                None
-            }
-        })
-    }
+    [
+        (TitleButton::Minimize, island.right - 102, island.right - 68),
+        (TitleButton::Maximize, island.right - 68, island.right - 34),
+        (TitleButton::Close, island.right - 34, island.right),
+    ]
+    .into_iter()
+    .find_map(|(button, left, right)| {
+        if x >= left && x < right {
+            Some(button)
+        } else {
+            None
+        }
+    })
 }
 
 impl Terminal {
@@ -539,20 +554,38 @@ impl Terminal {
         lines.join("\r\n")
     }
 
-    unsafe fn paint_titlebar(&self, _hwnd: HWND, dc: HDC, bounds: &RECT) {
+    unsafe fn paint_titlebar(&self, hwnd: HWND, dc: HDC, _bounds: &RECT) {
         unsafe {
-            let title_rect = RECT {
-                left: 0,
-                top: 0,
-                right: bounds.right,
-                bottom: TITLE_BAR_HEIGHT,
-            };
+            let island = title_island_rect(hwnd);
+
             let brush = CreateSolidBrush(TITLE_BG);
-            FillRect(dc, &title_rect, brush);
+            let old_brush = SelectObject(dc, brush);
+            let old_pen = SelectObject(dc, GetStockObject(NULL_PEN));
+            RoundRect(
+                dc,
+                island.left,
+                island.top,
+                island.right,
+                island.bottom,
+                TITLE_ISLAND_RADIUS,
+                TITLE_ISLAND_RADIUS,
+            );
+            SelectObject(dc, old_pen);
+            SelectObject(dc, old_brush);
             DeleteObject(brush);
 
             if !self.icon.is_null() {
-                DrawIconEx(dc, 9, 6, self.icon, 20, 20, 0, null_mut(), DI_NORMAL);
+                DrawIconEx(
+                    dc,
+                    island.left + 10,
+                    island.top + 6,
+                    self.icon,
+                    20,
+                    20,
+                    0,
+                    null_mut(),
+                    DI_NORMAL,
+                );
             }
 
             let old_font = SelectObject(dc, self.bold);
@@ -560,7 +593,13 @@ impl Terminal {
             SetTextColor(dc, FG);
 
             let title = wide("SST");
-            TextOutW(dc, 38, 7, title.as_ptr(), (title.len() - 1) as i32);
+            TextOutW(
+                dc,
+                island.left + 38,
+                island.top + 7,
+                title.as_ptr(),
+                (title.len() - 1) as i32,
+            );
 
             let cpu = if self.metrics.cpus().is_empty() {
                 0.0
@@ -577,16 +616,15 @@ impl Terminal {
                 / 1024.0
                 / 1024.0;
             let now = Local::now();
-            let controls_left = bounds.right - 116;
+            let controls_left = island.right - 109;
+            let island_width = island.right - island.left;
 
-            // La barra se degrada limpiamente en ventanas estrechas: primero
-            // desaparecen CPU/RAM, luego la fecha, conservando siempre la hora.
-            if bounds.right >= 900 {
+            if island_width >= 690 {
                 let cpu_text = wide(&format!("CPU {:>3.0}%", cpu));
                 TextOutW(
                     dc,
-                    controls_left - 294,
-                    7,
+                    controls_left - 292,
+                    island.top + 7,
                     cpu_text.as_ptr(),
                     (cpu_text.len() - 1) as i32,
                 );
@@ -594,54 +632,52 @@ impl Terminal {
                 let ram_text = wide(&format!("RAM {:.1} GiB", ram_gib));
                 TextOutW(
                     dc,
-                    controls_left - 205,
-                    7,
+                    controls_left - 202,
+                    island.top + 7,
                     ram_text.as_ptr(),
                     (ram_text.len() - 1) as i32,
                 );
             }
 
-            if bounds.right >= 650 {
+            if island_width >= 540 {
+                let time_text = wide(&now.format("%H:%M").to_string());
+                TextOutW(
+                    dc,
+                    controls_left - 132,
+                    island.top + 7,
+                    time_text.as_ptr(),
+                    (time_text.len() - 1) as i32,
+                );
+
                 let date_text = wide(&now.format("%d %b").to_string());
                 TextOutW(
                     dc,
-                    controls_left - 75,
-                    7,
+                    controls_left - 74,
+                    island.top + 7,
                     date_text.as_ptr(),
                     (date_text.len() - 1) as i32,
                 );
             }
 
-            if bounds.right >= 420 {
-                let time_text = wide(&now.format("%H:%M").to_string());
-                TextOutW(
-                    dc,
-                    controls_left - 135,
-                    7,
-                    time_text.as_ptr(),
-                    (time_text.len() - 1) as i32,
-                );
-            }
-
             for (button_kind, left, right) in [
-                (TitleButton::Minimize, bounds.right - 109, bounds.right - 75),
-                (TitleButton::Maximize, bounds.right - 75, bounds.right - 41),
-                (TitleButton::Close, bounds.right - 41, bounds.right - 7),
+                (TitleButton::Minimize, island.right - 102, island.right - 68),
+                (TitleButton::Maximize, island.right - 68, island.right - 34),
+                (TitleButton::Close, island.right - 34, island.right),
             ] {
                 if self.hovered_title_button == Some(button_kind) {
                     let hover = CreateSolidBrush(TITLE_HOVER_BG);
-                    let rect = RECT {
+                    let hover_rect = RECT {
                         left,
-                        top: 1,
+                        top: island.top + 1,
                         right,
-                        bottom: TITLE_BAR_HEIGHT - 1,
+                        bottom: island.bottom - 1,
                     };
-                    FillRect(dc, &rect, hover);
+                    FillRect(dc, &hover_rect, hover);
                     DeleteObject(hover);
                 }
 
                 let cx = (left + right) / 2;
-                let cy = TITLE_BAR_HEIGHT / 2;
+                let cy = (island.top + island.bottom) / 2;
                 let pressed_offset =
                     if self.pressed_title_button == Some(button_kind) { 1 } else { 0 };
                 let glyph_color = if button_kind == TitleButton::Close
@@ -658,19 +694,16 @@ impl Terminal {
 
                 match button_kind {
                     TitleButton::Minimize => {
-                        // Cheurón hacia abajo: forma de la referencia, no un carácter '>'.
                         MoveToEx(dc, cx - 5, cy - 2 + pressed_offset, null_mut());
                         LineTo(dc, cx, cy + 3 + pressed_offset);
                         LineTo(dc, cx + 5, cy - 2 + pressed_offset);
                     }
                     TitleButton::Maximize => {
-                        // Cheurón hacia arriba; el mismo control restaura si ya está maximizada.
                         MoveToEx(dc, cx - 5, cy + 2 + pressed_offset, null_mut());
                         LineTo(dc, cx, cy - 3 + pressed_offset);
                         LineTo(dc, cx + 5, cy + 2 + pressed_offset);
                     }
                     TitleButton::Close => {
-                        // Símbolo de encendido: círculo fino + trazo vertical.
                         Ellipse(
                             dc,
                             cx - 6,
@@ -950,7 +983,12 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     return HTBOTTOM as isize;
                 }
 
-                if (0..TITLE_BAR_HEIGHT).contains(&y) {
+                let island = title_island_rect(hwnd);
+                if x >= island.left
+                    && x < island.right
+                    && y >= island.top
+                    && y < island.bottom
+                {
                     return HTCAPTION as isize;
                 }
 
@@ -1193,7 +1231,12 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
                     return 0;
                 }
 
-                if y < TITLE_BAR_HEIGHT {
+                let island = title_island_rect(hwnd);
+                if x >= island.left
+                    && x < island.right
+                    && y >= island.top
+                    && y < island.bottom
+                {
                     return DefWindowProcW(hwnd, msg, wp, lp);
                 }
 
