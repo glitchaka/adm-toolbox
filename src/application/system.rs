@@ -99,7 +99,7 @@ impl SystemService {
 
             writeln!(
                 screen,
-                "ADM top  uptime {}s  CPU {} cores  Mem {} / {} MiB",
+                "SST top  uptime {}s  CPU {} cores  Mem {} / {} MiB",
                 System::uptime(),
                 system.cpus().len(),
                 system.used_memory() / 1024 / 1024,
@@ -700,10 +700,10 @@ fn uname(args: &[String]) -> anyhow::Result<CommandOutput> {
 
     if all {
         Ok(CommandOutput::ok(format!(
-            "ADM-Windows {host} {kernel} {arch} {os}\n"
+            "SST-Windows {host} {kernel} {arch} {os}\n"
         )))
     } else {
-        Ok(CommandOutput::ok("ADM-Windows\n"))
+        Ok(CommandOutput::ok("SST-Windows\n"))
     }
 }
 
