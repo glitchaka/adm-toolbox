@@ -1,20 +1,26 @@
 //! Shell Shock Tool native terminal: custom renderer, embedded Nerd Font and portable shell.
 use std::{
+    ffi::c_void,
+    fs,
     mem::size_of,
     ptr::{null, null_mut},
     time::{Duration, Instant},
 };
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
+use serde::Deserialize;
 use crossterm::event::{KeyCode as CtKeyCode, KeyEvent as CtKeyEvent, KeyModifiers as CtKeyModifiers};
 use windows_sys::Win32::{
     Foundation::*,
     Graphics::{Dwm::*, Gdi::*},
-    System::{DataExchange::*, LibraryLoader::GetModuleHandleW, Memory::*},
+    System::{DataExchange::*, LibraryLoader::{GetModuleHandleW, GetProcAddress}, Memory::*},
     UI::{Controls::MARGINS, Input::KeyboardAndMouse::*, WindowsAndMessaging::*},
 };
 
-use crate::adapters::terminal::embedded::EmbeddedSession;
+use crate::adapters::{
+    persistence::AppPaths,
+    terminal::embedded::EmbeddedSession,
+};
 
 const PAD: i32 = 14;
 const TITLE_BAR_HEIGHT: i32 = 44;
@@ -36,6 +42,50 @@ const ACCENT_PINK: u32 = 0xBD9FFF; // #FF9FBD
 const BTN_YELLOW: u32 = 0x1BC6F6;  // #F6C61B
 const BTN_BLUE: u32 = 0xF5A81F;    // #1FA8F5
 const BTN_RED: u32 = 0x382DFF;     // #FF2D38
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(default)]
+struct TerminalAppearance {
+    backdrop: String,
+    background_opacity: u8,
+    background_color: String,
+}
+
+impl Default for TerminalAppearance {
+    fn default() -> Self {
+        Self {
+            backdrop: "acrylic".to_owned(),
+            background_opacity: 82,
+            background_color: "#111629".to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct TerminalConfig {
+    #[serde(default)]
+    appearance: TerminalAppearance,
+}
+
+#[repr(C)]
+struct AccentPolicy {
+    accent_state: i32,
+    accent_flags: i32,
+    gradient_color: u32,
+    animation_id: i32,
+}
+
+#[repr(C)]
+struct WindowCompositionAttributeData {
+    attribute: i32,
+    data: *mut c_void,
+    size_of_data: usize,
+}
+
+const WCA_ACCENT_POLICY: i32 = 19;
+const ACCENT_DISABLED: i32 = 0;
+const ACCENT_ENABLE_BLUR_BEHIND: i32 = 3;
+const ACCENT_ENABLE_ACRYLIC_BLUR_BEHIND: i32 = 4;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum TitleButton {
@@ -61,13 +111,56 @@ struct Terminal {
     cursor_on: bool,
     blink: Instant,
     font_resource: HANDLE,
+    appearance: TerminalAppearance,
 }
 
 fn wide(text: &str) -> Vec<u16> {
     text.encode_utf16().chain(Some(0)).collect()
 }
 
+fn load_terminal_appearance(paths: &AppPaths) -> Result<TerminalAppearance> {
+    let path = paths.terminal_config_file();
+    let text = fs::read_to_string(&path)
+        .with_context(|| format!("No se pudo leer {}", path.display()))?;
+    let mut config: TerminalConfig = toml::from_str(&text)
+        .with_context(|| format!("Configuración visual inválida: {}", path.display()))?;
+
+    config.appearance.background_opacity = config.appearance.background_opacity.min(100);
+    config.appearance.backdrop = config.appearance.backdrop.trim().to_ascii_lowercase();
+
+    if !matches!(
+        config.appearance.backdrop.as_str(),
+        "acrylic" | "blur" | "glass" | "solid"
+    ) {
+        anyhow::bail!(
+            "terminal.toml: appearance.backdrop debe ser acrylic, blur, glass o solid"
+        );
+    }
+
+    parse_hex_color(&config.appearance.background_color)
+        .with_context(|| "terminal.toml: appearance.background_color inválido")?;
+
+    Ok(config.appearance)
+}
+
+fn parse_hex_color(value: &str) -> Result<u32> {
+    let hex = value.trim().trim_start_matches('#');
+    if hex.len() != 6 {
+        anyhow::bail!("el color debe usar formato #RRGGBB");
+    }
+
+    let rgb = u32::from_str_radix(hex, 16)?;
+    let r = (rgb >> 16) & 0xff;
+    let g = (rgb >> 8) & 0xff;
+    let b = rgb & 0xff;
+    Ok(r | (g << 8) | (b << 16))
+}
+
 pub fn run() -> Result<()> {
+    let paths = AppPaths::detect();
+    paths.ensure_layout()?;
+    let appearance = load_terminal_appearance(&paths)?;
+
     unsafe {
         SetProcessDPIAware();
 
@@ -135,6 +228,7 @@ pub fn run() -> Result<()> {
             cursor_on: true,
             blink: Instant::now(),
             font_resource,
+            appearance,
         });
 
         let ptr = Box::into_raw(state);
@@ -206,7 +300,7 @@ unsafe fn create_font(face: &str, size: i32, bold: bool) -> HFONT {
     }
 }
 
-unsafe fn apply_window_effects(hwnd: HWND) {
+unsafe fn apply_window_effects(hwnd: HWND, appearance: &TerminalAppearance) {
     unsafe {
         let dark: i32 = 1;
         let _ = DwmSetWindowAttribute(
@@ -216,10 +310,8 @@ unsafe fn apply_window_effects(hwnd: HWND) {
             size_of::<i32>() as u32,
         );
 
-        // Do not use DWMWA_SYSTEMBACKDROP_TYPE here. It affects the entire client
-        // window, including the custom titlebar, and Windows changes its tint when
-        // the window becomes inactive. The terminal glass is instead created by
-        // extending only the bottom DWM frame into the client area.
+        // SST controls the terminal backdrop itself. Disable the automatic system
+        // backdrop so Windows does not retint the custom titlebar on focus changes.
         let backdrop_none: i32 = 1;
         let _ = DwmSetWindowAttribute(
             hwnd,
@@ -236,7 +328,58 @@ unsafe fn apply_window_effects(hwnd: HWND) {
             size_of::<i32>() as u32,
         );
 
-        update_terminal_glass_region(hwnd);
+        apply_configured_backdrop(hwnd, appearance);
+
+        if appearance.backdrop != "solid" {
+            update_terminal_glass_region(hwnd);
+        } else {
+            let margins = MARGINS {
+                cxLeftWidth: 0,
+                cxRightWidth: 0,
+                cyTopHeight: 0,
+                cyBottomHeight: 0,
+            };
+            let _ = DwmExtendFrameIntoClientArea(hwnd, &margins);
+        }
+    }
+}
+
+unsafe fn apply_configured_backdrop(hwnd: HWND, appearance: &TerminalAppearance) {
+    unsafe {
+        let user32 = GetModuleHandleW(wide("user32.dll").as_ptr());
+        if user32.is_null() {
+            return;
+        }
+
+        let Some(proc) = GetProcAddress(user32, b"SetWindowCompositionAttribute\0".as_ptr()) else {
+            return;
+        };
+
+        type SetWindowCompositionAttributeFn =
+            unsafe extern "system" fn(HWND, *mut WindowCompositionAttributeData) -> i32;
+        let set_attribute: SetWindowCompositionAttributeFn = std::mem::transmute(proc);
+
+        let state = match appearance.backdrop.as_str() {
+            "acrylic" => ACCENT_ENABLE_ACRYLIC_BLUR_BEHIND,
+            "blur" => ACCENT_ENABLE_BLUR_BEHIND,
+            _ => ACCENT_DISABLED,
+        };
+
+        let alpha = ((u32::from(appearance.background_opacity) * 255) / 100) << 24;
+        let tint = parse_hex_color(&appearance.background_color).unwrap_or(BG);
+        let mut policy = AccentPolicy {
+            accent_state: state,
+            accent_flags: 2,
+            gradient_color: alpha | tint,
+            animation_id: 0,
+        };
+        let mut data = WindowCompositionAttributeData {
+            attribute: WCA_ACCENT_POLICY,
+            data: (&mut policy as *mut AccentPolicy).cast(),
+            size_of_data: size_of::<AccentPolicy>(),
+        };
+
+        let _ = set_attribute(hwnd, &mut data);
     }
 }
 
@@ -470,7 +613,12 @@ impl Terminal {
             // Black is the DWM glass key only inside the lower extended frame.
             // The titlebar is repainted afterward with TITLE_BG and sits outside
             // that frame, so it remains fully opaque.
-            let glass = CreateSolidBrush(0x000000);
+            let base_color = if self.appearance.backdrop == "solid" {
+                parse_hex_color(&self.appearance.background_color).unwrap_or(BG)
+            } else {
+                0x000000
+            };
+            let glass = CreateSolidBrush(base_color);
             FillRect(mem, &bounds, glass);
             DeleteObject(glass);
 
@@ -648,7 +796,7 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
 
         match msg {
             WM_CREATE => {
-                apply_window_effects(hwnd);
+                apply_window_effects(hwnd, &state.appearance);
 
                 let dc = GetDC(hwnd);
                 let old = SelectObject(dc, state.font);
