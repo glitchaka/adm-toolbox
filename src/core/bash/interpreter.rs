@@ -5945,19 +5945,19 @@ impl Interpreter {
 
         if let Some(rest) = remainder.strip_prefix("//") {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob(&self.env.get(name), pattern, replacement, true));
+            return Ok(replace_glob(&self.env.get(name), pattern, replacement, true, self.env.option_enabled("patsub_replacement")));
         }
         if let Some(rest) = remainder.strip_prefix("/#") {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, true));
+            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, true, self.env.option_enabled("patsub_replacement")));
         }
         if let Some(rest) = remainder.strip_prefix("/%") {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, false));
+            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, false, self.env.option_enabled("patsub_replacement")));
         }
         if let Some(rest) = remainder.strip_prefix('/') {
             let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
-            return Ok(replace_glob(&self.env.get(name), pattern, replacement, false));
+            return Ok(replace_glob(&self.env.get(name), pattern, replacement, false, self.env.option_enabled("patsub_replacement")));
         }
 
         for operator in ["##", "#", "%%", "%"] {
@@ -6620,7 +6620,43 @@ fn remove_glob_pattern(value: &str, pattern: &str, operator: &str) -> String {
     value.to_owned()
 }
 
-fn replace_glob(value: &str, pattern: &str, replacement: &str, all: bool) -> String {
+fn render_pattern_replacement(replacement: &str, matched: &str, expand_match: bool) -> String {
+    if !expand_match {
+        return replacement.to_owned();
+    }
+
+    let mut out = String::new();
+    let mut escaped = false;
+    for ch in replacement.chars() {
+        if escaped {
+            if ch == '&' || ch == '\\' {
+                out.push(ch);
+            } else {
+                out.push('\\');
+                out.push(ch);
+            }
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+        } else if ch == '&' {
+            out.push_str(matched);
+        } else {
+            out.push(ch);
+        }
+    }
+    if escaped { out.push('\\'); }
+    out
+}
+
+fn replace_glob(
+    value: &str,
+    pattern: &str,
+    replacement: &str,
+    all: bool,
+    expand_match: bool,
+) -> String {
     let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
     let points = char_boundaries(value);
     let mut out = String::new();
@@ -6641,7 +6677,8 @@ fn replace_glob(value: &str, pattern: &str, replacement: &str, all: bool) -> Str
             break;
         };
         out.push_str(&value[cursor..start]);
-        out.push_str(replacement);
+        let matched = &value[start..end];
+        out.push_str(&render_pattern_replacement(replacement, matched, expand_match));
         cursor = end;
         if !all {
             out.push_str(&value[cursor..]);
@@ -6651,19 +6688,27 @@ fn replace_glob(value: &str, pattern: &str, replacement: &str, all: bool) -> Str
     if value.is_empty() { String::new() } else { out }
 }
 
-fn replace_glob_anchored(value: &str, pattern: &str, replacement: &str, prefix: bool) -> String {
+fn replace_glob_anchored(
+    value: &str,
+    pattern: &str,
+    replacement: &str,
+    prefix: bool,
+    expand_match: bool,
+) -> String {
     let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
     let points = char_boundaries(value);
     if prefix {
         for &end in points.iter().rev() {
             if pattern.matches(&value[..end]) {
-                return format!("{replacement}{}", &value[end..]);
+                let rendered = render_pattern_replacement(replacement, &value[..end], expand_match);
+                return format!("{rendered}{}", &value[end..]);
             }
         }
     } else {
         for &start in &points {
             if pattern.matches(&value[start..]) {
-                return format!("{}{replacement}", &value[..start]);
+                let rendered = render_pattern_replacement(replacement, &value[start..], expand_match);
+                return format!("{}{rendered}", &value[..start]);
             }
         }
     }
@@ -7425,7 +7470,14 @@ fn completion_files(cwd: &Path, prefix: &str, directories_only: bool) -> Vec<Str
 
 fn path_commands(path_value: &str) -> Vec<String> {
     let mut values = Vec::new();
-    for directory in std::env::split_paths(path_value) {
+    let directories: Vec<PathBuf> = if path_value.is_empty() {
+        vec![PathBuf::from(".")]
+    } else {
+        std::env::split_paths(path_value)
+            .map(|path| if path.as_os_str().is_empty() { PathBuf::from(".") } else { path })
+            .collect()
+    };
+    for directory in directories {
         let Ok(entries) = fs::read_dir(directory) else { continue };
         for entry in entries.flatten() {
             let Ok(file_type) = entry.file_type() else { continue };
