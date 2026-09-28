@@ -17,7 +17,7 @@ pub enum Token {
     RParen,
     LBrace,
     RBrace,
-    Redirect { fd: i32, op: RedirectOp },
+    Redirect { fd: i32, variable: Option<String>, op: RedirectOp },
     Eof,
 }
 
@@ -297,12 +297,12 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
             }
             '&' if chars.get(i + 1) == Some(&'>') && chars.get(i + 2) == Some(&'>') => {
                 flush(&mut word, &mut out);
-                out.push(Token::Redirect { fd: 1, op: RedirectOp::BothAppend });
+                out.push(Token::Redirect { fd: 1, variable: None, op: RedirectOp::BothAppend });
                 i += 3;
             }
             '&' if chars.get(i + 1) == Some(&'>') => {
                 flush(&mut word, &mut out);
-                out.push(Token::Redirect { fd: 1, op: RedirectOp::BothWrite });
+                out.push(Token::Redirect { fd: 1, variable: None, op: RedirectOp::BothWrite });
                 i += 2;
             }
             '&' => { flush(&mut word, &mut out); out.push(Token::Amp); i += 1; }
@@ -319,7 +319,32 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
             '|' => { flush(&mut word, &mut out); out.push(Token::Pipe); i += 1; }
             '(' => { flush(&mut word, &mut out); out.push(Token::LParen); i += 1; }
             ')' => { flush(&mut word, &mut out); out.push(Token::RParen); i += 1; }
-            '{' if word.is_empty() => { out.push(Token::LBrace); i += 1; }
+            '{' if word.is_empty() => {
+                let mut end = i + 1;
+                while end < chars.len() && (chars[end] == '_' || chars[end].is_ascii_alphanumeric()) {
+                    end += 1;
+                }
+                let variable_redirect = end > i + 1
+                    && chars.get(end) == Some(&'}')
+                    && chars.get(end + 1).is_some_and(|ch| matches!(ch, '>' | '<'));
+                if variable_redirect {
+                    let name: String = chars[i + 1..end].iter().collect();
+                    let valid = name.chars().next().is_some_and(|ch| ch == '_' || ch.is_ascii_alphabetic())
+                        && name.chars().all(|ch| ch == '_' || ch.is_ascii_alphanumeric());
+                    if valid {
+                        let op_index = end + 1;
+                        let (op, used) = redirect_op(&chars, op_index)?;
+                        out.push(Token::Redirect { fd: -1, variable: Some(name), op });
+                        i = op_index + used;
+                    } else {
+                        out.push(Token::LBrace);
+                        i += 1;
+                    }
+                } else {
+                    out.push(Token::LBrace);
+                    i += 1;
+                }
+            }
             '}' if word.is_empty() => { out.push(Token::RBrace); i += 1; }
             '0'..='9' if word.is_empty() => {
                 let start = i;
@@ -330,7 +355,7 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
                     let fd_text: String = chars[start..i].iter().collect();
                     let fd = fd_text.parse::<i32>().map_err(|_| anyhow::anyhow!("descriptor inválido: {fd_text}"))?;
                     let (op, used) = redirect_op(&chars, i)?;
-                    out.push(Token::Redirect { fd, op });
+                    out.push(Token::Redirect { fd, variable: None, op });
                     i += used;
                 } else {
                     word.extend(&chars[start..i]);
@@ -339,7 +364,7 @@ pub fn lex(input: &str) -> Result<Vec<Token>> {
             '>' | '<' => {
                 flush(&mut word, &mut out);
                 let (op, used) = redirect_op(&chars, i)?;
-                out.push(Token::Redirect { fd: if ch == '<' { 0 } else { 1 }, op });
+                out.push(Token::Redirect { fd: if ch == '<' { 0 } else { 1 }, variable: None, op });
                 i += used;
             }
             _ => { word.push(ch); i += 1; }
@@ -378,7 +403,7 @@ mod tests {
         assert!(tokens.contains(&Token::Pipe));
         assert!(tokens.contains(&Token::AndIf));
         assert!(tokens.contains(&Token::Amp));
-        assert!(tokens.contains(&Token::Redirect { fd: 2, op: RedirectOp::DupOutput }));
+        assert!(tokens.contains(&Token::Redirect { fd: 2, variable: None, op: RedirectOp::DupOutput }));
         assert!(tokens.contains(&Token::Word("\"a b\"".into())));
     }
 }

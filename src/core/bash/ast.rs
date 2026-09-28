@@ -90,6 +90,7 @@ pub struct SimpleCommand {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Redirect {
     pub fd: i32,
+    pub variable: Option<String>,
     pub kind: RedirectKind,
     pub target: String,
 }

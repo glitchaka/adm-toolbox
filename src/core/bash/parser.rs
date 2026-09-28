@@ -164,11 +164,12 @@ impl Parser {
 
     fn parse_trailing_redirects(&mut self) -> Result<Vec<Redirect>> {
         let mut redirects = Vec::new();
-        while let Token::Redirect { fd, op } = self.peek().clone() {
+        while let Token::Redirect { fd, variable, op } = self.peek().clone() {
             self.pos += 1;
             let target = self.take_word()?;
             redirects.push(Redirect {
                 fd,
+                variable,
                 kind: match op {
                     RedirectOp::Read => RedirectKind::Read,
                     RedirectOp::Write => RedirectKind::Write,
@@ -489,11 +490,12 @@ impl Parser {
                         last.push_str(&literal);
                     }
                 }
-                Token::Redirect { fd, op } => {
+                Token::Redirect { fd, variable, op } => {
                     self.pos += 1;
                     let target = self.take_word()?;
                     command.redirects.push(Redirect {
                         fd,
+                        variable,
                         kind: match op {
                             RedirectOp::Read => RedirectKind::Read,
                             RedirectOp::Write => RedirectKind::Write,

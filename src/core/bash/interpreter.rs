@@ -41,7 +41,6 @@ pub struct JobInfo {
 }
 
 #[derive(Debug, Clone)]
-#[derive(Debug, Clone)]
 struct HistoryEntry {
     timestamp: Option<i64>,
     command: String,
@@ -68,6 +67,12 @@ enum OutputSink {
     File(PathBuf, bool),
     HostFd(i32),
     Closed,
+}
+
+#[derive(Debug, Clone)]
+enum ManagedInputFd {
+    Data { bytes: Vec<u8>, offset: usize },
+    Host(i32),
 }
 
 
@@ -263,6 +268,8 @@ pub struct Interpreter {
     persist_next_redirections: bool,
     last_mail_check: std::time::Instant,
     mail_state: HashMap<PathBuf, (u64, std::time::SystemTime)>,
+    managed_input_fds: HashMap<i32, ManagedInputFd>,
+    next_variable_fd: i32,
 }
 
 impl Interpreter {
@@ -290,6 +297,8 @@ impl Interpreter {
                 .checked_sub(std::time::Duration::from_secs(60))
                 .unwrap_or_else(std::time::Instant::now),
             mail_state: HashMap::new(),
+            managed_input_fds: HashMap::new(),
+            next_variable_fd: 10,
         };
         interpreter.import_exported_functions();
         interpreter
@@ -1432,14 +1441,161 @@ impl Interpreter {
         Ok(ExecutionResult::success())
     }
 
+    fn materialize_variable_redirects(
+        &mut self,
+        redirects: &[super::ast::Redirect],
+    ) -> Result<(Vec<super::ast::Redirect>, Vec<i32>)> {
+        let mut rendered = Vec::with_capacity(redirects.len());
+        let mut allocated = Vec::new();
+
+        for redirect in redirects {
+            let mut redirect = redirect.clone();
+            if let Some(variable) = redirect.variable.as_ref() {
+                let existing = self.env.get(variable).parse::<i32>().ok();
+                let closing = redirect.target == "-"
+                    && matches!(redirect.kind, RedirectKind::DupInput | RedirectKind::DupOutput);
+                let fd = if closing {
+                    existing.unwrap_or_else(|| {
+                        let fd = self.next_variable_fd.max(10);
+                        self.next_variable_fd = fd.saturating_add(1);
+                        fd
+                    })
+                } else {
+                    let fd = self.next_variable_fd.max(10);
+                    self.next_variable_fd = fd.saturating_add(1);
+                    fd
+                };
+                if !self.env.set(variable.clone(), fd.to_string()) {
+                    bail!("{variable}: no se pudo asignar descriptor");
+                }
+                redirect.fd = fd;
+                allocated.push(fd);
+            }
+            rendered.push(redirect);
+        }
+        Ok((rendered, allocated))
+    }
+
+    fn read_managed_fd(
+        &mut self,
+        fd: i32,
+        delimiter: char,
+        max_chars: Option<usize>,
+    ) -> Result<Option<String>> {
+        let Some(source) = self.managed_input_fds.get_mut(&fd) else {
+            return Ok(None);
+        };
+        match source {
+            ManagedInputFd::Host(target) => self.host.read_fd(*target, delimiter, max_chars, None),
+            ManagedInputFd::Data { bytes, offset } => {
+                if *offset >= bytes.len() { return Ok(None); }
+                let remaining = String::from_utf8_lossy(&bytes[*offset..]).into_owned();
+                let mut value = String::new();
+                let mut consumed = 0usize;
+                let mut count = 0usize;
+                for ch in remaining.chars() {
+                    if ch == delimiter {
+                        consumed += ch.len_utf8();
+                        break;
+                    }
+                    if max_chars.is_some_and(|max| count >= max) {
+                        break;
+                    }
+                    value.push(ch);
+                    consumed += ch.len_utf8();
+                    count += 1;
+                }
+                *offset = offset.saturating_add(consumed);
+                Ok(Some(value))
+            }
+        }
+    }
+
+    fn install_variable_input_redirect(
+        &mut self,
+        redirect: &super::ast::Redirect,
+    ) -> Result<bool> {
+        if redirect.variable.is_none() { return Ok(false); }
+        match redirect.kind {
+            RedirectKind::Read | RedirectKind::ReadWrite => {
+                let target = self.expand_scalar(&redirect.target)?;
+                let path = self.resolve_path(&target);
+                if redirect.kind == RedirectKind::ReadWrite && !path.exists() {
+                    OpenOptions::new().create(true).write(true).open(&path)?;
+                }
+                let bytes = fs::read(&path).unwrap_or_default();
+                self.managed_input_fds.insert(
+                    redirect.fd,
+                    ManagedInputFd::Data { bytes, offset: 0 },
+                );
+                Ok(true)
+            }
+            RedirectKind::HereString => {
+                let mut value = self.expand_scalar(&redirect.target)?;
+                value.push('\n');
+                self.managed_input_fds.insert(
+                    redirect.fd,
+                    ManagedInputFd::Data { bytes: value.into_bytes(), offset: 0 },
+                );
+                Ok(true)
+            }
+            RedirectKind::DupInput => {
+                let target = self.expand_scalar(&redirect.target)?;
+                if target == "-" {
+                    self.managed_input_fds.remove(&redirect.fd);
+                } else {
+                    let fd = target.parse::<i32>()
+                        .map_err(|_| anyhow!("{}<&{}: descriptor inválido", redirect.fd, target))?;
+                    if let Some(existing) = self.managed_input_fds.get(&fd).cloned() {
+                        self.managed_input_fds.insert(redirect.fd, existing);
+                    } else {
+                        self.managed_input_fds.insert(redirect.fd, ManagedInputFd::Host(fd));
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
+    }
+
+    fn cleanup_variable_fds(&mut self, fds: &[i32]) {
+        if !self.env.option_enabled("varredir_close") { return; }
+        for fd in fds {
+            self.managed_input_fds.remove(fd);
+            self.persistent_output_routes.remove(fd);
+            let _ = self.host.close_fd(*fd);
+        }
+    }
+
     fn execute_redirected(
         &mut self,
         body: &AstNode,
         redirects: &[super::ast::Redirect],
         stdin: Option<&[u8]>,
     ) -> Result<ExecutionResult> {
+        if self.env.option_enabled("restricted_shell")
+            && redirects.iter().any(|redirect| matches!(
+                redirect.kind,
+                RedirectKind::Write
+                    | RedirectKind::Append
+                    | RedirectKind::ReadWrite
+                    | RedirectKind::Clobber
+                    | RedirectKind::BothWrite
+                    | RedirectKind::BothAppend
+                    | RedirectKind::DupOutput
+            ))
+        {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "bash: modo restringido: redirección de salida no permitida\n".to_owned(),
+                1,
+            ));
+        }
+
+        let (redirects, allocated_fds) = self.materialize_variable_redirects(redirects)?;
         let mut local_stdin = stdin.map(ToOwned::to_owned);
-        for redirect in redirects {
+        for redirect in &redirects {
+            if self.install_variable_input_redirect(redirect)? { continue; }
             match redirect.kind {
                 RedirectKind::Read | RedirectKind::ReadWrite => {
                     let target = self.expand_scalar(&redirect.target)?;
@@ -1478,10 +1634,11 @@ impl Interpreter {
         let mut result = self.execute(body, local_stdin.as_deref())?;
         let command = SimpleCommand {
             words: Vec::new(),
-            redirects: redirects.to_vec(),
+            redirects,
         };
         self.apply_output_redirects(&command, &mut result)?;
         self.finalize_process_substitutions(&mut result)?;
+        self.cleanup_variable_fds(&allocated_fds);
         Ok(result)
     }
 
@@ -1507,7 +1664,15 @@ impl Interpreter {
             ));
         }
 
+        let (redirects, allocated_fds) = self.materialize_variable_redirects(&command.redirects)?;
+        let effective_command = SimpleCommand {
+            words: command.words.clone(),
+            redirects,
+        };
+        let command = &effective_command;
+
         for redirect in &command.redirects {
+            if self.install_variable_input_redirect(redirect)? { continue; }
             match redirect.kind {
                 RedirectKind::Read | RedirectKind::ReadWrite => {
                     let target = self.expand_scalar(&redirect.target)?;
@@ -1554,6 +1719,7 @@ impl Interpreter {
             let mut result = ExecutionResult::success();
             self.apply_output_redirects(command, &mut result)?;
             self.finalize_process_substitutions(&mut result)?;
+            self.cleanup_variable_fds(&allocated_fds);
             return Ok(result);
         }
 
@@ -1593,6 +1759,7 @@ impl Interpreter {
             let mut result = ExecutionResult::success();
             self.apply_output_redirects(command, &mut result)?;
             self.finalize_process_substitutions(&mut result)?;
+            self.cleanup_variable_fds(&allocated_fds);
             return Ok(result);
         }
 
@@ -1603,6 +1770,7 @@ impl Interpreter {
             let mut result = ExecutionResult::success();
             self.apply_output_redirects(command, &mut result)?;
             self.finalize_process_substitutions(&mut result)?;
+            self.cleanup_variable_fds(&allocated_fds);
             return Ok(result);
         }
 
@@ -1660,6 +1828,7 @@ impl Interpreter {
                         self.env.restore_binding(&variable, previous);
                     }
                 }
+                self.cleanup_variable_fds(&allocated_fds);
                 return Ok(debug_result);
             }
         }
@@ -1686,6 +1855,7 @@ impl Interpreter {
                     self.env.restore_binding(&variable, previous);
                 }
             }
+            self.cleanup_variable_fds(&allocated_fds);
             return Ok(result);
         }
 
@@ -1701,6 +1871,7 @@ impl Interpreter {
                         self.env.restore_binding(&variable, previous);
                     }
                 }
+                self.cleanup_variable_fds(&allocated_fds);
                 return Ok(ExecutionResult::from_parts(
                     String::new(),
                     format!("{name}: profundidad máxima de funciones ({limit}) excedida\n"),
@@ -1781,6 +1952,7 @@ impl Interpreter {
                 self.env.restore_binding(&variable, previous);
             }
         }
+        self.cleanup_variable_fds(&allocated_fds);
         Ok(result)
     }
 
@@ -4524,7 +4696,11 @@ impl Interpreter {
         }
 
         let source = if fd != 0 && stdin.is_none() {
-            self.host.read_fd(fd, delimiter, max_chars, timeout)?
+            if self.managed_input_fds.contains_key(&fd) {
+                self.read_managed_fd(fd, delimiter, max_chars)?
+            } else {
+                self.host.read_fd(fd, delimiter, max_chars, timeout)?
+            }
         } else if let Some(bytes) = stdin {
             let text = String::from_utf8_lossy(bytes);
             let value = if delimiter == '\0' {
@@ -6059,7 +6235,7 @@ impl Interpreter {
 
         for redirect in &command.redirects {
             match redirect.kind {
-                RedirectKind::Write | RedirectKind::Clobber | RedirectKind::Append => {
+                RedirectKind::Write | RedirectKind::Clobber | RedirectKind::Append | RedirectKind::ReadWrite => {
                     let target = self.expand_scalar(&redirect.target)?;
                     let path = self.resolve_path(&target);
                     if redirect.kind == RedirectKind::Write
@@ -6071,7 +6247,13 @@ impl Interpreter {
                     let append = redirect.kind == RedirectKind::Append;
                     let mut options = OpenOptions::new();
                     options.create(true).write(true);
-                    if append { options.append(true); } else { options.truncate(true); }
+                    if redirect.kind == RedirectKind::ReadWrite {
+                        options.read(true);
+                    } else if append {
+                        options.append(true);
+                    } else {
+                        options.truncate(true);
+                    }
                     let _ = options.open(&path)?;
                     prepared_files.insert(path.clone());
                     routes.insert(redirect.fd, OutputSink::File(path, append));
@@ -6152,6 +6334,19 @@ impl Interpreter {
                     file.write_all(data.as_bytes())?;
                     written_files.insert(path);
                 }
+            }
+        }
+
+        // Descriptors allocated with {var} remain open after the command unless
+        // varredir_close requests Bash's automatic-close behavior.
+        for redirect in &command.redirects {
+            if redirect.variable.is_none() { continue; }
+            if matches!(redirect.kind, RedirectKind::DupOutput) && redirect.target == "-" {
+                self.persistent_output_routes.remove(&redirect.fd);
+                self.managed_input_fds.remove(&redirect.fd);
+                let _ = self.host.close_fd(redirect.fd);
+            } else if let Some(sink) = routes.get(&redirect.fd).cloned() {
+                self.persistent_output_routes.insert(redirect.fd, sink);
             }
         }
 
@@ -8115,10 +8310,16 @@ fn render_redirect(redirect: &super::ast::Redirect) -> String {
         format!("{op} {}", shell_quote(&redirect.target))
     } else {
         let default_fd = match redirect.kind {
-            RedirectKind::Read | RedirectKind::ReadWrite | RedirectKind::HereString => 0,
+            RedirectKind::Read | RedirectKind::DupInput | RedirectKind::ReadWrite | RedirectKind::HereString => 0,
             _ => 1,
         };
-        let fd = if redirect.fd == default_fd { String::new() } else { redirect.fd.to_string() };
+        let fd = if let Some(variable) = &redirect.variable {
+            format!("{{{variable}}}")
+        } else if redirect.fd == default_fd {
+            String::new()
+        } else {
+            redirect.fd.to_string()
+        };
         format!("{fd}{op} {}", shell_quote(&redirect.target))
     }
 }
