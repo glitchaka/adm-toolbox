@@ -23,7 +23,7 @@ use crate::adapters::{
 };
 
 const PAD: i32 = 14;
-const TITLE_BAR_HEIGHT: i32 = 44;
+const TITLE_BAR_HEIGHT: i32 = 32;
 const RESIZE_BORDER: i32 = 7;
 const WINDOW_WIDTH: i32 = 1240;
 const WINDOW_HEIGHT: i32 = 820;
@@ -39,9 +39,9 @@ const TITLE_BG: u32 = 0x140D0A;    // #0A0D14
 const FG: u32 = 0xEFE8DF;          // #DFE8EF
 const ACCENT_BLUE: u32 = 0xFFC769; // #69C7FF
 const ACCENT_PINK: u32 = 0xBD9FFF; // #FF9FBD
-const BTN_YELLOW: u32 = 0x1BC6F6;  // #F6C61B
-const BTN_BLUE: u32 = 0xF5A81F;    // #1FA8F5
-const BTN_RED: u32 = 0x382DFF;     // #FF2D38
+const TITLE_CONTROL: u32 = 0xBD9FFF; // #FF9FBD
+const TITLE_CLOSE: u32 = 0x382DFF;   // #FF2D38
+const TITLE_HOVER_BG: u32 = 0x211B18;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(default)]
@@ -543,7 +543,7 @@ impl Terminal {
             DeleteObject(brush);
 
             if !self.icon.is_null() {
-                DrawIconEx(dc, 12, 8, self.icon, 28, 28, 0, null_mut(), DI_NORMAL);
+                DrawIconEx(dc, 9, 6, self.icon, 20, 20, 0, null_mut(), DI_NORMAL);
             }
 
             let old_font = SelectObject(dc, self.bold);
@@ -551,50 +551,73 @@ impl Terminal {
             SetTextColor(dc, FG);
 
             let title = wide("Shell Shock Tool");
-            TextOutW(dc, 50, 12, title.as_ptr(), (title.len() - 1) as i32);
+            TextOutW(dc, 38, 7, title.as_ptr(), (title.len() - 1) as i32);
 
-            let old_pen = SelectObject(dc, GetStockObject(NULL_PEN));
-            for (button_kind, cx, color) in [
-                (TitleButton::Minimize, bounds.right - 92, BTN_YELLOW),
-                (TitleButton::Maximize, bounds.right - 58, BTN_BLUE),
-                (TitleButton::Close, bounds.right - 24, BTN_RED),
+            for (button_kind, left, right) in [
+                (TitleButton::Minimize, bounds.right - 109, bounds.right - 75),
+                (TitleButton::Maximize, bounds.right - 75, bounds.right - 41),
+                (TitleButton::Close, bounds.right - 41, bounds.right - 7),
             ] {
-                let radius = if self.pressed_title_button == Some(button_kind) {
-                    8
-                } else if self.hovered_title_button == Some(button_kind) {
-                    11
-                } else {
-                    10
-                };
-                let button = CreateSolidBrush(color);
-                let old_brush = SelectObject(dc, button);
-                Ellipse(dc, cx - radius, 22 - radius, cx + radius, 22 + radius);
-                SelectObject(dc, old_brush);
-                DeleteObject(button);
-
                 if self.hovered_title_button == Some(button_kind) {
-                    let glyph_pen = CreatePen(PS_SOLID, 2, TITLE_BG);
-                    let old_glyph_pen = SelectObject(dc, glyph_pen);
-                    match button_kind {
-                        TitleButton::Minimize => {
-                            MoveToEx(dc, cx - 4, 22, null_mut());
-                            LineTo(dc, cx + 5, 22);
-                        }
-                        TitleButton::Maximize => {
-                            Rectangle(dc, cx - 4, 18, cx + 5, 27);
-                        }
-                        TitleButton::Close => {
-                            MoveToEx(dc, cx - 4, 18, null_mut());
-                            LineTo(dc, cx + 5, 27);
-                            MoveToEx(dc, cx + 4, 18, null_mut());
-                            LineTo(dc, cx - 5, 27);
-                        }
-                    }
-                    SelectObject(dc, old_glyph_pen);
-                    DeleteObject(glyph_pen);
+                    let hover = CreateSolidBrush(TITLE_HOVER_BG);
+                    let rect = RECT {
+                        left,
+                        top: 1,
+                        right,
+                        bottom: TITLE_BAR_HEIGHT - 1,
+                    };
+                    FillRect(dc, &rect, hover);
+                    DeleteObject(hover);
                 }
+
+                let cx = (left + right) / 2;
+                let cy = TITLE_BAR_HEIGHT / 2;
+                let pressed_offset =
+                    if self.pressed_title_button == Some(button_kind) { 1 } else { 0 };
+                let glyph_color = if button_kind == TitleButton::Close
+                    && self.hovered_title_button == Some(button_kind)
+                {
+                    TITLE_CLOSE
+                } else {
+                    TITLE_CONTROL
+                };
+
+                let pen = CreatePen(PS_SOLID, 2, glyph_color);
+                let old_pen = SelectObject(dc, pen);
+                let old_brush = SelectObject(dc, GetStockObject(NULL_BRUSH));
+
+                match button_kind {
+                    TitleButton::Minimize => {
+                        // Cheurón hacia abajo: forma de la referencia, no un carácter '>'.
+                        MoveToEx(dc, cx - 5, cy - 2 + pressed_offset, null_mut());
+                        LineTo(dc, cx, cy + 3 + pressed_offset);
+                        LineTo(dc, cx + 5, cy - 2 + pressed_offset);
+                    }
+                    TitleButton::Maximize => {
+                        // Cheurón hacia arriba; el mismo control restaura si ya está maximizada.
+                        MoveToEx(dc, cx - 5, cy + 2 + pressed_offset, null_mut());
+                        LineTo(dc, cx, cy - 3 + pressed_offset);
+                        LineTo(dc, cx + 5, cy + 2 + pressed_offset);
+                    }
+                    TitleButton::Close => {
+                        // Símbolo de encendido: círculo fino + trazo vertical.
+                        Ellipse(
+                            dc,
+                            cx - 6,
+                            cy - 5 + pressed_offset,
+                            cx + 7,
+                            cy + 8 + pressed_offset,
+                        );
+                        MoveToEx(dc, cx, cy - 7 + pressed_offset, null_mut());
+                        LineTo(dc, cx, cy + 1 + pressed_offset);
+                    }
+                }
+
+                SelectObject(dc, old_brush);
+                SelectObject(dc, old_pen);
+                DeleteObject(pen);
             }
-            SelectObject(dc, old_pen);
+
             SelectObject(dc, old_font);
         }
     }
