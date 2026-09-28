@@ -7235,10 +7235,31 @@ impl Interpreter {
                 .unwrap_or_else(|| raw.to_owned());
         }
 
-        if let Some(user) = raw.strip_prefix('~').filter(|value| !value.is_empty() && !value.contains(['/', '\\'])) {
-            if user.eq_ignore_ascii_case(&self.env.get("USERNAME")) {
-                let home = self.env.get("USERPROFILE");
-                if !home.is_empty() { return home; }
+        if let Some(rest) = raw.strip_prefix('~').filter(|value| !value.is_empty()) {
+            let split = rest.find(['/', '\\']).unwrap_or(rest.len());
+            let user = &rest[..split];
+            let suffix = &rest[split..];
+
+            if !user.is_empty() {
+                let current_user = self.env.get("USERNAME");
+                let current_home = self.env.get("USERPROFILE");
+
+                if user.eq_ignore_ascii_case(&current_user) && !current_home.is_empty() {
+                    return format!("{current_home}{suffix}");
+                }
+
+                // Windows has no passwd database. The native equivalent for local
+                // profiles is the sibling directory of USERPROFILE (normally
+                // C:\\Users\\<name>). Only expand when that profile actually exists.
+                if !current_home.is_empty() {
+                    let home = PathBuf::from(&current_home);
+                    if let Some(root) = home.parent() {
+                        let candidate = root.join(user);
+                        if candidate.is_dir() {
+                            return format!("{}{}", candidate.to_string_lossy(), suffix);
+                        }
+                    }
+                }
             }
         }
 
@@ -7290,6 +7311,14 @@ impl Interpreter {
         for entry in glob::glob_with(&broad_pattern, options)? {
             let Ok(path) = entry else { continue };
             let normalized = normalize_glob_path(&path.to_string_lossy());
+
+            if self.env.option_enabled("globskipdots") {
+                let trimmed = normalized.trim_end_matches('/');
+                let basename = trimmed.rsplit('/').next().unwrap_or(trimmed);
+                if matches!(basename, "." | "..") {
+                    continue;
+                }
+            }
             if let Some(regex) = &filter {
                 if !regex.is_match(&normalized) {
                     continue;
@@ -8872,7 +8901,7 @@ fn expand_alias_tokens(
         active: &mut HashSet<String>,
         mut command_position: bool,
         mut force_next_alias: bool,
-    ) -> Result<(Vec<super::lexer::Token>, bool, bool)> {
+    ) -> Result<(Vec<super::lexer::Token>, bool, bool, bool)> {
         use super::lexer::Token;
 
         let mut out = Vec::new();
@@ -8905,7 +8934,7 @@ fn expand_alias_tokens(
                                 let alias_has_trailing_blank =
                                     alias.ends_with(' ') || alias.ends_with('\t');
                                 let alias_tokens = super::lexer::lex(&alias)?;
-                                let (expanded, next_position, nested_force) = walk(
+                                let (expanded, next_position, nested_force, nested_redirect) = walk(
                                     alias_tokens,
                                     aliases,
                                     active,
@@ -8916,6 +8945,7 @@ fn expand_alias_tokens(
                                 out.extend(expanded);
                                 command_position = next_position;
                                 force_next_alias = alias_has_trailing_blank || nested_force;
+                                redirect_target = nested_redirect;
                                 continue;
                             }
                         }
@@ -9004,11 +9034,11 @@ fn expand_alias_tokens(
             }
         }
 
-        Ok((out, command_position, force_next_alias))
+        Ok((out, command_position, force_next_alias, redirect_target))
     }
 
     let mut active = HashSet::new();
-    let (mut expanded, _, _) = walk(tokens, aliases, &mut active, true, false)?;
+    let (mut expanded, _, _, _) = walk(tokens, aliases, &mut active, true, false)?;
     expanded.push(super::lexer::Token::Eof);
     Ok(expanded)
 }
