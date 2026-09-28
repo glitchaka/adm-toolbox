@@ -167,7 +167,7 @@ impl NetworkDiscoveryService {
             self.presence.replace_all(&records)?;
 
             let mut screen = format!(
-                "ADM net monitor {}{}   [q] salir\n\n",
+                "SST net monitor {}{}   [q] salir\n\n",
                 network,
                 if only_unknown { " --unknown" } else { "" }
             );
