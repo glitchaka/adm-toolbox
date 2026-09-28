@@ -8,9 +8,11 @@ Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de t
 
 El corte publicado actualmente es **Shell Shock Tool v0.1.4**, correspondiente al commit `70d0fc737b66156769319a096560bb177b266de1`.
 
-Este release congela el avance actual de la capa Bash nativa. El workflow de publicación terminó correctamente, pero **v0.1.4 no adjunta un ejecutable precompilado**: el release contiene el tag y los archivos fuente generados por GitHub. Para obtener el ejecutable debe compilarse localmente.
+Este release congela el avance actual de la capa Bash nativa. El workflow de publicación terminó correctamente.
 
-La preparación de este corte se realizó **sin compilar ni ejecutar la suite de pruebas**. Por tanto, `v0.1.4` debe considerarse un corte de desarrollo publicado, no una certificación de compatibilidad completa con GNU Bash 5.3.
+Por decisión de flujo de trabajo, **los releases no necesitan adjuntar un ejecutable precompilado**: el proyecto publica el código y el tag, y la compilación del ejecutable se realiza localmente cuando se necesita. Esto evita dedicar trabajo automático a compilaciones que no forman parte de la implementación.
+
+La preparación de este corte se realizó **sin compilar ni ejecutar la suite de pruebas**, de acuerdo con ese flujo de desarrollo. Por tanto, `v0.1.4` representa el estado publicado del código, mientras que la validación local se realiza por separado cuando corresponda.
 
 ## Construcción
 
@@ -430,7 +432,7 @@ Implementado actualmente:
 Pendiente o conocido en este corte:
 
 - corregir el `stdin` interactivo de scripts `.sh` lanzados desde la terminal Win32;
-- validar de forma explícita `v0.1.4` mediante compilación y pruebas, ya que la preparación del release no las ejecutó;
+- validación local de `v0.1.4` mediante compilación y pruebas cuando corresponda al flujo de trabajo;
 - ampliar la suite de conformidad contra GNU Bash 5.3 antes de declarar compatibilidad completa;
 - proveedores reales de `net usage` para obtener consumo por dispositivo desde router/AP/firewall;
 - verificación Authenticode;
