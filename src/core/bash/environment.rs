@@ -52,6 +52,7 @@ pub struct ShellEnvironment {
     pub positional: Vec<String>,
     pub script_name: String,
     pub local_scopes: Vec<HashMap<String, LocalBinding>>,
+    local_shell_options: Vec<Option<HashSet<String>>>,
     started_at: Instant,
     seconds_base: i64,
     random_state: Cell<u32>,
@@ -152,6 +153,7 @@ impl ShellEnvironment {
             positional: Vec::new(),
             script_name: "adm-toolbox".to_owned(),
             local_scopes: Vec::new(),
+            local_shell_options: Vec::new(),
             started_at: Instant::now(),
             seconds_base: 0,
             random_state: Cell::new(
@@ -365,6 +367,19 @@ impl ShellEnvironment {
             return true;
         }
 
+        if name == "BASH_COMPAT" {
+            let normalized = value.replace('.', "");
+            self.shopt_options.retain(|option| !option.starts_with("compat"));
+            if matches!(
+                normalized.as_str(),
+                "31" | "32" | "40" | "41" | "42" | "43" | "44" | "50" | "51" | "52" | "53"
+            ) {
+                self.shopt_options.insert(format!("compat{normalized}"));
+            }
+            self.vars.insert(name, value);
+            return true;
+        }
+
         if self.uppercase_vars.contains(&name) {
             value = value.to_uppercase();
         } else if self.lowercase_vars.contains(&name) {
@@ -420,6 +435,23 @@ impl ShellEnvironment {
         {
             return false;
         }
+        if !self.local_scopes.is_empty()
+            && !self.local_scopes.last().is_some_and(|scope| scope.contains_key(name))
+        {
+            if self.shopt_options.contains("localvar_unset") {
+                self.remember_local(name);
+                self.clear_binding(name);
+                return true;
+            }
+            let previous = self.local_scopes.iter().rev()
+                .skip(1)
+                .find_map(|scope| scope.get(name).cloned());
+            if let Some(previous) = previous {
+                self.restore_binding_snapshot(name, previous);
+                return true;
+            }
+        }
+
         if let Some((base, subscript)) = split_subscript(name) {
             if self.readonly.contains(base) { return false; }
             if let Some(array) = self.arrays.get_mut(base) {
@@ -587,6 +619,15 @@ impl ShellEnvironment {
 
     pub fn push_local_scope(&mut self) {
         self.local_scopes.push(HashMap::new());
+        self.local_shell_options.push(None);
+    }
+
+    pub fn localize_shell_options(&mut self) -> bool {
+        let Some(slot) = self.local_shell_options.last_mut() else { return false };
+        if slot.is_none() {
+            *slot = Some(self.shell_options.clone());
+        }
+        true
     }
 
     fn binding_snapshot(&self, name: &str) -> LocalBinding {
@@ -627,6 +668,7 @@ impl ShellEnvironment {
     }
 
     pub fn pop_local_scope(&mut self) {
+        let saved_options = self.local_shell_options.pop().flatten();
         if let Some(scope) = self.local_scopes.pop() {
             for (name, previous) in scope {
                 self.clear_binding(&name);
@@ -665,6 +707,47 @@ impl ShellEnvironment {
                 }
             }
         }
+        if let Some(options) = saved_options {
+            self.shell_options = options;
+        }
+    }
+
+    fn restore_binding_snapshot(&mut self, name: &str, previous: LocalBinding) {
+        self.clear_binding(name);
+        if let Some(value) = previous.scalar { self.vars.insert(name.to_owned(), value); }
+        if let Some(value) = previous.exported { self.exported.insert(name.to_owned(), value); }
+        if let Some(value) = previous.array { self.arrays.insert(name.to_owned(), value); }
+        if let Some(value) = previous.array_present { self.array_present.insert(name.to_owned(), value); }
+        if let Some(value) = previous.associative { self.assoc_arrays.insert(name.to_owned(), value); }
+        if let Some(value) = previous.nameref { self.namerefs.insert(name.to_owned(), value); }
+        if previous.readonly { self.readonly.insert(name.to_owned()); }
+        if previous.integer { self.integer_vars.insert(name.to_owned()); }
+        if previous.uppercase { self.uppercase_vars.insert(name.to_owned()); }
+        if previous.lowercase { self.lowercase_vars.insert(name.to_owned()); }
+        if previous.trace { self.trace_vars.insert(name.to_owned()); }
+    }
+
+    pub fn inherit_local_binding(&mut self, name: &str) -> bool {
+        if self.local_scopes.is_empty() || self.readonly.contains(name) {
+            return false;
+        }
+        let snapshot = self.binding_snapshot(name);
+        let dereferenced_value = self.get(name);
+        self.remember_local(name);
+
+        if snapshot.nameref.is_some() {
+            self.clear_binding(name);
+            self.vars.insert(name.to_owned(), dereferenced_value);
+            if snapshot.exported.is_some() {
+                self.exported.insert(name.to_owned(), self.vars.get(name).cloned().unwrap_or_default());
+            }
+            if snapshot.integer { self.integer_vars.insert(name.to_owned()); }
+            if snapshot.uppercase { self.uppercase_vars.insert(name.to_owned()); }
+            if snapshot.lowercase { self.lowercase_vars.insert(name.to_owned()); }
+            if snapshot.trace { self.trace_vars.insert(name.to_owned()); }
+            if snapshot.readonly { self.readonly.insert(name.to_owned()); }
+        }
+        true
     }
 
     pub fn localize_unset(&mut self, name: &str) -> bool {
@@ -682,6 +765,19 @@ impl ShellEnvironment {
             return false;
         }
         self.remember_local(&name);
+        if !self.shopt_options.contains("localvar_inherit") {
+            self.clear_binding(&name);
+        } else if self.namerefs.contains_key(&name) {
+            let inherited = self.get(&name);
+            self.clear_binding(&name);
+            self.vars.insert(name.clone(), inherited);
+        }
+        self.set(name, value)
+    }
+
+    pub fn set_local_inherited(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
+        let name = name.into();
+        if !self.inherit_local_binding(&name) { return false; }
         self.set(name, value)
     }
 

@@ -4094,6 +4094,7 @@ impl Interpreter {
         let mut uppercase = false;
         let mut trace = false;
         let mut global = false;
+        let mut inherit = false;
         let mut functions = false;
         let mut function_names_only = false;
         let mut remove_attrs = Vec::new();
@@ -4119,6 +4120,7 @@ impl Interpreter {
                         'u' => uppercase = true,
                         't' => trace = true,
                         'g' => global = true,
+                        'I' => inherit = true,
                         'f' => functions = true,
                         'F' => { functions = true; function_names_only = true; },
                         _ => {}
@@ -4239,6 +4241,17 @@ impl Interpreter {
         }
 
         for item in names {
+            if local && item == "-" {
+                if !self.env.localize_shell_options() {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        "local: -: solo puede usarse dentro de una función\n".to_owned(),
+                        1,
+                    ));
+                }
+                continue;
+            }
+
             let (name, mut value) = item.split_once('=')
                 .map(|(n,v)| (n.to_owned(), Some(v.to_owned())))
                 .unwrap_or((item.clone(), None));
@@ -4320,12 +4333,22 @@ impl Interpreter {
                     } else {
                         self.expand_scalar(&raw_value)?
                     };
-                    if make_local { self.env.set_local(name.clone(), expanded); }
-                    else { self.env.set(name.clone(), expanded); }
+                    if make_local {
+                        if inherit {
+                            self.env.set_local_inherited(name.clone(), expanded);
+                        } else {
+                            self.env.set_local(name.clone(), expanded);
+                        }
+                    } else {
+                        self.env.set(name.clone(), expanded);
+                    }
                 }
             } else if make_local && !nameref && !indexed && !associative {
-                let current = self.env.get(&name);
-                self.env.set_local(name.clone(), current);
+                if inherit || self.env.option_enabled("localvar_inherit") {
+                    self.env.inherit_local_binding(&name);
+                } else {
+                    self.env.localize_unset(&name);
+                }
             }
 
             if integer { self.env.set_integer(&name, true); }
@@ -4513,8 +4536,19 @@ impl Interpreter {
             }
 
             if enable {
-                if shell_options { set_shell_option(&mut self.env, &name, true); }
-                else { self.env.shopt_options.insert(name.clone()); }
+                if shell_options {
+                    set_shell_option(&mut self.env, &name, true);
+                } else if let Some(version) = name.strip_prefix("compat") {
+                    for option in bash_shopt_options().iter().filter(|option| option.starts_with("compat")) {
+                        self.env.shopt_options.remove(*option);
+                    }
+                    self.env.shopt_options.insert(name.clone());
+                    if version.len() == 2 {
+                        self.env.set("BASH_COMPAT", format!("{}.{}", &version[..1], &version[1..]));
+                    }
+                } else {
+                    self.env.shopt_options.insert(name.clone());
+                }
             } else if disable {
                 if shell_options { set_shell_option(&mut self.env, &name, false); }
                 else { self.env.shopt_options.remove(&name); }
