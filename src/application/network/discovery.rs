@@ -50,6 +50,7 @@ impl NetworkDiscoveryService {
         let only_known = args.iter().any(|arg| arg == "--authorized" || arg == "--known");
         let json = args.iter().any(|arg| arg == "--json");
         let csv_output = args.iter().any(|arg| arg == "--csv");
+        let names_only = args.iter().any(|arg| arg == "--names");
 
         let mut rows = self.scan_rows(network)?;
 
@@ -64,6 +65,14 @@ impl NetworkDiscoveryService {
                 "{}\n",
                 serde_json::to_string_pretty(&rows)?
             )));
+        }
+
+        if names_only {
+            let mut out = String::from("IP               NOMBRE\n");
+            for row in &rows {
+                out.push_str(&format!("{:<16} {}\n", row.ip, display_name(row)));
+            }
+            return Ok(CommandOutput::ok(out));
         }
 
         if csv_output {
@@ -316,9 +325,19 @@ impl NetworkDiscoveryService {
     }
 }
 
+fn display_name(row: &ScanRow) -> &str {
+    if row.hostname != "-" && !row.hostname.trim().is_empty() {
+        &row.hostname
+    } else if let Some(name) = row.inventory_name.as_deref() {
+        name
+    } else {
+        "-"
+    }
+}
+
 fn render_scan_rows(rows: &[ScanRow]) -> String {
     let mut out =
-        String::from("IP               MAC                 HOSTNAME                         LATENCY  INVENTORY\n");
+        String::from("IP               NOMBRE                           MAC                 LATENCY  INVENTORY\n");
 
     for row in rows {
         let inventory = row
@@ -327,8 +346,8 @@ fn render_scan_rows(rows: &[ScanRow]) -> String {
             .unwrap_or(if row.known { "known" } else { "unknown" });
 
         out.push_str(&format!(
-            "{:<16} {:<19} {:<32} {:>4} ms  {}\n",
-            row.ip, row.mac, row.hostname, row.latency_ms, inventory
+            "{:<16} {:<32} {:<19} {:>4} ms  {}\n",
+            row.ip, display_name(row), row.mac, row.latency_ms, inventory
         ));
     }
 
