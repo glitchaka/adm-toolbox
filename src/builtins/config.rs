@@ -22,11 +22,11 @@ impl ConfigBuiltin {
 
 impl BuiltinCommand for ConfigBuiltin {
     fn name(&self) -> &'static str {
-        "adm-config"
+        "sst-config"
     }
 
     fn help(&self) -> &'static str {
-        "adm-config path|edit — configuración portable de la shell"
+        "sst-config path|edit — configuración portable de la shell"
     }
 
     fn execute(
@@ -59,11 +59,11 @@ pub struct PathBuiltin;
 
 impl BuiltinCommand for PathBuiltin {
     fn name(&self) -> &'static str {
-        "adm-path"
+        "sst-path"
     }
 
     fn help(&self) -> &'static str {
-        "adm-path PATH — traduce rutas estilo /c/... a rutas Windows"
+        "sst-path PATH — traduce rutas estilo /c/... a rutas Windows"
     }
 
     fn execute(
@@ -73,7 +73,7 @@ impl BuiltinCommand for PathBuiltin {
         context: CommandContext<'_>,
     ) -> Result<CommandOutput> {
         let Some(raw) = args.first() else {
-            return Ok(CommandOutput::error("adm-path: falta ruta", 2));
+            return Ok(CommandOutput::error("sst-path: falta ruta", 2));
         };
 
         let path = crate::support::path::resolve(context.cwd, raw);
