@@ -5657,6 +5657,10 @@ impl Interpreter {
         let expression = expression.trim();
         if expression.is_empty() { return Ok(0); }
 
+        if arithmetic_wrapped(expression) {
+            return self.evaluate_arithmetic_command(&expression[1..expression.len() - 1]);
+        }
+
         let comma_parts = split_arithmetic_top_level(expression, ',');
         if comma_parts.len() > 1 {
             let mut value = 0;
@@ -5722,6 +5726,27 @@ impl Interpreter {
                 bail!("{name}: variable de solo lectura");
             }
             return Ok(value);
+        }
+
+        if let Some((condition, yes, no)) = split_arithmetic_ternary(expression) {
+            let condition = self.evaluate_arithmetic_command(condition)?;
+            return if condition != 0 {
+                self.evaluate_arithmetic_command(yes)
+            } else {
+                self.evaluate_arithmetic_command(no)
+            };
+        }
+
+        if let Some((left, right)) = split_arithmetic_operator(expression, "||") {
+            let left = self.evaluate_arithmetic_command(left)?;
+            if left != 0 { return Ok(1); }
+            return Ok((self.evaluate_arithmetic_command(right)? != 0) as i64);
+        }
+
+        if let Some((left, right)) = split_arithmetic_operator(expression, "&&") {
+            let left = self.evaluate_arithmetic_command(left)?;
+            if left == 0 { return Ok(0); }
+            return Ok((self.evaluate_arithmetic_command(right)? != 0) as i64);
         }
 
         eval_arithmetic(expression, &self.env)
@@ -7812,6 +7837,86 @@ fn file_mtime(path: &Path) -> std::time::SystemTime {
 fn is_arithmetic_lvalue(name: &str) -> bool {
     let base = name.split('[').next().unwrap_or(name);
     is_variable_name(base)
+}
+
+fn arithmetic_wrapped(expression: &str) -> bool {
+    if !expression.starts_with('(') || !expression.ends_with(')') { return false; }
+    let mut depth = 0i32;
+    for (index, ch) in expression.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' => {
+                depth -= 1;
+                if depth == 0 && index + ch.len_utf8() != expression.len() {
+                    return false;
+                }
+                if depth < 0 { return false; }
+            }
+            _ => {}
+        }
+    }
+    depth == 0
+}
+
+fn split_arithmetic_operator<'a>(expression: &'a str, operator: &str) -> Option<(&'a str, &'a str)> {
+    let bytes = expression.as_bytes();
+    let op = operator.as_bytes();
+    let mut depth = 0i32;
+    let mut index = 0usize;
+    let mut candidate = None;
+    while index + op.len() <= bytes.len() {
+        match bytes[index] {
+            b'(' | b'[' => { depth += 1; index += 1; continue; }
+            b')' | b']' => { depth -= 1; index += 1; continue; }
+            _ => {}
+        }
+        if depth == 0 && &bytes[index..index + op.len()] == op {
+            candidate = Some(index);
+            index += op.len();
+        } else {
+            index += 1;
+        }
+    }
+    candidate.map(|index| (
+        expression[..index].trim(),
+        expression[index + operator.len()..].trim(),
+    ))
+}
+
+fn split_arithmetic_ternary(expression: &str) -> Option<(&str, &str, &str)> {
+    let bytes = expression.as_bytes();
+    let mut depth = 0i32;
+    let mut question = None;
+    let mut nested_questions = 0usize;
+    let mut index = 0usize;
+    while index < bytes.len() {
+        match bytes[index] {
+            b'(' | b'[' => depth += 1,
+            b')' | b']' => depth -= 1,
+            b'?' if depth == 0 => {
+                if question.is_none() {
+                    question = Some(index);
+                } else {
+                    nested_questions += 1;
+                }
+            }
+            b':' if depth == 0 && question.is_some() => {
+                if nested_questions > 0 {
+                    nested_questions -= 1;
+                } else {
+                    let q = question.unwrap();
+                    return Some((
+                        expression[..q].trim(),
+                        expression[q + 1..index].trim(),
+                        expression[index + 1..].trim(),
+                    ));
+                }
+            }
+            _ => {}
+        }
+        index += 1;
+    }
+    None
 }
 
 fn split_arithmetic_top_level(expression: &str, separator: char) -> Vec<&str> {
