@@ -1362,6 +1362,12 @@ impl ShellEngine for NativeShellEngine {
     }
 
     fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
+        if self.interpreter.env.option_enabled("checkwinsize") {
+            if let Ok((columns, lines)) = crate::adapters::terminal::io::size() {
+                self.interpreter.env.set("COLUMNS", columns.to_string());
+                self.interpreter.env.set("LINES", lines.to_string());
+            }
+        }
         self.interpreter.prepare_prompt(continuation)
     }
 

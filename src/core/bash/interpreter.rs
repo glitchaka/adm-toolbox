@@ -423,6 +423,19 @@ impl Interpreter {
         self.env.set("COMP_CWORD", words.len().saturating_sub(1).to_string());
         self.env.set("COMP_TYPE", "9");
         self.env.set("COMP_KEY", "9");
+
+        if self.env.option_enabled("hostcomplete") {
+            if let Some((left, host_prefix)) = prefix.rsplit_once('@') {
+                let mut hosts = host_completion_candidates(host_prefix);
+                hosts = hosts.into_iter()
+                    .map(|host| format!("{left}@{host}"))
+                    .collect();
+                if !hosts.is_empty() {
+                    return Ok(self.apply_completion_filters(hosts));
+                }
+            }
+        }
+
         if self.env.option_enabled("no_empty_cmd_completion")
             && before.trim().is_empty()
             && prefix.is_empty()
@@ -450,7 +463,7 @@ impl Interpreter {
             let spec = CompletionSpec { action: Some("command".to_owned()), ..CompletionSpec::default() };
             return self.generate_completions(&spec, prefix, line);
         }
-        let values = completion_files(&self.env.cwd, prefix, false);
+        let values = self.path_completions(prefix, false);
         Ok(self.apply_completion_filters(values))
     }
 
@@ -3148,8 +3161,8 @@ impl Interpreter {
                 .filter(|name| name.eq_ignore_ascii_case("sc") || name.eq_ignore_ascii_case("net"))
                 .collect(),
             "hostname" => std::env::var("COMPUTERNAME").ok().into_iter().collect(),
-            "directory" => completion_files(&self.env.cwd, prefix, true),
-            "file" => completion_files(&self.env.cwd, prefix, false),
+            "directory" => self.path_completions(prefix, true),
+            "file" => self.path_completions(prefix, false),
             "command" => {
                 let mut rows: Vec<String> = bash_builtin_names().iter()
                     .map(|name| (*name).to_owned())
@@ -3163,6 +3176,40 @@ impl Interpreter {
             _ => Vec::new(),
         };
         values.retain(|value| value.starts_with(prefix));
+        values.sort();
+        values.dedup();
+        values
+    }
+
+    fn path_completions(&self, prefix: &str, directories_only: bool) -> Vec<String> {
+        let mut values = completion_files(&self.env.cwd, prefix, directories_only);
+
+        if values.is_empty() && self.env.option_enabled("dirspell") {
+            let typed = PathBuf::from(prefix);
+            let stem = typed.file_name().and_then(|name| name.to_str()).unwrap_or("");
+            if let Some(parent) = typed.parent().filter(|path| !path.as_os_str().is_empty()) {
+                if let Some(corrected) = self.correct_directory_spelling(&parent.to_string_lossy()) {
+                    let corrected_prefix = corrected.join(stem).to_string_lossy().into_owned();
+                    values = completion_files(&self.env.cwd, &corrected_prefix, directories_only);
+                }
+            }
+        }
+
+        if self.env.option_enabled("direxpand") {
+            values = values.into_iter().map(|value| {
+                let trailing = value.ends_with('/') || value.ends_with('\\');
+                let path = self.resolve_path(&value);
+                let mut rendered = fs::canonicalize(&path)
+                    .unwrap_or(path)
+                    .to_string_lossy()
+                    .into_owned();
+                if trailing && !rendered.ends_with(std::path::MAIN_SEPARATOR) {
+                    rendered.push(std::path::MAIN_SEPARATOR);
+                }
+                rendered
+            }).collect();
+        }
+
         values.sort();
         values.dedup();
         values
@@ -7587,6 +7634,33 @@ fn bash_keywords() -> &'static [&'static str] {
         "fi", "for", "function", "if", "in", "select", "then", "time", "until",
         "while", "{", "}",
     ]
+}
+
+fn host_completion_candidates(prefix: &str) -> Vec<String> {
+    let mut hosts = Vec::new();
+    if let Ok(host) = std::env::var("COMPUTERNAME") {
+        hosts.push(host);
+    }
+
+    #[cfg(windows)]
+    if let Some(root) = std::env::var_os("SystemRoot") {
+        let path = PathBuf::from(root).join("System32").join("drivers").join("etc").join("hosts");
+        if let Ok(contents) = fs::read_to_string(path) {
+            for line in contents.lines() {
+                let content = line.split('#').next().unwrap_or("").trim();
+                if content.is_empty() { continue; }
+                let mut fields = content.split_whitespace();
+                let _address = fields.next();
+                hosts.extend(fields.map(str::to_owned));
+            }
+        }
+    }
+
+    let needle = prefix.to_lowercase();
+    hosts.retain(|host| host.to_lowercase().starts_with(&needle));
+    hosts.sort();
+    hosts.dedup();
+    hosts
 }
 
 fn completion_files(cwd: &Path, prefix: &str, directories_only: bool) -> Vec<String> {
