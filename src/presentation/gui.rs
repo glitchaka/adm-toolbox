@@ -72,7 +72,7 @@ pub fn run() -> Result<()> {
         SetProcessDPIAware();
 
         let instance = GetModuleHandleW(null());
-        let class = wide("AdmToolboxTerminal");
+        let class = wide("ShellShockToolTerminal");
         let icon = LoadIconW(instance, 1usize as *const u16);
 
         let wc = WNDCLASSW {
@@ -1101,11 +1101,11 @@ pub fn verify_transport() -> Result<()> {
 
         let contents = parser.screen().contents();
         if !sent && (contents.contains("❯") || contents.contains("$ ")) {
-            pty.write(b"echo ADM_NATIVE_OK\r")?;
+            pty.write(b"echo SST_NATIVE_OK\r")?;
             sent = true;
         }
 
-        if sent && contents.matches("ADM_NATIVE_OK").count() >= 2 {
+        if sent && contents.matches("SST_NATIVE_OK").count() >= 2 {
             pty.write(b"exit\r")?;
             println!("Shell Shock Tool: prompt, entrada, ejecución y salida correctos.");
             return Ok(());
