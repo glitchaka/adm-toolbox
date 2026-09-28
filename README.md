@@ -176,6 +176,22 @@ Consulta tareas programadas, detalles o su definición XML mediante `schtasks.ex
 
 ---
 
+## Elevación y privilegios
+
+SST incorpora elevación propia:
+
+```bash
+sudo --status
+sudo COMANDO [argumentos]
+runas COMANDO [argumentos]
+```
+
+`sudo --status` inspecciona directamente el token del proceso mediante Win32 y muestra si SST está elevada, su nivel de integridad y los privilegios `Se*` presentes en el token indicando cuáles están habilitados.
+
+`sudo COMANDO` ejecuta otra instancia de SST. Si la shell ya está elevada, conserva ese nivel; si no lo está, solicita consentimiento UAC mediante la API Shell de Windows. La salida del comando elevado vuelve a la shell actual.
+
+`runas` es un alias de este builtin. **No ejecuta `runas.exe`.**
+
 ## `net` — diagnóstico, descubrimiento y tráfico de red
 
 ### Interfaces
