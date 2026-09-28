@@ -8,9 +8,11 @@ Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de t
 
 El corte publicado actualmente es **Shell Shock Tool v0.1.4**, correspondiente al commit `70d0fc737b66156769319a096560bb177b266de1`.
 
-Este release congela el avance actual de la capa Bash nativa. El workflow de publicación terminó correctamente.
+Este release congela el corte publicado de la capa Bash nativa. El workflow de publicación terminó correctamente.
 
-La preparación de este corte se realizó **sin compilar ni ejecutar la suite de pruebas**.
+La rama `main` contiene además la integración posterior de `helix-sst 0.1.1`; por tanto, compilar `main` actualmente produce un estado más nuevo que el tag `v0.1.4`.
+
+La preparación del release `v0.1.4` se realizó **sin compilar ni ejecutar la suite de pruebas**.
 
 ## Construcción
 
@@ -76,7 +78,7 @@ command_that_works && echo ok
 command_that_fails || echo fallo
 ```
 
-### Cobertura implementada en v0.1.4
+### Cobertura Bash actual
 
 El motor actual incluye, entre otras capacidades:
 
@@ -428,7 +430,7 @@ Los avisos y la licencia correspondientes se conservan en `THIRD_PARTY_NOTICES.m
 
 Para una compilación sin Internet puede definirse `ADM_HELIX_ARCHIVE` apuntando al ZIP oficial `helix-25.07.1-x86_64-windows.zip`.
 
-## Estado actual de v0.1.4
+## Estado actual de `main`
 
 Implementado actualmente:
 
@@ -447,7 +449,7 @@ Implementado actualmente:
 - tráfico por proceso mediante ETW y detección del proceso foreground;
 - editor portable `helix-sst`.
 
-Pendiente o conocido en este corte:
+Pendiente o conocido en el estado actual:
 
 - corregir el `stdin` interactivo de scripts `.sh` lanzados desde la terminal Win32;
 - ampliar la suite de conformidad contra GNU Bash 5.3 antes de declarar compatibilidad completa;
@@ -472,7 +474,7 @@ Shell Shock Tool
 │   └── branding Shell Shock Tool
 ├── builtins administrativos escritos en Rust
 ├── utilidades Unix integradas
-└── helix-sst 0.1.0 (basado en Helix 25.07.1)
+└── helix-sst 0.1.1 (basado en Helix 25.07.1)
 ```
 
 El alcance completo está en `ADM_TOOLBOX_PLAN.md`.
