@@ -579,7 +579,7 @@ fn fetch(args: &[String]) -> anyhow::Result<CommandOutput> {
         format!("\x1b[1;38;5;222mKernel:\x1b[0m {kernel}"),
         format!("\x1b[1;38;5;222mUptime:\x1b[0m {uptime_text}"),
         "\x1b[1;38;5;222mShell:\x1b[0m Shell Shock Tool".to_owned(),
-        "\x1b[1;38;5;222mBinary:\x1b[0m adm-tool".to_owned(),
+        "\x1b[1;38;5;222mBinary:\x1b[0m sst".to_owned(),
         "\x1b[1;38;5;222mTerminal:\x1b[0m Shell Shock Native Terminal".to_owned(),
         format!("\x1b[1;38;5;222mCPU:\x1b[0m {cpu}"),
         format!("\x1b[1;38;5;222mMemory:\x1b[0m {used:.2} GiB / {total:.2} GiB"),
