@@ -1,19 +1,27 @@
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 use anyhow::Result;
 
 use crate::{
-    core::{CommandOutput, models::device::Device, ports::DeviceRepository},
+    core::{
+        CommandOutput,
+        models::device::Device,
+        ports::{DeviceRepository, PresenceRepository},
+    },
     support::csv,
 };
 
 pub struct DeviceService {
     repository: Arc<dyn DeviceRepository>,
+    presence: Arc<dyn PresenceRepository>,
 }
 
 impl DeviceService {
-    pub fn new(repository: Arc<dyn DeviceRepository>) -> Self {
-        Self { repository }
+    pub fn new(
+        repository: Arc<dyn DeviceRepository>,
+        presence: Arc<dyn PresenceRepository>,
+    ) -> Self {
+        Self { repository, presence }
     }
 
     pub fn execute(&self, args: &[String]) -> Result<CommandOutput> {
@@ -22,6 +30,7 @@ impl DeviceService {
             "show" => self.show(args.get(1..).unwrap_or_default()),
             "add" => self.add(args.get(1..).unwrap_or_default()),
             "remove" => self.remove(args.get(1..).unwrap_or_default()),
+            "unknown" => self.unknown(args.get(1..).unwrap_or_default()),
             "path" => Ok(CommandOutput::ok(format!("{}\n", self.repository.path().display()))),
             other => Ok(CommandOutput::error(
                 format!("device: subcomando desconocido: {other}"),
@@ -139,6 +148,60 @@ impl DeviceService {
         devices.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         self.repository.replace_all(&devices)?;
         Ok(CommandOutput::ok(format!("device saved: {mac} {name}\n")))
+    }
+
+    fn unknown(&self, args: &[String]) -> Result<CommandOutput> {
+        let known_macs: HashSet<String> = self
+            .repository
+            .all()?
+            .into_iter()
+            .map(|device| device.mac.to_ascii_uppercase())
+            .collect();
+
+        let mut records = self.presence.all()?;
+        records.retain(|record| !known_macs.contains(&record.mac.to_ascii_uppercase()));
+        records.sort_by(|a, b| {
+            b.last_seen
+                .cmp(&a.last_seen)
+                .then_with(|| a.ip.cmp(&b.ip))
+        });
+
+        if args.iter().any(|arg| arg == "--json") {
+            return Ok(CommandOutput::ok(format!(
+                "{}\n",
+                serde_json::to_string_pretty(&records)?
+            )));
+        }
+
+        if args.iter().any(|arg| arg == "--csv") {
+            let mut out = String::from("ip,hostname,mac,first_seen,last_seen\n");
+            for record in records {
+                out.push_str(&format!(
+                    "{},{},{},{},{}\n",
+                    csv::escape(&record.ip),
+                    csv::escape(&record.hostname),
+                    csv::escape(&record.mac),
+                    csv::escape(&record.first_seen),
+                    csv::escape(&record.last_seen),
+                ));
+            }
+            return Ok(CommandOutput::ok(out));
+        }
+
+        let mut out =
+            String::from("IP               HOSTNAME                         MAC                 FIRST SEEN                 LAST SEEN\n");
+        for record in records {
+            out.push_str(&format!(
+                "{:<16} {:<32} {:<19} {:<26} {}\n",
+                record.ip,
+                record.hostname,
+                record.mac,
+                record.first_seen,
+                record.last_seen,
+            ));
+        }
+
+        Ok(CommandOutput::ok(out))
     }
 
     fn remove(&self, args: &[String]) -> Result<CommandOutput> {
