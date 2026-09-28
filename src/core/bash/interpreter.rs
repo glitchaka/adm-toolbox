@@ -2522,11 +2522,11 @@ impl Interpreter {
                         ExecutionResult::from_parts(String::new(), "[: falta ']'\n".to_owned(), 2)
                     } else {
                         expr.pop();
-                        let success = self.evaluate_conditional(&expr)?;
+                        let success = self.evaluate_test(&expr)?;
                         ExecutionResult::from_parts(String::new(), String::new(), if success { 0 } else { 1 })
                     }
                 } else {
-                    let success = self.evaluate_conditional(&expr)?;
+                    let success = self.evaluate_test(&expr)?;
                     ExecutionResult::from_parts(String::new(), String::new(), if success { 0 } else { 1 })
                 }
             }
@@ -5848,6 +5848,167 @@ impl Interpreter {
             Ok(result) => Ok(result),
             Err(error) => Ok(ExecutionResult::from_parts(String::new(), format!("{name}: {error}\n"), 127)),
         }
+    }
+
+    fn evaluate_test(&mut self, expression: &[String]) -> Result<bool> {
+        fn is_unary(op: &str) -> bool {
+            matches!(op,
+                "-a" | "-b" | "-c" | "-d" | "-e" | "-f" | "-g" | "-h" | "-k"
+                | "-L" | "-N" | "-O" | "-p" | "-r" | "-R" | "-s" | "-S" | "-t"
+                | "-u" | "-v" | "-w" | "-x" | "-n" | "-z" | "-o")
+        }
+        fn is_binary(op: &str) -> bool {
+            matches!(op,
+                "=" | "==" | "!=" | "<" | ">" | "-eq" | "-ne" | "-lt" | "-le"
+                | "-gt" | "-ge" | "-nt" | "-ot" | "-ef" | "-a" | "-o")
+        }
+        fn truthy(value: &str) -> bool { !value.is_empty() }
+
+        fn unary(this: &mut Interpreter, op: &str, value: &str) -> Result<bool> {
+            if op == "-v" { return Ok(this.env.is_set(value)); }
+            if op == "-R" { return Ok(this.env.is_nameref(value)); }
+            let path = this.resolve_path(value);
+            Ok(match op {
+                "-n" => !value.is_empty(),
+                "-z" => value.is_empty(),
+                "-e" | "-a" => path.exists(),
+                "-f" => path.is_file(),
+                "-d" => path.is_dir(),
+                "-s" => fs::metadata(&path).map(|m| m.len() > 0).unwrap_or(false),
+                "-r" => fs::File::open(&path).is_ok(),
+                "-w" => OpenOptions::new().write(true).open(&path).is_ok(),
+                "-x" => path.is_file(),
+                "-L" | "-h" => fs::symlink_metadata(&path).map(|m| m.file_type().is_symlink()).unwrap_or(false),
+                "-b" => this.host.file_type_test(&path, 'b')?.unwrap_or(false),
+                "-c" => this.host.file_type_test(&path, 'c')?.unwrap_or(false),
+                "-p" => this.host.file_type_test(&path, 'p')?.unwrap_or(false),
+                "-S" => this.host.file_type_test(&path, 'S')?.unwrap_or(false),
+                "-N" => fs::metadata(&path).ok()
+                    .and_then(|meta| Some(meta.modified().ok()? > meta.accessed().ok()?))
+                    .unwrap_or(false),
+                "-O" | "-G" => path.exists(),
+                "-g" | "-k" | "-u" => false,
+                "-t" => value.parse::<i32>().ok().is_some_and(|fd| this.host.fd_is_terminal(fd)),
+                "-o" => this.env.option_enabled(value),
+                _ => false,
+            })
+        }
+
+        fn binary(this: &mut Interpreter, left: &str, op: &str, right: &str) -> Result<bool> {
+            Ok(match op {
+                "=" | "==" => left == right,
+                "!=" => left != right,
+                "<" => left < right,
+                ">" => left > right,
+                "-eq" => eval_arithmetic(left, &this.env)? == eval_arithmetic(right, &this.env)?,
+                "-ne" => eval_arithmetic(left, &this.env)? != eval_arithmetic(right, &this.env)?,
+                "-lt" => eval_arithmetic(left, &this.env)? < eval_arithmetic(right, &this.env)?,
+                "-le" => eval_arithmetic(left, &this.env)? <= eval_arithmetic(right, &this.env)?,
+                "-gt" => eval_arithmetic(left, &this.env)? > eval_arithmetic(right, &this.env)?,
+                "-ge" => eval_arithmetic(left, &this.env)? >= eval_arithmetic(right, &this.env)?,
+                "-nt" => file_mtime(&this.resolve_path(left)) > file_mtime(&this.resolve_path(right)),
+                "-ot" => file_mtime(&this.resolve_path(left)) < file_mtime(&this.resolve_path(right)),
+                "-ef" => {
+                    let a = fs::canonicalize(this.resolve_path(left));
+                    let b = fs::canonicalize(this.resolve_path(right));
+                    matches!((a,b),(Ok(a),Ok(b)) if a == b)
+                }
+                "-a" => truthy(left) && truthy(right),
+                "-o" => truthy(left) || truthy(right),
+                _ => false,
+            })
+        }
+
+        match expression.len() {
+            0 => return Ok(false),
+            1 => return Ok(truthy(&expression[0])),
+            2 => {
+                if expression[0] == "!" { return Ok(!truthy(&expression[1])); }
+                if is_unary(&expression[0]) { return unary(self, &expression[0], &expression[1]); }
+                return Ok(false);
+            }
+            3 => {
+                if is_binary(&expression[1]) {
+                    return binary(self, &expression[0], &expression[1], &expression[2]);
+                }
+                if expression[0] == "!" { return Ok(!self.evaluate_test(&expression[1..])?); }
+                if expression[0] == "(" && expression[2] == ")" { return Ok(truthy(&expression[1])); }
+                return Ok(false);
+            }
+            4 => {
+                if expression[0] == "!" { return Ok(!self.evaluate_test(&expression[1..])?); }
+                if expression[0] == "(" && expression[3] == ")" {
+                    return self.evaluate_test(&expression[1..3]);
+                }
+            }
+            _ => {}
+        }
+
+        struct TestParser<'a, 'b> {
+            shell: &'a mut Interpreter,
+            tokens: &'b [String],
+            pos: usize,
+        }
+        impl TestParser<'_, '_> {
+            fn peek(&self) -> Option<&str> { self.tokens.get(self.pos).map(String::as_str) }
+            fn take(&mut self) -> Option<String> {
+                let value = self.tokens.get(self.pos)?.clone();
+                self.pos += 1;
+                Some(value)
+            }
+            fn parse_or(&mut self) -> Result<bool> {
+                let mut value = self.parse_and()?;
+                while self.peek() == Some("-o") {
+                    self.pos += 1;
+                    let rhs = self.parse_and()?;
+                    value = value || rhs;
+                }
+                Ok(value)
+            }
+            fn parse_and(&mut self) -> Result<bool> {
+                let mut value = self.parse_not()?;
+                while self.peek() == Some("-a") {
+                    self.pos += 1;
+                    let rhs = self.parse_not()?;
+                    value = value && rhs;
+                }
+                Ok(value)
+            }
+            fn parse_not(&mut self) -> Result<bool> {
+                if self.peek() == Some("!") {
+                    self.pos += 1;
+                    return Ok(!self.parse_not()?);
+                }
+                self.parse_primary()
+            }
+            fn parse_primary(&mut self) -> Result<bool> {
+                if self.peek() == Some("(") {
+                    self.pos += 1;
+                    let value = self.parse_or()?;
+                    if self.peek() != Some(")") { bail!("test: falta ')'"); }
+                    self.pos += 1;
+                    return Ok(value);
+                }
+                let Some(first) = self.take() else { return Ok(false); };
+                if is_unary(&first) {
+                    let Some(value) = self.take() else { return Ok(false); };
+                    return unary(self.shell, &first, &value);
+                }
+                if let Some(op) = self.peek().filter(|op| is_binary(op)) {
+                    if !matches!(op, "-a" | "-o") {
+                        let op = self.take().unwrap();
+                        let right = self.take().unwrap_or_default();
+                        return binary(self.shell, &first, &op, &right);
+                    }
+                }
+                Ok(truthy(&first))
+            }
+        }
+
+        let mut parser = TestParser { shell: self, tokens: expression, pos: 0 };
+        let result = parser.parse_or()?;
+        if parser.pos != expression.len() { bail!("test: expresión condicional inválida"); }
+        Ok(result)
     }
 
     fn evaluate_conditional(&mut self, expression: &[String]) -> Result<bool> {
