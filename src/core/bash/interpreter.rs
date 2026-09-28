@@ -41,6 +41,12 @@ pub struct JobInfo {
 }
 
 #[derive(Debug, Clone)]
+#[derive(Debug, Clone)]
+struct HistoryEntry {
+    timestamp: Option<i64>,
+    command: String,
+}
+
 struct CallFrame {
     function: String,
     source: String,
@@ -530,32 +536,53 @@ impl Interpreter {
         if !histignore.is_empty() && histignore.split(':').any(|pattern| {
             glob::Pattern::new(pattern).map(|compiled| compiled.matches(line)).unwrap_or(false)
         }) { return Ok(()); }
-        let mut lines = self.history_lines();
-        if controls.contains("ignoredups") && lines.last().is_some_and(|last| last == line) { return Ok(()); }
-        if controls.contains("erasedups") { lines.retain(|existing| existing != line); }
-        lines.push(line.to_owned());
+
+        let mut entries = self.history_entries();
+        if controls.contains("ignoredups")
+            && entries.last().is_some_and(|last| last.command == line)
+        {
+            return Ok(());
+        }
+        if controls.contains("erasedups") {
+            entries.retain(|existing| existing.command != line);
+        }
+
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .ok()
+            .and_then(|duration| i64::try_from(duration.as_secs()).ok());
+        let entry = HistoryEntry { timestamp, command: line.to_owned() };
+        entries.push(entry.clone());
+
         let histsize = self.env.get("HISTSIZE").parse::<usize>().unwrap_or(500);
-        if lines.len() > histsize { lines.drain(..lines.len() - histsize); }
+        if entries.len() > histsize {
+            let remove = entries.len() - histsize;
+            entries.drain(..remove);
+        }
         let filesize = self.env.get("HISTFILESIZE").parse::<usize>().unwrap_or(histsize);
-        if lines.len() > filesize { lines.drain(..lines.len() - filesize); }
+        if entries.len() > filesize {
+            let remove = entries.len() - filesize;
+            entries.drain(..remove);
+        }
 
         if self.env.option_enabled("histappend")
             && !controls.contains("erasedups")
-            && lines.last().is_some_and(|last| last == line)
         {
             if let Some(path) = self.history_path() {
                 if let Some(parent) = path.parent() { fs::create_dir_all(parent)?; }
-                let existing_count = fs::read_to_string(&path)
-                    .map(|text| text.lines().count())
-                    .unwrap_or(0);
+                let existing_count = self.history_entries().len();
                 if existing_count + 1 <= filesize {
                     let mut file = OpenOptions::new().create(true).append(true).open(path)?;
-                    writeln!(file, "{line}")?;
+                    if let Some(timestamp) = entry.timestamp {
+                        writeln!(file, "#{timestamp}")?;
+                    }
+                    writeln!(file, "{}", entry.command)?;
                     return Ok(());
                 }
             }
         }
-        self.save_history_lines(&lines)
+
+        self.save_history_entries(&entries)
     }
 
     pub fn readline_bindings(&self) -> HashMap<String, String> {
@@ -1435,6 +1462,16 @@ impl Interpreter {
         let mut result = if let Some(result) = self.shell_builtin(&name, args, local_stdin.as_deref())? {
             result
         } else if let Some(body) = self.env.functions.get(&name).cloned() {
+            if let Ok(limit) = self.env.get("FUNCNEST").parse::<usize>()
+                && limit > 0
+                && self.call_stack.len() >= limit
+            {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("{name}: profundidad máxima de funciones ({limit}) excedida\n"),
+                    1,
+                ));
+            }
             let saved = self.env.positional.clone();
             self.env.positional = args.to_vec();
             self.env.push_local_scope();
@@ -1489,7 +1526,12 @@ impl Interpreter {
         };
 
         if !trace.is_empty() {
-            result.stderr = format!("{trace}{}", result.stderr);
+            let trace_fd = self.env.get("BASH_XTRACEFD").parse::<i32>().ok().unwrap_or(2);
+            if trace_fd == 1 {
+                result.stdout = format!("{trace}{}", result.stdout);
+            } else if trace_fd == 2 || !self.host.write_fd(trace_fd, trace.as_bytes())? {
+                result.stderr = format!("{trace}{}", result.stderr);
+            }
         }
         self.apply_output_redirects(command, &mut result)?;
         self.finalize_process_substitutions(&mut result)?;
@@ -2726,32 +2768,69 @@ impl Interpreter {
         (!path.is_empty()).then(|| PathBuf::from(path))
     }
 
-    fn history_lines(&self) -> Vec<String> {
-        self.history_path()
-            .and_then(|path| fs::read_to_string(path).ok())
-            .map(|text| text.lines().map(str::to_owned).collect())
-            .unwrap_or_default()
+    fn history_entries(&self) -> Vec<HistoryEntry> {
+        let Some(path) = self.history_path() else { return Vec::new(); };
+        let Ok(text) = fs::read_to_string(path) else { return Vec::new(); };
+
+        let mut entries = Vec::new();
+        let mut pending_timestamp = None;
+        for line in text.lines() {
+            if let Some(raw) = line.strip_prefix('#')
+                && !raw.is_empty()
+                && raw.chars().all(|ch| ch.is_ascii_digit())
+            {
+                pending_timestamp = raw.parse::<i64>().ok();
+                continue;
+            }
+            entries.push(HistoryEntry {
+                timestamp: pending_timestamp.take(),
+                command: line.to_owned(),
+            });
+        }
+        entries
     }
 
-    fn save_history_lines(&self, lines: &[String]) -> Result<()> {
+    fn history_lines(&self) -> Vec<String> {
+        self.history_entries()
+            .into_iter()
+            .map(|entry| entry.command)
+            .collect()
+    }
+
+    fn save_history_entries(&self, entries: &[HistoryEntry]) -> Result<()> {
         let Some(path) = self.history_path() else { return Ok(()); };
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
-        let mut text = lines.join("\n");
-        if !text.is_empty() {
+
+        let mut text = String::new();
+        for entry in entries {
+            if let Some(timestamp) = entry.timestamp {
+                text.push('#');
+                text.push_str(&timestamp.to_string());
+                text.push('\n');
+            }
+            text.push_str(&entry.command);
             text.push('\n');
         }
         fs::write(path, text)?;
         Ok(())
     }
 
+    fn save_history_lines(&self, lines: &[String]) -> Result<()> {
+        let entries = lines.iter()
+            .cloned()
+            .map(|command| HistoryEntry { timestamp: None, command })
+            .collect::<Vec<_>>();
+        self.save_history_entries(&entries)
+    }
+
     fn builtin_history(&mut self, args: &[String]) -> Result<ExecutionResult> {
-        let mut lines = self.history_lines();
+        let mut entries = self.history_entries();
 
         if args.first().map(String::as_str) == Some("-c") {
-            lines.clear();
-            self.save_history_lines(&lines)?;
+            entries.clear();
+            self.save_history_entries(&entries)?;
             return Ok(ExecutionResult::success());
         }
 
@@ -2763,30 +2842,55 @@ impl Interpreter {
                     2,
                 ));
             };
-            if position == 0 || position > lines.len() {
+            if position == 0 || position > entries.len() {
                 return Ok(ExecutionResult::from_parts(
                     String::new(),
                     format!("history: {position}: posición inválida\n"),
                     1,
                 ));
             }
-            lines.remove(position - 1);
-            self.save_history_lines(&lines)?;
+            entries.remove(position - 1);
+            self.save_history_entries(&entries)?;
             return Ok(ExecutionResult::success());
         }
 
-        if matches!(args.first().map(String::as_str), Some("-a" | "-w" | "-r" | "-n")) {
-            self.save_history_lines(&lines)?;
+        if args.first().map(String::as_str) == Some("-w") {
+            self.save_history_entries(&entries)?;
+            return Ok(ExecutionResult::success());
+        }
+
+        // The interactive engine records commands as they are accepted. For -a,
+        // -r and -n the persistent file is already the authoritative history
+        // source, so these operations are idempotent instead of duplicating rows.
+        if matches!(args.first().map(String::as_str), Some("-a" | "-r" | "-n")) {
             return Ok(ExecutionResult::success());
         }
 
         let count = args.iter()
             .find_map(|value| value.parse::<usize>().ok())
-            .unwrap_or(lines.len());
-        let start = lines.len().saturating_sub(count);
+            .unwrap_or(entries.len());
+        let start = entries.len().saturating_sub(count);
+        let time_format = self.env.get("HISTTIMEFORMAT");
         let mut stdout = String::new();
-        for (index, line) in lines.iter().enumerate().skip(start) {
-            stdout.push_str(&format!("{:5}  {}\n", index + 1, line));
+
+        for (index, entry) in entries.iter().enumerate().skip(start) {
+            let rendered_time = if time_format.is_empty() {
+                String::new()
+            } else if let Some(timestamp) = entry.timestamp {
+                use chrono::TimeZone;
+                chrono::Local.timestamp_opt(timestamp, 0)
+                    .single()
+                    .map(|value| value.format(&time_format).to_string())
+                    .unwrap_or_default()
+            } else {
+                String::new()
+            };
+            stdout.push_str(&format!(
+                "{:5}  {}{}\n",
+                index + 1,
+                rendered_time,
+                entry.command
+            ));
         }
         Ok(ExecutionResult::from_parts(stdout, String::new(), 0))
     }
@@ -6235,10 +6339,12 @@ impl Interpreter {
             absolute_pattern.clone()
         };
 
+        let globignore = self.env.get("GLOBIGNORE");
+        let implicit_dotglob = !globignore.is_empty();
         let options = glob::MatchOptions {
             case_sensitive: !self.env.option_enabled("nocaseglob"),
             require_literal_separator: !self.env.option_enabled("globstar"),
-            require_literal_leading_dot: !self.env.option_enabled("dotglob"),
+            require_literal_leading_dot: !(self.env.option_enabled("dotglob") || implicit_dotglob),
         };
 
         let filter = if use_extglob {
@@ -6267,7 +6373,7 @@ impl Interpreter {
                 }
             }
 
-            if !self.env.option_enabled("dotglob") {
+            if !self.env.option_enabled("dotglob") && !implicit_dotglob {
                 let hidden = path.file_name()
                     .and_then(|name| name.to_str())
                     .is_some_and(|name| name.starts_with('.'));
@@ -6277,11 +6383,42 @@ impl Interpreter {
                 if hidden && !explicit_hidden { continue; }
             }
 
-            if Path::new(value).is_absolute() {
-                result.push(path.to_string_lossy().into_owned());
+            let candidate = if Path::new(value).is_absolute() {
+                path.to_string_lossy().into_owned()
             } else if let Ok(relative) = path.strip_prefix(&self.env.cwd) {
-                result.push(relative.to_string_lossy().into_owned());
+                relative.to_string_lossy().into_owned()
+            } else {
+                continue;
+            };
+
+            if !globignore.is_empty() {
+                let normalized = normalize_glob_path(&candidate);
+                let basename = Path::new(&candidate)
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or(&candidate);
+                if basename == "." || basename == ".." {
+                    continue;
+                }
+                let ignored = globignore.split(':')
+                    .filter(|pattern| !pattern.is_empty())
+                    .any(|pattern| {
+                        let options = glob::MatchOptions {
+                            case_sensitive: !self.env.option_enabled("nocaseglob"),
+                            require_literal_separator: false,
+                            require_literal_leading_dot: false,
+                        };
+                        glob::Pattern::new(pattern)
+                            .map(|compiled| {
+                                compiled.matches_with(&normalized, options)
+                                    || compiled.matches_with(basename, options)
+                            })
+                            .unwrap_or(false)
+                    });
+                if ignored { continue; }
             }
+
+            result.push(candidate);
         }
 
         sort_glob_results(&mut result, &self.env.get("GLOBSORT"), &self.env.cwd);
@@ -7116,6 +7253,19 @@ fn tokenize_arithmetic(expression: &str) -> Result<Vec<ArithmeticToken>> {
         if chars[i] == '_' || chars[i].is_ascii_alphabetic() {
             let start = i;
             while i < chars.len() && (chars[i] == '_' || chars[i].is_ascii_alphanumeric()) { i += 1; }
+            if chars.get(i) == Some(&'[') {
+                let mut depth = 1usize;
+                i += 1;
+                while i < chars.len() && depth > 0 {
+                    match chars[i] {
+                        '[' => depth += 1,
+                        ']' => depth -= 1,
+                        _ => {}
+                    }
+                    i += 1;
+                }
+                if depth != 0 { bail!("subíndice aritmético sin cerrar"); }
+            }
             tokens.push(ArithmeticToken::Ident(chars[start..i].iter().collect()));
             continue;
         }
@@ -7346,7 +7496,22 @@ impl<'a> ArithmeticParser<'a> {
     fn primary(&mut self) -> Result<i64> {
         match self.take() {
             ArithmeticToken::Number(value) => Ok(value),
-            ArithmeticToken::Ident(name) => Ok(self.env.get(&name).parse::<i64>().unwrap_or(0)),
+            ArithmeticToken::Ident(name) => {
+                if let Some(open) = name.find('[')
+                    && name.ends_with(']')
+                {
+                    let base = &name[..open];
+                    let subscript = &name[open + 1..name.len() - 1];
+                    if self.env.assoc_arrays.contains_key(base) {
+                        return Ok(self.env.get(&name).parse::<i64>().unwrap_or(0));
+                    }
+                    let index = eval_arithmetic(subscript, self.env)?;
+                    let reference = format!("{base}[{index}]");
+                    Ok(self.env.get(&reference).parse::<i64>().unwrap_or(0))
+                } else {
+                    Ok(self.env.get(&name).parse::<i64>().unwrap_or(0))
+                }
+            },
             ArithmeticToken::LParen => {
                 let value = self.comma()?;
                 if !matches!(self.take(), ArithmeticToken::RParen) { bail!("paréntesis aritmético sin cerrar"); }
