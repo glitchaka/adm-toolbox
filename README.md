@@ -505,41 +505,16 @@ Agrupa varias herramientas para obtener una vista rápida:
 
 Estas herramientas están escritas o integradas dentro de SST y no requieren instalar GNU coreutils. La intención es ofrecer una experiencia familiar, no afirmar equivalencia completa con cada implementación GNU original.
 
-## Navegación, entorno y utilidades básicas
-
 | Comando | Función |
 |---|---|
 | `pwd` | Muestra el directorio actual. |
 | `echo` | Imprime argumentos. |
 | `env` | Lista variables de entorno. |
 | `clear` | Limpia la terminal. |
-| `basename` | Extrae el último componente de una ruta. |
-| `dirname` | Extrae el directorio de una ruta. |
-| `realpath` | Resuelve una ruta absoluta. |
-| `date` | Muestra fecha y hora. |
-| `sleep` | Espera un intervalo. |
-| `true` | Termina con estado 0. |
-| `false` | Termina con estado 1. |
-
-## Archivos y directorios
-
-| Comando | Función |
-|---|---|
 | `ls` | Lista archivos y directorios. |
 | `cat` | Concatena archivos o stdin. |
 | `head` | Muestra las primeras líneas. |
 | `tail` | Muestra las últimas líneas. |
-| `find` | Busca archivos. |
-| `touch` | Crea un archivo vacío o actualiza su presencia. |
-| `mkdir` | Crea directorios. |
-| `rm` | Elimina archivos o directorios. |
-| `cp` | Copia archivos. |
-| `mv` | Mueve o renombra archivos. |
-
-## Texto y pipelines
-
-| Comando | Función |
-|---|---|
 | `grep` | Filtra líneas por texto. |
 | `wc` | Cuenta líneas, palabras y bytes. |
 | `sort` | Ordena líneas. |
@@ -553,32 +528,32 @@ Estas herramientas están escritas o integradas dentro de SST y no requieren ins
 | `awk` | Selección simple de campos. |
 | `diff` | Compara dos archivos. |
 | `printf` | Imprime texto con formato. |
-
-## Integridad y codificación
-
-| Comando | Función |
-|---|---|
-| `sha256sum` | Calcula SHA-256. |
-| `base64` | Codifica o decodifica Base64. |
-
-## Archivos comprimidos
-
-| Comando | Función |
-|---|---|
+| `find` | Busca archivos. |
+| `basename` | Extrae el último componente de una ruta. |
+| `dirname` | Extrae el directorio de una ruta. |
+| `realpath` | Resuelve una ruta absoluta. |
+| `date` | Muestra fecha y hora. |
+| `sleep` | Espera un intervalo. |
+| `true` | Termina con estado 0. |
+| `false` | Termina con estado 1. |
+| `touch` | Crea un archivo vacío o actualiza su presencia. |
+| `mkdir` | Crea directorios. |
+| `rm` | Elimina archivos o directorios. |
+| `cp` | Copia archivos. |
+| `mv` | Mueve o renombra archivos. |
 | `tar` | Crea, lista y extrae TAR/TAR.GZ. |
 | `gzip` | Comprime archivos con gzip. |
 | `gunzip` | Descomprime archivos `.gz`. |
 | `zip` | Crea archivos ZIP. |
 | `unzip` | Lista o extrae ZIP. |
-
-## Resolución de comandos
-
-| Comando | Función |
-|---|---|
+| `sha256sum` | Calcula SHA-256. |
+| `base64` | Codifica o decodifica Base64. |
 | `which` | Localiza un comando ejecutable. |
 | `type` | Indica cómo se resolverá un nombre de comando. |
 
-SST también puede ejecutar programas externos accesibles desde `PATH`, por ejemplo:
+## Programas externos disponibles desde SST
+
+Además de sus herramientas integradas, SST puede lanzar ejecutables instalados en Windows o disponibles en `PATH`. Por ejemplo:
 
 ```bash
 ipconfig /all
@@ -590,6 +565,8 @@ powershell
 ssh
 curl
 ```
+
+Estos programas **no forman parte de SST**; la shell simplemente los ejecuta como comandos externos.
 
 ---
 
