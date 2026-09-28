@@ -48,7 +48,7 @@ La terminal nativa de Shell Shock Tool tiene interfaz propia Win32:
 
 La terminal lleva **JetBrainsMono Nerd Font Mono embebida dentro del ejecutable**. Se carga de forma privada en memoria al iniciar y se libera al cerrar, por lo que no requiere instalar fuentes en el PC y funciona desde un pendrive.
 
-Durante la compilación, `build.rs` obtiene la fuente oficial de Nerd Fonts y la incorpora al binario. Para compilar sin Internet puede definirse `ADM_NERD_FONT_FILE` apuntando a una copia local compatible.
+Durante la compilación, `build.rs` obtiene la fuente oficial de Nerd Fonts y la incorpora al binario. Para compilar sin Internet puede definirse `SST_NERD_FONT_FILE` apuntando a una copia local compatible.
 
 El icono de Shell Shock Tool se genera e incrusta como recurso de Windows a partir del diseño de la mascota. El SVG fuente está en `assets/shell-shock-mascot.svg`.
 
@@ -110,7 +110,7 @@ Shell Shock Tool reconoce archivos `.sh` y archivos con shebang Bash/sh, además
 ```bash
 test.sh
 ./test.sh
-adm-toolbox.exe test.sh
+sst.exe test.sh
 ```
 
 En el estado actual de `main`, los scripts Bash/sh locales se ejecutan directamente en el intérprete activo de Shell Shock Tool. Esto permite que `read` y otras operaciones interactivas utilicen la terminal Win32 de la sesión sin relanzar otra instancia del ejecutable.
@@ -410,7 +410,7 @@ Créditos: Helix contributors.
 
 Los avisos y la licencia correspondientes se conservan en `THIRD_PARTY_NOTICES.md` y `licenses/HELIX-MPL-2.0.txt`.
 
-Para una compilación sin Internet puede definirse `ADM_HELIX_ARCHIVE` apuntando al ZIP oficial `helix-25.07.1-x86_64-windows.zip`.
+Para una compilación sin Internet puede definirse `SST_HELIX_ARCHIVE` apuntando al ZIP oficial `helix-25.07.1-x86_64-windows.zip`.
 
 ## Estado actual de `main`
 
@@ -460,4 +460,4 @@ Shell Shock Tool
 └── helix-sst 0.1.1 (basado en Helix 25.07.1)
 ```
 
-El alcance completo está en `ADM_TOOLBOX_PLAN.md`.
+El alcance completo está en `SHELL_SHOCK_TOOL_PLAN.md`.
