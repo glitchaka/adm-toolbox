@@ -110,7 +110,8 @@ impl TextEditor for HelixSstEditor {
 
 #[cfg(windows)]
 fn ensure_installed() -> Result<Install> {
-    let exe_dir = std::env::current_exe()?
+    let launcher = std::env::current_exe()?;
+    let exe_dir = launcher
         .parent()
         .context("No se pudo determinar el directorio de Shell Shock Tool")?
         .to_path_buf();
@@ -122,40 +123,50 @@ fn ensure_installed() -> Result<Install> {
     let config_dir = exe_dir.join("config").join("helix-sst");
     let marker = root.join(".installed");
 
-    if !marker.is_file() || find_named(&root, "hx.exe", false).is_none()
-        || find_named(&root, "runtime", true).is_none() {
+    let mut resolved = read_install_marker(&root, &marker);
+
+    if resolved.is_none() {
         fs::create_dir_all(&root)?;
 
-        let cursor = Cursor::new(HELIX_ARCHIVE);
-        let mut archive = ZipArchive::new(cursor)
-            .context("El paquete embebido de Helix no es un ZIP válido")?;
+        let existing_hx = find_named(&root, "hx.exe", false);
+        let existing_runtime = find_named(&root, "runtime", true);
 
-        for index in 0..archive.len() {
-            let mut entry = archive.by_index(index)?;
-            let Some(relative) = entry.enclosed_name().map(Path::to_path_buf) else {
-                continue;
-            };
-            let destination = root.join(relative);
+        if existing_hx.is_none() || existing_runtime.is_none() {
+            let cursor = Cursor::new(HELIX_ARCHIVE);
+            let mut archive = ZipArchive::new(cursor)
+                .context("El paquete embebido de Helix no es un ZIP válido")?;
 
-            if entry.is_dir() {
-                fs::create_dir_all(&destination)?;
-                continue;
+            for index in 0..archive.len() {
+                let mut entry = archive.by_index(index)?;
+                let Some(relative) = entry.enclosed_name().map(Path::to_path_buf) else {
+                    continue;
+                };
+                let destination = root.join(relative);
+
+                if entry.is_dir() {
+                    fs::create_dir_all(&destination)?;
+                    continue;
+                }
+
+                if let Some(parent) = destination.parent() {
+                    fs::create_dir_all(parent)?;
+                }
+
+                let mut output = fs::File::create(&destination)?;
+                std::io::copy(&mut entry, &mut output)?;
             }
-
-            if let Some(parent) = destination.parent() {
-                fs::create_dir_all(parent)?;
-            }
-
-            let mut output = fs::File::create(&destination)?;
-            std::io::copy(&mut entry, &mut output)?;
         }
 
+        let hx = find_named(&root, "hx.exe", false)
+            .context("El paquete de Helix no contiene hx.exe")?;
+        let runtime = find_named(&root, "runtime", true)
+            .context("El paquete de Helix no contiene el directorio runtime")?;
+
+        write_install_marker(&root, &marker, &hx, &runtime)?;
+        resolved = Some((hx, runtime));
     }
 
-    let hx = find_named(&root, "hx.exe", false)
-        .context("El paquete de Helix no contiene hx.exe")?;
-    let runtime = find_named(&root, "runtime", true)
-        .context("El paquete de Helix no contiene el directorio runtime")?;
+    let (hx, runtime) = resolved.context("No se pudieron resolver las rutas de Helix")?;
 
     fs::create_dir_all(&config_dir)?;
     let config = config_dir.join("config.toml");
@@ -166,9 +177,45 @@ fn ensure_installed() -> Result<Install> {
     fs::create_dir_all(&themes)?;
     write_default(&themes.join("shell-shock.toml"), THEME_TOML)?;
     fs::write(root.join("HELIX-SST-NOTICE.txt"), NOTICE)?;
-    fs::write(&marker, format!("helix-upstream={HELIX_UPSTREAM_VERSION}\n"))?;
 
-    Ok(Install { hx, runtime, config, launcher: std::env::current_exe()? })
+    Ok(Install { hx, runtime, config, launcher })
+}
+
+#[cfg(windows)]
+fn read_install_marker(root: &Path, marker: &Path) -> Option<(PathBuf, PathBuf)> {
+    let content = fs::read_to_string(marker).ok()?;
+    let mut hx = None;
+    let mut runtime = None;
+
+    for line in content.lines() {
+        if let Some(value) = line.strip_prefix("hx=") {
+            hx = Some(root.join(value));
+        } else if let Some(value) = line.strip_prefix("runtime=") {
+            runtime = Some(root.join(value));
+        }
+    }
+
+    let hx = hx?;
+    let runtime = runtime?;
+    (hx.is_file() && runtime.is_dir()).then_some((hx, runtime))
+}
+
+#[cfg(windows)]
+fn write_install_marker(root: &Path, marker: &Path, hx: &Path, runtime: &Path) -> Result<()> {
+    let hx = hx.strip_prefix(root).unwrap_or(hx).to_string_lossy().replace('\\', "/");
+    let runtime = runtime
+        .strip_prefix(root)
+        .unwrap_or(runtime)
+        .to_string_lossy()
+        .replace('\\', "/");
+
+    fs::write(
+        marker,
+        format!(
+            "helix-upstream={HELIX_UPSTREAM_VERSION}\nhx={hx}\nruntime={runtime}\n"
+        ),
+    )?;
+    Ok(())
 }
 
 fn write_default(path: &Path, content: &str) -> Result<()> {
