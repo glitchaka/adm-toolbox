@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
     process::{Child, ChildStdin, Command, Stdio},
     sync::{
-        atomic::{AtomicI32, Ordering},
+        atomic::{AtomicI32, AtomicU32, Ordering},
         mpsc,
         Arc, Mutex,
     },
@@ -25,11 +25,19 @@ use windows_sys::Win32::{
         FileAttributeTagInfo, OPEN_EXISTING, PIPE_ACCESS_INBOUND, PIPE_ACCESS_OUTBOUND,
     },
     System::{
+        Diagnostics::ToolHelp::{
+            CreateToolhelp32Snapshot, Thread32First, Thread32Next, THREADENTRY32,
+            TH32CS_SNAPTHREAD,
+        },
         Pipes::{
             ConnectNamedPipe, CreateNamedPipeW, DisconnectNamedPipe, PIPE_READMODE_BYTE,
             PIPE_REJECT_REMOTE_CLIENTS, PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES, PIPE_WAIT,
         },
-        Threading::{GetCurrentProcess, GetProcessTimes},
+        Threading::{
+            GetCurrentProcess, GetProcessTimes, OpenProcess, OpenThread, ResumeThread,
+            SuspendThread, TerminateProcess, PROCESS_QUERY_LIMITED_INFORMATION,
+            PROCESS_TERMINATE, THREAD_SUSPEND_RESUME,
+        },
     },
 };
 
@@ -44,9 +52,11 @@ use crate::{
 };
 
 struct BackgroundJob {
+    id: u32,
     command: String,
     child: Child,
     pipe_fds: Vec<i32>,
+    stopped: bool,
 }
 
 struct VirtualReader {
@@ -67,6 +77,7 @@ struct WindowsShellHost {
     jobs: Mutex<HashMap<u32, BackgroundJob>>,
     pipes: Mutex<HashMap<i32, VirtualPipe>>,
     next_fd: AtomicI32,
+    next_job_id: AtomicU32,
     child_cpu_100ns: Mutex<(u64, u64)>,
 }
 
@@ -91,6 +102,44 @@ impl WindowsShellHost {
     #[cfg(not(windows))]
     fn process_cpu_100ns(_handle: *mut std::ffi::c_void) -> Option<(u64, u64)> {
         None
+    }
+
+    #[cfg(windows)]
+    fn set_process_suspended(pid: u32, suspended: bool) -> bool {
+        unsafe {
+            let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+            if snapshot == INVALID_HANDLE_VALUE {
+                return false;
+            }
+
+            let mut entry: THREADENTRY32 = std::mem::zeroed();
+            entry.dwSize = std::mem::size_of::<THREADENTRY32>() as u32;
+            let mut ok = Thread32First(snapshot, &mut entry) != 0;
+            let mut matched = false;
+            let mut changed = false;
+
+            while ok {
+                if entry.th32OwnerProcessID == pid {
+                    matched = true;
+                    let thread = OpenThread(THREAD_SUSPEND_RESUME, 0, entry.th32ThreadID);
+                    if !thread.is_null() {
+                        let result = if suspended {
+                            SuspendThread(thread)
+                        } else {
+                            ResumeThread(thread)
+                        };
+                        if result != u32::MAX {
+                            changed = true;
+                        }
+                        CloseHandle(thread);
+                    }
+                }
+                ok = Thread32Next(snapshot, &mut entry) != 0;
+            }
+
+            CloseHandle(snapshot);
+            matched && changed
+        }
     }
 
     fn record_child_cpu(&self, child: &Child) {
@@ -798,9 +847,11 @@ impl ShellCommandHost for WindowsShellHost {
         self.jobs.lock().unwrap_or_else(|error| error.into_inner()).insert(
             pid,
             BackgroundJob {
+                id: self.next_job_id.fetch_add(1, Ordering::SeqCst),
                 command: source.to_owned(),
                 child,
                 pipe_fds: vec![read_fd, write_fd],
+                stopped: false,
             },
         );
 
@@ -912,9 +963,11 @@ impl ShellCommandHost for WindowsShellHost {
         self.jobs.lock().unwrap_or_else(|e| e.into_inner()).insert(
             pid,
             BackgroundJob {
+                id: self.next_job_id.fetch_add(1, Ordering::SeqCst),
                 command: format!("{} {}", program, args.join(" ")).trim().to_owned(),
                 child,
                 pipe_fds: Vec::new(),
+                stopped: false,
             },
         );
         Ok(pid)
@@ -939,7 +992,13 @@ impl ShellCommandHost for WindowsShellHost {
         let pid = child.id();
         self.jobs.lock().unwrap_or_else(|e| e.into_inner()).insert(
             pid,
-            BackgroundJob { command: source.to_owned(), child, pipe_fds: Vec::new() },
+            BackgroundJob {
+                id: self.next_job_id.fetch_add(1, Ordering::SeqCst),
+                command: source.to_owned(),
+                child,
+                pipe_fds: Vec::new(),
+                stopped: false,
+            },
         );
         Ok(pid)
     }
@@ -948,14 +1007,17 @@ impl ShellCommandHost for WindowsShellHost {
         let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
         let mut rows = Vec::new();
         for (pid, job) in jobs.iter_mut() {
-            let running = job.child.try_wait()?.is_none();
+            let exited = job.child.try_wait()?.is_some();
+            if exited { job.stopped = false; }
             rows.push(JobInfo {
+                id: job.id,
                 pid: *pid,
                 command: job.command.clone(),
-                running,
+                running: !exited && !job.stopped,
+                stopped: !exited && job.stopped,
             });
         }
-        rows.sort_by_key(|job| job.pid);
+        rows.sort_by_key(|job| job.id);
         Ok(rows)
     }
 
@@ -1040,6 +1102,63 @@ impl ShellCommandHost for WindowsShellHost {
             Ok(false)
         }
     }
+
+    fn signal_process(&self, pid: u32, signal: &str) -> Result<bool> {
+        if signal == "0" {
+            #[cfg(windows)]
+            unsafe {
+                let handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid);
+                if handle.is_null() { return Ok(false); }
+                CloseHandle(handle);
+                return Ok(true);
+            }
+            #[cfg(not(windows))]
+            { return Ok(false); }
+        }
+
+        if matches!(signal, "STOP" | "TSTP" | "CONT") {
+            #[cfg(windows)]
+            {
+                let suspend = signal != "CONT";
+                let changed = Self::set_process_suspended(pid, suspend);
+                if changed {
+                    if let Some(job) = self.jobs
+                        .lock()
+                        .unwrap_or_else(|e| e.into_inner())
+                        .get_mut(&pid)
+                    {
+                        job.stopped = suspend;
+                    }
+                }
+                return Ok(changed);
+            }
+            #[cfg(not(windows))]
+            { return Ok(false); }
+        }
+
+        {
+            let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
+            if let Some(job) = jobs.get_mut(&pid) {
+                job.child.kill()?;
+                job.stopped = false;
+                return Ok(true);
+            }
+        }
+
+        #[cfg(windows)]
+        unsafe {
+            let handle = OpenProcess(PROCESS_TERMINATE, 0, pid);
+            if handle.is_null() { return Ok(false); }
+            let terminated = TerminateProcess(handle, 128 + signal_number_windows(signal)) != 0;
+            CloseHandle(handle);
+            Ok(terminated)
+        }
+        #[cfg(not(windows))]
+        {
+            let _ = (pid, signal);
+            Ok(false)
+        }
+    }
 }
 
 fn send_async_terminal_output(
@@ -1089,6 +1208,18 @@ fn take_utf8_chars(buffer: &mut Vec<u8>, count: usize) -> String {
     String::from_utf8_lossy(&bytes).into_owned()
 }
 
+fn signal_number_windows(signal: &str) -> u32 {
+    match signal {
+        "HUP" => 1,
+        "INT" => 2,
+        "QUIT" => 3,
+        "ABRT" => 6,
+        "KILL" => 9,
+        "TERM" => 15,
+        _ => 15,
+    }
+}
+
 fn resolve_shell_script(program: &str, cwd: &Path) -> Option<PathBuf> {
     let candidate = {
         let path = PathBuf::from(program);
@@ -1128,6 +1259,7 @@ impl NativeShellEngine {
             jobs: Mutex::new(HashMap::new()),
             pipes: Mutex::new(HashMap::new()),
             next_fd: AtomicI32::new(10),
+            next_job_id: AtomicU32::new(1),
             child_cpu_100ns: Mutex::new((0, 0)),
         };
         let mut interpreter = Interpreter::new(Box::new(host));

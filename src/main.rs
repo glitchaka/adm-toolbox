@@ -50,6 +50,8 @@ struct BashInvocation {
     stdin_script: bool,
     no_rc: bool,
     no_profile: bool,
+    no_editing: bool,
+    rc_file: Option<String>,
     command: Option<String>,
     shell_options: Vec<(String, bool)>,
     shopt_options: Vec<(String, bool)>,
@@ -104,9 +106,21 @@ fn parse_invocation(args: &[String]) -> Result<BashInvocation> {
             "--login" => invocation.login = true,
             "--norc" => invocation.no_rc = true,
             "--noprofile" => invocation.no_profile = true,
+            "--noediting" => invocation.no_editing = true,
             "--posix" => invocation.shell_options.push(("posix".to_owned(), true)),
             "--restricted" => invocation.shopt_options.push(("restricted_shell".to_owned(), true)),
             "--verbose" => invocation.shell_options.push(("verbose".to_owned(), true)),
+            "--debugger" => {
+                invocation.shopt_options.push(("extdebug".to_owned(), true));
+                invocation.shell_options.push(("functrace".to_owned(), true));
+                invocation.shell_options.push(("errtrace".to_owned(), true));
+            }
+            "--rcfile" | "--init-file" => {
+                index += 1;
+                invocation.rc_file = Some(args.get(index)
+                    .cloned()
+                    .ok_or_else(|| anyhow::anyhow!("{arg} requiere archivo"))?);
+            }
             "-c" => {
                 index += 1;
                 invocation.command = Some(args.get(index)
@@ -142,6 +156,7 @@ fn parse_invocation(args: &[String]) -> Result<BashInvocation> {
                         'i' if enabled => invocation.interactive = true,
                         'l' if enabled => invocation.login = true,
                         's' if enabled => invocation.stdin_script = true,
+                        'r' if enabled => invocation.shopt_options.push(("restricted_shell".to_owned(), true)),
                         'a' => invocation.shell_options.push(("allexport".to_owned(), enabled)),
                         'e' => invocation.shell_options.push(("errexit".to_owned(), enabled)),
                         'f' => invocation.shell_options.push(("noglob".to_owned(), enabled)),
@@ -191,6 +206,18 @@ fn apply_invocation_options(
             anyhow::bail!("{}", result.stderr.trim());
         }
     }
+
+    if invocation.login {
+        let result = engine.execute("shopt -s login_shell")?;
+        if result.status != 0 {
+            anyhow::bail!("{}", result.stderr.trim());
+        }
+    }
+
+    if invocation.no_editing {
+        let _ = engine.execute("set +o emacs; set +o vi")?;
+    }
+
     Ok(())
 }
 
@@ -234,7 +261,11 @@ fn load_bash_startup(
     }
 
     if invocation.interactive && !invocation.login && !invocation.no_rc {
-        source_startup_file(engine, &home.join(".bashrc"))?;
+        if let Some(path) = invocation.rc_file.as_ref() {
+            source_startup_file(engine, &PathBuf::from(path))?;
+        } else {
+            source_startup_file(engine, &home.join(".bashrc"))?;
+        }
     }
 
     if !invocation.interactive {

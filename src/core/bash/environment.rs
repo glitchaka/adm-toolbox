@@ -62,6 +62,18 @@ impl ShellEnvironment {
         vars.entry("BASH_TRAPSIG".to_owned()).or_insert_with(|| "0".to_owned());
         vars.entry("BASH_SUBSHELL".to_owned()).or_insert_with(|| "0".to_owned());
         vars.entry("BASH_COMMAND".to_owned()).or_default();
+        vars.entry("LINENO".to_owned()).or_insert_with(|| "1".to_owned());
+        vars.entry("OPTIND".to_owned()).or_insert_with(|| "1".to_owned());
+        vars.entry("OPTERR".to_owned()).or_insert_with(|| "1".to_owned());
+        vars.entry("HOSTNAME".to_owned()).or_insert_with(|| {
+            env::var("COMPUTERNAME").unwrap_or_else(|_| "localhost".to_owned())
+        });
+        vars.entry("HOSTTYPE".to_owned()).or_insert_with(|| std::env::consts::ARCH.to_owned());
+        vars.entry("OSTYPE".to_owned()).or_insert_with(|| "windows-sst".to_owned());
+        vars.entry("MACHTYPE".to_owned()).or_insert_with(|| {
+            format!("{}-pc-windows-sst", std::env::consts::ARCH)
+        });
+        vars.entry("BASH_COMPAT".to_owned()).or_insert_with(|| "5.3".to_owned());
         vars.entry("HISTSIZE".to_owned()).or_insert_with(|| "500".to_owned());
         vars.entry("HISTFILESIZE".to_owned()).or_insert_with(|| "500".to_owned());
         let shlvl = vars.get("SHLVL")
@@ -82,6 +94,12 @@ impl ShellEnvironment {
                 "x86_64-pc-windows-sst".to_owned(),
             ],
         );
+        arrays.insert("GROUPS".to_owned(), vec!["0".to_owned()]);
+        arrays.insert("FUNCNAME".to_owned(), vec!["main".to_owned()]);
+        arrays.insert("BASH_SOURCE".to_owned(), vec!["adm-toolbox".to_owned()]);
+        arrays.insert("BASH_LINENO".to_owned(), vec!["0".to_owned()]);
+        arrays.insert("BASH_ARGC".to_owned(), vec!["0".to_owned()]);
+        arrays.insert("BASH_ARGV".to_owned(), Vec::new());
 
         let mut readonly = HashSet::new();
         readonly.insert("BASH_VERSINFO".to_owned());
@@ -270,6 +288,7 @@ impl ShellEnvironment {
     pub fn is_set(&self, name: &str) -> bool {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
+        if name == "DIRSTACK" { return true; }
         if let Some((base, subscript)) = split_subscript(name) {
             if let Some(array) = self.arrays.get(base) {
                 if subscript == "@" || subscript == "*" { return !array.is_empty(); }
@@ -402,6 +421,11 @@ impl ShellEnvironment {
     pub fn array_values(&self, name: &str) -> Vec<String> {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
+        if name == "DIRSTACK" {
+            let mut stack = vec![self.cwd.to_string_lossy().into_owned()];
+            stack.extend(self.dir_stack.iter().rev().map(|path| path.to_string_lossy().into_owned()));
+            return stack;
+        }
         if let Some(values) = self.arrays.get(name) {
             return values.clone();
         }
@@ -428,6 +452,18 @@ impl ShellEnvironment {
     }
 
     fn get_array_value(&self, base: &str, subscript: &str) -> String {
+        if base == "DIRSTACK" {
+            let values = self.array_values("DIRSTACK");
+            if subscript == "@" { return values.join(" "); }
+            if subscript == "*" { return values.join(&self.ifs_first().to_string()); }
+            if let Ok(index) = subscript.parse::<isize>() {
+                let resolved = if index < 0 { values.len() as isize + index } else { index };
+                if resolved >= 0 {
+                    return values.get(resolved as usize).cloned().unwrap_or_default();
+                }
+            }
+            return String::new();
+        }
         if subscript == "@" || subscript == "*" {
             let sep = if subscript == "*" { self.ifs_first().to_string() } else { " ".to_owned() };
             return self.array_values(base).join(&sep);

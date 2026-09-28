@@ -32,9 +32,11 @@ pub struct ExecutionResult {
 
 #[derive(Debug, Clone)]
 pub struct JobInfo {
+    pub id: u32,
     pub pid: u32,
     pub command: String,
     pub running: bool,
+    pub stopped: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -42,6 +44,7 @@ struct CallFrame {
     function: String,
     source: String,
     line: u32,
+    args: Vec<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -209,6 +212,7 @@ pub trait ShellCommandHost: Send + Sync {
     fn wait_job(&self, _pid: Option<u32>) -> Result<i32> { Ok(127) }
     fn wait_next_job(&self) -> Result<Option<(u32, i32)>> { Ok(None) }
     fn disown_job(&self, _pid: u32) -> Result<bool> { Ok(false) }
+    fn signal_process(&self, _pid: u32, _signal: &str) -> Result<bool> { Ok(false) }
 }
 
 pub struct Interpreter {
@@ -226,6 +230,7 @@ pub struct Interpreter {
     call_stack: Vec<CallFrame>,
     trap_depth: usize,
     ulimits: HashMap<char, String>,
+    checkjobs_warned: bool,
 }
 
 impl Interpreter {
@@ -245,12 +250,19 @@ impl Interpreter {
             call_stack: Vec::new(),
             trap_depth: 0,
             ulimits: HashMap::new(),
+            checkjobs_warned: false,
         }
     }
 
 
     pub fn set_interactive(&mut self, interactive: bool) {
         set_shell_option(&mut self.env, "interactive", interactive);
+        set_shell_option(&mut self.env, "history", interactive);
+        set_shell_option(&mut self.env, "histexpand", interactive);
+        set_shell_option(&mut self.env, "monitor", interactive);
+        if interactive && !self.env.option_enabled("vi") {
+            set_shell_option(&mut self.env, "emacs", true);
+        }
     }
 
     pub fn prepare_prompt(&mut self, continuation: bool) -> Result<(String, String, Option<String>)> {
@@ -790,6 +802,11 @@ impl Interpreter {
             AstNode::Group(body) => self.execute(body, stdin)?,
             AstNode::Subshell(body) => {
                 let saved = self.env.clone();
+                let depth = self.env.get("BASH_SUBSHELL")
+                    .parse::<u32>()
+                    .unwrap_or(0)
+                    .saturating_add(1);
+                self.env.set("BASH_SUBSHELL", depth.to_string());
                 let result = self.execute(body, stdin);
                 self.env = saved;
                 let mut result = result?;
@@ -937,8 +954,8 @@ impl Interpreter {
         self.env.last_background_pid = Some(pid);
         let job_number = self.host.jobs()?
             .iter()
-            .position(|job| job.pid == pid)
-            .map(|index| index + 1)
+            .find(|job| job.pid == pid)
+            .map(|job| job.id)
             .unwrap_or(1);
         Ok(ExecutionResult::from_parts(
             format!("[{job_number}] {pid}\n"),
@@ -1230,7 +1247,8 @@ impl Interpreter {
                 source: self.function_sources.get(&name)
                     .cloned()
                     .unwrap_or_else(|| self.env.script_name.clone()),
-                line: 0,
+                line: self.env.get("LINENO").parse::<u32>().unwrap_or(0),
+                args: args.to_vec(),
             });
             self.sync_call_stack_arrays();
             let execution = self.execute(&body, local_stdin.as_deref());
@@ -1295,9 +1313,20 @@ impl Interpreter {
             .collect::<Vec<_>>();
         lines.push("0".to_owned());
 
+        let mut argc = self.call_stack.iter().rev()
+            .map(|frame| frame.args.len().to_string())
+            .collect::<Vec<_>>();
+        argc.push(self.env.positional.len().to_string());
+
+        let argv = self.call_stack.iter()
+            .flat_map(|frame| frame.args.iter().rev().cloned())
+            .collect::<Vec<_>>();
+
         self.env.set_array("FUNCNAME", functions);
         self.env.set_array("BASH_SOURCE", sources);
         self.env.set_array("BASH_LINENO", lines);
+        self.env.set_array("BASH_ARGC", argc);
+        self.env.set_array("BASH_ARGV", argv);
     }
 
     fn shell_builtin(
@@ -1485,25 +1514,67 @@ impl Interpreter {
             ":" | "true" => ExecutionResult::success(),
             "false" => ExecutionResult::from_parts(String::new(), String::new(), 1),
             "exit" | "logout" => {
-                let status = args.first()
-                    .and_then(|value| value.parse::<i32>().ok())
-                    .unwrap_or(self.env.last_status);
-                let mut result = ExecutionResult {
-                    stdout: String::new(),
-                    stderr: String::new(),
-                    status,
-                    exit_requested: true,
-                    flow: FlowSignal::None,
-                };
-                if let Some(action) = self.env.traps.get("EXIT").cloned().or_else(|| self.env.traps.get("0").cloned()) {
-                    let mut trap_result = self.execute_text(&action)?;
-                    trap_result.exit_requested = true;
-                    trap_result.status = status;
-                    result.append(trap_result);
-                    result.exit_requested = true;
-                    result.status = status;
+                if name == "logout" && !self.env.option_enabled("login_shell") {
+                    ExecutionResult::from_parts(
+                        String::new(),
+                        "logout: no es una shell de login\n".to_owned(),
+                        1,
+                    )
+                } else {
+                    let status = args.first()
+                        .and_then(|value| value.parse::<i32>().ok())
+                        .unwrap_or(self.env.last_status);
+
+                    let running_jobs = self.host.jobs()?
+                        .into_iter()
+                        .filter(|job| job.running)
+                        .collect::<Vec<_>>();
+
+                    if self.env.option_enabled("interactive")
+                        && self.env.option_enabled("checkjobs")
+                        && !running_jobs.is_empty()
+                        && !self.checkjobs_warned
+                    {
+                        self.checkjobs_warned = true;
+                        let mut stderr = "Hay jobs activos.\n".to_owned();
+                        for (index, job) in running_jobs.iter().enumerate() {
+                            stderr.push_str(&format!(
+                                "[{}] Running {} {}\n",
+                                index + 1,
+                                job.pid,
+                                job.command
+                            ));
+                        }
+                        ExecutionResult::from_parts(String::new(), stderr, 1)
+                    } else {
+                        self.checkjobs_warned = false;
+
+                        if self.env.option_enabled("huponexit")
+                            && self.env.option_enabled("login_shell")
+                        {
+                            for job in running_jobs {
+                                let _ = self.host.signal_process(job.pid, "HUP");
+                            }
+                        }
+
+                        let mut result = ExecutionResult {
+                            stdout: String::new(),
+                            stderr: String::new(),
+                            status,
+                            exit_requested: true,
+                            flow: FlowSignal::None,
+                        };
+                        if let Some(action) = self.env.traps.get("EXIT").cloned().or_else(|| self.env.traps.get("0").cloned()) {
+                            let mut trap_result = self.execute_text(&action)?;
+                            trap_result.exit_requested = true;
+                            trap_result.status = status;
+                            result.append(trap_result);
+                            result.exit_requested = true;
+                            result.status = status;
+                        }
+                        result
+                    }
                 }
-                result
             }
             "source" | "." => {
                 let mut index = 0usize;
@@ -1556,7 +1627,8 @@ impl Interpreter {
                 self.call_stack.push(CallFrame {
                     function: "source".to_owned(),
                     source: saved_name.clone(),
-                    line: 0,
+                    line: self.env.get("LINENO").parse::<u32>().unwrap_or(0),
+                    args: source_args.to_vec(),
                 });
                 self.sync_call_stack_arrays();
                 let execution = self.execute_text(&source);
@@ -1678,36 +1750,14 @@ impl Interpreter {
                 }
             }
             "mapfile" | "readarray" => self.builtin_mapfile(args, stdin)?,
+            "help" => self.builtin_help(args),
+            "kill" => self.builtin_kill(args)?,
             "jobs" => self.builtin_jobs(args)?,
             "wait" => self.builtin_wait(args)?,
             "fg" => self.builtin_fg(args)?,
             "bg" => self.builtin_bg(args)?,
             "disown" => self.builtin_disown(args)?,
-            "command" => {
-                if args.first().map(String::as_str) == Some("-v") || args.first().map(String::as_str) == Some("-V") {
-                    let mut stdout = String::new();
-                    let mut status = 0;
-                    for item in &args[1..] {
-                        if self.env.aliases.contains_key(item) {
-                            stdout.push_str(&format!("{item}\n"));
-                        } else if self.env.functions.contains_key(item) {
-                            stdout.push_str(&format!("{item}\n"));
-                        } else if self.shell_builtin_name(item) {
-                            stdout.push_str(&format!("{item}\n"));
-                        } else {
-                            match self.host.execute_builtin("which", &[item.clone()], &self.env.cwd, None)? {
-                                Some(found) if found.status == 0 => stdout.push_str(&found.stdout),
-                                _ => status = 1,
-                            }
-                        }
-                    }
-                    ExecutionResult::from_parts(stdout, String::new(), status)
-                } else if let Some(command) = args.first() {
-                    self.execute_command_direct(command, &args[1..], stdin)?
-                } else {
-                    ExecutionResult::success()
-                }
-            }
+            "command" => self.builtin_command(args, stdin)?,
             "builtin" => {
                 let Some(command) = args.first() else { return Ok(Some(ExecutionResult::success())); };
                 self.shell_builtin(command, &args[1..], stdin)?
@@ -1728,18 +1778,7 @@ impl Interpreter {
             "dirs" => self.builtin_dirs(args)?,
             "pushd" => self.builtin_pushd(args)?,
             "popd" => self.builtin_popd(args)?,
-            "umask" => {
-                if let Some(value) = args.first() {
-                    self.env.set("__UMASK", value.clone());
-                    ExecutionResult::success()
-                } else {
-                    ExecutionResult::from_parts(
-                        format!("{}\n", self.env.vars.get("__UMASK").cloned().unwrap_or_else(|| "0022".to_owned())),
-                        String::new(),
-                        0,
-                    )
-                }
-            }
+            "umask" => self.builtin_umask(args),
             "ulimit" => self.builtin_ulimit(args)?,
             "times" => self.builtin_times(),
             "caller" => self.builtin_caller(args),
@@ -1780,41 +1819,228 @@ impl Interpreter {
                 | "wait" | "fg" | "bg" | "disown" | "command" | "builtin" | "type" | "hash" | "getopts"
                 | "exec" | "history" | "fc" | "bind" | "enable" | "complete" | "compgen" | "compopt" | "suspend"
                 | "dirs" | "pushd" | "popd" | "umask" | "ulimit" | "times" | "caller"
-                | ":" | "true" | "false"
+                | "help" | "kill" | ":" | "true" | "false"
         )
     }
 
-    fn resolve_jobspec(&self, spec: Option<&str>) -> Result<Option<(usize, JobInfo)>> {
+    fn builtin_help(&self, args: &[String]) -> ExecutionResult {
+        let short = args.iter().any(|arg| arg == "-s");
+        let description_only = args.iter().any(|arg| arg == "-d");
+        let topics: Vec<&str> = args.iter()
+            .filter(|arg| !arg.starts_with('-'))
+            .map(String::as_str)
+            .collect();
+
+        if topics.is_empty() {
+            let mut names = bash_builtin_names().to_vec();
+            names.sort();
+            let mut stdout = String::from("Shell Shock Tool — builtins compatibles con Bash 5.3:\n");
+            for chunk in names.chunks(4) {
+                for name in chunk {
+                    stdout.push_str(&format!("{name:<18}"));
+                }
+                stdout.push('\n');
+            }
+            return ExecutionResult::from_parts(stdout, String::new(), 0);
+        }
+
+        let mut stdout = String::new();
+        let mut stderr = String::new();
+        let mut status = 0;
+        for topic in topics {
+            let mut matches = bash_builtin_names().iter()
+                .copied()
+                .filter(|name| glob::Pattern::new(topic)
+                    .map(|pattern| pattern.matches(name))
+                    .unwrap_or(*name == topic))
+                .collect::<Vec<_>>();
+            matches.sort();
+            matches.dedup();
+
+            if matches.is_empty() {
+                stderr.push_str(&format!("help: no hay tema de ayuda para '{topic}'\n"));
+                status = 1;
+                continue;
+            }
+
+            for name in matches {
+                let (usage, description) = bash_builtin_help(name);
+                if description_only {
+                    stdout.push_str(description);
+                    stdout.push('\n');
+                } else if short {
+                    stdout.push_str(usage);
+                    stdout.push('\n');
+                } else {
+                    stdout.push_str(&format!("{name}: {description}\n    {usage}\n"));
+                }
+            }
+        }
+        ExecutionResult::from_parts(stdout, stderr, status)
+    }
+
+    fn builtin_kill(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        if args.is_empty() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "kill: uso: kill [-s señal | -n señal | -señal] pid | %job ...\n".to_owned(),
+                2,
+            ));
+        }
+
+        if args.iter().any(|arg| matches!(arg.as_str(), "-l" | "-L")) {
+            let values: Vec<&String> = args.iter()
+                .filter(|arg| !matches!(arg.as_str(), "-l" | "-L"))
+                .collect();
+            if values.is_empty() {
+                let stdout = bash_signal_names()
+                    .iter()
+                    .enumerate()
+                    .map(|(index, name)| format!("{:2}) SIG{}\n", index + 1, name))
+                    .collect();
+                return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
+            }
+
+            let mut stdout = String::new();
+            let mut status = 0;
+            for value in values {
+                if let Ok(number) = value.parse::<usize>() {
+                    let normalized = if number > 128 { number - 128 } else { number };
+                    if let Some(name) = bash_signal_names().get(normalized.saturating_sub(1)) {
+                        stdout.push_str(name);
+                        stdout.push('\n');
+                    } else {
+                        status = 1;
+                    }
+                } else {
+                    let normalized = normalize_signal(value);
+                    let number = signal_number(&normalized);
+                    if number == 0 {
+                        status = 1;
+                    } else {
+                        stdout.push_str(&number.to_string());
+                        stdout.push('\n');
+                    }
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), status));
+        }
+
+        let mut signal = "TERM".to_owned();
+        let mut targets = Vec::new();
+        let mut index = 0usize;
+        while index < args.len() {
+            match args[index].as_str() {
+                "-s" | "-n" => {
+                    index += 1;
+                    let Some(value) = args.get(index) else {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            "kill: falta especificación de señal\n".to_owned(),
+                            2,
+                        ));
+                    };
+                    signal = normalize_signal(value);
+                }
+                "--" => {
+                    targets.extend(args[index + 1..].iter().cloned());
+                    break;
+                }
+                value if value.starts_with('-') && value.len() > 1 => {
+                    signal = normalize_signal(&value[1..]);
+                }
+                value => targets.push(value.to_owned()),
+            }
+            index += 1;
+        }
+
+        if signal != "0" && signal_number(&signal) == 0 {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                format!("kill: {signal}: señal inválida\n"),
+                2,
+            ));
+        }
+        if targets.is_empty() {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "kill: falta pid o jobspec\n".to_owned(),
+                2,
+            ));
+        }
+
+        let mut stderr = String::new();
+        let mut status = 0;
+        for target in targets {
+            let pid = if target.starts_with('%') {
+                match self.resolve_jobspec(Some(&target))? {
+                    Some((_, job)) => job.pid,
+                    None => {
+                        stderr.push_str(&format!("kill: {target}: no existe ese job\n"));
+                        status = 1;
+                        continue;
+                    }
+                }
+            } else {
+                match target.parse::<u32>() {
+                    Ok(pid) => pid,
+                    Err(_) => {
+                        stderr.push_str(&format!("kill: {target}: argumentos deben ser pid o jobspec\n"));
+                        status = 1;
+                        continue;
+                    }
+                }
+            };
+
+            if !self.host.signal_process(pid, &signal)? {
+                stderr.push_str(&format!("kill: ({pid}) - no existe el proceso o no se pudo señalizar\n"));
+                status = 1;
+            }
+        }
+
+        Ok(ExecutionResult::from_parts(String::new(), stderr, status))
+    }
+
+    fn resolve_jobspec(&self, spec: Option<&str>) -> Result<Option<(u32, JobInfo)>> {
         let jobs = self.host.jobs()?;
         if jobs.is_empty() {
             return Ok(None);
         }
 
         let selected = match spec {
-            None | Some("%") | Some("%%") | Some("%+") => jobs.len().checked_sub(1),
-            Some("%-") => jobs.len().checked_sub(2),
+            None | Some("%") | Some("%%") | Some("%+") => jobs.last().cloned(),
+            Some("%-") => jobs.get(jobs.len().saturating_sub(2)).cloned(),
             Some(value) if value.starts_with("%?") => {
                 let needle = &value[2..];
-                jobs.iter().position(|job| job.command.contains(needle))
+                let matches = jobs.iter()
+                    .filter(|job| job.command.contains(needle))
+                    .cloned()
+                    .collect::<Vec<_>>();
+                (matches.len() == 1).then(|| matches[0].clone())
             }
             Some(value) if value.starts_with('%') => {
                 let tail = &value[1..];
-                if let Ok(number) = tail.parse::<usize>() {
-                    number.checked_sub(1).filter(|index| *index < jobs.len())
+                if let Ok(number) = tail.parse::<u32>() {
+                    jobs.iter().find(|job| job.id == number).cloned()
                 } else {
-                    jobs.iter().position(|job| job.command.starts_with(tail))
+                    let matches = jobs.iter()
+                        .filter(|job| job.command.starts_with(tail))
+                        .cloned()
+                        .collect::<Vec<_>>();
+                    (matches.len() == 1).then(|| matches[0].clone())
                 }
             }
             Some(value) => value.parse::<u32>().ok()
-                .and_then(|pid| jobs.iter().position(|job| job.pid == pid)),
+                .and_then(|pid| jobs.iter().find(|job| job.pid == pid).cloned()),
         };
 
-        Ok(selected.map(|index| (index + 1, jobs[index].clone())))
+        Ok(selected.map(|job| (job.id, job)))
     }
 
     fn builtin_jobs(&self, args: &[String]) -> Result<ExecutionResult> {
         let jobs = self.host.jobs()?;
         let pids_only = args.iter().any(|arg| arg == "-p");
+        let long = args.iter().any(|arg| arg == "-l");
         let running_only = args.iter().any(|arg| arg == "-r");
         let stopped_only = args.iter().any(|arg| arg == "-s");
         let requested: Vec<&str> = args.iter()
@@ -1822,32 +2048,61 @@ impl Interpreter {
             .map(String::as_str)
             .collect();
 
+        let current_id = jobs.last().map(|job| job.id);
+        let previous_id = jobs.get(jobs.len().saturating_sub(2)).map(|job| job.id);
         let mut stdout = String::new();
-        for (index, job) in jobs.iter().enumerate() {
+
+        for job in &jobs {
             if running_only && !job.running { continue; }
-            // Native Windows jobs currently have Running/Done states. There is no
-            // synthetic "Stopped" state: -s therefore reports none rather than lying.
-            if stopped_only { continue; }
-            if !requested.is_empty() {
-                let number = format!("%{}", index + 1);
-                if !requested.iter().any(|spec| {
-                    *spec == number
-                        || spec.parse::<u32>().ok() == Some(job.pid)
-                        || spec.strip_prefix("%?").is_some_and(|needle| job.command.contains(needle))
-                        || spec.strip_prefix('%').is_some_and(|prefix| job.command.starts_with(prefix))
-                }) {
-                    continue;
+            if stopped_only && !job.stopped { continue; }
+            if !requested.is_empty() && !requested.iter().any(|spec| {
+                if **spec == "%+" || **spec == "%%" || **spec == "%" {
+                    return current_id == Some(job.id);
                 }
+                if **spec == "%-" {
+                    return previous_id == Some(job.id);
+                }
+                if let Some(needle) = spec.strip_prefix("%?") {
+                    return job.command.contains(needle);
+                }
+                if let Some(tail) = spec.strip_prefix('%') {
+                    return tail.parse::<u32>().ok() == Some(job.id)
+                        || job.command.starts_with(tail);
+                }
+                spec.parse::<u32>().ok() == Some(job.pid)
+            }) {
+                continue;
             }
+
             if pids_only {
                 stdout.push_str(&format!("{}\n", job.pid));
+                continue;
+            }
+
+            let marker = if current_id == Some(job.id) {
+                '+'
+            } else if previous_id == Some(job.id) {
+                '-'
+            } else {
+                ' '
+            };
+            let state = if job.stopped {
+                "Stopped"
+            } else if job.running {
+                "Running"
+            } else {
+                "Done"
+            };
+
+            if long {
+                stdout.push_str(&format!(
+                    "[{}]{} {:>6} {:<8} {}\n",
+                    job.id, marker, job.pid, state, job.command
+                ));
             } else {
                 stdout.push_str(&format!(
-                    "[{}] {} {} {}\n",
-                    index + 1,
-                    if job.running { "Running" } else { "Done" },
-                    job.pid,
-                    job.command
+                    "[{}]{} {:<8} {}\n",
+                    job.id, marker, state, job.command
                 ));
             }
         }
@@ -1942,6 +2197,15 @@ impl Interpreter {
                 1,
             ));
         };
+        if job.stopped {
+            if !self.host.signal_process(job.pid, "CONT")? {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("fg: %{}: no se pudo continuar el job\n", job.id),
+                    1,
+                ));
+            }
+        }
         let status = self.host.wait_job(Some(job.pid))?;
         Ok(ExecutionResult::from_parts(
             format!("{}\n", job.command),
@@ -1959,13 +2223,23 @@ impl Interpreter {
                 1,
             ));
         };
-        if !job.running {
+
+        if job.stopped {
+            if !self.host.signal_process(job.pid, "CONT")? {
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("bg: %{number}: no se pudo continuar el job\n"),
+                    1,
+                ));
+            }
+        } else if !job.running {
             return Ok(ExecutionResult::from_parts(
                 String::new(),
                 format!("bg: %{number}: el proceso ya terminó\n"),
                 1,
             ));
         }
+
         Ok(ExecutionResult::from_parts(
             format!("[{number}] {} &\n", job.command),
             String::new(),
@@ -2253,7 +2527,62 @@ impl Interpreter {
     }
 
     fn builtin_bind(&mut self, args: &[String]) -> Result<ExecutionResult> {
-        if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-p" | "-P" | "-s" | "-S")) {
+        const FUNCTIONS: &[&str] = &[
+            "beginning-of-line", "end-of-line", "forward-char", "backward-char",
+            "delete-char", "backward-delete-char", "previous-history", "next-history",
+            "complete", "clear-screen", "unix-line-discard", "quoted-insert",
+        ];
+
+        if args.first().map(String::as_str) == Some("-l") {
+            return Ok(ExecutionResult::from_parts(
+                format!("{}\n", FUNCTIONS.join("\n")),
+                String::new(),
+                0,
+            ));
+        }
+
+        if args.first().map(String::as_str) == Some("-q") {
+            let Some(function) = args.get(1) else {
+                return Ok(ExecutionResult::from_parts(String::new(), "bind: -q requiere función\n".to_owned(), 2));
+            };
+            let mut stdout = String::new();
+            let mut found = false;
+            for (key, value) in &self.readline_bindings {
+                if value.trim() == function {
+                    stdout.push_str(&format!("{function} puede invocarse mediante \"{key}\"\n"));
+                    found = true;
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), if found { 0 } else { 1 }));
+        }
+
+        if args.first().map(String::as_str) == Some("-u") {
+            let Some(function) = args.get(1) else {
+                return Ok(ExecutionResult::from_parts(String::new(), "bind: -u requiere función\n".to_owned(), 2));
+            };
+            self.readline_bindings.retain(|_, value| value.trim() != function);
+            return Ok(ExecutionResult::success());
+        }
+
+        if args.first().map(String::as_str) == Some("-f") {
+            let Some(path) = args.get(1) else {
+                return Ok(ExecutionResult::from_parts(String::new(), "bind: -f requiere archivo\n".to_owned(), 2));
+            };
+            let content = match fs::read_to_string(self.resolve_path(path)) {
+                Ok(content) => content,
+                Err(error) => return Ok(ExecutionResult::from_parts(
+                    String::new(), format!("bind: {path}: {error}\n"), 1,
+                )),
+            };
+            for line in content.lines().map(str::trim).filter(|line| !line.is_empty() && !line.starts_with('#')) {
+                if let Some((key, command)) = line.split_once(':') {
+                    self.readline_bindings.insert(strip_outer_quotes(key.trim()), command.trim().to_owned());
+                }
+            }
+            return Ok(ExecutionResult::success());
+        }
+
+        if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-p" | "-P" | "-s" | "-S" | "-v" | "-V")) {
             let mut entries: Vec<_> = self.readline_bindings.iter().collect();
             entries.sort_by_key(|(key, _)| *key);
             let stdout = entries.into_iter()
@@ -2263,17 +2592,21 @@ impl Interpreter {
         }
 
         if args.first().map(String::as_str) == Some("-r") {
-            if let Some(key) = args.get(1) {
-                self.readline_bindings.remove(key);
-            }
+            if let Some(key) = args.get(1) { self.readline_bindings.remove(key); }
             return Ok(ExecutionResult::success());
         }
 
-        let offset = if args.first().map(String::as_str) == Some("-x") { 1 } else { 0 };
+        let mut offset = 0usize;
+        if args.first().map(String::as_str) == Some("-m") {
+            // Shell Shock Tool uses one native editing map; accept Bash keymap
+            // selection so inputrc-compatible scripts do not fail.
+            offset = 2.min(args.len());
+        }
+        if args.get(offset).map(String::as_str) == Some("-x") { offset += 1; }
+
         for binding in &args[offset..] {
             if let Some((key, command)) = binding.split_once(':') {
-                self.readline_bindings
-                    .insert(strip_outer_quotes(key), command.trim().to_owned());
+                self.readline_bindings.insert(strip_outer_quotes(key.trim()), command.trim().to_owned());
             }
         }
         Ok(ExecutionResult::success())
@@ -2281,36 +2614,49 @@ impl Interpreter {
 
     fn builtin_enable(&mut self, args: &[String]) -> Result<ExecutionResult> {
         let disable = args.iter().any(|arg| arg == "-n");
+        let special_only = args.iter().any(|arg| arg == "-s");
+        let print_all = args.iter().any(|arg| arg == "-a");
+        let print_enabled = args.iter().any(|arg| arg == "-p");
 
-        if args.is_empty() || args.iter().any(|arg| matches!(arg.as_str(), "-a" | "-p")) {
-            let mut names: Vec<_> = bash_builtin_names().iter().map(|name| (*name).to_owned()).collect();
+        if args.iter().any(|arg| matches!(arg.as_str(), "-f" | "-d")) {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "enable: los builtins cargables dinámicamente no están disponibles en esta compilación nativa\n".to_owned(),
+                1,
+            ));
+        }
+
+        let special = bash_special_builtin_names();
+        if args.is_empty() || print_all || print_enabled {
+            let mut names: Vec<_> = bash_builtin_names().iter()
+                .copied()
+                .filter(|name| !special_only || special.contains(name))
+                .collect();
             names.sort();
+
             let mut stdout = String::new();
             for name in names {
-                stdout.push_str(if self.disabled_builtins.contains(&name) {
-                    "enable -n "
-                } else {
-                    "enable "
-                });
-                stdout.push_str(&name);
+                let disabled = self.disabled_builtins.contains(name);
+                if print_enabled && disabled { continue; }
+                stdout.push_str(if disabled { "enable -n " } else { "enable " });
+                stdout.push_str(name);
                 stdout.push('\n');
             }
             return Ok(ExecutionResult::from_parts(stdout, String::new(), 0));
         }
 
         for name in args.iter().filter(|arg| !arg.starts_with('-')) {
-            if !bash_builtin_names().contains(&name.as_str()) {
+            if !bash_builtin_names().contains(&name.as_str())
+                || (special_only && !special.contains(&name.as_str()))
+            {
                 return Ok(ExecutionResult::from_parts(
                     String::new(),
-                    format!("enable: {name}: no es builtin\n"),
+                    format!("enable: {name}: no es builtin{}\n", if special_only { " especial" } else { "" }),
                     1,
                 ));
             }
-            if disable {
-                self.disabled_builtins.insert(name.clone());
-            } else {
-                self.disabled_builtins.remove(name);
-            }
+            if disable { self.disabled_builtins.insert(name.clone()); }
+            else { self.disabled_builtins.remove(name); }
         }
         Ok(ExecutionResult::success())
     }
@@ -2334,10 +2680,20 @@ impl Interpreter {
                 "-S" => { index += 1; spec.suffix = args.get(index).cloned().unwrap_or_default(); }
                 "-o" => {
                     index += 1;
-                    if let Some(value) = args.get(index) {
-                        spec.options.insert(value.clone());
-                    }
+                    if let Some(value) = args.get(index) { spec.options.insert(value.clone()); }
                 }
+                "-a" => spec.action = Some("alias".to_owned()),
+                "-b" => spec.action = Some("builtin".to_owned()),
+                "-c" => spec.action = Some("command".to_owned()),
+                "-d" => spec.action = Some("directory".to_owned()),
+                "-e" => spec.action = Some("export".to_owned()),
+                "-f" => spec.action = Some("file".to_owned()),
+                "-g" => spec.action = Some("group".to_owned()),
+                "-j" => spec.action = Some("job".to_owned()),
+                "-k" => spec.action = Some("keyword".to_owned()),
+                "-s" => spec.action = Some("service".to_owned()),
+                "-u" => spec.action = Some("user".to_owned()),
+                "-v" => spec.action = Some("variable".to_owned()),
                 "--" => {
                     names.extend(args[index + 1..].iter().cloned());
                     break;
@@ -2414,17 +2770,44 @@ impl Interpreter {
     fn completion_candidates_for_action(&self, action: &str, prefix: &str) -> Vec<String> {
         let mut values: Vec<String> = match action {
             "alias" => self.env.aliases.keys().cloned().collect(),
+            "arrayvar" => self.env.arrays.keys().chain(self.env.assoc_arrays.keys()).cloned().collect(),
+            "binding" => self.readline_bindings.keys().cloned().collect(),
             "builtin" => bash_builtin_names().iter().map(|name| (*name).to_owned()).collect(),
+            "disabled" => self.disabled_builtins.iter().cloned().collect(),
+            "enabled" => bash_builtin_names().iter()
+                .filter(|name| !self.disabled_builtins.contains(**name))
+                .map(|name| (*name).to_owned())
+                .collect(),
+            "export" => self.env.exported.keys().cloned().collect(),
             "function" => self.env.functions.keys().cloned().collect(),
+            "helptopic" => bash_builtin_names().iter().map(|name| (*name).to_owned()).collect(),
             "variable" => self.env.vars.keys()
                 .chain(self.env.arrays.keys())
                 .chain(self.env.assoc_arrays.keys())
+                .chain(self.env.namerefs.keys())
                 .cloned()
                 .collect(),
             "keyword" => bash_keywords().iter().map(|word| (*word).to_owned()).collect(),
-            "job" => self.host.jobs().unwrap_or_default().into_iter().enumerate()
-                .map(|(index, _)| format!("%{}", index + 1))
+            "job" => self.host.jobs().unwrap_or_default().into_iter()
+                .map(|job| format!("%{}", job.id))
                 .collect(),
+            "running" => self.host.jobs().unwrap_or_default().into_iter()
+                .filter(|job| job.running)
+                .map(|job| format!("%{}", job.id))
+                .collect(),
+            "stopped" => self.host.jobs().unwrap_or_default().into_iter()
+                .filter(|job| job.stopped)
+                .map(|job| format!("%{}", job.id))
+                .collect(),
+            "signal" => bash_signal_names().iter().map(|name| (*name).to_owned()).collect(),
+            "setopt" => bash_shell_options().iter().map(|name| (*name).to_owned()).collect(),
+            "shopt" => bash_shopt_options().iter().map(|name| (*name).to_owned()).collect(),
+            "user" => std::env::var("USERNAME").ok().into_iter().collect(),
+            "group" => Vec::new(),
+            "service" => self.host.command_names().into_iter()
+                .filter(|name| name.eq_ignore_ascii_case("sc") || name.eq_ignore_ascii_case("net"))
+                .collect(),
+            "hostname" => std::env::var("COMPUTERNAME").ok().into_iter().collect(),
             "directory" => completion_files(&self.env.cwd, prefix, true),
             "file" => completion_files(&self.env.cwd, prefix, false),
             "command" => {
@@ -2763,13 +3146,62 @@ impl Interpreter {
         self.builtin_dirs(&[])
     }
 
+    fn builtin_umask(&mut self, args: &[String]) -> ExecutionResult {
+        let symbolic = args.iter().any(|arg| arg == "-S");
+        let reusable = args.iter().any(|arg| arg == "-p");
+        let operand = args.iter().find(|arg| !arg.starts_with('-'));
+
+        if let Some(value) = operand {
+            let parsed = if value.chars().all(|ch| matches!(ch, '0'..='7')) {
+                u16::from_str_radix(value.trim_start_matches('0').if_empty("0"), 8).ok()
+            } else {
+                parse_symbolic_umask(value)
+            };
+            let Some(mask) = parsed.filter(|value| *value <= 0o777) else {
+                return ExecutionResult::from_parts(
+                    String::new(),
+                    format!("umask: {value}: máscara inválida\n"),
+                    1,
+                );
+            };
+            self.env.set("__UMASK", format!("{mask:04o}"));
+            return ExecutionResult::success();
+        }
+
+        let mask = u16::from_str_radix(
+            self.env.get("__UMASK").trim_start_matches('0').if_empty("0"),
+            8,
+        ).unwrap_or(0o022);
+
+        let text = if symbolic {
+            let perms = 0o777u16 & !mask;
+            let render = |shift: u16| {
+                let bits = (perms >> shift) & 0o7;
+                format!(
+                    "{}{}{}",
+                    if bits & 0o4 != 0 { "r" } else { "" },
+                    if bits & 0o2 != 0 { "w" } else { "" },
+                    if bits & 0o1 != 0 { "x" } else { "" },
+                )
+            };
+            format!("u={},g={},o={}", render(6), render(3), render(0))
+        } else {
+            format!("{mask:04o}")
+        };
+        let stdout = if reusable { format!("umask {text}\n") } else { format!("{text}\n") };
+        ExecutionResult::from_parts(stdout, String::new(), 0)
+    }
+
     fn builtin_ulimit(&mut self, args: &[String]) -> Result<ExecutionResult> {
         let labels: &[(char, &str)] = &[
-            ('c', "core file size"), ('d', "data seg size"), ('f', "file size"),
-            ('l', "max locked memory"), ('m', "max memory size"), ('n', "open files"),
-            ('p', "pipe size"), ('q', "POSIX message queues"), ('s', "stack size"),
-            ('t', "cpu time"), ('u', "max user processes"), ('v', "virtual memory"),
-            ('x', "file locks"),
+            ('b', "socket buffer size"), ('c', "core file size"), ('d', "data seg size"),
+            ('e', "scheduling priority"), ('f', "file size"), ('i', "pending signals"),
+            ('k', "kqueues"), ('l', "max locked memory"), ('m', "max memory size"),
+            ('n', "open files"), ('p', "pipe size"), ('q', "POSIX message queues"),
+            ('r', "real-time priority"), ('s', "stack size"), ('t', "cpu time"),
+            ('u', "max user processes"), ('v', "virtual memory"), ('x', "file locks"),
+            ('P', "pseudoterminals"), ('R', "real-time non-blocking time"),
+            ('T', "max threads"),
         ];
 
         if args.iter().any(|arg| arg == "-a") {
@@ -2895,90 +3327,241 @@ impl Interpreter {
         let mut assign_to: Option<String> = None;
         if args.first().map(String::as_str) == Some("-v") {
             let Some(name) = args.get(1) else {
-                return Ok(ExecutionResult::from_parts(String::new(), "printf: -v requiere variable\n".to_owned(), 2));
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    "printf: -v requiere variable\n".to_owned(),
+                    2,
+                ));
             };
             assign_to = Some(name.clone());
             args = &args[2..];
         }
 
-        let Some(format) = args.first() else {
-            return Ok(ExecutionResult::from_parts(String::new(), "printf: falta formato\n".to_owned(), 2));
+        let Some(raw_format) = args.first() else {
+            return Ok(ExecutionResult::from_parts(
+                String::new(),
+                "printf: falta formato\n".to_owned(),
+                2,
+            ));
         };
         let values = &args[1..];
+
+        let (format, format_stops) = decode_backslash_escapes(raw_format, true);
+        let chars: Vec<char> = format.chars().collect();
         let mut output = String::new();
         let mut value_index = 0usize;
-        let chars: Vec<char> = format.chars().collect();
-        let mut i = 0usize;
+        let mut first_pass = true;
+        let mut stop_all = false;
 
-        while i < chars.len() {
-            if chars[i] == '\\' {
-                let rest: String = chars[i..].iter().collect();
-                let (decoded, stop) = decode_backslash_escapes(&rest, true);
-                output.push_str(&decoded);
-                if stop { break; }
-                break;
-            }
-            if chars[i] != '%' {
-                output.push(chars[i]);
-                i += 1;
-                continue;
-            }
-            if chars.get(i + 1) == Some(&'%') {
-                output.push('%');
-                i += 2;
-                continue;
-            }
+        while first_pass || (!stop_all && value_index < values.len()) {
+            first_pass = false;
+            let pass_start = value_index;
+            let mut i = 0usize;
 
-            i += 1;
-
-            if chars.get(i) == Some(&'(') {
-                let mut end = i + 1;
-                while end < chars.len() && chars[end] != ')' { end += 1; }
-                if end < chars.len() && chars.get(end + 1) == Some(&'T') {
-                    let date_format: String = chars[i + 1..end].iter().collect();
-                    let value = values.get(value_index).cloned().unwrap_or_else(|| "-1".to_owned());
-                    value_index += 1;
-                    let timestamp = value.parse::<i64>().unwrap_or(-1);
-                    let rendered = if timestamp == -1 {
-                        chrono::Local::now().format(&date_format).to_string()
-                    } else if timestamp == -2 {
-                        chrono::DateTime::<chrono::Local>::from(std::time::UNIX_EPOCH)
-                            .format(&date_format)
-                            .to_string()
-                    } else if let Some(utc) = chrono::DateTime::from_timestamp(timestamp, 0) {
-                        utc.with_timezone(&chrono::Local).format(&date_format).to_string()
-                    } else {
-                        String::new()
-                    };
-                    output.push_str(&rendered);
-                    i = end + 2;
+            while i < chars.len() && !stop_all {
+                if chars[i] != '%' {
+                    output.push(chars[i]);
+                    i += 1;
                     continue;
                 }
-            }
+                if chars.get(i + 1) == Some(&'%') {
+                    output.push('%');
+                    i += 2;
+                    continue;
+                }
 
-            let mut width = String::new();
-            while i < chars.len() && (chars[i].is_ascii_digit() || matches!(chars[i], '-' | '+' | '0' | ' ' | '.')) {
-                width.push(chars[i]);
                 i += 1;
-            }
-            let spec = chars.get(i).copied().unwrap_or(' ');
-            if i < chars.len() { i += 1; }
-            let value = values.get(value_index).cloned().unwrap_or_default();
-            value_index += 1;
 
-            let rendered = match spec {
-                's' => value,
-                'q' => shell_quote(&value),
-                'b' => decode_backslash_escapes(&value, true).0,
-                'd' | 'i' => value.parse::<i64>().unwrap_or(0).to_string(),
-                'u' => value.parse::<u64>().unwrap_or(0).to_string(),
-                'x' => format!("{:x}", value.parse::<i64>().unwrap_or(0)),
-                'X' => format!("{:X}", value.parse::<i64>().unwrap_or(0)),
-                'o' => format!("{:o}", value.parse::<i64>().unwrap_or(0)),
-                'c' => value.chars().next().map(|c| c.to_string()).unwrap_or_default(),
-                _ => format!("%{width}{spec}"),
-            };
-            output.push_str(&rendered);
+                if chars.get(i) == Some(&'(') {
+                    let mut close = i + 1;
+                    while close < chars.len() && chars[close] != ')' { close += 1; }
+                    if close < chars.len() && chars.get(close + 1) == Some(&'T') {
+                        let date_format: String = chars[i + 1..close].iter().collect();
+                        let value = values.get(value_index).cloned().unwrap_or_else(|| "-1".to_owned());
+                        value_index += 1;
+                        let timestamp = parse_printf_integer(&value).unwrap_or(-1);
+                        let rendered = if timestamp == -1 {
+                            chrono::Local::now().format(&date_format).to_string()
+                        } else if timestamp == -2 {
+                            chrono::DateTime::<chrono::Local>::from(std::time::UNIX_EPOCH)
+                                .format(&date_format)
+                                .to_string()
+                        } else if let Some(utc) = chrono::DateTime::from_timestamp(timestamp, 0) {
+                            utc.with_timezone(&chrono::Local).format(&date_format).to_string()
+                        } else {
+                            String::new()
+                        };
+                        output.push_str(&rendered);
+                        i = close + 2;
+                        continue;
+                    }
+                }
+
+                let mut left = false;
+                let mut plus = false;
+                let mut space = false;
+                let mut alternate = false;
+                let mut zero = false;
+                while i < chars.len() {
+                    match chars[i] {
+                        '-' => left = true,
+                        '+' => plus = true,
+                        ' ' => space = true,
+                        '#' => alternate = true,
+                        '0' => zero = true,
+                        _ => break,
+                    }
+                    i += 1;
+                }
+
+                let width = if chars.get(i) == Some(&'*') {
+                    i += 1;
+                    let raw = values.get(value_index).cloned().unwrap_or_default();
+                    value_index += 1;
+                    raw.parse::<isize>().unwrap_or(0)
+                } else {
+                    let begin = i;
+                    while i < chars.len() && chars[i].is_ascii_digit() { i += 1; }
+                    chars[begin..i].iter().collect::<String>().parse::<isize>().unwrap_or(0)
+                };
+                if width < 0 { left = true; }
+                let width = width.unsigned_abs();
+
+                let precision = if chars.get(i) == Some(&'.') {
+                    i += 1;
+                    if chars.get(i) == Some(&'*') {
+                        i += 1;
+                        let raw = values.get(value_index).cloned().unwrap_or_default();
+                        value_index += 1;
+                        Some(raw.parse::<isize>().unwrap_or(0).max(0) as usize)
+                    } else {
+                        let begin = i;
+                        while i < chars.len() && chars[i].is_ascii_digit() { i += 1; }
+                        Some(chars[begin..i].iter().collect::<String>().parse::<usize>().unwrap_or(0))
+                    }
+                } else {
+                    None
+                };
+
+                let spec = chars.get(i).copied().unwrap_or(' ');
+                if i < chars.len() { i += 1; }
+
+                let value = values.get(value_index).cloned().unwrap_or_default();
+                if spec != '%' { value_index += 1; }
+
+                let mut numeric = false;
+                let mut rendered = match spec {
+                    's' => precision
+                        .map(|limit| value.chars().take(limit).collect())
+                        .unwrap_or(value),
+                    'q' | 'Q' => {
+                        let raw = if spec == 'Q' {
+                            precision
+                                .map(|limit| value.chars().take(limit).collect::<String>())
+                                .unwrap_or(value)
+                        } else {
+                            value
+                        };
+                        shell_quote(&raw)
+                    }
+                    'b' => {
+                        let (decoded, stop) = decode_backslash_escapes(&value, true);
+                        if stop { stop_all = true; }
+                        decoded
+                    }
+                    'c' => value.chars().next().map(|ch| ch.to_string()).unwrap_or_default(),
+                    'd' | 'i' => {
+                        numeric = true;
+                        let number = parse_printf_integer(&value).unwrap_or(0);
+                        let magnitude = number.unsigned_abs().to_string();
+                        let digits = precision
+                            .map(|p| format!("{:0>width$}", magnitude, width=p))
+                            .unwrap_or(magnitude);
+                        if number < 0 { format!("-{digits}") }
+                        else if plus { format!("+{digits}") }
+                        else if space { format!(" {digits}") }
+                        else { digits }
+                    }
+                    'u' => {
+                        numeric = true;
+                        let number = parse_printf_integer(&value).unwrap_or(0) as u64;
+                        let digits = number.to_string();
+                        precision
+                            .map(|p| format!("{:0>width$}", digits, width=p))
+                            .unwrap_or(digits)
+                    }
+                    'o' => {
+                        numeric = true;
+                        let number = parse_printf_integer(&value).unwrap_or(0) as u64;
+                        let mut digits = format!("{number:o}");
+                        if let Some(p) = precision { digits = format!("{:0>width$}", digits, width=p); }
+                        if alternate && !digits.starts_with('0') { digits.insert(0, '0'); }
+                        digits
+                    }
+                    'x' | 'X' => {
+                        numeric = true;
+                        let number = parse_printf_integer(&value).unwrap_or(0) as u64;
+                        let mut digits = if spec == 'x' { format!("{number:x}") } else { format!("{number:X}") };
+                        if let Some(p) = precision { digits = format!("{:0>width$}", digits, width=p); }
+                        if alternate && number != 0 {
+                            digits = format!("{}{}", if spec == 'x' { "0x" } else { "0X" }, digits);
+                        }
+                        digits
+                    }
+                    'f' | 'F' | 'e' | 'E' | 'g' | 'G' => {
+                        numeric = true;
+                        let number = value.parse::<f64>().unwrap_or(0.0);
+                        let p = precision.unwrap_or(6);
+                        let mut text = match spec {
+                            'f' | 'F' => format!("{number:.p$}"),
+                            'e' => format!("{number:.p$e}"),
+                            'E' => format!("{number:.p$E}"),
+                            'g' => format_printf_general(number, p, false),
+                            'G' => format_printf_general(number, p, true),
+                            _ => unreachable!(),
+                        };
+                        if number >= 0.0 {
+                            if plus { text.insert(0, '+'); }
+                            else if space { text.insert(0, ' '); }
+                        }
+                        text
+                    }
+                    '%' => "%".to_owned(),
+                    other => {
+                        return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("printf: especificador inválido: %{other}\n"),
+                            1,
+                        ));
+                    }
+                };
+
+                if width > rendered.chars().count() {
+                    let pad = width - rendered.chars().count();
+                    if left {
+                        rendered.push_str(&" ".repeat(pad));
+                    } else if zero && numeric && precision.is_none() {
+                        let sign_len = usize::from(rendered.chars().next().is_some_and(|ch| matches!(ch, '-' | '+' | ' ')));
+                        if sign_len == 1 {
+                            let sign = rendered.remove(0);
+                            rendered = format!("{sign}{}{}", "0".repeat(pad), rendered);
+                        } else if rendered.starts_with("0x") || rendered.starts_with("0X") {
+                            let prefix = rendered[..2].to_owned();
+                            rendered = format!("{prefix}{}{}", "0".repeat(pad), &rendered[2..]);
+                        } else {
+                            rendered = format!("{}{}", "0".repeat(pad), rendered);
+                        }
+                    } else {
+                        rendered = format!("{}{}", " ".repeat(pad), rendered);
+                    }
+                }
+
+                output.push_str(&rendered);
+            }
+
+            if format_stops || value_index == pass_start || value_index >= values.len() {
+                break;
+            }
         }
 
         if let Some(name) = assign_to {
@@ -3359,6 +3942,8 @@ impl Interpreter {
                         'e' => "errexit",
                         'f' => "noglob",
                         'h' => "hashall",
+                        'k' => "keyword",
+                        'p' => "privileged",
                         'H' => "histexpand",
                         'm' => "monitor",
                         'n' => "noexec",
@@ -3394,10 +3979,61 @@ impl Interpreter {
         let disable = args.iter().any(|arg| arg == "-u");
         let quiet = args.iter().any(|arg| arg == "-q");
         let reusable = args.iter().any(|arg| arg == "-p");
-        let names: Vec<_> = args.iter().filter(|arg| !arg.starts_with('-')).cloned().collect();
+        let shell_options = args.iter().any(|arg| arg == "-o");
+        let names: Vec<_> = args.iter()
+            .filter(|arg| !arg.starts_with('-'))
+            .cloned()
+            .collect();
+
+        if enable && disable {
+            return ExecutionResult::from_parts(
+                String::new(),
+                "shopt: no se pueden usar -s y -u a la vez\n".to_owned(),
+                2,
+            );
+        }
+
+        let known = if shell_options {
+            bash_shell_options()
+        } else {
+            bash_shopt_options()
+        };
+
+        let is_enabled = |env: &ShellEnvironment, name: &str| {
+            if shell_options {
+                env.shell_options.contains(name)
+            } else {
+                env.shopt_options.contains(name)
+            }
+        };
+
+        // Bash lists only set/unset options when -s/-u is supplied without names.
+        if names.is_empty() && (enable || disable) {
+            let mut stdout = String::new();
+            if !quiet {
+                for name in known {
+                    let enabled_now = is_enabled(&self.env, name);
+                    if (enable && enabled_now) || (disable && !enabled_now) {
+                        if reusable {
+                            stdout.push_str(&format!(
+                                "shopt {} {}\n",
+                                if enabled_now { "-s" } else { "-u" },
+                                name
+                            ));
+                        } else {
+                            stdout.push_str(&format!(
+                                "{name:<24}{}\n",
+                                if enabled_now { "on" } else { "off" }
+                            ));
+                        }
+                    }
+                }
+            }
+            return ExecutionResult::from_parts(stdout, String::new(), 0);
+        }
 
         let selected: Vec<String> = if names.is_empty() {
-            bash_shopt_options().iter().map(|value| (*value).to_owned()).collect()
+            known.iter().map(|value| (*value).to_owned()).collect()
         } else {
             names
         };
@@ -3407,31 +4043,34 @@ impl Interpreter {
         let mut status = 0;
 
         for name in selected {
-            if !bash_shopt_options().contains(&name.as_str()) {
+            if !known.contains(&name.as_str()) {
                 stderr.push_str(&format!("shopt: {name}: nombre de opción inválido\n"));
                 status = 1;
                 continue;
             }
 
             if enable {
-                self.env.shopt_options.insert(name.clone());
+                if shell_options { set_shell_option(&mut self.env, &name, true); }
+                else { self.env.shopt_options.insert(name.clone()); }
             } else if disable {
-                self.env.shopt_options.remove(&name);
-            } else if !self.env.shopt_options.contains(&name) {
+                if shell_options { set_shell_option(&mut self.env, &name, false); }
+                else { self.env.shopt_options.remove(&name); }
+            } else if !is_enabled(&self.env, &name) {
                 status = 1;
             }
 
             if !quiet && !enable && !disable {
+                let enabled_now = is_enabled(&self.env, &name);
                 if reusable {
                     stdout.push_str(&format!(
                         "shopt {} {}\n",
-                        if self.env.shopt_options.contains(&name) { "-s" } else { "-u" },
+                        if enabled_now { "-s" } else { "-u" },
                         name
                     ));
                 } else {
                     stdout.push_str(&format!(
                         "{name:<24}{}\n",
-                        if self.env.shopt_options.contains(&name) { "on" } else { "off" }
+                        if enabled_now { "on" } else { "off" }
                     ));
                 }
             }
@@ -3574,27 +4213,204 @@ impl Interpreter {
         Ok(ExecutionResult::success())
     }
 
-    fn builtin_type(&mut self, args: &[String]) -> Result<ExecutionResult> {
-        let mut stdout = String::new();
-        let mut stderr = String::new();
-        let mut status = 0;
-        for name in args {
+    fn describe_command(&mut self, name: &str, verbose: bool, path_only: bool, force_path: bool) -> Result<Option<String>> {
+        if !force_path && !path_only {
             if let Some(value) = self.env.aliases.get(name) {
-                stdout.push_str(&format!("{name} es un alias de {}\n", shell_quote(value)));
-            } else if self.env.functions.contains_key(name) {
-                stdout.push_str(&format!("{name} es una función\n"));
-            } else if self.shell_builtin_name(name) {
-                stdout.push_str(&format!("{name} es un builtin de shell\n"));
-            } else {
-                match self.host.execute_builtin("which", &[name.clone()], &self.env.cwd, None)? {
-                    Some(result) if result.status == 0 => stdout.push_str(&result.stdout),
-                    _ => {
-                        status = 1;
-                        stderr.push_str(&format!("type: {name}: no encontrado\n"));
+                return Ok(Some(if verbose {
+                    format!("{name} es un alias de {}", shell_quote(value))
+                } else {
+                    name.to_owned()
+                }));
+            }
+            if self.env.functions.contains_key(name) {
+                return Ok(Some(if verbose {
+                    format!("{name} es una función")
+                } else {
+                    name.to_owned()
+                }));
+            }
+            if bash_keywords().contains(&name) {
+                return Ok(Some(if verbose {
+                    format!("{name} es una palabra reservada del shell")
+                } else {
+                    name.to_owned()
+                }));
+            }
+            if self.shell_builtin_name(name) {
+                return Ok(Some(if verbose {
+                    format!("{name} es un builtin de shell")
+                } else {
+                    name.to_owned()
+                }));
+            }
+        }
+
+        match self.host.execute_builtin("which", &[name.to_owned()], &self.env.cwd, None)? {
+            Some(result) if result.status == 0 => {
+                let path = result.stdout.lines().next().unwrap_or("").trim().to_owned();
+                Ok((!path.is_empty()).then_some(path))
+            }
+            _ => Ok(None),
+        }
+    }
+
+    fn builtin_command(&mut self, args: &[String], stdin: Option<&[u8]>) -> Result<ExecutionResult> {
+        let mut verbose = false;
+        let mut query = false;
+        let mut default_path = false;
+        let mut index = 0usize;
+
+        while index < args.len() {
+            match args[index].as_str() {
+                "-V" => verbose = true,
+                "-v" => query = true,
+                "-p" => default_path = true,
+                "--" => { index += 1; break; }
+                value if value.starts_with('-') && value.len() > 1 => {
+                    for flag in value[1..].chars() {
+                        match flag {
+                            'V' => verbose = true,
+                            'v' => query = true,
+                            'p' => default_path = true,
+                            _ => return Ok(ExecutionResult::from_parts(
+                                String::new(),
+                                format!("command: -{flag}: opción inválida\n"),
+                                2,
+                            )),
+                        }
                     }
+                }
+                _ => break,
+            }
+            index += 1;
+        }
+
+        if query || verbose {
+            let mut stdout = String::new();
+            let mut status = 0;
+            for name in &args[index..] {
+                match self.describe_command(name, verbose, false, false)? {
+                    Some(description) => {
+                        stdout.push_str(&description);
+                        stdout.push('\n');
+                    }
+                    None => status = 1,
+                }
+            }
+            return Ok(ExecutionResult::from_parts(stdout, String::new(), status));
+        }
+
+        let Some(name) = args.get(index) else {
+            return Ok(ExecutionResult::success());
+        };
+
+        if default_path {
+            // Windows has no POSIX getconf PATH. Restrict lookup to System32 and
+            // the Windows directory before falling back to the host resolver.
+            if let Some(root) = std::env::var_os("SystemRoot") {
+                let candidates = [
+                    PathBuf::from(&root).join("System32").join(name),
+                    PathBuf::from(&root).join(name),
+                ];
+                if let Some(path) = candidates.into_iter().find(|path| path.is_file()) {
+                    return self.host.execute_external(
+                        &path.to_string_lossy(),
+                        &args[index + 1..],
+                        &self.env.cwd,
+                        &self.env.exported,
+                        stdin,
+                    );
                 }
             }
         }
+
+        self.execute_command_direct(name, &args[index + 1..], stdin)
+    }
+
+    fn builtin_type(&mut self, args: &[String]) -> Result<ExecutionResult> {
+        let mut all = false;
+        let mut short = false;
+        let mut path_only = false;
+        let mut force_path = false;
+        let mut suppress_functions = false;
+        let mut names = Vec::new();
+
+        for arg in args {
+            if arg == "--" { continue; }
+            if arg.starts_with('-') && arg.len() > 1 {
+                for flag in arg[1..].chars() {
+                    match flag {
+                        'a' => all = true,
+                        't' => short = true,
+                        'p' => path_only = true,
+                        'P' => { path_only = true; force_path = true; },
+                        'f' => suppress_functions = true,
+                        _ => return Ok(ExecutionResult::from_parts(
+                            String::new(),
+                            format!("type: -{flag}: opción inválida\n"),
+                            2,
+                        )),
+                    }
+                }
+            } else {
+                names.push(arg.clone());
+            }
+        }
+
+        let mut stdout = String::new();
+        let mut stderr = String::new();
+        let mut status = 0;
+
+        for name in names {
+            let mut found_any = false;
+
+            if !force_path && !path_only {
+                if let Some(value) = self.env.aliases.get(&name) {
+                    found_any = true;
+                    if short { stdout.push_str("alias\n"); }
+                    else { stdout.push_str(&format!("{name} es un alias de {}\n", shell_quote(value))); }
+                    if !all { continue; }
+                }
+                if !suppress_functions && self.env.functions.contains_key(&name) {
+                    found_any = true;
+                    if short { stdout.push_str("function\n"); }
+                    else { stdout.push_str(&format!("{name} es una función\n")); }
+                    if !all { continue; }
+                }
+                if bash_keywords().contains(&name.as_str()) {
+                    found_any = true;
+                    if short { stdout.push_str("keyword\n"); }
+                    else { stdout.push_str(&format!("{name} es una palabra reservada del shell\n")); }
+                    if !all { continue; }
+                }
+                if self.shell_builtin_name(&name) {
+                    found_any = true;
+                    if short { stdout.push_str("builtin\n"); }
+                    else { stdout.push_str(&format!("{name} es un builtin de shell\n")); }
+                    if !all { continue; }
+                }
+            }
+
+            match self.host.execute_builtin("which", &[name.clone()], &self.env.cwd, None)? {
+                Some(result) if result.status == 0 => {
+                    for path in result.stdout.lines().filter(|line| !line.trim().is_empty()) {
+                        found_any = true;
+                        if short { stdout.push_str("file\n"); }
+                        else { stdout.push_str(path); stdout.push('\n'); }
+                        if !all { break; }
+                    }
+                }
+                _ => {}
+            }
+
+            if !found_any {
+                status = 1;
+                if !path_only {
+                    stderr.push_str(&format!("type: {name}: no encontrado\n"));
+                }
+            }
+        }
+
         Ok(ExecutionResult::from_parts(stdout, stderr, status))
     }
 
@@ -4831,6 +5647,38 @@ fn strip_outer_quotes(value: &str) -> String {
     value.to_owned()
 }
 
+fn parse_printf_integer(value: &str) -> Option<i64> {
+    let value = value.trim();
+    if let Some(rest) = value.strip_prefix('\'').or_else(|| value.strip_prefix('"')) {
+        return rest.chars().next().map(|ch| ch as i64);
+    }
+    if let Some(hex) = value.strip_prefix("0x").or_else(|| value.strip_prefix("0X")) {
+        return i64::from_str_radix(hex, 16).ok();
+    }
+    if value.len() > 1 && value.starts_with('0') && value.chars().all(|ch| matches!(ch, '0'..='7')) {
+        return i64::from_str_radix(&value[1..], 8).ok();
+    }
+    value.parse::<i64>().ok()
+}
+
+fn format_printf_general(value: f64, precision: usize, upper: bool) -> String {
+    let precision = precision.max(1);
+    let abs = value.abs();
+    let exponent = if abs == 0.0 { 0 } else { abs.log10().floor() as i32 };
+    let mut rendered = if exponent < -4 || exponent >= precision as i32 {
+        let digits = precision.saturating_sub(1);
+        if upper { format!("{value:.digits$E}") } else { format!("{value:.digits$e}") }
+    } else {
+        let decimals = (precision as i32 - exponent - 1).max(0) as usize;
+        format!("{value:.decimals$}")
+    };
+    if rendered.contains('.') {
+        while rendered.ends_with('0') { rendered.pop(); }
+        if rendered.ends_with('.') { rendered.pop(); }
+    }
+    rendered
+}
+
 fn decode_backslash_escapes(input: &str, echo_mode: bool) -> (String, bool) {
     let chars: Vec<char> = input.chars().collect();
     let mut out = String::new();
@@ -4983,6 +5831,55 @@ fn signal_number(signal: &str) -> usize {
             .map(|index| index + 1)
             .unwrap_or(0),
     }
+}
+
+trait IfEmpty {
+    fn if_empty<'a>(&'a self, fallback: &'a str) -> &'a str;
+}
+
+impl IfEmpty for str {
+    fn if_empty<'a>(&'a self, fallback: &'a str) -> &'a str {
+        if self.is_empty() { fallback } else { self }
+    }
+}
+
+fn parse_symbolic_umask(value: &str) -> Option<u16> {
+    let mut allowed = 0o777u16;
+    for clause in value.split(',') {
+        let (who, op, perms) = {
+            let index = clause.find(['=', '+', '-'])?;
+            (&clause[..index], clause.as_bytes()[index] as char, &clause[index + 1..])
+        };
+        let who = if who.is_empty() { "a" } else { who };
+        let classes = [
+            ('u', 6u16),
+            ('g', 3u16),
+            ('o', 0u16),
+        ];
+        for (class, shift) in classes {
+            if !who.contains(class) && !who.contains('a') { continue; }
+            let mut bits = 0u16;
+            for perm in perms.chars() {
+                bits |= match perm {
+                    'r' => 0o4,
+                    'w' => 0o2,
+                    'x' => 0o1,
+                    _ => return None,
+                };
+            }
+            let class_mask = 0o7u16 << shift;
+            match op {
+                '=' => {
+                    allowed &= !class_mask;
+                    allowed |= bits << shift;
+                }
+                '+' => allowed |= bits << shift,
+                '-' => allowed &= !(bits << shift),
+                _ => return None,
+            }
+        }
+    }
+    Some(0o777 & !allowed)
 }
 
 fn normalize_signal(value: &str) -> String {
@@ -5823,6 +6720,74 @@ fn render_ast(node: &AstNode) -> String {
 }
 
 
+fn bash_special_builtin_names() -> &'static [&'static str] {
+    &[":", ".", "break", "continue", "eval", "exec", "exit", "export",
+      "readonly", "return", "set", "shift", "trap", "unset"]
+}
+
+fn bash_builtin_help(name: &str) -> (&'static str, &'static str) {
+    match name {
+        ":" => (":", "No hace nada y devuelve estado cero."),
+        "." | "source" => ("source ARCHIVO [ARGS]", "Ejecuta ARCHIVO en el contexto de la shell actual."),
+        "[" | "test" => ("test EXPRESIÓN", "Evalúa una expresión condicional."),
+        "alias" => ("alias [NOMBRE[=VALOR] ...]", "Define o muestra alias."),
+        "bg" => ("bg [JOB ...]", "Continúa jobs en segundo plano."),
+        "bind" => ("bind [OPCIONES] [SECUENCIA:FUNCIÓN]", "Configura edición de línea."),
+        "break" => ("break [N]", "Sale de bucles."),
+        "builtin" => ("builtin BUILTIN [ARGS]", "Ejecuta un builtin ignorando funciones."),
+        "caller" => ("caller [N]", "Muestra un frame de la pila de llamadas."),
+        "cd" => ("cd [-L|-P] [DIR]", "Cambia el directorio actual."),
+        "command" => ("command [-pVv] COMANDO [ARGS]", "Ejecuta o describe un comando sin funciones."),
+        "compgen" => ("compgen [OPCIONES] [PALABRA]", "Genera candidatos de completion."),
+        "complete" => ("complete [OPCIONES] [NOMBRE ...]", "Define completion programable."),
+        "compopt" => ("compopt [-o OPCIÓN] [+o OPCIÓN] [NOMBRE ...]", "Modifica opciones de completion."),
+        "continue" => ("continue [N]", "Continúa la siguiente iteración de un bucle."),
+        "declare" | "typeset" => ("declare [OPCIONES] [NOMBRE[=VALOR] ...]", "Declara variables y atributos."),
+        "dirs" => ("dirs [-clpv] [+N|-N]", "Muestra la pila de directorios."),
+        "disown" => ("disown [-ar] [-h] [JOB ...]", "Elimina jobs de la tabla de jobs."),
+        "echo" => ("echo [-neE] [ARG ...]", "Escribe argumentos."),
+        "enable" => ("enable [-a] [-dnps] [NOMBRE ...]", "Activa o desactiva builtins."),
+        "eval" => ("eval [ARG ...]", "Evalúa argumentos como código shell."),
+        "exec" => ("exec [-cl] [-a NOMBRE] [COMANDO [ARGS]]", "Reemplaza la shell por un comando."),
+        "exit" => ("exit [N]", "Sale de la shell."),
+        "export" => ("export [-fn] [NOMBRE[=VALOR] ...]", "Marca variables para exportación."),
+        "false" => ("false", "Devuelve estado distinto de cero."),
+        "fc" => ("fc [-e EDITOR] [-lnr] [PRIMERO] [ÚLTIMO]", "Lista, edita o reejecuta historial."),
+        "fg" => ("fg [JOB]", "Trae un job al primer plano."),
+        "getopts" => ("getopts OPTSTRING NOMBRE [ARGS]", "Analiza opciones posicionales."),
+        "hash" => ("hash [-lr] [-p RUTA] [-dt] [NOMBRE ...]", "Gestiona la tabla hash de comandos."),
+        "help" => ("help [-dms] [PATRÓN ...]", "Muestra ayuda de builtins Bash."),
+        "history" => ("history [OPCIONES] [N]", "Muestra o modifica el historial."),
+        "jobs" => ("jobs [-lnprs] [JOB ...]", "Lista jobs."),
+        "kill" => ("kill [-s SEÑAL | -n SEÑAL | -SEÑAL] PID|%JOB ...", "Envía una señal a procesos o jobs."),
+        "let" => ("let ARG ...", "Evalúa expresiones aritméticas."),
+        "local" => ("local [OPCIONES] NOMBRE[=VALOR] ...", "Declara variables locales."),
+        "logout" => ("logout [N]", "Sale de una shell de login."),
+        "mapfile" | "readarray" => ("mapfile [OPCIONES] [ARRAY]", "Lee registros en un array indexado."),
+        "popd" => ("popd [-n] [+N|-N]", "Elimina una entrada de la pila de directorios."),
+        "printf" => ("printf [-v VAR] FORMATO [ARG ...]", "Imprime usando formato Bash."),
+        "pushd" => ("pushd [-n] [DIR|+N|-N]", "Añade o rota la pila de directorios."),
+        "pwd" => ("pwd [-LP]", "Muestra el directorio actual."),
+        "read" => ("read [OPCIONES] [NOMBRE ...]", "Lee una línea o registro."),
+        "readonly" => ("readonly [-aAf] [NOMBRE[=VALOR] ...]", "Marca variables o funciones como solo lectura."),
+        "return" => ("return [N]", "Retorna de una función o archivo sourced."),
+        "set" => ("set [-abefhkmnptuvxBCEHPT] [-o OPCIÓN] [--] [ARG ...]", "Configura opciones y parámetros posicionales."),
+        "shift" => ("shift [N]", "Desplaza parámetros posicionales."),
+        "shopt" => ("shopt [-pqsu] [-o] [OPCIÓN ...]", "Configura opciones adicionales Bash."),
+        "suspend" => ("suspend [-f]", "Suspende una shell interactiva cuando el host lo permite."),
+        "times" => ("times", "Muestra tiempos de CPU de shell y procesos hijos."),
+        "trap" => ("trap [-lp] [[ARG] SEÑAL ...]", "Configura acciones para señales y pseudo-señales."),
+        "true" => ("true", "Devuelve estado cero."),
+        "type" => ("type [-afptP] NOMBRE ...", "Describe cómo se resolvería un nombre."),
+        "ulimit" => ("ulimit [-SHabcdefiklmnpqrstuvxPRT] [LÍMITE]", "Consulta o establece límites de recursos."),
+        "umask" => ("umask [-p] [-S] [MÁSCARA]", "Muestra o establece la máscara de creación."),
+        "unalias" => ("unalias [-a] NOMBRE ...", "Elimina alias."),
+        "unset" => ("unset [-fnv] NOMBRE ...", "Elimina variables o funciones."),
+        "wait" => ("wait [-fn] [-p VAR] [ID ...]", "Espera procesos o jobs."),
+        _ => (name, "Builtin Bash."),
+    }
+}
+
 fn bash_builtin_names() -> &'static [&'static str] {
     &[
         ":", ".", "[", "alias", "bg", "bind", "break", "builtin", "caller", "cd",
@@ -6119,7 +7084,7 @@ fn bash_shopt_options() -> &'static [&'static str] {
         "hostcomplete", "huponexit", "inherit_errexit", "interactive_comments",
         "lastpipe", "lithist", "localvar_inherit", "localvar_unset", "login_shell",
         "mailwarn", "no_empty_cmd_completion", "nocaseglob", "nocasematch",
-        "noexpand_translation", "patsub_replacement", "progcomp", "progcomp_alias",
+        "noexpand_translation", "nullglob", "patsub_replacement", "progcomp", "progcomp_alias",
         "promptvars", "restricted_shell", "shift_verbose", "sourcepath",
         "varredir_close", "xpg_echo",
     ]
