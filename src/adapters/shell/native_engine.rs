@@ -1540,7 +1540,7 @@ impl NativeShellEngine {
         };
         let mut interpreter = Interpreter::new(Box::new(host));
         interpreter.env.export(
-            "ADM_CONFIG",
+            "SST_CONFIG",
             config_file.to_string_lossy().into_owned(),
         );
         let history_file = config_file.parent()
