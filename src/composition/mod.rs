@@ -47,6 +47,7 @@ use crate::{
         NetworkBuiltin,
         PathBuiltin,
         SwitchBuiltin,
+        SudoBuiltin,
         SystemBuiltin,
         UNIX_COMMANDS,
         UnixBuiltin,
@@ -155,6 +156,7 @@ pub fn build_engine() -> Result<(Box<dyn crate::core::ports::ShellEngine>, Vec<S
     registry.register(Arc::new(WakeOnLanBuiltin::new(wol_service)))?;
     registry.register(Arc::new(DiagnosticsBuiltin::new(diagnostics_service)))?;
     registry.register(Arc::new(SystemBuiltin::new(system_service)))?;
+    registry.register(Arc::new(SudoBuiltin))?;
 
     for &(name, help) in UNIX_COMMANDS {
         registry.register(Arc::new(UnixBuiltin::new(
