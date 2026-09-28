@@ -19,11 +19,11 @@ pub struct ShellHelper {
 }
 
 impl ShellHelper {
-    pub fn new(adm_commands: impl IntoIterator<Item = String>) -> Self {
+    pub fn new(sst_commands: impl IntoIterator<Item = String>) -> Self {
         Self {
             files: FilenameCompleter::new(),
             hinter: HistoryHinter::new(),
-            commands: completion_commands(adm_commands),
+            commands: completion_commands(sst_commands),
         }
     }
 
@@ -123,7 +123,7 @@ impl Highlighter for ShellHelper {}
 impl Validator for ShellHelper {}
 impl Helper for ShellHelper {}
 
-fn completion_commands(adm_commands: impl IntoIterator<Item = String>) -> Vec<String> {
+fn completion_commands(sst_commands: impl IntoIterator<Item = String>) -> Vec<String> {
     let bash = [
         "alias", "bg", "break", "cd", "continue", "declare", "exit", "export", "fg",
         "history", "jobs", "local", "logout", "mapfile", "read", "return", "set", "shopt",
@@ -133,7 +133,7 @@ fn completion_commands(adm_commands: impl IntoIterator<Item = String>) -> Vec<St
     let mut commands: BTreeSet<String> =
         bash.into_iter().map(str::to_owned).collect();
 
-    commands.extend(adm_commands);
+    commands.extend(sst_commands);
 
     if let Some(path) = env::var_os("PATH") {
         let extensions: Vec<String> = env::var("PATHEXT")
@@ -187,7 +187,7 @@ fn subcommands(command: &str) -> &'static [&'static str] {
         "domain" => &["status"],
         "switch" => &["list", "show", "add", "remove", "locate", "capabilities", "path"],
         "diag" => &["network", "dns", "hardware", "storage", "traffic", "domain"],
-        "config" | "adm-config" => &["path", "edit", "reload"],
+        "config" | "sst-config" => &["path", "edit", "reload"],
         _ => &[],
     }
 }
