@@ -2272,13 +2272,14 @@ impl Interpreter {
                             flow: FlowSignal::None,
                             errexit_exempt: false,
                         };
-                        if let Some(action) = self.env.traps.get("EXIT").cloned().or_else(|| self.env.traps.get("0").cloned()) {
-                            let mut trap_result = self.execute_text(&action)?;
-                            trap_result.exit_requested = true;
-                            trap_result.status = status;
-                            result.append(trap_result);
+                        if let Some(mut trap_result) = self.run_trap_action("EXIT", status)? {
+                            let trap_explicit_exit = trap_result.exit_requested;
+                            let trap_status = trap_result.status;
+                            trap_result.exit_requested = false;
+                            result.stdout.push_str(&trap_result.stdout);
+                            result.stderr.push_str(&trap_result.stderr);
+                            result.status = if trap_explicit_exit { trap_status } else { status };
                             result.exit_requested = true;
-                            result.status = status;
                         }
 
                         // Bash login shells read the user and system logout files
