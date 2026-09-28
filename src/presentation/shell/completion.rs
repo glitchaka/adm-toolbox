@@ -183,7 +183,7 @@ fn subcommands(command: &str) -> &'static [&'static str] {
             "info", "processes", "top", "disks", "memory", "hostname", "whoami",
             "uname", "kill", "services",
         ],
-        "device" => &["list", "show", "add", "remove", "path"],
+        "device" => &["list", "show", "add", "remove", "unknown", "path"],
         "domain" => &["status"],
         "switch" => &["list", "show", "add", "remove", "locate", "capabilities", "path"],
         "diag" => &["network", "dns", "hardware", "storage", "traffic", "domain"],
