@@ -1094,7 +1094,7 @@ fn gzip_cmd(invoked_name: &str, args: &[String], cwd: &Path) -> Result<CommandOu
 
     if to_stdout {
         return Ok(CommandOutput::error(
-            "gzip: -c no está disponible aún porque el pipeline de ADM es textual, no binario",
+            "gzip: -c no está disponible aún porque el pipeline de SST es textual, no binario",
             2,
         ));
     }
