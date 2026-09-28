@@ -979,6 +979,7 @@ Ya existe una primera implementación de:
 - TUI `top`, `less`, `net monitor` y `net traffic --watch`;
 - `net scan` con JSON/CSV e integración con inventario;
 - inventario persistente de dispositivos;
+- `device unknown` para cruzar presencia observada con el inventario;
 - Wake-on-LAN por MAC o nombre inventariado;
 - resolución de dominio local y verificación CIM opcional;
 - perfiles de gateway para `net usage`;
