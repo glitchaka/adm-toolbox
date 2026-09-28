@@ -72,7 +72,8 @@ help COMANDO
 | `sys hostname` | Muestra el nombre del equipo. |
 | `sys whoami` | Muestra el usuario actual. |
 | `sys uname [-a]` | Muestra identificación del sistema en formato familiar para usuarios Unix. |
-| `sys kill PID` | Termina un proceso por PID. |
+| `sys kill PID` | Fuerza la terminación del PID indicado y verifica que haya desaparecido. |
+| `sys kill PID --tree` | Termina el PID y su árbol de procesos; útil para aplicaciones multiproceso como navegadores. |
 | `sys fetch [--small|--full]` | Muestra información del sistema acompañada por la mascota de SST. |
 
 También existen como comandos directos:
