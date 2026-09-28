@@ -5135,6 +5135,12 @@ impl Interpreter {
     }
 
     fn builtin_shopt(&mut self, args: &[String]) -> ExecutionResult {
+        if self.env.shopt_options.contains("array_expand_once")
+            || self.env.shopt_options.contains("assoc_expand_once")
+        {
+            self.env.shopt_options.insert("array_expand_once".to_owned());
+            self.env.shopt_options.insert("assoc_expand_once".to_owned());
+        }
         let enable = args.iter().any(|arg| arg == "-s");
         let disable = args.iter().any(|arg| arg == "-u");
         let quiet = args.iter().any(|arg| arg == "-q");
@@ -5220,12 +5226,21 @@ impl Interpreter {
                     if version.len() == 2 {
                         self.env.set("BASH_COMPAT", format!("{}.{}", &version[..1], &version[1..]));
                     }
+                } else if matches!(name.as_str(), "array_expand_once" | "assoc_expand_once") {
+                    self.env.shopt_options.insert("array_expand_once".to_owned());
+                    self.env.shopt_options.insert("assoc_expand_once".to_owned());
                 } else {
                     self.env.shopt_options.insert(name.clone());
                 }
             } else if disable {
-                if shell_options { set_shell_option(&mut self.env, &name, false); }
-                else { self.env.shopt_options.remove(&name); }
+                if shell_options {
+                    set_shell_option(&mut self.env, &name, false);
+                } else if matches!(name.as_str(), "array_expand_once" | "assoc_expand_once") {
+                    self.env.shopt_options.remove("array_expand_once");
+                    self.env.shopt_options.remove("assoc_expand_once");
+                } else {
+                    self.env.shopt_options.remove(&name);
+                }
             } else if !is_enabled(&self.env, &name) {
                 status = 1;
             }
@@ -9075,6 +9090,8 @@ fn sort_glob_results(values: &mut [String], sort: &str, cwd: &Path) {
     let mut reverse = false;
     if let Some(rest) = mode.strip_prefix('-') {
         reverse = true;
+        mode = rest;
+    } else if let Some(rest) = mode.strip_prefix('+') {
         mode = rest;
     }
     if mode.is_empty() { mode = "name"; }
