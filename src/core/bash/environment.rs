@@ -641,6 +641,14 @@ impl ShellEnvironment {
         true
     }
 
+    pub fn snapshot_binding(&self, name: &str) -> LocalBinding {
+        self.binding_snapshot(name)
+    }
+
+    pub fn restore_binding(&mut self, name: &str, previous: LocalBinding) {
+        self.restore_binding_snapshot(name, previous);
+    }
+
     fn binding_snapshot(&self, name: &str) -> LocalBinding {
         LocalBinding {
             scalar: self.vars.get(name).cloned(),

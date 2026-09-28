@@ -1471,39 +1471,47 @@ impl Interpreter {
         }
 
         let mut raw = command.words.clone();
-        if (self.env.option_enabled("interactive") || self.env.option_enabled("expand_aliases"))
-            && let Some(alias) = self.env.aliases.get(&raw[0]).cloned()
+
+        // Alias expansion is applied to the command word, not to assignment
+        // prefixes. Preserve the prefixes and expand the first command word.
+        let mut assignment_count = raw.iter().take_while(|word| is_assignment(word)).count();
+        if assignment_count < raw.len()
+            && (self.env.option_enabled("interactive") || self.env.option_enabled("expand_aliases"))
         {
-            let alias_tokens = super::lexer::lex(&alias)?;
-            let mut alias_words = alias_tokens.into_iter().filter_map(|token| {
-                if let super::lexer::Token::Word(word) = token { Some(word) } else { None }
-            }).collect::<Vec<_>>();
-            alias_words.extend(raw.into_iter().skip(1));
-            raw = alias_words;
-        }
-
-        let mut index = 0;
-        while index < raw.len() && is_assignment(&raw[index]) {
-            let (name, value) = raw[index].split_once('=').unwrap();
-            let value = self.expand_scalar(value)?;
-            if !self.env.set(name.to_owned(), value) {
-                return Ok(ExecutionResult::from_parts(
-                    String::new(),
-                    format!("{name}: asignación no permitida o variable de solo lectura\n"),
-                    1,
-                ));
+            if let Some(alias) = self.env.aliases.get(&raw[assignment_count]).cloned() {
+                let alias_tokens = super::lexer::lex(&alias)?;
+                let alias_words = alias_tokens.into_iter().filter_map(|token| {
+                    if let super::lexer::Token::Word(word) = token { Some(word) } else { None }
+                }).collect::<Vec<_>>();
+                let mut expanded_raw = raw[..assignment_count].to_vec();
+                expanded_raw.extend(alias_words);
+                expanded_raw.extend(raw[assignment_count + 1..].iter().cloned());
+                raw = expanded_raw;
+                assignment_count = raw.iter().take_while(|word| is_assignment(word)).count();
             }
-            index += 1;
         }
 
-        if index == raw.len() {
+        if assignment_count == raw.len() {
+            for assignment in &raw {
+                let (name, value) = assignment.split_once('=').unwrap();
+                let value = self.expand_scalar(value)?;
+                if !self.env.set(name.to_owned(), value) {
+                    return Ok(ExecutionResult::from_parts(
+                        String::new(),
+                        format!("{name}: asignación no permitida o variable de solo lectura\n"),
+                        1,
+                    ));
+                }
+            }
             let mut result = ExecutionResult::success();
             self.apply_output_redirects(command, &mut result)?;
             self.finalize_process_substitutions(&mut result)?;
             return Ok(result);
         }
 
-        let words = self.expand_words(&raw[index..])?;
+        // Bash expands command arguments before installing assignment prefixes
+        // into the command's temporary environment.
+        let words = self.expand_words(&raw[assignment_count..])?;
         if words.is_empty() {
             let mut result = ExecutionResult::success();
             self.apply_output_redirects(command, &mut result)?;
@@ -1514,9 +1522,38 @@ impl Interpreter {
         let name = words[0].clone();
         let args = &words[1..];
 
+        let mut temporary_assignments = Vec::new();
+        for assignment in &raw[..assignment_count] {
+            let (variable, value) = assignment.split_once('=').unwrap();
+            let snapshot = self.env.snapshot_binding(variable);
+            let expanded = self.expand_scalar(value)?;
+            if !self.env.set(variable.to_owned(), expanded.clone()) {
+                for (name, previous) in temporary_assignments.into_iter().rev() {
+                    self.env.restore_binding(&name, previous);
+                }
+                return Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("{variable}: asignación no permitida o variable de solo lectura\n"),
+                    1,
+                ));
+            }
+            // Assignment prefixes are part of the environment of an external
+            // command even when the variable was not previously exported.
+            self.env.mark_exported(variable);
+            temporary_assignments.push((variable.to_owned(), snapshot));
+        }
+
+        let preserve_assignments = self.env.option_enabled("posix")
+            && bash_special_builtin_names().contains(&name.as_str());
+
         if self.env.option_enabled("restricted_shell")
             && (name.contains('/') || name.contains('\\'))
         {
+            if !preserve_assignments {
+                for (variable, previous) in temporary_assignments.into_iter().rev() {
+                    self.env.restore_binding(&variable, previous);
+                }
+            }
             return Ok(ExecutionResult::from_parts(
                 String::new(),
                 format!("bash: {name}: modo restringido: no se permite '/' en nombres de comando\n"),
@@ -1531,6 +1568,11 @@ impl Interpreter {
         self.env.set("BASH_COMMAND", command_text);
         if let Some(debug_result) = self.run_trap_action("DEBUG", self.env.last_status)? {
             if debug_result.exit_requested || debug_result.flow != FlowSignal::None {
+                if !preserve_assignments {
+                    for (variable, previous) in temporary_assignments.into_iter().rev() {
+                        self.env.restore_binding(&variable, previous);
+                    }
+                }
                 return Ok(debug_result);
             }
         }
@@ -1550,8 +1592,14 @@ impl Interpreter {
             && !self.host.command_is_builtin(&name)
             && self.resolve_path(&name).is_dir()
         {
-            return Ok(self.shell_builtin("cd", &[name.clone()], local_stdin.as_deref())?
-                .unwrap_or_else(ExecutionResult::success));
+            let result = self.shell_builtin("cd", &[name.clone()], local_stdin.as_deref())?
+                .unwrap_or_else(ExecutionResult::success);
+            if !preserve_assignments {
+                for (variable, previous) in temporary_assignments.into_iter().rev() {
+                    self.env.restore_binding(&variable, previous);
+                }
+            }
+            return Ok(result);
         }
 
         let mut result = if let Some(result) = self.shell_builtin(&name, args, local_stdin.as_deref())? {
@@ -1561,6 +1609,11 @@ impl Interpreter {
                 && limit > 0
                 && self.call_stack.len() >= limit
             {
+                if !preserve_assignments {
+                    for (variable, previous) in temporary_assignments.into_iter().rev() {
+                        self.env.restore_binding(&variable, previous);
+                    }
+                }
                 return Ok(ExecutionResult::from_parts(
                     String::new(),
                     format!("{name}: profundidad máxima de funciones ({limit}) excedida\n"),
@@ -1630,6 +1683,11 @@ impl Interpreter {
         }
         self.apply_output_redirects(command, &mut result)?;
         self.finalize_process_substitutions(&mut result)?;
+        if !preserve_assignments {
+            for (variable, previous) in temporary_assignments.into_iter().rev() {
+                self.env.restore_binding(&variable, previous);
+            }
+        }
         Ok(result)
     }
 
