@@ -123,7 +123,7 @@ impl ShellSession {
                 }
                 Err(ReadlineError::Eof) => {
                     let result = self.engine.execute(
-                        "__SST_EOF_CHECK=:; if [[ -o ignoreeof ]]; then (( __SST_IGNOREEOF += 1 )); if (( __SST_IGNOREEOF >= 10 )); then exit; else echo 'Use "exit" to leave the shell.'; fi; else exit; fi"
+                        "__SST_EOF_CHECK=:; if [[ -o ignoreeof ]]; then (( __SST_IGNOREEOF += 1 )); if [[ $__SST_IGNOREEOF -ge ${IGNOREEOF:-10} ]]; then exit; else echo 'Use "exit" to leave the shell.'; fi; else exit; fi"
                     )?;
                     print!("{}", result.stdout);
                     eprint!("{}", result.stderr);

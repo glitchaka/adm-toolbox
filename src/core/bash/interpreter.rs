@@ -261,6 +261,8 @@ pub struct Interpreter {
     errexit_suppression: usize,
     persistent_output_routes: HashMap<i32, OutputSink>,
     persist_next_redirections: bool,
+    last_mail_check: std::time::Instant,
+    mail_state: HashMap<PathBuf, (u64, std::time::SystemTime)>,
 }
 
 impl Interpreter {
@@ -284,6 +286,10 @@ impl Interpreter {
             errexit_suppression: 0,
             persistent_output_routes: HashMap::new(),
             persist_next_redirections: false,
+            last_mail_check: std::time::Instant::now()
+                .checked_sub(std::time::Duration::from_secs(60))
+                .unwrap_or_else(std::time::Instant::now),
+            mail_state: HashMap::new(),
         };
         interpreter.import_exported_functions();
         interpreter
@@ -355,6 +361,7 @@ impl Interpreter {
         let mut stdout = String::new();
         let mut stderr = String::new();
         if !continuation {
+            stdout.push_str(&self.check_mail()?);
             let commands = self.env.array_values("PROMPT_COMMAND");
             if commands.is_empty() {
                 let command = self.env.get("PROMPT_COMMAND");
@@ -380,6 +387,65 @@ impl Interpreter {
             Some(self.expand_prompt_text(&raw)?)
         };
         Ok((stdout, stderr, prompt))
+    }
+
+    fn check_mail(&mut self) -> Result<String> {
+        let interval = self.env.get("MAILCHECK").parse::<u64>().unwrap_or(60);
+        if interval > 0 && self.last_mail_check.elapsed() < std::time::Duration::from_secs(interval) {
+            return Ok(String::new());
+        }
+        self.last_mail_check = std::time::Instant::now();
+
+        let mailpath = self.env.get("MAILPATH");
+        let mail = self.env.get("MAIL");
+        let specifications = if !mailpath.is_empty() {
+            mailpath.split(':').filter(|value| !value.is_empty()).map(str::to_owned).collect::<Vec<_>>()
+        } else if !mail.is_empty() {
+            vec![mail]
+        } else {
+            return Ok(String::new());
+        };
+
+        let mut notices = String::new();
+        for specification in specifications {
+            let (raw_path, custom_message) = specification
+                .split_once('?')
+                .or_else(|| specification.split_once('%'))
+                .map(|(path, message)| (path, Some(message)))
+                .unwrap_or((specification.as_str(), None));
+            let expanded_path = self.expand_scalar(raw_path)?;
+            let path = self.resolve_path(&expanded_path);
+            let Ok(metadata) = fs::metadata(&path) else { continue; };
+            let size = metadata.len();
+            let modified = metadata.modified().unwrap_or(std::time::UNIX_EPOCH);
+            let accessed = metadata.accessed().unwrap_or(std::time::UNIX_EPOCH);
+            let previous = self.mail_state.insert(path.clone(), (size, modified));
+
+            let new_mail = match previous {
+                Some((old_size, old_modified)) => size > old_size || modified > old_modified,
+                None => size > 0 && modified >= accessed,
+            };
+            let read_mail = previous.is_some_and(|(old_size, old_modified)| {
+                self.env.option_enabled("mailwarn")
+                    && size <= old_size
+                    && modified > old_modified
+                    && !new_mail
+            });
+
+            if new_mail {
+                let message = if let Some(template) = custom_message {
+                    let path_text = path.to_string_lossy();
+                    template.replace("${_}", &path_text).replace("$_", &path_text)
+                } else {
+                    format!("You have new mail in {}", path.display())
+                };
+                notices.push_str(&message);
+                notices.push('\n');
+            } else if read_mail {
+                notices.push_str(&format!("The mail in {} has been read\n", path.display()));
+            }
+        }
+        Ok(notices)
     }
 
     pub fn pre_execute_prompt(&mut self) -> Result<String> {

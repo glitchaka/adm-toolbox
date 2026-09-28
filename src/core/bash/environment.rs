@@ -86,6 +86,7 @@ impl ShellEnvironment {
             .or_insert_with(|| " \t\n\"'><=;|&(:".to_owned());
         vars.entry("HISTTIMEFORMAT".to_owned()).or_default();
         vars.entry("PROMPT_DIRTRIM".to_owned()).or_insert_with(|| "0".to_owned());
+        vars.entry("MAILCHECK".to_owned()).or_insert_with(|| "60".to_owned());
         let shlvl = vars.get("SHLVL")
             .and_then(|value| value.parse::<u32>().ok())
             .unwrap_or(0)
