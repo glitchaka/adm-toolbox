@@ -2649,11 +2649,11 @@ impl Interpreter {
             "xargs" => self.execute_xargs(args, stdin)?,
             "config" => {
                 match args.first().map(String::as_str).unwrap_or("path") {
-                    "path" => ExecutionResult::from_parts(format!("{}\n", self.env.get("ADM_CONFIG")), String::new(), 0),
+                    "path" => ExecutionResult::from_parts(format!("{}\n", self.env.get("SST_CONFIG")), String::new(), 0),
                     "reload" => {
-                        let path = self.env.get("ADM_CONFIG");
+                        let path = self.env.get("SST_CONFIG");
                         if path.is_empty() {
-                            ExecutionResult::from_parts(String::new(), "config: ADM_CONFIG no definido\n".to_owned(), 1)
+                            ExecutionResult::from_parts(String::new(), "config: SST_CONFIG no definido\n".to_owned(), 1)
                         } else {
                             self.execute_text(&fs::read_to_string(path)?)?
                         }
