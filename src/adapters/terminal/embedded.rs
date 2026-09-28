@@ -92,6 +92,23 @@ impl EmbeddedSession {
             let result = (|| -> Result<()> {
                 let (mut engine, _, _paths) = crate::composition::build_engine()?;
                 engine.set_interactive(true);
+
+                // The native GUI is an interactive non-login Bash session. Unlike
+                // run_cli(), it does not pass through main's startup loader, so load
+                // ~/.bashrc here to preserve Bash startup semantics.
+                let home = std::env::var_os("HOME")
+                    .or_else(|| std::env::var_os("USERPROFILE"));
+                if let Some(home) = home {
+                    let bashrc = PathBuf::from(home).join(".bashrc");
+                    if bashrc.is_file() {
+                        let raw = bashrc.to_string_lossy();
+                        let quoted = format!("'{}'", raw.replace('\'', "'\\''"));
+                        let startup = engine.execute(&format!("source {quoted}"))?;
+                        io::write(startup.stdout.as_bytes())?;
+                        io::write(startup.stderr.as_bytes())?;
+                    }
+                }
+
                 *worker_bindings.lock().unwrap_or_else(|error| error.into_inner()) = engine.readline_bindings();
                 io::write(crate::presentation::shell::prompt::banner().as_bytes())?;
                 let (prompt_stdout, prompt_stderr, bash_prompt) = engine.prepare_prompt(false)?;

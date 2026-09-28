@@ -248,6 +248,14 @@ fn load_bash_startup(
     let Some(home) = home_dir() else { return Ok(()); };
 
     if invocation.login && !invocation.no_profile {
+        // Bash login shells read the system profile before the first readable
+        // per-user profile. On Windows this path resolves on the current drive
+        // when no Unix compatibility root is mounted, and is simply skipped.
+        let system_profile = PathBuf::from("/etc/profile");
+        if system_profile.is_file() {
+            source_startup_file(engine, &system_profile)?;
+        }
+
         for path in [
             home.join(".bash_profile"),
             home.join(".bash_login"),

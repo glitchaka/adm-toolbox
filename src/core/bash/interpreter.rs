@@ -1745,6 +1745,32 @@ impl Interpreter {
                             result.exit_requested = true;
                             result.status = status;
                         }
+
+                        // Bash login shells read the user and system logout files
+                        // when they terminate. Preserve their output but keep the
+                        // requested exit status.
+                        if self.env.option_enabled("login_shell") {
+                            let home = {
+                                let home = self.env.get("HOME");
+                                if home.is_empty() { self.env.get("USERPROFILE") } else { home }
+                            };
+                            let mut logout_files = Vec::new();
+                            if !home.is_empty() {
+                                logout_files.push(PathBuf::from(home).join(".bash_logout"));
+                            }
+                            logout_files.push(PathBuf::from("/etc/bash.bash_logout"));
+
+                            for path in logout_files {
+                                if let Ok(source) = fs::read_to_string(&path) {
+                                    let mut logout_result = self.execute_text(&source)?;
+                                    logout_result.exit_requested = false;
+                                    logout_result.status = status;
+                                    result.stdout.push_str(&logout_result.stdout);
+                                    result.stderr.push_str(&logout_result.stderr);
+                                }
+                            }
+                        }
+
                         result
                     }
                 }
