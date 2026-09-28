@@ -423,16 +423,35 @@ impl Interpreter {
         self.env.set("COMP_CWORD", words.len().saturating_sub(1).to_string());
         self.env.set("COMP_TYPE", "9");
         self.env.set("COMP_KEY", "9");
+        if self.env.option_enabled("no_empty_cmd_completion")
+            && before.trim().is_empty()
+            && prefix.is_empty()
+        {
+            return Ok(Vec::new());
+        }
+
         if self.env.option_enabled("progcomp") {
             if let Some(spec) = self.completion_specs.get(command).cloned() {
                 return self.generate_completions(&spec, prefix, line);
+            }
+            if self.env.option_enabled("progcomp_alias") {
+                if let Some(alias) = self.env.aliases.get(command).cloned() {
+                    if let Ok(alias_words) = split_shell_words_relaxed(&alias) {
+                        if let Some(expanded_command) = alias_words.first() {
+                            if let Some(spec) = self.completion_specs.get(expanded_command).cloned() {
+                                return self.generate_completions(&spec, prefix, line);
+                            }
+                        }
+                    }
+                }
             }
         }
         if start == 0 {
             let spec = CompletionSpec { action: Some("command".to_owned()), ..CompletionSpec::default() };
             return self.generate_completions(&spec, prefix, line);
         }
-        Ok(completion_files(&self.env.cwd, prefix, false))
+        let values = completion_files(&self.env.cwd, prefix, false);
+        Ok(self.apply_completion_filters(values))
     }
 
     pub fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
@@ -470,11 +489,27 @@ impl Interpreter {
                 ch => { out.push(ch); i += 1; }
             }
         }
+        if self.env.option_enabled("histverify") || self.env.option_enabled("histreedit") {
+            print_only = true;
+        }
         Ok((out, print_only))
     }
 
     pub fn record_history(&mut self, line: &str) -> Result<()> {
         if line.is_empty() || !self.env.option_enabled("history") { return Ok(()); }
+        let line = if self.env.option_enabled("cmdhist")
+            && !self.env.option_enabled("lithist")
+            && line.contains('\n')
+        {
+            line.lines()
+                .map(str::trim)
+                .filter(|part| !part.is_empty())
+                .collect::<Vec<_>>()
+                .join("; ")
+        } else {
+            line.to_owned()
+        };
+        let line = line.as_str();
         let controls: HashSet<String> = self.env.get("HISTCONTROL").split(':')
             .filter(|value| !value.is_empty()).map(str::to_owned).collect();
         if controls.contains("ignorespace") && line.starts_with(' ') { return Ok(()); }
@@ -490,6 +525,23 @@ impl Interpreter {
         if lines.len() > histsize { lines.drain(..lines.len() - histsize); }
         let filesize = self.env.get("HISTFILESIZE").parse::<usize>().unwrap_or(histsize);
         if lines.len() > filesize { lines.drain(..lines.len() - filesize); }
+
+        if self.env.option_enabled("histappend")
+            && !controls.contains("erasedups")
+            && lines.last().is_some_and(|last| last == line)
+        {
+            if let Some(path) = self.history_path() {
+                if let Some(parent) = path.parent() { fs::create_dir_all(parent)?; }
+                let existing_count = fs::read_to_string(&path)
+                    .map(|text| text.lines().count())
+                    .unwrap_or(0);
+                if existing_count + 1 <= filesize {
+                    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+                    writeln!(file, "{line}")?;
+                    return Ok(());
+                }
+            }
+        }
         self.save_history_lines(&lines)
     }
 
@@ -3116,6 +3168,23 @@ impl Interpreter {
         values
     }
 
+    fn apply_completion_filters(&self, mut values: Vec<String>) -> Vec<String> {
+        let original = values.clone();
+
+        let fignore = self.env.get("FIGNORE");
+        if !fignore.is_empty() {
+            let suffixes: Vec<&str> = fignore.split(':')
+                .filter(|suffix| !suffix.is_empty())
+                .collect();
+            values.retain(|value| !suffixes.iter().any(|suffix| value.ends_with(suffix)));
+            if values.is_empty() && !self.env.option_enabled("force_fignore") {
+                values = original;
+            }
+        }
+
+        values
+    }
+
     fn generate_completions(
         &mut self,
         spec: &CompletionSpec,
@@ -3144,7 +3213,13 @@ impl Interpreter {
             values.extend(result.stdout.lines().map(str::to_owned));
         }
 
-        values.retain(|value| value.starts_with(prefix));
+        if self.env.option_enabled("nocasematch") {
+            let needle = prefix.to_lowercase();
+            values.retain(|value| value.to_lowercase().starts_with(&needle));
+        } else {
+            values.retain(|value| value.starts_with(prefix));
+        }
+        values = self.apply_completion_filters(values);
         let fullquote = spec.options.contains("fullquote")
             || self.env.option_enabled("complete_fullquote");
         values = values.into_iter()
