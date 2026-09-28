@@ -345,7 +345,7 @@ impl NetworkTrafficService {
                 .map(|error| format!("ETW no disponible: {error}"))
                 .unwrap_or_else(|| "ETW".to_owned());
 
-            let mut screen = String::from("ADM net traffic --watch   [q] salir\n\n");
+            let mut screen = String::from("SST net traffic --watch   [q] salir\n\n");
 
             match self.output(&filtered_args, rates.as_ref(), Some(&telemetry_note)) {
                 Ok(output) => screen.push_str(&output.stdout),
