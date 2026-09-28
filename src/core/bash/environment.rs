@@ -118,6 +118,36 @@ impl ShellEnvironment {
             })
             .collect();
 
+        let mut shell_options: HashSet<String> =
+            ["braceexpand", "hashall"].into_iter().map(str::to_owned).collect();
+        if let Some(inherited) = exported.get("SHELLOPTS") {
+            shell_options.extend(
+                inherited.split(':').filter(|option| !option.is_empty()).map(str::to_owned)
+            );
+        }
+
+        let mut shopt_options: HashSet<String> = [
+            "checkwinsize", "cmdhist", "complete_fullquote", "extquote",
+            "force_fignore", "globasciiranges", "globskipdots", "hostcomplete",
+            "interactive_comments", "patsub_replacement", "progcomp",
+            "promptvars", "sourcepath",
+        ].into_iter().map(str::to_owned).collect();
+        if let Some(inherited) = exported.get("BASHOPTS") {
+            shopt_options.extend(
+                inherited.split(':').filter(|option| !option.is_empty()).map(str::to_owned)
+            );
+        }
+        if let Some(compat) = vars.get("BASH_COMPAT") {
+            let normalized = compat.replace('.', "");
+            if matches!(
+                normalized.as_str(),
+                "31" | "32" | "40" | "41" | "42" | "43" | "44" | "50" | "51" | "52" | "53"
+            ) {
+                shopt_options.retain(|option| !option.starts_with("compat"));
+                shopt_options.insert(format!("compat{normalized}"));
+            }
+        }
+
         let mut readonly = HashSet::new();
         readonly.insert("BASH_VERSINFO".to_owned());
         readonly.insert("SHELLOPTS".to_owned());
@@ -139,16 +169,9 @@ impl ShellEnvironment {
             uppercase_vars: HashSet::new(),
             lowercase_vars: HashSet::new(),
             trace_vars: HashSet::new(),
-            shell_options: ["braceexpand", "hashall"].into_iter().map(str::to_owned).collect(),
-            shopt_options: [
-                "checkwinsize", "cmdhist", "complete_fullquote", "extquote",
-                "force_fignore", "globasciiranges", "globskipdots", "hostcomplete",
-                "interactive_comments", "patsub_replacement", "progcomp",
-                "promptvars", "sourcepath",
-            ]
-                .into_iter()
-                .map(str::to_owned)
-                .collect(),
+            disabled_special_vars: HashSet::new(),
+            shell_options,
+            shopt_options,
             traps: HashMap::new(),
             cwd: env::current_dir().unwrap_or_else(|_| PathBuf::from("C:\\")),
             oldpwd: None,
@@ -221,6 +244,9 @@ impl ShellEnvironment {
     }
 
     pub fn get(&self, name: &str) -> String {
+        if self.disabled_special_vars.contains(name) {
+            return self.vars.get(name).cloned().unwrap_or_default();
+        }
         match name {
             "0" | "BASH_ARGV0" => self.script_name.clone(),
             "?" => self.last_status.to_string(),
@@ -313,6 +339,9 @@ impl ShellEnvironment {
     pub fn is_set(&self, name: &str) -> bool {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
+        if resettable_special_variable(name) && !self.disabled_special_vars.contains(name) {
+            return true;
+        }
         if name == "DIRSTACK" { return true; }
         if let Some((base, subscript)) = split_subscript(name) {
             if let Some(array) = self.arrays.get(base) {
@@ -344,7 +373,7 @@ impl ShellEnvironment {
 
     pub fn set(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
         let original = name.into();
-        if original == "BASH_ARGV0" {
+        if original == "BASH_ARGV0" && !self.disabled_special_vars.contains("BASH_ARGV0") {
             if self.readonly.contains("BASH_ARGV0") { return false; }
             let value = value.into();
             self.script_name = value.clone();
@@ -360,26 +389,26 @@ impl ShellEnvironment {
         }
         let mut value = value.into();
 
-        if name == "RANDOM" {
+        if name == "RANDOM" && !self.disabled_special_vars.contains("RANDOM") {
             if let Ok(seed) = value.parse::<u32>() {
                 self.random_state.set(seed);
             }
             self.vars.insert(name, value);
             return true;
         }
-        if name == "SRANDOM" {
+        if name == "SRANDOM" && !self.disabled_special_vars.contains("SRANDOM") {
             // Assignment is accepted but does not seed SRANDOM.
             self.vars.insert(name, value);
             return true;
         }
-        if name == "SECONDS" {
+        if name == "SECONDS" && !self.disabled_special_vars.contains("SECONDS") {
             self.seconds_base = value.parse::<i64>().unwrap_or(0);
             self.started_at = Instant::now();
             self.vars.insert(name, value);
             return true;
         }
 
-        if name == "BASH_COMPAT" {
+        if name == "BASH_COMPAT" && !self.disabled_special_vars.contains("BASH_COMPAT") {
             let normalized = value.replace('.', "");
             self.shopt_options.retain(|option| !option.starts_with("compat"));
             if matches!(
@@ -442,6 +471,9 @@ impl ShellEnvironment {
         let resolved = self.dereference_name(name);
         let name = resolved.as_str();
         if self.readonly.contains(name) { return false; }
+        if resettable_special_variable(name) {
+            self.disabled_special_vars.insert(name.to_owned());
+        }
         if self.shopt_options.contains("restricted_shell")
             && matches!(name, "PATH" | "SHELL" | "ENV" | "BASH_ENV")
         {
@@ -913,6 +945,10 @@ impl ShellEnvironment {
         self.integer_vars.contains(&resolved)
     }
 
+    pub fn special_variable_active(&self, name: &str) -> bool {
+        resettable_special_variable(name) && !self.disabled_special_vars.contains(name)
+    }
+
     pub fn option_enabled(&self, name: &str) -> bool {
         self.shell_options.contains(name) || self.shopt_options.contains(name)
     }
@@ -930,6 +966,14 @@ fn split_subscript(name: &str) -> Option<(&str, &str)> {
 
 fn split_subscript_owned(name: &str) -> Option<(String, String)> {
     split_subscript(name).map(|(a,b)| (a.to_owned(), b.to_owned()))
+}
+
+fn resettable_special_variable(name: &str) -> bool {
+    matches!(
+        name,
+        "BASHPID" | "BASH_ARGV0" | "BASH_COMMAND" | "BASH_MONOSECONDS"
+            | "EPOCHSECONDS" | "EPOCHREALTIME" | "RANDOM" | "SRANDOM" | "SECONDS"
+    )
 }
 
 impl Default for ShellEnvironment {

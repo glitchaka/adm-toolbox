@@ -1853,7 +1853,9 @@ impl Interpreter {
             .map(|word| shell_quote(word))
             .collect::<Vec<_>>()
             .join(" ");
-        self.env.set("BASH_COMMAND", command_text);
+        if self.env.special_variable_active("BASH_COMMAND") {
+            self.env.set("BASH_COMMAND", command_text);
+        }
         if let Some(debug_result) = self.run_trap_action("DEBUG", self.env.last_status)? {
             if debug_result.exit_requested || debug_result.flow != FlowSignal::None {
                 if !preserve_assignments {
