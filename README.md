@@ -10,9 +10,7 @@ El corte publicado actualmente es **Shell Shock Tool v0.1.4**, correspondiente a
 
 Este release congela el avance actual de la capa Bash nativa. El workflow de publicación terminó correctamente.
 
-Por decisión de flujo de trabajo, **los releases no necesitan adjuntar un ejecutable precompilado**: el proyecto publica el código y el tag, y la compilación del ejecutable se realiza localmente cuando se necesita. Esto evita dedicar trabajo automático a compilaciones que no forman parte de la implementación.
-
-La preparación de este corte se realizó **sin compilar ni ejecutar la suite de pruebas**, de acuerdo con ese flujo de desarrollo. Por tanto, `v0.1.4` representa el estado publicado del código, mientras que la validación local se realiza por separado cuando corresponda.
+La preparación de este corte se realizó **sin compilar ni ejecutar la suite de pruebas**.
 
 ## Construcción
 
@@ -432,7 +430,6 @@ Implementado actualmente:
 Pendiente o conocido en este corte:
 
 - corregir el `stdin` interactivo de scripts `.sh` lanzados desde la terminal Win32;
-- validación local de `v0.1.4` mediante compilación y pruebas cuando corresponda al flujo de trabajo;
 - ampliar la suite de conformidad contra GNU Bash 5.3 antes de declarar compatibilidad completa;
 - proveedores reales de `net usage` para obtener consumo por dispositivo desde router/AP/firewall;
 - verificación Authenticode;
