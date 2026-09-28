@@ -67,8 +67,6 @@ impl Default for TerminalAppearance {
 struct TerminalConfig {
     #[serde(default)]
     appearance: TerminalAppearance,
-    metrics: System,
-    status_refreshed: Instant,
 }
 
 #[repr(C)]
@@ -116,6 +114,8 @@ struct Terminal {
     blink: Instant,
     font_resource: HANDLE,
     appearance: TerminalAppearance,
+    metrics: System,
+    status_refreshed: Instant,
 }
 
 fn wide(text: &str) -> Vec<u16> {
