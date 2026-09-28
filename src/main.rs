@@ -12,7 +12,7 @@ mod support;
 use std::{env, io::{Read, Write}, path::{Path, PathBuf}};
 
 use anyhow::Result;
-use app::AdmToolbox;
+use app::ShellShockTool;
 
 fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
@@ -36,7 +36,7 @@ fn main() {
     }
     let status = match run_cli(&args) {
         Ok(status) => status,
-        Err(error) => { eprintln!("adm-toolbox: {error}"); 2 }
+        Err(error) => { eprintln!("sst: {error}"); 2 }
     };
     let _ = std::io::stdout().flush();
     let _ = std::io::stderr().flush();
@@ -299,7 +299,7 @@ fn run_cli(args: &[String]) -> Result<i32> {
     }
 
     if args.is_empty() {
-        AdmToolbox::new()?.run()?;
+        ShellShockTool::new()?.run()?;
         return Ok(0);
     }
 
