@@ -391,10 +391,17 @@ device show NOMBRE
 device add AA:BB:CC:DD:EE:FF NOMBRE
 device add AA:BB:CC:DD:EE:FF NOMBRE --note "texto"
 device remove AA:BB:CC:DD:EE:FF
+device unknown
+device unknown --json
+device unknown --csv
 device path
 ```
 
 El inventario guarda MAC, nombre y notas. Se utiliza para identificar dispositivos durante escaneos, Wake-on-LAN y localización en switches.
+
+`device unknown` cruza el historial de presencia generado por `net monitor` con el inventario local y muestra únicamente los equipos detectados cuya MAC todavía no está registrada. La salida incluye IP, hostname, MAC, primera detección y última detección; también puede exportarse con `--json` o `--csv`.
+
+No vuelve a escanear la red por su cuenta: trabaja sobre observaciones persistidas por SST, de modo que sirve para revisar posteriormente qué equipos aparecieron en una red administrada.
 
 ---
 
