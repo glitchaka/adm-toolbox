@@ -780,6 +780,14 @@ impl Interpreter {
     }
 
     pub fn execute_text(&mut self, input: &str) -> Result<ExecutionResult> {
+        self.execute_text_with_stdin(input, None)
+    }
+
+    fn execute_text_with_stdin(
+        &mut self,
+        input: &str,
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
         let input = if self.env.option_enabled("interactive")
             && !self.env.option_enabled("interactive_comments")
             && !self.env.option_enabled("interactive-comments")
@@ -808,7 +816,7 @@ impl Interpreter {
         let result = if self.env.option_enabled("noexec") {
             ExecutionResult::success()
         } else {
-            self.execute(&node, None)?
+            self.execute(&node, stdin)?
         };
 
         for name in temporary {
@@ -1965,21 +1973,32 @@ impl Interpreter {
                     127,
                 ));
             };
-            let mut child_env = self.execution_environment();
-            child_env.insert("_".to_owned(), program.clone());
-            match self.host.execute_external(
-                &program,
-                args,
-                &self.env.cwd,
-                &child_env,
-                local_stdin.as_deref(),
-            ) {
-                Ok(result) => result,
-                Err(error) => ExecutionResult::from_parts(
-                    String::new(),
-                    format!("{name}: {error}\n"),
-                    127,
-                ),
+            if let Some(script) = self.resolve_shell_script_path(&program) {
+                match self.execute_shell_script_file(&script, args, local_stdin.as_deref()) {
+                    Ok(result) => result,
+                    Err(error) => ExecutionResult::from_parts(
+                        String::new(),
+                        format!("{name}: {error}\n"),
+                        127,
+                    ),
+                }
+            } else {
+                let mut child_env = self.execution_environment();
+                child_env.insert("_".to_owned(), program.clone());
+                match self.host.execute_external(
+                    &program,
+                    args,
+                    &self.env.cwd,
+                    &child_env,
+                    local_stdin.as_deref(),
+                ) {
+                    Ok(result) => result,
+                    Err(error) => ExecutionResult::from_parts(
+                        String::new(),
+                        format!("{name}: {error}\n"),
+                        127,
+                    ),
+                }
             }
         };
 
@@ -5909,6 +5928,98 @@ impl Interpreter {
             })
     }
 
+    fn resolve_shell_script_path(&self, program: &str) -> Option<PathBuf> {
+        let raw = PathBuf::from(program);
+        let candidate = if raw.is_absolute() {
+            raw
+        } else {
+            self.env.cwd.join(raw)
+        };
+        if !candidate.is_file() {
+            return None;
+        }
+
+        if candidate
+            .extension()
+            .and_then(|value| value.to_str())
+            .is_some_and(|value| value.eq_ignore_ascii_case("sh"))
+        {
+            return Some(candidate);
+        }
+
+        let bytes = fs::read(&candidate).ok()?;
+        let first = bytes.split(|byte| *byte == b'\n').next().unwrap_or(&[]);
+        let shebang = String::from_utf8_lossy(first).to_ascii_lowercase();
+        (shebang.starts_with("#!")
+            && (shebang.contains("bash") || shebang.contains("/sh")))
+            .then_some(candidate)
+    }
+
+    fn execute_shell_script_file(
+        &mut self,
+        path: &Path,
+        args: &[String],
+        stdin: Option<&[u8]>,
+    ) -> Result<ExecutionResult> {
+        let source = fs::read_to_string(path)?;
+
+        // Direct script execution behaves like a child shell from the caller's
+        // point of view: shell state created by the script must not leak back
+        // into the interactive parent. The host itself is shared so interactive
+        // read still uses the current Win32 terminal transport.
+        let saved_env = self.env.clone();
+        let saved_function_sources = self.function_sources.clone();
+        let saved_disabled_builtins = self.disabled_builtins.clone();
+        let saved_completion_specs = self.completion_specs.clone();
+        let saved_readline_bindings = self.readline_bindings.clone();
+        let saved_ulimits = self.ulimits.clone();
+        let saved_output_routes = self.persistent_output_routes.clone();
+        let saved_managed_input_fds = self.managed_input_fds.clone();
+        let saved_next_variable_fd = self.next_variable_fd;
+        let saved_source_depth = self.source_depth;
+        let saved_loop_depth = self.loop_depth;
+        let saved_trap_depth = self.trap_depth;
+        let saved_errexit_suppression = self.errexit_suppression;
+        let saved_persist_next_redirections = self.persist_next_redirections;
+        let saved_call_stack_len = self.call_stack.len();
+
+        self.env.script_name = path.to_string_lossy().into_owned();
+        self.env.positional = args.to_vec();
+        set_shell_option(&mut self.env, "interactive", false);
+        set_shell_option(&mut self.env, "history", false);
+        set_shell_option(&mut self.env, "histexpand", false);
+        set_shell_option(&mut self.env, "monitor", false);
+        self.sync_call_stack_arrays();
+
+        let execution = self.execute_text_with_stdin(&source, stdin);
+
+        self.env = saved_env;
+        self.function_sources = saved_function_sources;
+        self.disabled_builtins = saved_disabled_builtins;
+        self.completion_specs = saved_completion_specs;
+        self.readline_bindings = saved_readline_bindings;
+        self.ulimits = saved_ulimits;
+        self.persistent_output_routes = saved_output_routes;
+        self.managed_input_fds = saved_managed_input_fds;
+        self.next_variable_fd = saved_next_variable_fd;
+        self.source_depth = saved_source_depth;
+        self.loop_depth = saved_loop_depth;
+        self.trap_depth = saved_trap_depth;
+        self.errexit_suppression = saved_errexit_suppression;
+        self.persist_next_redirections = saved_persist_next_redirections;
+        self.call_stack.truncate(saved_call_stack_len);
+        self.sync_call_stack_arrays();
+
+        let mut result = execution?;
+        // "exit" inside an executed script exits that script, not the parent
+        // interactive Shell Shock Tool session.
+        result.exit_requested = false;
+        if result.flow == FlowSignal::Return {
+            result.flow = FlowSignal::None;
+        }
+        Ok(result)
+    }
+
     fn resolve_hashed_program(&mut self, name: &str) -> Result<Option<String>> {
         if let Some(path) = self.env.command_hash.get(name).cloned() {
             // Bash does not apply EXECIGNORE to commands already present in the
@@ -5996,6 +6107,17 @@ impl Interpreter {
                 127,
             ));
         };
+        if let Some(script) = self.resolve_shell_script_path(&program) {
+            return match self.execute_shell_script_file(&script, args, stdin) {
+                Ok(result) => Ok(result),
+                Err(error) => Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("{name}: {error}\n"),
+                    127,
+                )),
+            };
+        }
+
         let child_env = self.execution_environment();
         match self.host.execute_external(&program, args, &self.env.cwd, &child_env, stdin) {
             Ok(result) => Ok(result),
