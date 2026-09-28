@@ -227,6 +227,8 @@ pub trait ShellCommandHost: Send + Sync {
 
     fn command_is_builtin(&self, _name: &str) -> bool { false }
     fn command_names(&self) -> Vec<String> { Vec::new() }
+    fn user_names(&self) -> Vec<String> { Vec::new() }
+    fn group_names(&self) -> Vec<String> { Vec::new() }
     fn jobs(&self) -> Result<Vec<JobInfo>> { Ok(Vec::new()) }
     fn wait_job(&self, _pid: Option<u32>) -> Result<i32> { Ok(127) }
     fn wait_next_job(&self) -> Result<Option<(u32, i32)>> { Ok(None) }
@@ -3049,8 +3051,8 @@ impl Interpreter {
             "signal" => bash_signal_names().iter().map(|name| (*name).to_owned()).collect(),
             "setopt" => bash_shell_options().iter().map(|name| (*name).to_owned()).collect(),
             "shopt" => bash_shopt_options().iter().map(|name| (*name).to_owned()).collect(),
-            "user" => std::env::var("USERNAME").ok().into_iter().collect(),
-            "group" => Vec::new(),
+            "user" => self.host.user_names(),
+            "group" => self.host.group_names(),
             "service" => self.host.command_names().into_iter()
                 .filter(|name| name.eq_ignore_ascii_case("sc") || name.eq_ignore_ascii_case("net"))
                 .collect(),
@@ -5505,6 +5507,2393 @@ impl Interpreter {
                 if end >= chars.len() { bail!("comilla ANSI-C sin cerrar"); }
                 let body: String = chars[i + 2..end].iter().collect();
                 out.push_str(&decode_backslash_escapes(&body, false).0);
+                i = end + 1;
+                continue;
+            }
+
+            // Locale-translated strings use double-quote expansion semantics.
+            // Shell Shock Tool has no gettext catalog layer, so with no matching
+            // catalog this is Bash's normal fallback: expand the untranslated
+            // msgid exactly as a double-quoted string.
+            if !single && chars[i] == '
+                && chars.get(i + 1) == Some(&'(')
+            {
+                let direction = chars[i];
+                let end = matching(&chars, i + 1, '(', ')')
+                    .ok_or_else(|| anyhow!("sustitución de proceso sin cerrar"))?;
+                let source: String = chars[i + 2..end].iter().collect();
+                let path = self.create_process_substitution(direction, &source)?;
+                out.push_str(&path.to_string_lossy());
+                i = end + 1;
+                continue;
+            }
+
+            match chars[i] {
+                '\'' if !double => { single = !single; i += 1; }
+                '"' if !single => { double = !double; i += 1; }
+                '\\' if !single && i + 1 < chars.len() => {
+                    let next = chars[i + 1];
+                    if !double || matches!(next, '$' | '`' | '"' | '\\' | '\n') {
+                        if next != '\n' { out.push(next); }
+                        i += 2;
+                    } else {
+                        out.push('\\');
+                        i += 1;
+                    }
+                }
+                '`' if !single => {
+                    let mut end = i + 1;
+                    while end < chars.len() && chars[end] != '`' { end += 1; }
+                    if end >= chars.len() { bail!("sustitución con backticks sin cerrar"); }
+                    let source: String = chars[i + 1..end].iter().collect();
+                    let saved = self.env.clone();
+                    if !self.env.option_enabled("inherit_errexit")
+                        && !self.env.option_enabled("posix")
+                    {
+                        self.env.shell_options.remove("errexit");
+                    }
+                    let result = self.execute_text(&source);
+                    self.env = saved;
+                    let result = result?;
+                    out.push_str(result.stdout.trim_end_matches(['\r','\n']));
+                    i = end + 1;
+                }
+                '$' if !single => {
+                    if chars.get(i + 1) == Some(&'(') && chars.get(i + 2) == Some(&'(') {
+                        let end = arithmetic_end(&chars, i + 3)
+                            .ok_or_else(|| anyhow!("expansión aritmética sin cerrar"))?;
+                        let expression: String = chars[i + 3..end].iter().collect();
+                        out.push_str(&self.evaluate_arithmetic_command(&expression)?.to_string());
+                        i = end + 2;
+                    } else if chars.get(i + 1) == Some(&'(') {
+                        let end = matching(&chars, i + 1, '(', ')')
+                            .ok_or_else(|| anyhow!("sustitución de comando sin cerrar"))?;
+                        let source: String = chars[i + 2..end].iter().collect();
+                        let saved = self.env.clone();
+                        if !self.env.option_enabled("inherit_errexit")
+                            && !self.env.option_enabled("posix")
+                        {
+                            self.env.shell_options.remove("errexit");
+                        }
+                        let result = self.execute_text(&source);
+                        self.env = saved;
+                        let result = result?;
+                        out.push_str(result.stdout.trim_end_matches(['\r', '\n']));
+                        i = end + 1;
+                    } else if chars.get(i + 1) == Some(&'{') {
+                        let end = matching(&chars, i + 1, '{', '}')
+                            .ok_or_else(|| anyhow!("expansión de parámetro sin cerrar"))?;
+                        let expression: String = chars[i + 2..end].iter().collect();
+                        out.push_str(&self.expand_parameter(&expression)?);
+                        i = end + 1;
+                    } else {
+                        let (name, used) = parameter_name(&chars[i + 1..]);
+                        if used == 0 {
+                            out.push('$');
+                            i += 1;
+                        } else {
+                            if self.env.option_enabled("nounset")
+                                && !special_parameter(&name)
+                                && !self.env.is_set(&name)
+                            {
+                                bail!("{name}: variable no definida");
+                            }
+                            out.push_str(&self.special_value(&name));
+                            i += used + 1;
+                        }
+                    }
+                }
+                ch => { out.push(ch); i += 1; }
+            }
+        }
+
+        if single || double { bail!("comillas sin cerrar"); }
+        Ok(out)
+    }
+
+
+    fn create_process_substitution(&mut self, direction: char, source: &str) -> Result<PathBuf> {
+        let child_env = self.execution_environment();
+        if let Some(path) = self.host.create_process_substitution_pipe(
+            direction,
+            source,
+            &self.env.cwd,
+            &child_env,
+        )? {
+            return Ok(path);
+        }
+
+        // Portable fallback for hosts without stream-backed process substitution.
+        self.process_substitution_counter = self.process_substitution_counter.wrapping_add(1);
+        let path = std::env::temp_dir().join(format!(
+            "sst-process-substitution-{}-{}.tmp",
+            std::process::id(),
+            self.process_substitution_counter
+        ));
+
+        if direction == '<' {
+            let saved = self.env.clone();
+            let result = self.execute_text(source);
+            self.env = saved;
+            let result = result?;
+            fs::write(&path, result.stdout.as_bytes())?;
+            self.process_substitutions.push(ProcessSubstitution {
+                path: path.clone(),
+                command: String::new(),
+                consume_as_stdin: false,
+            });
+        } else {
+            fs::write(&path, b"")?;
+            self.process_substitutions.push(ProcessSubstitution {
+                path: path.clone(),
+                command: source.to_owned(),
+                consume_as_stdin: true,
+            });
+        }
+
+        Ok(path)
+    }
+
+    fn finalize_process_substitutions(&mut self, result: &mut ExecutionResult) -> Result<()> {
+        let pending = std::mem::take(&mut self.process_substitutions);
+        for substitution in pending {
+            if substitution.consume_as_stdin {
+                let input = fs::read(&substitution.path).unwrap_or_default();
+                let node = parse(&substitution.command)?;
+                let consumer = self.execute(&node, Some(&input))?;
+                result.stdout.push_str(&consumer.stdout);
+                result.stderr.push_str(&consumer.stderr);
+                if result.status == 0 && consumer.status != 0 {
+                    result.status = consumer.status;
+                }
+            }
+            let _ = fs::remove_file(&substitution.path);
+        }
+        Ok(())
+    }
+
+    fn special_value(&self, name: &str) -> String {
+        match name {
+            "BASHPID" | "$" => std::process::id().to_string(),
+            _ => self.env.get(name),
+        }
+    }
+
+    fn expand_parameter(&mut self, expression: &str) -> Result<String> {
+        if let Some(source) = expression.strip_prefix('|') {
+            let source = source.trim();
+            let source = source.strip_suffix(';').unwrap_or(source).trim();
+            let _ = self.execute_text(source)?;
+            return Ok(self.env.get("REPLY"));
+        }
+
+        if expression.starts_with(char::is_whitespace) {
+            let source = expression.trim();
+            let source = source.strip_suffix(';').unwrap_or(source).trim();
+            let result = self.execute_text(source)?;
+            return Ok(result.stdout.trim_end_matches(['\r', '\n']).to_owned());
+        }
+
+        if let Some(rest) = expression.strip_prefix('!') {
+            if let Some(base) = rest.strip_suffix("[@]").or_else(|| rest.strip_suffix("[*]")) {
+                return Ok(self.env.array_keys(base).join(" "));
+            }
+            if let Some(prefix) = rest.strip_suffix('*').or_else(|| rest.strip_suffix('@')) {
+                let mut names: Vec<String> = self.env.vars.keys()
+                    .chain(self.env.arrays.keys())
+                    .chain(self.env.assoc_arrays.keys())
+                    .filter(|name| name.starts_with(prefix))
+                    .cloned()
+                    .collect();
+                names.sort();
+                names.dedup();
+                return Ok(names.join(" "));
+            }
+            let indirect = self.env.get(rest);
+            if self.env.option_enabled("nounset") && !self.env.is_set(&indirect) {
+                bail!("{indirect}: variable no definida");
+            }
+            return Ok(self.env.get(&indirect));
+        }
+
+        if let Some(name) = expression.strip_prefix('#') {
+            if let Some(base) = name.strip_suffix("[@]").or_else(|| name.strip_suffix("[*]")) {
+                return Ok(self.env.array_values(base).len().to_string());
+            }
+            return Ok(self.env.get(name).chars().count().to_string());
+        }
+
+        for suffix in ["^^", "^", ",,", ","] {
+            if let Some(name) = expression.strip_suffix(suffix) {
+                let value = self.env.get(name);
+                return Ok(match suffix {
+                    "^^" => value.to_uppercase(),
+                    "^" => capitalize_first(&value),
+                    ",," => value.to_lowercase(),
+                    "," => lowercase_first(&value),
+                    _ => value,
+                });
+            }
+        }
+
+        for suffix in ["@Q", "@E", "@P", "@A", "@a", "@K", "@U", "@u", "@L"] {
+            if let Some(name) = expression.strip_suffix(suffix) {
+                let value = self.env.get(name);
+                return Ok(match suffix {
+                    "@Q" => shell_quote(&value),
+                    "@E" => decode_backslash_escapes(&value, false).0,
+                    "@P" => self.expand_prompt_text(&value)?,
+                    "@U" => value.to_uppercase(),
+                    "@u" => capitalize_first(&value),
+                    "@L" => value.to_lowercase(),
+                    "@a" => {
+                        let base = name.split('[').next().unwrap_or(name);
+                        let mut attrs = String::new();
+                        if self.env.assoc_arrays.contains_key(base) { attrs.push('A'); }
+                        else if self.env.arrays.contains_key(base) { attrs.push('a'); }
+                        if self.env.is_nameref(base) { attrs.push('n'); }
+                        if self.env.readonly.contains(base) { attrs.push('r'); }
+                        if self.env.integer_vars.contains(base) { attrs.push('i'); }
+                        if self.env.uppercase_vars.contains(base) { attrs.push('u'); }
+                        if self.env.lowercase_vars.contains(base) { attrs.push('l'); }
+                        if self.env.trace_vars.contains(base) { attrs.push('t'); }
+                        if self.env.exported.contains_key(base) { attrs.push('x'); }
+                        attrs
+                    }
+                    "@A" => {
+                        let base = name.split('[').next().unwrap_or(name);
+                        if let Some(values) = self.env.assoc_arrays.get(base) {
+                            let mut keys = values.keys().cloned().collect::<Vec<_>>();
+                            keys.sort();
+                            let body = keys.into_iter()
+                                .map(|key| format!(
+                                    "[{}]={}",
+                                    shell_quote(&key),
+                                    shell_quote(values.get(&key).map(String::as_str).unwrap_or(""))
+                                ))
+                                .collect::<Vec<_>>()
+                                .join(" ");
+                            format!("declare -A {base}=({body})")
+                        } else if let Some(values) = self.env.arrays.get(base) {
+                            let present = self.env.array_present.get(base);
+                            let body = values.iter().enumerate()
+                                .filter(|(index, _)| present.is_none_or(|indices| indices.contains(index)))
+                                .map(|(index, item)| format!("[{index}]={}", shell_quote(item)))
+                                .collect::<Vec<_>>()
+                                .join(" ");
+                            format!("declare -a {base}=({body})")
+                        } else if self.env.is_nameref(base) {
+                            format!(
+                                "declare -n {base}={}",
+                                shell_quote(self.env.namerefs.get(base).map(String::as_str).unwrap_or(""))
+                            )
+                        } else {
+                            let mut attrs = String::new();
+                            if self.env.readonly.contains(base) { attrs.push('r'); }
+                            if self.env.integer_vars.contains(base) { attrs.push('i'); }
+                            if self.env.uppercase_vars.contains(base) { attrs.push('u'); }
+                            if self.env.lowercase_vars.contains(base) { attrs.push('l'); }
+                            if self.env.trace_vars.contains(base) { attrs.push('t'); }
+                            if self.env.exported.contains_key(base) { attrs.push('x'); }
+                            format!(
+                                "declare {} {base}={}",
+                                if attrs.is_empty() { "--".to_owned() } else { format!("-{attrs}") },
+                                shell_quote(&value)
+                            )
+                        }
+                    }
+                    "@K" => {
+                        let base = name.split('[').next().unwrap_or(name);
+                        if let Some(values) = self.env.assoc_arrays.get(base) {
+                            let mut keys = values.keys().cloned().collect::<Vec<_>>();
+                            keys.sort();
+                            keys.into_iter()
+                                .flat_map(|key| {
+                                    let item = values.get(&key).cloned().unwrap_or_default();
+                                    [shell_quote(&key), shell_quote(&item)]
+                                })
+                                .collect::<Vec<_>>()
+                                .join(" ")
+                        } else if let Some(values) = self.env.arrays.get(base) {
+                            let present = self.env.array_present.get(base);
+                            values.iter().enumerate()
+                                .filter(|(index, _)| present.is_none_or(|indices| indices.contains(index)))
+                                .flat_map(|(index, item)| [index.to_string(), shell_quote(item)])
+                                .collect::<Vec<_>>()
+                                .join(" ")
+                        } else {
+                            shell_quote(&value)
+                        }
+                    }
+                    _ => value,
+                });
+            }
+        }
+
+        for operator in [":-", ":+", ":=", ":?", "-", "+", "=", "?"] {
+            if let Some((name, word)) = split_parameter_operator(expression, operator) {
+                let is_set = self.env.is_set(name);
+                let value = self.env.get(name);
+                let null_counts = operator.starts_with(':');
+                let missing = !is_set || (null_counts && value.is_empty());
+                let expanded_word = if word.is_empty() { String::new() } else { self.expand_scalar(word)? };
+                return match operator {
+                    ":-" | "-" => Ok(if missing { expanded_word } else { value }),
+                    ":+" | "+" => Ok(if missing { String::new() } else { expanded_word }),
+                    ":=" | "=" => {
+                        if missing {
+                            if !self.env.set(name.to_owned(), expanded_word.clone()) {
+                                bail!("{name}: variable de solo lectura");
+                            }
+                            Ok(expanded_word)
+                        } else {
+                            Ok(value)
+                        }
+                    }
+                    ":?" | "?" => {
+                        if missing {
+                            let message = if expanded_word.is_empty() { format!("{name}: parámetro nulo o no definido") } else { expanded_word };
+                            bail!("{message}")
+                        } else {
+                            Ok(value)
+                        }
+                    }
+                    _ => Ok(value),
+                };
+            }
+        }
+
+        if let Some((name, rest)) = split_substring_expression(expression) {
+            let value = self.env.get(name);
+            let mut parts = rest.splitn(2, ':');
+            let offset = eval_arithmetic(parts.next().unwrap_or("0").trim(), &self.env)?;
+            let length = parts.next().map(|part| eval_arithmetic(part.trim(), &self.env)).transpose()?;
+            return Ok(substring_chars(&value, offset, length));
+        }
+
+        let base_len = parameter_reference_len(expression);
+        let (name, remainder) = expression.split_at(base_len);
+
+        if let Some(rest) = remainder.strip_prefix("//") {
+            let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
+            return Ok(replace_glob(&self.env.get(name), pattern, replacement, true));
+        }
+        if let Some(rest) = remainder.strip_prefix("/#") {
+            let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
+            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, true));
+        }
+        if let Some(rest) = remainder.strip_prefix("/%") {
+            let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
+            return Ok(replace_glob_anchored(&self.env.get(name), pattern, replacement, false));
+        }
+        if let Some(rest) = remainder.strip_prefix('/') {
+            let (pattern, replacement) = rest.split_once('/').unwrap_or((rest, ""));
+            return Ok(replace_glob(&self.env.get(name), pattern, replacement, false));
+        }
+
+        for operator in ["##", "#", "%%", "%"] {
+            if let Some(pattern) = remainder.strip_prefix(operator) {
+                return Ok(remove_glob_pattern(&self.env.get(name), pattern, operator));
+            }
+        }
+
+        if self.env.option_enabled("nounset")
+            && !special_parameter(name)
+            && !self.env.is_set(name)
+        {
+            bail!("{name}: variable no definida");
+        }
+
+        Ok(self.special_value(name))
+    }
+
+    fn tilde_expand(&self, raw: &str) -> String {
+        if raw == "~" || raw.starts_with("~/") || raw.starts_with("~\\") {
+            let home = self.env.get("HOME");
+            let home = if home.is_empty() { self.env.get("USERPROFILE") } else { home };
+            if !home.is_empty() {
+                return format!("{home}{}", &raw[1..]);
+            }
+        }
+        if raw == "~+" {
+            return self.env.cwd.to_string_lossy().into_owned();
+        }
+        if raw == "~-" {
+            return self.env.oldpwd.as_ref()
+                .map(|p| p.to_string_lossy().into_owned())
+                .unwrap_or_default();
+        }
+
+        if let Some(number) = raw.strip_prefix("~+").and_then(|value| value.parse::<usize>().ok()) {
+            let stack = self.directory_stack();
+            return stack.get(number)
+                .map(|path| path.to_string_lossy().into_owned())
+                .unwrap_or_else(|| raw.to_owned());
+        }
+        if let Some(number) = raw.strip_prefix("~-").and_then(|value| value.parse::<usize>().ok()) {
+            let stack = self.directory_stack();
+            return stack.len().checked_sub(number + 1)
+                .and_then(|index| stack.get(index))
+                .map(|path| path.to_string_lossy().into_owned())
+                .unwrap_or_else(|| raw.to_owned());
+        }
+
+        if let Some(user) = raw.strip_prefix('~').filter(|value| !value.is_empty() && !value.contains(['/', '\\'])) {
+            if user.eq_ignore_ascii_case(&self.env.get("USERNAME")) {
+                let home = self.env.get("USERPROFILE");
+                if !home.is_empty() { return home; }
+            }
+        }
+
+        raw.to_owned()
+    }
+
+    fn directory_stack(&self) -> Vec<PathBuf> {
+        let mut stack = vec![self.env.cwd.clone()];
+        stack.extend(self.env.dir_stack.iter().rev().cloned());
+        stack
+    }
+
+    fn glob(&self, value: &str) -> Result<Vec<String>> {
+        if !contains_glob_meta(value) && !contains_extglob(value) {
+            return Ok(Vec::new());
+        }
+
+        let absolute_pattern = if Path::new(value).is_absolute() {
+            value.to_owned()
+        } else {
+            self.env.cwd.join(value).to_string_lossy().into_owned()
+        };
+
+        let use_extglob = self.env.option_enabled("extglob") && contains_extglob(value);
+        let broad_pattern = if use_extglob {
+            extglob_broad_pattern(&absolute_pattern)
+        } else {
+            absolute_pattern.clone()
+        };
+
+        let options = glob::MatchOptions {
+            case_sensitive: !self.env.option_enabled("nocaseglob"),
+            require_literal_separator: !self.env.option_enabled("globstar"),
+            require_literal_leading_dot: !self.env.option_enabled("dotglob"),
+        };
+
+        let filter = if use_extglob {
+            Some(bash_glob_regex(
+                &normalize_glob_path(&absolute_pattern),
+                self.env.option_enabled("nocaseglob"),
+            )?)
+        } else {
+            None
+        };
+
+        let mut result = Vec::new();
+        for entry in glob::glob_with(&broad_pattern, options)? {
+            let Ok(path) = entry else { continue };
+            let normalized = normalize_glob_path(&path.to_string_lossy());
+            if let Some(regex) = &filter {
+                if !regex.is_match(&normalized) {
+                    continue;
+                }
+                if negative_extglob_rejects(
+                    &normalize_glob_path(&absolute_pattern),
+                    &normalized,
+                    self.env.option_enabled("nocaseglob"),
+                ) {
+                    continue;
+                }
+            }
+
+            if !self.env.option_enabled("dotglob") {
+                let hidden = path.file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with('.'));
+                let explicit_hidden = Path::new(value).file_name()
+                    .and_then(|name| name.to_str())
+                    .is_some_and(|name| name.starts_with('.'));
+                if hidden && !explicit_hidden { continue; }
+            }
+
+            if Path::new(value).is_absolute() {
+                result.push(path.to_string_lossy().into_owned());
+            } else if let Ok(relative) = path.strip_prefix(&self.env.cwd) {
+                result.push(relative.to_string_lossy().into_owned());
+            }
+        }
+
+        sort_glob_results(&mut result, &self.env.get("GLOBSORT"), &self.env.cwd);
+        Ok(result)
+    }
+
+    fn resolve_path(&self, raw: &str) -> PathBuf {
+        if raw == "~" {
+            let home = self.env.get("USERPROFILE");
+            if !home.is_empty() { return PathBuf::from(home); }
+        }
+        if let Some(rest) = raw.strip_prefix("~/").or_else(|| raw.strip_prefix("~\\")) {
+            let home = self.env.get("USERPROFILE");
+            if !home.is_empty() { return PathBuf::from(home).join(rest); }
+        }
+        #[cfg(windows)]
+        if raw.len() >= 3 && raw.starts_with('/') && raw.as_bytes()[2] == b'/' {
+            let drive = raw.chars().nth(1).unwrap_or('c').to_ascii_uppercase();
+            return PathBuf::from(format!("{drive}:\\")).join(raw[3..].replace('/', "\\"));
+        }
+        let path = PathBuf::from(raw);
+        if path.is_absolute() { path } else { self.env.cwd.join(path) }
+    }
+}
+
+
+
+#[derive(Debug, Clone)]
+struct HeredocSpec {
+    start: usize,
+    end: usize,
+    delimiter: String,
+    strip_tabs: bool,
+    quoted: bool,
+}
+
+fn heredoc_specs(line: &str) -> Vec<HeredocSpec> {
+    let bytes = line.as_bytes();
+    let mut specs = Vec::new();
+    let mut i = 0usize;
+    let mut single = false;
+    let mut double = false;
+
+    while i + 1 < bytes.len() {
+        match bytes[i] {
+            b'\'' if !double => { single = !single; i += 1; continue; }
+            b'"' if !single => { double = !double; i += 1; continue; }
+            b'\\' => { i = (i + 2).min(bytes.len()); continue; }
+            _ => {}
+        }
+        if single || double || bytes[i] != b'<' || bytes[i + 1] != b'<' || bytes.get(i + 2) == Some(&b'<') {
+            i += 1;
+            continue;
+        }
+
+        let start = i;
+        i += 2;
+        let strip_tabs = bytes.get(i) == Some(&b'-');
+        if strip_tabs { i += 1; }
+        while i < bytes.len() && matches!(bytes[i], b' ' | b'\t') { i += 1; }
+        let delim_start = i;
+        let mut quoted = false;
+        let delimiter = if matches!(bytes.get(i), Some(b'\'') | Some(b'"')) {
+            quoted = true;
+            let quote = bytes[i];
+            i += 1;
+            let content_start = i;
+            while i < bytes.len() && bytes[i] != quote { i += 1; }
+            let value = String::from_utf8_lossy(&bytes[content_start..i]).into_owned();
+            if i < bytes.len() { i += 1; }
+            value
+        } else {
+            while i < bytes.len() && !matches!(bytes[i], b' ' | b'\t' | b';' | b'|' | b'&') { i += 1; }
+            String::from_utf8_lossy(&bytes[delim_start..i]).into_owned()
+        };
+        if !delimiter.is_empty() {
+            specs.push(HeredocSpec { start, end: i, delimiter, strip_tabs, quoted });
+        }
+    }
+    specs
+}
+
+fn strip_outer_quotes(value: &str) -> String {
+    if value.len() >= 2 {
+        let bytes = value.as_bytes();
+        if (bytes[0] == b'\'' && bytes[value.len() - 1] == b'\'')
+            || (bytes[0] == b'"' && bytes[value.len() - 1] == b'"')
+        {
+            return value[1..value.len() - 1].to_owned();
+        }
+    }
+    value.to_owned()
+}
+
+fn parse_printf_integer(value: &str) -> Option<i64> {
+    let value = value.trim();
+    if let Some(rest) = value.strip_prefix('\'').or_else(|| value.strip_prefix('"')) {
+        return rest.chars().next().map(|ch| ch as i64);
+    }
+    if let Some(hex) = value.strip_prefix("0x").or_else(|| value.strip_prefix("0X")) {
+        return i64::from_str_radix(hex, 16).ok();
+    }
+    if value.len() > 1 && value.starts_with('0') && value.chars().all(|ch| matches!(ch, '0'..='7')) {
+        return i64::from_str_radix(&value[1..], 8).ok();
+    }
+    value.parse::<i64>().ok()
+}
+
+fn format_printf_general(value: f64, precision: usize, upper: bool) -> String {
+    let precision = precision.max(1);
+    let abs = value.abs();
+    let exponent = if abs == 0.0 { 0 } else { abs.log10().floor() as i32 };
+    let mut rendered = if exponent < -4 || exponent >= precision as i32 {
+        let digits = precision.saturating_sub(1);
+        if upper { format!("{value:.digits$E}") } else { format!("{value:.digits$e}") }
+    } else {
+        let decimals = (precision as i32 - exponent - 1).max(0) as usize;
+        format!("{value:.decimals$}")
+    };
+    if rendered.contains('.') {
+        while rendered.ends_with('0') { rendered.pop(); }
+        if rendered.ends_with('.') { rendered.pop(); }
+    }
+    rendered
+}
+
+fn decode_backslash_escapes(input: &str, echo_mode: bool) -> (String, bool) {
+    let chars: Vec<char> = input.chars().collect();
+    let mut out = String::new();
+    let mut i = 0usize;
+    let mut stop = false;
+    while i < chars.len() {
+        if chars[i] != '\\' || i + 1 >= chars.len() {
+            out.push(chars[i]);
+            i += 1;
+            continue;
+        }
+        i += 1;
+        match chars[i] {
+            'a' => out.push('\x07'),
+            'b' => out.push('\x08'),
+            'c' if echo_mode => { stop = true; break; }
+            'e' | 'E' => out.push('\x1b'),
+            'f' => out.push('\x0c'),
+            'n' => out.push('\n'),
+            'r' => out.push('\r'),
+            't' => out.push('\t'),
+            'v' => out.push('\x0b'),
+            '\\' => out.push('\\'),
+            '0'..='7' => {
+                let mut octal = String::new();
+                if chars[i] != '0' || echo_mode { octal.push(chars[i]); }
+                let mut count = 1usize;
+                while i + 1 < chars.len() && count < 3 && matches!(chars[i + 1], '0'..='7') {
+                    i += 1;
+                    octal.push(chars[i]);
+                    count += 1;
+                }
+                if octal.is_empty() { octal.push('0'); }
+                if let Ok(value) = u8::from_str_radix(&octal, 8) { out.push(value as char); }
+            }
+            'x' => {
+                let mut hex = String::new();
+                while i + 1 < chars.len() && hex.len() < 2 && chars[i + 1].is_ascii_hexdigit() {
+                    i += 1;
+                    hex.push(chars[i]);
+                }
+                if let Ok(value) = u8::from_str_radix(&hex, 16) { out.push(value as char); }
+            }
+            'u' | 'U' => {
+                let max = if chars[i] == 'u' { 4 } else { 8 };
+                let mut hex = String::new();
+                while i + 1 < chars.len() && hex.len() < max && chars[i + 1].is_ascii_hexdigit() {
+                    i += 1;
+                    hex.push(chars[i]);
+                }
+                if let Ok(value) = u32::from_str_radix(&hex, 16) {
+                    if let Some(ch) = char::from_u32(value) { out.push(ch); }
+                }
+            }
+            other => {
+                out.push('\\');
+                out.push(other);
+            }
+        }
+        i += 1;
+    }
+    (out, stop)
+}
+
+fn collapse_read_backslashes(input: &str) -> String {
+    let mut out = String::new();
+    let mut chars = input.chars();
+    while let Some(ch) = chars.next() {
+        if ch == '\\' {
+            if let Some(next) = chars.next() { out.push(next); }
+        } else {
+            out.push(ch);
+        }
+    }
+    out
+}
+
+fn split_ifs(input: &str, ifs: &str) -> Vec<String> {
+    if ifs.is_empty() { return vec![input.to_owned()]; }
+    let separators: Vec<char> = ifs.chars().collect();
+    let whitespace_only = separators.iter().all(|ch| ch.is_whitespace());
+    if whitespace_only {
+        return input.split_whitespace().map(str::to_owned).collect();
+    }
+
+    let mut fields = Vec::new();
+    let mut current = String::new();
+    let mut saw_non_ws_sep = false;
+    for ch in input.chars() {
+        if separators.contains(&ch) {
+            if !current.is_empty() || !ch.is_whitespace() || saw_non_ws_sep {
+                fields.push(std::mem::take(&mut current));
+            }
+            saw_non_ws_sep = !ch.is_whitespace();
+        } else {
+            current.push(ch);
+            saw_non_ws_sep = false;
+        }
+    }
+    if !current.is_empty() || saw_non_ws_sep { fields.push(current); }
+    fields
+}
+
+fn render_timeformat(format: &str, real_seconds: f64, user_seconds: f64, system_seconds: f64) -> String {
+    let mut out = format.to_owned();
+    out = out.replace("%R", &format!("{real_seconds:.3}"));
+    out = out.replace("%U", &format!("{user_seconds:.3}"));
+    out = out.replace("%S", &format!("{system_seconds:.3}"));
+    let cpu = user_seconds + system_seconds;
+    let percentage = if real_seconds > 0.0 { cpu * 100.0 / real_seconds } else { 0.0 };
+    out = out.replace("%P", &format!("{percentage:.2}"));
+    out.push('\n');
+    out
+}
+
+fn format_shell_cpu_time(seconds: f64) -> String {
+    let minutes = (seconds / 60.0).floor() as u64;
+    let remainder = seconds - minutes as f64 * 60.0;
+    format!("{minutes}m{remainder:.3}s")
+}
+
+fn set_shell_option(env: &mut ShellEnvironment, name: &str, enabled: bool) {
+    if enabled {
+        env.shell_options.insert(name.to_owned());
+        if name == "posix" {
+            env.shopt_options.insert("inherit_errexit".to_owned());
+            env.shopt_options.insert("expand_aliases".to_owned());
+        }
+    } else {
+        env.shell_options.remove(name);
+    }
+}
+
+fn bash_signal_names() -> &'static [&'static str] {
+    &[
+        "HUP", "INT", "QUIT", "ILL", "TRAP", "ABRT", "BUS", "FPE",
+        "KILL", "USR1", "SEGV", "USR2", "PIPE", "ALRM", "TERM",
+        "STKFLT", "CHLD", "CONT", "STOP", "TSTP", "TTIN", "TTOU",
+        "URG", "XCPU", "XFSZ", "VTALRM", "PROF", "WINCH", "IO",
+        "PWR", "SYS",
+    ]
+}
+
+fn signal_number(signal: &str) -> usize {
+    match signal {
+        "EXIT" => 0,
+        "DEBUG" | "RETURN" | "ERR" => 0,
+        other => bash_signal_names().iter()
+            .position(|name| *name == other)
+            .map(|index| index + 1)
+            .unwrap_or(0),
+    }
+}
+
+trait IfEmpty {
+    fn if_empty<'a>(&'a self, fallback: &'a str) -> &'a str;
+}
+
+impl IfEmpty for str {
+    fn if_empty<'a>(&'a self, fallback: &'a str) -> &'a str {
+        if self.is_empty() { fallback } else { self }
+    }
+}
+
+fn parse_symbolic_umask(value: &str) -> Option<u16> {
+    let mut allowed = 0o777u16;
+    for clause in value.split(',') {
+        let (who, op, perms) = {
+            let index = clause.find(['=', '+', '-'])?;
+            (&clause[..index], clause.as_bytes()[index] as char, &clause[index + 1..])
+        };
+        let who = if who.is_empty() { "a" } else { who };
+        let classes = [
+            ('u', 6u16),
+            ('g', 3u16),
+            ('o', 0u16),
+        ];
+        for (class, shift) in classes {
+            if !who.contains(class) && !who.contains('a') { continue; }
+            let mut bits = 0u16;
+            for perm in perms.chars() {
+                bits |= match perm {
+                    'r' => 0o4,
+                    'w' => 0o2,
+                    'x' => 0o1,
+                    _ => return None,
+                };
+            }
+            let class_mask = 0o7u16 << shift;
+            match op {
+                '=' => {
+                    allowed &= !class_mask;
+                    allowed |= bits << shift;
+                }
+                '+' => allowed |= bits << shift,
+                '-' => allowed &= !(bits << shift),
+                _ => return None,
+            }
+        }
+    }
+    Some(0o777 & !allowed)
+}
+
+fn normalize_signal(value: &str) -> String {
+    let upper = value.trim_start_matches("SIG").to_ascii_uppercase();
+    if let Ok(number) = upper.parse::<usize>() {
+        if number == 0 { return "EXIT".to_owned(); }
+        return bash_signal_names()
+            .get(number.saturating_sub(1))
+            .copied()
+            .unwrap_or("UNKNOWN")
+            .to_owned();
+    }
+    upper
+}
+
+fn is_shell_quoted(value: &str) -> bool {
+    let mut single = false;
+    let mut double = false;
+    let mut escaped = false;
+    for ch in value.chars() {
+        if escaped { escaped = false; continue; }
+        if ch == '\\' && !single { escaped = true; continue; }
+        if ch == '\'' && !double { single = !single; continue; }
+        if ch == '"' && !single { double = !double; continue; }
+        if single || double { return true; }
+    }
+    value.contains('\'') || value.contains('"')
+}
+
+fn quoted_array_expansion(raw: &str, suffix: &str) -> Option<String> {
+    let prefix = "\"$".to_owned() + "{";
+    let wrapped_prefix = format!("\"{prefix}");
+    if !raw.starts_with(&wrapped_prefix) || !raw.ends_with("}\"") { return None; }
+    let inner = &raw[wrapped_prefix.len()..raw.len() - 2];
+    let needle = format!("[{suffix}]");
+    inner.strip_suffix(&needle).map(str::to_owned)
+}
+
+fn contains_glob_meta(value: &str) -> bool {
+    value.contains('*') || value.contains('?') || value.contains('[')
+}
+
+fn special_parameter(name: &str) -> bool {
+    matches!(
+        name,
+        "?" | "#" | "@" | "*" | "!" | "$" | "-" | "RANDOM" | "BASH_VERSION" | "BASHPID" | "PPID"
+    ) || name.chars().all(|ch| ch.is_ascii_digit())
+}
+
+fn capitalize_first(value: &str) -> String {
+    let mut chars = value.chars();
+    match chars.next() {
+        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
+}
+
+fn lowercase_first(value: &str) -> String {
+    let mut chars = value.chars();
+    match chars.next() {
+        Some(first) => first.to_lowercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
+}
+
+fn split_parameter_operator<'a>(expression: &'a str, operator: &str) -> Option<(&'a str, &'a str)> {
+    let index = expression.find(operator)?;
+    if index == 0 { return None; }
+    let name = &expression[..index];
+    if parameter_reference_len(name) != name.len() { return None; }
+    Some((name, &expression[index + operator.len()..]))
+}
+
+fn split_substring_expression(expression: &str) -> Option<(&str, &str)> {
+    let base_len = parameter_reference_len(expression);
+    if base_len == 0 || expression.as_bytes().get(base_len) != Some(&b':') { return None; }
+    let rest = &expression[base_len + 1..];
+    if rest.starts_with(['-', '+', '=', '?']) { return None; }
+    Some((&expression[..base_len], rest))
+}
+
+fn substring_chars(value: &str, offset: i64, length: Option<i64>) -> String {
+    let chars: Vec<char> = value.chars().collect();
+    let len = chars.len() as i64;
+    let start = if offset < 0 { (len + offset).max(0) } else { offset.min(len) };
+    let end = match length {
+        Some(length) if length < 0 => (len + length).max(start),
+        Some(length) => (start + length).min(len),
+        None => len,
+    };
+    chars[start as usize..end as usize].iter().collect()
+}
+
+fn parameter_reference_len(expression: &str) -> usize {
+    let chars: Vec<char> = expression.chars().collect();
+    if chars.is_empty() { return 0; }
+    if matches!(chars[0], '?' | '#' | '@' | '*' | '!' | '$' | '-') || chars[0].is_ascii_digit() {
+        return chars[0].len_utf8();
+    }
+
+    let mut chars_seen = 0usize;
+    let mut bytes_seen = 0usize;
+    for ch in expression.chars() {
+        if ch == '_' || ch.is_ascii_alphanumeric() {
+            chars_seen += 1;
+            bytes_seen += ch.len_utf8();
+        } else {
+            break;
+        }
+    }
+    if chars_seen == 0 { return 0; }
+
+    let tail = &expression[bytes_seen..];
+    if tail.starts_with('[') {
+        if let Some(close) = tail.find(']') {
+            bytes_seen += close + 1;
+        }
+    }
+    bytes_seen
+}
+
+fn char_boundaries(value: &str) -> Vec<usize> {
+    let mut points: Vec<usize> = value.char_indices().map(|(i,_)| i).collect();
+    points.push(value.len());
+    points
+}
+
+fn remove_glob_pattern(value: &str, pattern: &str, operator: &str) -> String {
+    let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
+    let points = char_boundaries(value);
+    match operator {
+        "#" | "##" => {
+            let ordered: Vec<usize> = if operator == "#" {
+                points.clone()
+            } else {
+                points.iter().copied().rev().collect()
+            };
+            for point in ordered {
+                if pattern.matches(&value[..point]) { return value[point..].to_owned(); }
+            }
+        }
+        "%" | "%%" => {
+            let ordered: Vec<usize> = if operator == "%" {
+                points.iter().copied().rev().collect()
+            } else {
+                points.clone()
+            };
+            for point in ordered {
+                if pattern.matches(&value[point..]) { return value[..point].to_owned(); }
+            }
+        }
+        _ => {}
+    }
+    value.to_owned()
+}
+
+fn replace_glob(value: &str, pattern: &str, replacement: &str, all: bool) -> String {
+    let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
+    let points = char_boundaries(value);
+    let mut out = String::new();
+    let mut cursor = 0usize;
+
+    while cursor < value.len() {
+        let mut found = None;
+        'outer: for &start in points.iter().filter(|&&p| p >= cursor) {
+            for &end in points.iter().filter(|&&p| p > start) {
+                if pattern.matches(&value[start..end]) {
+                    found = Some((start,end));
+                    break 'outer;
+                }
+            }
+        }
+        let Some((start,end)) = found else {
+            out.push_str(&value[cursor..]);
+            break;
+        };
+        out.push_str(&value[cursor..start]);
+        out.push_str(replacement);
+        cursor = end;
+        if !all {
+            out.push_str(&value[cursor..]);
+            break;
+        }
+    }
+    if value.is_empty() { String::new() } else { out }
+}
+
+fn replace_glob_anchored(value: &str, pattern: &str, replacement: &str, prefix: bool) -> String {
+    let Ok(pattern) = glob::Pattern::new(pattern) else { return value.to_owned(); };
+    let points = char_boundaries(value);
+    if prefix {
+        for &end in points.iter().rev() {
+            if pattern.matches(&value[..end]) {
+                return format!("{replacement}{}", &value[end..]);
+            }
+        }
+    } else {
+        for &start in &points {
+            if pattern.matches(&value[start..]) {
+                return format!("{}{replacement}", &value[..start]);
+            }
+        }
+    }
+    value.to_owned()
+}
+
+fn shell_quote(value: &str) -> String {
+    if value.is_empty() { return "''".to_owned(); }
+    if value.chars().all(|ch| {
+        ch.is_ascii_alphanumeric() || matches!(ch, '_' | '-' | '.' | '/' | '\\' | ':' | '@' | '%')
+    }) {
+        return value.to_owned();
+    }
+    format!("'{}'", value.replace('\'', "'\\''"))
+}
+
+fn is_variable_name(name: &str) -> bool {
+    !name.is_empty() && name.chars().enumerate().all(|(index, ch)| {
+        ch == '_' || (ch.is_ascii_alphanumeric() && (index > 0 || !ch.is_ascii_digit()))
+    })
+}
+
+fn is_assignment(word: &str) -> bool {
+    let Some((name, _)) = word.split_once('=') else { return false };
+    let base = name.split('[').next().unwrap_or(name);
+    is_variable_name(base)
+}
+
+fn brace_expand(input: &str) -> Vec<String> {
+    let chars: Vec<char> = input.chars().collect();
+    let mut single = false;
+    let mut double = false;
+    let mut start = None;
+    let mut depth = 0usize;
+
+    for (index, ch) in chars.iter().copied().enumerate() {
+        match ch {
+            '\'' if !double => single = !single,
+            '"' if !single => double = !double,
+            '{' if !single && !double => {
+                if depth == 0 { start = Some(index); }
+                depth += 1;
+            }
+            '}' if !single && !double && depth > 0 => {
+                depth -= 1;
+                if depth == 0 {
+                    let start = start.unwrap();
+                    let inner: String = chars[start + 1..index].iter().collect();
+                    let prefix: String = chars[..start].iter().collect();
+                    let suffix: String = chars[index + 1..].iter().collect();
+
+                    if let Some(range) = brace_range(&inner) {
+                        return range.into_iter()
+                            .flat_map(|part| brace_expand(&format!("{prefix}{part}{suffix}")))
+                            .collect();
+                    }
+
+                    if inner.contains(',') {
+                        return split_brace_alternatives(&inner).into_iter()
+                            .flat_map(|part| brace_expand(&format!("{prefix}{part}{suffix}")))
+                            .collect();
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    vec![input.to_owned()]
+}
+
+fn split_brace_alternatives(inner: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut depth = 0usize;
+    for ch in inner.chars() {
+        match ch {
+            '{' => { depth += 1; current.push(ch); }
+            '}' => { depth = depth.saturating_sub(1); current.push(ch); }
+            ',' if depth == 0 => parts.push(std::mem::take(&mut current)),
+            _ => current.push(ch),
+        }
+    }
+    parts.push(current);
+    parts
+}
+
+fn brace_range(inner: &str) -> Option<Vec<String>> {
+    let parts: Vec<&str> = inner.split("..").collect();
+    if !(2..=3).contains(&parts.len()) { return None; }
+    let step = parts.get(2).and_then(|s| s.parse::<i64>().ok()).unwrap_or(1);
+    if step == 0 { return None; }
+
+    if let (Ok(start), Ok(end)) = (parts[0].parse::<i64>(), parts[1].parse::<i64>()) {
+        let width = parts[0].trim_start_matches('-').len().max(parts[1].trim_start_matches('-').len());
+        let padded = parts[0].trim_start_matches('-').starts_with('0')
+            || parts[1].trim_start_matches('-').starts_with('0');
+        let actual_step = if start <= end { step.abs() } else { -step.abs() };
+        let mut value = start;
+        let mut out = Vec::new();
+        while (actual_step > 0 && value <= end) || (actual_step < 0 && value >= end) {
+            if padded {
+                let sign = if value < 0 { "-" } else { "" };
+                out.push(format!("{sign}{:0width$}", value.abs(), width=width));
+            } else {
+                out.push(value.to_string());
+            }
+            value += actual_step;
+        }
+        return Some(out);
+    }
+
+    let mut left = parts[0].chars();
+    let mut right = parts[1].chars();
+    if let (Some(start), None, Some(end), None) = (left.next(), left.next(), right.next(), right.next()) {
+        let start = start as i64;
+        let end = end as i64;
+        let actual_step = if start <= end { step.abs() } else { -step.abs() };
+        let mut value = start;
+        let mut out = Vec::new();
+        while (actual_step > 0 && value <= end) || (actual_step < 0 && value >= end) {
+            if let Some(ch) = char::from_u32(value as u32) { out.push(ch.to_string()); }
+            value += actual_step;
+        }
+        return Some(out);
+    }
+    None
+}
+
+fn matching(chars: &[char], start: usize, open: char, close: char) -> Option<usize> {
+    let mut depth = 0usize;
+    let mut single = false;
+    let mut double = false;
+    for (index, ch) in chars.iter().copied().enumerate().skip(start) {
+        match ch {
+            '\'' if !double => single = !single,
+            '"' if !single => double = !double,
+            ch if !single && !double && ch == open => depth += 1,
+            ch if !single && !double && ch == close => {
+                depth -= 1;
+                if depth == 0 { return Some(index); }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn arithmetic_end(chars: &[char], start: usize) -> Option<usize> {
+    let mut depth = 0usize;
+    let mut index = start;
+    while index + 1 < chars.len() {
+        match chars[index] {
+            '(' => depth += 1,
+            ')' if depth == 0 && chars[index + 1] == ')' => return Some(index),
+            ')' => depth = depth.saturating_sub(1),
+            _ => {}
+        }
+        index += 1;
+    }
+    None
+}
+
+fn parameter_name(chars: &[char]) -> (String, usize) {
+    if let Some(ch) = chars.first() {
+        if matches!(ch, '?' | '#' | '@' | '*' | '!' | '$' | '-') || ch.is_ascii_digit() {
+            return (ch.to_string(), 1);
+        }
+    }
+    let mut len = 0usize;
+    for ch in chars {
+        if *ch == '_' || ch.is_ascii_alphanumeric() { len += 1; } else { break; }
+    }
+    (chars[..len].iter().collect(), len)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum ArithmeticToken {
+    Number(i64),
+    Ident(String),
+    Op(String),
+    LParen,
+    RParen,
+    Question,
+    Colon,
+    Comma,
+    End,
+}
+
+fn tokenize_arithmetic(expression: &str) -> Result<Vec<ArithmeticToken>> {
+    let chars: Vec<char> = expression.chars().collect();
+    let mut tokens = Vec::new();
+    let mut i = 0usize;
+
+    while i < chars.len() {
+        if chars[i].is_whitespace() { i += 1; continue; }
+
+        if chars[i].is_ascii_digit() {
+            let start = i;
+            while i < chars.len() && (chars[i].is_ascii_alphanumeric() || chars[i] == '#' || chars[i] == 'x' || chars[i] == 'X') {
+                i += 1;
+            }
+            let raw: String = chars[start..i].iter().collect();
+            tokens.push(ArithmeticToken::Number(parse_arithmetic_number(&raw)?));
+            continue;
+        }
+
+        if chars[i] == '_' || chars[i].is_ascii_alphabetic() {
+            let start = i;
+            while i < chars.len() && (chars[i] == '_' || chars[i].is_ascii_alphanumeric()) { i += 1; }
+            tokens.push(ArithmeticToken::Ident(chars[start..i].iter().collect()));
+            continue;
+        }
+
+        let remaining: String = chars[i..].iter().collect();
+        let mut found = None;
+        for op in ["**", "<<", ">>", "<=", ">=", "==", "!=", "&&", "||"] {
+            if remaining.starts_with(op) {
+                found = Some(op);
+                break;
+            }
+        }
+        if let Some(op) = found {
+            tokens.push(ArithmeticToken::Op(op.to_owned()));
+            i += op.len();
+            continue;
+        }
+
+        match chars[i] {
+            '(' => tokens.push(ArithmeticToken::LParen),
+            ')' => tokens.push(ArithmeticToken::RParen),
+            '?' => tokens.push(ArithmeticToken::Question),
+            ':' => tokens.push(ArithmeticToken::Colon),
+            ',' => tokens.push(ArithmeticToken::Comma),
+            '+' | '-' | '*' | '/' | '%' | '<' | '>' | '&' | '^' | '|' | '!' | '~' => {
+                tokens.push(ArithmeticToken::Op(chars[i].to_string()));
+            }
+            ch => bail!("operador aritmético no soportado: {ch}"),
+        }
+        i += 1;
+    }
+    tokens.push(ArithmeticToken::End);
+    Ok(tokens)
+}
+
+fn parse_arithmetic_number(raw: &str) -> Result<i64> {
+    if let Some((base, digits)) = raw.split_once('#') {
+        let base = base.parse::<u32>()?;
+        if !(2..=64).contains(&base) { bail!("base aritmética inválida: {base}"); }
+        let mut value = 0i64;
+        for ch in digits.chars() {
+            let digit = match ch {
+                '0'..='9' => ch as u32 - '0' as u32,
+                'a'..='z' => 10 + ch as u32 - 'a' as u32,
+                'A'..='Z' => 36 + ch as u32 - 'A' as u32,
+                '@' => 62,
+                '_' => 63,
+                _ => bail!("dígito inválido para base {base}: {ch}"),
+            };
+            if digit >= base { bail!("dígito inválido para base {base}: {ch}"); }
+            value = value.saturating_mul(base as i64).saturating_add(digit as i64);
+        }
+        return Ok(value);
+    }
+    if let Some(hex) = raw.strip_prefix("0x").or_else(|| raw.strip_prefix("0X")) {
+        return Ok(i64::from_str_radix(hex, 16)?);
+    }
+    if raw.len() > 1 && raw.starts_with('0') && raw.chars().all(|ch| matches!(ch, '0'..='7')) {
+        return Ok(i64::from_str_radix(&raw[1..], 8)?);
+    }
+    Ok(raw.parse::<i64>()?)
+}
+
+struct ArithmeticParser<'a> {
+    tokens: Vec<ArithmeticToken>,
+    pos: usize,
+    env: &'a ShellEnvironment,
+}
+
+impl<'a> ArithmeticParser<'a> {
+    fn new(expression: &str, env: &'a ShellEnvironment) -> Result<Self> {
+        Ok(Self { tokens: tokenize_arithmetic(expression)?, pos: 0, env })
+    }
+
+    fn peek(&self) -> &ArithmeticToken { self.tokens.get(self.pos).unwrap_or(&ArithmeticToken::End) }
+    fn take(&mut self) -> ArithmeticToken {
+        let token = self.peek().clone();
+        self.pos += 1;
+        token
+    }
+    fn op(&mut self, expected: &str) -> bool {
+        if matches!(self.peek(), ArithmeticToken::Op(op) if op == expected) {
+            self.pos += 1;
+            true
+        } else {
+            false
+        }
+    }
+
+    fn parse(mut self) -> Result<i64> { self.comma() }
+
+    fn comma(&mut self) -> Result<i64> {
+        let mut value = self.ternary()?;
+        while matches!(self.peek(), ArithmeticToken::Comma) {
+            self.pos += 1;
+            value = self.ternary()?;
+        }
+        Ok(value)
+    }
+
+    fn ternary(&mut self) -> Result<i64> {
+        let condition = self.logical_or()?;
+        if matches!(self.peek(), ArithmeticToken::Question) {
+            self.pos += 1;
+            let yes = self.ternary()?;
+            if !matches!(self.take(), ArithmeticToken::Colon) { bail!("operador ternario sin ':'"); }
+            let no = self.ternary()?;
+            Ok(if condition != 0 { yes } else { no })
+        } else {
+            Ok(condition)
+        }
+    }
+
+    fn logical_or(&mut self) -> Result<i64> {
+        let mut value = self.logical_and()?;
+        while self.op("||") {
+            let rhs = self.logical_and()?;
+            value = ((value != 0) || (rhs != 0)) as i64;
+        }
+        Ok(value)
+    }
+
+    fn logical_and(&mut self) -> Result<i64> {
+        let mut value = self.bit_or()?;
+        while self.op("&&") {
+            let rhs = self.bit_or()?;
+            value = ((value != 0) && (rhs != 0)) as i64;
+        }
+        Ok(value)
+    }
+
+    fn bit_or(&mut self) -> Result<i64> {
+        let mut value = self.bit_xor()?;
+        while self.op("|") { value |= self.bit_xor()?; }
+        Ok(value)
+    }
+
+    fn bit_xor(&mut self) -> Result<i64> {
+        let mut value = self.bit_and()?;
+        while self.op("^") { value ^= self.bit_and()?; }
+        Ok(value)
+    }
+
+    fn bit_and(&mut self) -> Result<i64> {
+        let mut value = self.equality()?;
+        while self.op("&") { value &= self.equality()?; }
+        Ok(value)
+    }
+
+    fn equality(&mut self) -> Result<i64> {
+        let mut value = self.relational()?;
+        loop {
+            if self.op("==") { value = (value == self.relational()?) as i64; }
+            else if self.op("!=") { value = (value != self.relational()?) as i64; }
+            else { break; }
+        }
+        Ok(value)
+    }
+
+    fn relational(&mut self) -> Result<i64> {
+        let mut value = self.shift()?;
+        loop {
+            if self.op("<=") { value = (value <= self.shift()?) as i64; }
+            else if self.op(">=") { value = (value >= self.shift()?) as i64; }
+            else if self.op("<") { value = (value < self.shift()?) as i64; }
+            else if self.op(">") { value = (value > self.shift()?) as i64; }
+            else { break; }
+        }
+        Ok(value)
+    }
+
+    fn shift(&mut self) -> Result<i64> {
+        let mut value = self.additive()?;
+        loop {
+            if self.op("<<") { value <<= self.additive()?; }
+            else if self.op(">>") { value >>= self.additive()?; }
+            else { break; }
+        }
+        Ok(value)
+    }
+
+    fn additive(&mut self) -> Result<i64> {
+        let mut value = self.multiplicative()?;
+        loop {
+            if self.op("+") { value = value.wrapping_add(self.multiplicative()?); }
+            else if self.op("-") { value = value.wrapping_sub(self.multiplicative()?); }
+            else { break; }
+        }
+        Ok(value)
+    }
+
+    fn multiplicative(&mut self) -> Result<i64> {
+        let mut value = self.power()?;
+        loop {
+            if self.op("*") { value = value.wrapping_mul(self.power()?); }
+            else if self.op("/") {
+                let rhs = self.power()?;
+                if rhs == 0 { bail!("división por cero"); }
+                value /= rhs;
+            } else if self.op("%") {
+                let rhs = self.power()?;
+                if rhs == 0 { bail!("división por cero"); }
+                value %= rhs;
+            } else { break; }
+        }
+        Ok(value)
+    }
+
+    fn power(&mut self) -> Result<i64> {
+        let value = self.unary()?;
+        if self.op("**") {
+            let exponent = self.power()?;
+            if exponent < 0 { return Ok(0); }
+            Ok(value.wrapping_pow(exponent as u32))
+        } else {
+            Ok(value)
+        }
+    }
+
+    fn unary(&mut self) -> Result<i64> {
+        if self.op("+") { return self.unary(); }
+        if self.op("-") { return Ok(-self.unary()?); }
+        if self.op("!") { return Ok((self.unary()? == 0) as i64); }
+        if self.op("~") { return Ok(!self.unary()?); }
+        self.primary()
+    }
+
+    fn primary(&mut self) -> Result<i64> {
+        match self.take() {
+            ArithmeticToken::Number(value) => Ok(value),
+            ArithmeticToken::Ident(name) => Ok(self.env.get(&name).parse::<i64>().unwrap_or(0)),
+            ArithmeticToken::LParen => {
+                let value = self.comma()?;
+                if !matches!(self.take(), ArithmeticToken::RParen) { bail!("paréntesis aritmético sin cerrar"); }
+                Ok(value)
+            }
+            token => bail!("expresión aritmética inválida: {token:?}"),
+        }
+    }
+}
+
+fn eval_arithmetic(expression: &str, env: &ShellEnvironment) -> Result<i64> {
+    ArithmeticParser::new(expression, env)?.parse()
+}
+
+
+fn parse_array_entry(value: &str) -> Option<(String, String)> {
+    let rest = value.strip_prefix('[')?;
+    let close = rest.find(']')?;
+    let key = rest[..close].to_owned();
+    let tail = rest.get(close + 1..)?;
+    let item = tail.strip_prefix('=')?.to_owned();
+    Some((strip_outer_quotes(&key), strip_outer_quotes(&item)))
+}
+
+fn split_shell_words_relaxed(input: &str) -> Result<Vec<String>> {
+    let tokens = super::lexer::lex(input)?;
+    Ok(tokens.into_iter().filter_map(|token| {
+        if let super::lexer::Token::Word(word) = token { Some(word) } else { None }
+    }).collect())
+}
+
+fn file_mtime(path: &Path) -> std::time::SystemTime {
+    fs::metadata(path)
+        .and_then(|metadata| metadata.modified())
+        .unwrap_or(std::time::UNIX_EPOCH)
+}
+
+fn is_arithmetic_lvalue(name: &str) -> bool {
+    let base = name.split('[').next().unwrap_or(name);
+    is_variable_name(base)
+}
+
+fn split_arithmetic_top_level(expression: &str, separator: char) -> Vec<&str> {
+    let mut parts = Vec::new();
+    let mut depth = 0i32;
+    let mut start = 0usize;
+    for (index, ch) in expression.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' => depth -= 1,
+            _ if ch == separator && depth == 0 => {
+                parts.push(expression[start..index].trim());
+                start = index + ch.len_utf8();
+            }
+            _ => {}
+        }
+    }
+    parts.push(expression[start..].trim());
+    parts
+}
+
+fn find_arithmetic_assignment(expression: &str) -> Option<(&str, &str, &str)> {
+    let operators = ["<<=", ">>=", "**=", "+=", "-=", "*=", "/=", "%=", "&=", "^=", "|=", "="];
+    let bytes = expression.as_bytes();
+    let mut depth = 0i32;
+    let mut index = 0usize;
+
+    while index < bytes.len() {
+        match bytes[index] {
+            b'(' => { depth += 1; index += 1; continue; }
+            b')' => { depth -= 1; index += 1; continue; }
+            _ => {}
+        }
+        if depth == 0 {
+            for operator in operators {
+                if expression[index..].starts_with(operator) {
+                    if operator == "=" {
+                        let previous = index.checked_sub(1).and_then(|i| bytes.get(i)).copied();
+                        let next = bytes.get(index + 1).copied();
+                        if matches!(previous, Some(b'=' | b'!' | b'<' | b'>')) || next == Some(b'=') {
+                            continue;
+                        }
+                    }
+                    let name = expression[..index].trim();
+                    if !is_arithmetic_lvalue(name) { continue; }
+                    let rhs = expression[index + operator.len()..].trim();
+                    return Some((name, operator, rhs));
+                }
+            }
+        }
+        index += 1;
+    }
+    None
+}
+
+
+fn render_redirect(redirect: &super::ast::Redirect) -> String {
+    let op = match redirect.kind {
+        RedirectKind::Read => "<",
+        RedirectKind::Write => ">",
+        RedirectKind::Append => ">>",
+        RedirectKind::DupInput => "<&",
+        RedirectKind::DupOutput => ">&",
+        RedirectKind::HereString => "<<<",
+        RedirectKind::ReadWrite => "<>",
+        RedirectKind::Clobber => ">|",
+        RedirectKind::BothWrite => "&>",
+        RedirectKind::BothAppend => "&>>",
+    };
+    if matches!(redirect.kind, RedirectKind::BothWrite | RedirectKind::BothAppend) {
+        format!("{op} {}", shell_quote(&redirect.target))
+    } else {
+        let default_fd = match redirect.kind {
+            RedirectKind::Read | RedirectKind::ReadWrite | RedirectKind::HereString => 0,
+            _ => 1,
+        };
+        let fd = if redirect.fd == default_fd { String::new() } else { redirect.fd.to_string() };
+        format!("{fd}{op} {}", shell_quote(&redirect.target))
+    }
+}
+
+fn render_ast(node: &AstNode) -> String {
+    match node {
+        AstNode::Empty => String::new(),
+        AstNode::Sequence(nodes) => nodes.iter().map(render_ast).collect::<Vec<_>>().join("; "),
+        AstNode::And(left,right) => format!("{} && {}", render_ast(left), render_ast(right)),
+        AstNode::Or(left,right) => format!("{} || {}", render_ast(left), render_ast(right)),
+        AstNode::Pipeline { parts, stderr_to_pipe } => {
+            let mut rendered = String::new();
+            for (index, part) in parts.iter().enumerate() {
+                if index > 0 {
+                    rendered.push_str(if stderr_to_pipe.get(index - 1).copied().unwrap_or(false) { " |& " } else { " | " });
+                }
+                rendered.push_str(&render_ast(part));
+            }
+            rendered
+        }
+        AstNode::Time { body, posix } => format!("time {}{}", if *posix { "-p " } else { "" }, render_ast(body)),
+        AstNode::Coproc { name, body } => match name {
+            Some(name) => format!("coproc {name} {}", render_ast(body)),
+            None => format!("coproc {}", render_ast(body)),
+        },
+        AstNode::Negate(body) => format!("! {}", render_ast(body)),
+        AstNode::Background(body) => format!("{} &", render_ast(body)),
+        AstNode::Simple(command) => {
+            let mut parts = command.words.iter().map(|w| shell_quote(w)).collect::<Vec<_>>();
+            parts.extend(command.redirects.iter().map(render_redirect));
+            parts.join(" ")
+        }
+        AstNode::ArrayAssign { name, words } => {
+            format!("{name}=({})", words.iter().map(|w| shell_quote(w)).collect::<Vec<_>>().join(" "))
+        }
+        AstNode::If { condition, then_branch, else_branch } => {
+            let mut value = format!("if {}; then {}", render_ast(condition), render_ast(then_branch));
+            if let Some(branch) = else_branch {
+                value.push_str(&format!("; else {}", render_ast(branch)));
+            }
+            value.push_str("; fi");
+            value
+        }
+        AstNode::For { name, words, body } => {
+            let words = words.iter().map(|w| shell_quote(w)).collect::<Vec<_>>().join(" ");
+            format!("for {name} in {words}; do {}; done", render_ast(body))
+        }
+        AstNode::ArithmeticFor { init, condition, update, body } => {
+            format!("for (( {init}; {condition}; {update} )); do {}; done", render_ast(body))
+        }
+        AstNode::Select { name, words, body } => {
+            let words = words.iter().map(|w| shell_quote(w)).collect::<Vec<_>>().join(" ");
+            format!("select {name} in {words}; do {}; done", render_ast(body))
+        }
+        AstNode::While { condition, body, until } => {
+            format!("{} {}; do {}; done", if *until { "until" } else { "while" }, render_ast(condition), render_ast(body))
+        }
+        AstNode::Case { word, arms } => {
+            let mut value = format!("case {} in ", shell_quote(word));
+            for arm in arms {
+                value.push_str(&arm.patterns.join("|"));
+                value.push_str(") ");
+                value.push_str(&render_ast(&arm.body));
+                value.push(' ');
+                value.push_str(match arm.terminator {
+                    CaseTerminator::Break => ";;",
+                    CaseTerminator::Fallthrough => ";&",
+                    CaseTerminator::ContinueMatching => ";;&",
+                });
+                value.push(' ');
+            }
+            value.push_str("esac");
+            value
+        }
+        AstNode::Conditional(items) => format!("[[ {} ]]", items.join(" ")),
+        AstNode::ArithmeticCommand(expression) => format!("(( {expression} ))"),
+        AstNode::FunctionDef { name, body } => format!("{name}() {{ {}; }}", render_ast(body)),
+        AstNode::Group(body) => format!("{{ {}; }}", render_ast(body)),
+        AstNode::Subshell(body) => format!("( {} )", render_ast(body)),
+    }
+}
+
+
+fn bash_special_builtin_names() -> &'static [&'static str] {
+    &[":", ".", "break", "continue", "eval", "exec", "exit", "export",
+      "readonly", "return", "set", "shift", "trap", "unset"]
+}
+
+fn bash_builtin_help(name: &str) -> (&'static str, &'static str) {
+    match name {
+        ":" => (":", "No hace nada y devuelve estado cero."),
+        "." | "source" => ("source ARCHIVO [ARGS]", "Ejecuta ARCHIVO en el contexto de la shell actual."),
+        "[" | "test" => ("test EXPRESIÓN", "Evalúa una expresión condicional."),
+        "alias" => ("alias [NOMBRE[=VALOR] ...]", "Define o muestra alias."),
+        "bg" => ("bg [JOB ...]", "Continúa jobs en segundo plano."),
+        "bind" => ("bind [OPCIONES] [SECUENCIA:FUNCIÓN]", "Configura edición de línea."),
+        "break" => ("break [N]", "Sale de bucles."),
+        "builtin" => ("builtin BUILTIN [ARGS]", "Ejecuta un builtin ignorando funciones."),
+        "caller" => ("caller [N]", "Muestra un frame de la pila de llamadas."),
+        "cd" => ("cd [-L|-P] [DIR]", "Cambia el directorio actual."),
+        "command" => ("command [-pVv] COMANDO [ARGS]", "Ejecuta o describe un comando sin funciones."),
+        "compgen" => ("compgen [OPCIONES] [PALABRA]", "Genera candidatos de completion."),
+        "complete" => ("complete [OPCIONES] [NOMBRE ...]", "Define completion programable."),
+        "compopt" => ("compopt [-o OPCIÓN] [+o OPCIÓN] [NOMBRE ...]", "Modifica opciones de completion."),
+        "continue" => ("continue [N]", "Continúa la siguiente iteración de un bucle."),
+        "declare" | "typeset" => ("declare [OPCIONES] [NOMBRE[=VALOR] ...]", "Declara variables y atributos."),
+        "dirs" => ("dirs [-clpv] [+N|-N]", "Muestra la pila de directorios."),
+        "disown" => ("disown [-ar] [-h] [JOB ...]", "Elimina jobs de la tabla de jobs."),
+        "echo" => ("echo [-neE] [ARG ...]", "Escribe argumentos."),
+        "enable" => ("enable [-a] [-dnps] [NOMBRE ...]", "Activa o desactiva builtins."),
+        "eval" => ("eval [ARG ...]", "Evalúa argumentos como código shell."),
+        "exec" => ("exec [-cl] [-a NOMBRE] [COMANDO [ARGS]]", "Reemplaza la shell por un comando."),
+        "exit" => ("exit [N]", "Sale de la shell."),
+        "export" => ("export [-fn] [NOMBRE[=VALOR] ...]", "Marca variables para exportación."),
+        "false" => ("false", "Devuelve estado distinto de cero."),
+        "fc" => ("fc [-e EDITOR] [-lnr] [PRIMERO] [ÚLTIMO]", "Lista, edita o reejecuta historial."),
+        "fg" => ("fg [JOB]", "Trae un job al primer plano."),
+        "getopts" => ("getopts OPTSTRING NOMBRE [ARGS]", "Analiza opciones posicionales."),
+        "hash" => ("hash [-lr] [-p RUTA] [-dt] [NOMBRE ...]", "Gestiona la tabla hash de comandos."),
+        "help" => ("help [-dms] [PATRÓN ...]", "Muestra ayuda de builtins Bash."),
+        "history" => ("history [OPCIONES] [N]", "Muestra o modifica el historial."),
+        "jobs" => ("jobs [-lnprs] [JOB ...]", "Lista jobs."),
+        "kill" => ("kill [-s SEÑAL | -n SEÑAL | -SEÑAL] PID|%JOB ...", "Envía una señal a procesos o jobs."),
+        "let" => ("let ARG ...", "Evalúa expresiones aritméticas."),
+        "local" => ("local [OPCIONES] NOMBRE[=VALOR] ...", "Declara variables locales."),
+        "logout" => ("logout [N]", "Sale de una shell de login."),
+        "mapfile" | "readarray" => ("mapfile [OPCIONES] [ARRAY]", "Lee registros en un array indexado."),
+        "popd" => ("popd [-n] [+N|-N]", "Elimina una entrada de la pila de directorios."),
+        "printf" => ("printf [-v VAR] FORMATO [ARG ...]", "Imprime usando formato Bash."),
+        "pushd" => ("pushd [-n] [DIR|+N|-N]", "Añade o rota la pila de directorios."),
+        "pwd" => ("pwd [-LP]", "Muestra el directorio actual."),
+        "read" => ("read [OPCIONES] [NOMBRE ...]", "Lee una línea o registro."),
+        "readonly" => ("readonly [-aAf] [NOMBRE[=VALOR] ...]", "Marca variables o funciones como solo lectura."),
+        "return" => ("return [N]", "Retorna de una función o archivo sourced."),
+        "set" => ("set [-abefhkmnptuvxBCEHPT] [-o OPCIÓN] [--] [ARG ...]", "Configura opciones y parámetros posicionales."),
+        "shift" => ("shift [N]", "Desplaza parámetros posicionales."),
+        "shopt" => ("shopt [-pqsu] [-o] [OPCIÓN ...]", "Configura opciones adicionales Bash."),
+        "suspend" => ("suspend [-f]", "Suspende una shell interactiva cuando el host lo permite."),
+        "times" => ("times", "Muestra tiempos de CPU de shell y procesos hijos."),
+        "trap" => ("trap [-lp] [[ARG] SEÑAL ...]", "Configura acciones para señales y pseudo-señales."),
+        "true" => ("true", "Devuelve estado cero."),
+        "type" => ("type [-afptP] NOMBRE ...", "Describe cómo se resolvería un nombre."),
+        "ulimit" => ("ulimit [-SHabcdefiklmnpqrstuvxPRT] [LÍMITE]", "Consulta o establece límites de recursos."),
+        "umask" => ("umask [-p] [-S] [MÁSCARA]", "Muestra o establece la máscara de creación."),
+        "unalias" => ("unalias [-a] NOMBRE ...", "Elimina alias."),
+        "unset" => ("unset [-fnv] NOMBRE ...", "Elimina variables o funciones."),
+        "wait" => ("wait [-fn] [-p VAR] [ID ...]", "Espera procesos o jobs."),
+        _ => (name, "Builtin Bash."),
+    }
+}
+
+fn bash_builtin_names() -> &'static [&'static str] {
+    &[
+        ":", ".", "[", "alias", "bg", "bind", "break", "builtin", "caller", "cd",
+        "command", "compgen", "complete", "compopt", "continue", "declare", "dirs",
+        "disown", "echo", "enable", "eval", "exec", "exit", "export", "false", "fc",
+        "fg", "getopts", "hash", "help", "history", "jobs", "kill", "let", "local",
+        "logout", "mapfile", "popd", "printf", "pushd", "pwd", "read", "readarray",
+        "readonly", "return", "set", "shift", "shopt", "source", "suspend", "test",
+        "times", "trap", "true", "type", "typeset", "ulimit", "umask", "unalias",
+        "unset", "wait",
+    ]
+}
+
+fn bash_keywords() -> &'static [&'static str] {
+    &[
+        "!", "[[", "]]", "case", "coproc", "do", "done", "elif", "else", "esac",
+        "fi", "for", "function", "if", "in", "select", "then", "time", "until",
+        "while", "{", "}",
+    ]
+}
+
+fn completion_files(cwd: &Path, prefix: &str, directories_only: bool) -> Vec<String> {
+    let typed = PathBuf::from(prefix);
+    let parent = typed.parent()
+        .filter(|path| !path.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let stem = typed.file_name().and_then(|name| name.to_str()).unwrap_or("");
+    let directory = if parent.is_absolute() { parent.to_path_buf() } else { cwd.join(parent) };
+    let mut values = Vec::new();
+
+    if let Ok(entries) = fs::read_dir(directory) {
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else { continue };
+            if directories_only && !file_type.is_dir() { continue; }
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if !name.starts_with(stem) { continue; }
+            let mut value = if parent == Path::new(".") {
+                name
+            } else {
+                parent.join(name).to_string_lossy().into_owned()
+            };
+            if file_type.is_dir() {
+                value.push(std::path::MAIN_SEPARATOR);
+            }
+            values.push(value);
+        }
+    }
+    values.sort();
+    values
+}
+
+fn path_commands(path_value: &str) -> Vec<String> {
+    let mut values = Vec::new();
+    for directory in std::env::split_paths(path_value) {
+        let Ok(entries) = fs::read_dir(directory) else { continue };
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else { continue };
+            if !file_type.is_file() { continue; }
+            let path = entry.path();
+            let Some(name) = path.file_name().and_then(|name| name.to_str()) else { continue };
+            #[cfg(windows)]
+            {
+                let lower = name.to_ascii_lowercase();
+                if !(lower.ends_with(".exe")
+                    || lower.ends_with(".com")
+                    || lower.ends_with(".bat")
+                    || lower.ends_with(".cmd")
+                    || lower.ends_with(".sh"))
+                {
+                    continue;
+                }
+                values.push(
+                    path.file_stem()
+                        .and_then(|stem| stem.to_str())
+                        .unwrap_or(name)
+                        .to_owned()
+                );
+            }
+            #[cfg(not(windows))]
+            values.push(name.to_owned());
+        }
+    }
+    values.sort();
+    values.dedup();
+    values
+}
+
+
+fn resolve_history_event(chars: &[char], history: &[String]) -> Result<(String, usize)> {
+    if chars.first() != Some(&'!') { bail!("expansión de historial inválida"); }
+    if chars.get(1) == Some(&'!') { return Ok((history.last().cloned().unwrap_or_default(), 2)); }
+    if chars.get(1) == Some(&'-') {
+        let mut end = 2usize;
+        while end < chars.len() && chars[end].is_ascii_digit() { end += 1; }
+        let offset = chars[2..end].iter().collect::<String>().parse::<usize>().unwrap_or(0);
+        if offset == 0 || offset > history.len() { bail!("evento de historial no encontrado"); }
+        return Ok((history[history.len() - offset].clone(), end));
+    }
+    if chars.get(1).is_some_and(|ch| ch.is_ascii_digit()) {
+        let mut end = 1usize;
+        while end < chars.len() && chars[end].is_ascii_digit() { end += 1; }
+        let number = chars[1..end].iter().collect::<String>().parse::<usize>().unwrap_or(0);
+        if number == 0 || number > history.len() { bail!("evento de historial no encontrado"); }
+        return Ok((history[number - 1].clone(), end));
+    }
+    if chars.get(1) == Some(&'?') {
+        let mut end = 2usize;
+        while end < chars.len() && chars[end] != '?' { end += 1; }
+        if end >= chars.len() { bail!("evento de historial sin '?' final"); }
+        let needle: String = chars[2..end].iter().collect();
+        let event = history.iter().rev().find(|line| line.contains(&needle))
+            .cloned().ok_or_else(|| anyhow!("evento de historial no encontrado: {needle}"))?;
+        return Ok((event, end + 1));
+    }
+    if chars.get(1) == Some(&'#') { return Ok((String::new(), 2)); }
+    let mut end = 1usize;
+    while end < chars.len() && !chars[end].is_whitespace()
+        && !matches!(chars[end], ':' | ';' | '&' | '|' | '(' | ')' | '<' | '>') { end += 1; }
+    let prefix: String = chars[1..end].iter().collect();
+    if prefix.is_empty() { bail!("designador de historial vacío"); }
+    let event = history.iter().rev().find(|line| line.starts_with(&prefix))
+        .cloned().ok_or_else(|| anyhow!("evento de historial no encontrado: {prefix}"))?;
+    Ok((event, end))
+}
+
+fn apply_history_modifiers(chars: &[char], event: &str) -> Result<(String, usize)> {
+    let mut value = event.to_owned();
+    let mut i = 0usize;
+    while i < chars.len() && chars[i] == ':' {
+        i += 1;
+        if i >= chars.len() { break; }
+        match chars[i] {
+            '^' | '$' | '*' | '0'..='9' => {
+                let words = split_shell_words_relaxed(&value)
+                    .unwrap_or_else(|_| value.split_whitespace().map(str::to_owned).collect());
+                if words.is_empty() { value.clear(); i += 1; continue; }
+                match chars[i] {
+                    '^' => { value = words.get(1).cloned().unwrap_or_default(); i += 1; }
+                    '$' => { value = words.last().cloned().unwrap_or_default(); i += 1; }
+                    '*' => { value = words.get(1..).unwrap_or(&[]).join(" "); i += 1; }
+                    _ => {
+                        let start = i;
+                        while i < chars.len() && chars[i].is_ascii_digit() { i += 1; }
+                        let first = chars[start..i].iter().collect::<String>().parse::<usize>().unwrap_or(0);
+                        let mut last = first;
+                        if i < chars.len() && chars[i] == '-' {
+                            i += 1;
+                            let range_start = i;
+                            while i < chars.len() && chars[i].is_ascii_digit() { i += 1; }
+                            last = if range_start == i { words.len().saturating_sub(1) } else {
+                                chars[range_start..i].iter().collect::<String>().parse::<usize>().unwrap_or(first)
+                            };
+                        }
+                        value = if first < words.len() {
+                            words[first..=last.min(words.len() - 1)].join(" ")
+                        } else { String::new() };
+                    }
+                }
+            }
+            'h' => { value = Path::new(&value).parent().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(); i += 1; }
+            't' => { value = Path::new(&value).file_name().map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(); i += 1; }
+            'r' => { value = Path::new(&value).with_extension("").to_string_lossy().into_owned(); i += 1; }
+            'e' => { value = Path::new(&value).extension().map(|e| format!(".{}", e.to_string_lossy())).unwrap_or_default(); i += 1; }
+            'q' | 'x' => { value = shell_quote(&value); i += 1; }
+            's' => {
+                i += 1; if i >= chars.len() { break; }
+                let delimiter = chars[i]; i += 1;
+                let from_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                if i >= chars.len() { bail!("modificador :s incompleto"); }
+                let from: String = chars[from_start..i].iter().collect(); i += 1;
+                let to_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                let to: String = chars[to_start..i].iter().collect(); if i < chars.len() { i += 1; }
+                value = value.replacen(&from, &to, 1);
+            }
+            'g' if chars.get(i + 1) == Some(&'s') => {
+                i += 2; if i >= chars.len() { break; }
+                let delimiter = chars[i]; i += 1;
+                let from_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                if i >= chars.len() { bail!("modificador :gs incompleto"); }
+                let from: String = chars[from_start..i].iter().collect(); i += 1;
+                let to_start = i; while i < chars.len() && chars[i] != delimiter { i += 1; }
+                let to: String = chars[to_start..i].iter().collect(); if i < chars.len() { i += 1; }
+                value = value.replace(&from, &to);
+            }
+            _ => break,
+        }
+    }
+    Ok((value, i))
+}
+
+
+fn preserve_interactive_hashes(input: &str) -> String {
+    let mut out = String::with_capacity(input.len());
+    let mut single = false;
+    let mut double = false;
+    let mut escaped = false;
+    let mut word_start = true;
+
+    for ch in input.chars() {
+        if escaped {
+            out.push(ch);
+            escaped = false;
+            word_start = false;
+            continue;
+        }
+        if ch == '\\' && !single {
+            out.push(ch);
+            escaped = true;
+            continue;
+        }
+        if ch == '\'' && !double {
+            single = !single;
+            out.push(ch);
+            word_start = false;
+            continue;
+        }
+        if ch == '"' && !single {
+            double = !double;
+            out.push(ch);
+            word_start = false;
+            continue;
+        }
+        if !single && !double && ch == '#' && word_start {
+            out.push('\\');
+            out.push('#');
+            word_start = false;
+            continue;
+        }
+        out.push(ch);
+        word_start = !single && !double && (ch.is_whitespace() || matches!(ch, ';' | '&' | '|'));
+    }
+    out
+}
+
+fn spelling_distance_one(left: &str, right: &str) -> bool {
+    if left.eq_ignore_ascii_case(right) { return true; }
+    let a = left.to_lowercase().chars().collect::<Vec<_>>();
+    let b = right.to_lowercase().chars().collect::<Vec<_>>();
+    if a.len().abs_diff(b.len()) > 1 { return false; }
+
+    if a.len() == b.len() {
+        let differences = a.iter().zip(&b).filter(|(x, y)| x != y).count();
+        if differences == 1 { return true; }
+        for index in 0..a.len().saturating_sub(1) {
+            if a[index] != b[index]
+                && a[index] == b[index + 1]
+                && a[index + 1] == b[index]
+                && a[..index] == b[..index]
+                && a[index + 2..] == b[index + 2..]
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    let (short, long) = if a.len() < b.len() { (&a, &b) } else { (&b, &a) };
+    let mut i = 0usize;
+    let mut j = 0usize;
+    let mut skipped = false;
+    while i < short.len() && j < long.len() {
+        if short[i] == long[j] {
+            i += 1;
+            j += 1;
+        } else if skipped {
+            return false;
+        } else {
+            skipped = true;
+            j += 1;
+        }
+    }
+    true
+}
+
+fn bash_shell_options() -> &'static [&'static str] {
+    &[
+        "allexport", "braceexpand", "emacs", "errexit", "errtrace", "functrace",
+        "hashall", "histexpand", "history", "ignoreeof", "interactive-comments",
+        "keyword", "monitor", "noclobber", "noexec", "noglob", "nolog", "notify",
+        "nounset", "onecmd", "physical", "pipefail", "posix", "privileged",
+        "verbose", "vi", "xtrace",
+    ]
+}
+
+fn bash_shopt_options() -> &'static [&'static str] {
+    &[
+        "array_expand_once", "assoc_expand_once", "autocd", "cdable_vars", "cdspell",
+        "checkhash", "checkjobs", "checkwinsize", "cmdhist", "compat31", "compat32",
+        "compat40", "compat41", "compat42", "compat43", "compat44", "compat50",
+        "compat51", "compat52", "compat53", "complete_fullquote", "direxpand",
+        "dirspell", "dotglob", "execfail", "expand_aliases", "extdebug", "extglob",
+        "extquote", "failglob", "force_fignore", "globasciiranges", "globskipdots",
+        "globstar", "gnu_errfmt", "histappend", "histreedit", "histverify",
+        "hostcomplete", "huponexit", "inherit_errexit", "interactive_comments",
+        "lastpipe", "lithist", "localvar_inherit", "localvar_unset", "login_shell",
+        "mailwarn", "no_empty_cmd_completion", "nocaseglob", "nocasematch",
+        "noexpand_translation", "nullglob", "patsub_replacement", "progcomp", "progcomp_alias",
+        "promptvars", "restricted_shell", "shift_verbose", "sourcepath",
+        "varredir_close", "xpg_echo",
+    ]
+}
+
+
+fn normalize_glob_path(value: &str) -> String {
+    value.replace('\\', "/")
+}
+
+fn contains_extglob(value: &str) -> bool {
+    let chars: Vec<char> = value.chars().collect();
+    chars.windows(2).any(|pair| matches!(pair[0], '?' | '*' | '+' | '@' | '!') && pair[1] == '(')
+}
+
+fn extglob_broad_pattern(value: &str) -> String {
+    let chars: Vec<char> = value.chars().collect();
+    let mut out = String::new();
+    let mut index = 0usize;
+    while index < chars.len() {
+        if matches!(chars[index], '?' | '*' | '+' | '@' | '!')
+            && chars.get(index + 1) == Some(&'(')
+        {
+            let mut depth = 1usize;
+            let mut end = index + 2;
+            while end < chars.len() && depth > 0 {
+                match chars[end] {
+                    '(' => depth += 1,
+                    ')' => depth -= 1,
+                    _ => {}
+                }
+                end += 1;
+            }
+            out.push('*');
+            index = end;
+        } else {
+            out.push(chars[index]);
+            index += 1;
+        }
+    }
+    out
+}
+
+fn split_extglob_alternatives(value: &str) -> Vec<String> {
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut depth = 0usize;
+    let mut escaped = false;
+    for ch in value.chars() {
+        if escaped {
+            current.push(ch);
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            current.push(ch);
+            escaped = true;
+            continue;
+        }
+        match ch {
+            '(' => { depth += 1; current.push(ch); }
+            ')' => { depth = depth.saturating_sub(1); current.push(ch); }
+            '|' if depth == 0 => parts.push(std::mem::take(&mut current)),
+            _ => current.push(ch),
+        }
+    }
+    parts.push(current);
+    parts
+}
+
+fn bash_glob_fragment(pattern: &str) -> Result<String> {
+    let chars: Vec<char> = pattern.chars().collect();
+    let mut out = String::new();
+    let mut index = 0usize;
+
+    while index < chars.len() {
+        if matches!(chars[index], '?' | '*' | '+' | '@' | '!')
+            && chars.get(index + 1) == Some(&'(')
+        {
+            let operator = chars[index];
+            let mut depth = 1usize;
+            let mut end = index + 2;
+            while end < chars.len() && depth > 0 {
+                match chars[end] {
+                    '(' => depth += 1,
+                    ')' => depth -= 1,
+                    _ => {}
+                }
+                end += 1;
+            }
+            if depth != 0 { bail!("extglob sin cerrar"); }
+            let body: String = chars[index + 2..end - 1].iter().collect();
+            let alternatives = split_extglob_alternatives(&body)
+                .into_iter()
+                .map(|part| bash_glob_fragment(&part))
+                .collect::<Result<Vec<_>>>()?
+                .join("|");
+            match operator {
+                '@' => out.push_str(&format!("(?:{alternatives})")),
+                '?' => out.push_str(&format!("(?:{alternatives})?")),
+                '+' => out.push_str(&format!("(?:{alternatives})+")),
+                '*' => out.push_str(&format!("(?:{alternatives})*")),
+                '!' => out.push_str("[^/]*"),
+                _ => {}
+            }
+            index = end;
+            continue;
+        }
+
+        match chars[index] {
+            '*' if chars.get(index + 1) == Some(&'*') => {
+                while chars.get(index + 1) == Some(&'*') { index += 1; }
+                out.push_str(".*");
+            }
+            '*' => out.push_str("[^/]*"),
+            '?' => out.push_str("[^/]"),
+            '[' => {
+                let start = index;
+                index += 1;
+                while index < chars.len() && chars[index] != ']' { index += 1; }
+                if index < chars.len() {
+                    let mut class: String = chars[start + 1..index].iter().collect();
+                    if class.starts_with('!') { class.replace_range(..1, "^"); }
+                    out.push('[');
+                    out.push_str(&class);
+                    out.push(']');
+                } else {
+                    out.push_str("\\[");
+                    index = start;
+                }
+            }
+            '/' => out.push('/'),
+            ch => {
+                if matches!(ch, '.' | '^' | '$' | '+' | '(' | ')' | '{' | '}' | '|' | '\\') {
+                    out.push('\\');
+                }
+                out.push(ch);
+            }
+        }
+        index += 1;
+    }
+    Ok(out)
+}
+
+fn bash_glob_regex(pattern: &str, nocase: bool) -> Result<regex::Regex> {
+    let fragment = bash_glob_fragment(pattern)?;
+    Ok(regex::Regex::new(&if nocase {
+        format!("(?i)^{fragment}$")
+    } else {
+        format!("^{fragment}$")
+    })?)
+}
+
+fn negative_extglob_rejects(pattern: &str, candidate: &str, nocase: bool) -> bool {
+    let pattern_parts: Vec<&str> = pattern.split('/').collect();
+    let candidate_parts: Vec<&str> = candidate.split('/').collect();
+    if pattern_parts.len() != candidate_parts.len() { return false; }
+
+    for (pattern_part, candidate_part) in pattern_parts.into_iter().zip(candidate_parts) {
+        if pattern_part.starts_with("!(") && pattern_part.ends_with(')') {
+            for alternative in split_extglob_alternatives(&pattern_part[2..pattern_part.len() - 1]) {
+                if bash_glob_regex(&alternative, nocase).is_ok_and(|regex| regex.is_match(candidate_part)) {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+fn sort_glob_results(values: &mut [String], sort: &str, cwd: &Path) {
+    let mut mode = sort.trim();
+    let mut reverse = false;
+    if let Some(rest) = mode.strip_prefix('-') {
+        reverse = true;
+        mode = rest;
+    }
+    if mode.is_empty() { mode = "name"; }
+    if mode == "none" {
+        if reverse { values.reverse(); }
+        return;
+    }
+
+    values.sort_by(|left, right| {
+        let left_path = {
+            let path = PathBuf::from(left);
+            if path.is_absolute() { path } else { cwd.join(path) }
+        };
+        let right_path = {
+            let path = PathBuf::from(right);
+            if path.is_absolute() { path } else { cwd.join(path) }
+        };
+        let left_meta = fs::metadata(left_path).ok();
+        let right_meta = fs::metadata(right_path).ok();
+
+        let ordering = match mode {
+            "size" => left_meta.as_ref().map(|m| m.len()).cmp(&right_meta.as_ref().map(|m| m.len())),
+            "blocks" => left_meta.as_ref().map(|m| (m.len() + 511) / 512)
+                .cmp(&right_meta.as_ref().map(|m| (m.len() + 511) / 512)),
+            "mtime" => left_meta.as_ref().and_then(|m| m.modified().ok())
+                .cmp(&right_meta.as_ref().and_then(|m| m.modified().ok())),
+            "atime" => left_meta.as_ref().and_then(|m| m.accessed().ok())
+                .cmp(&right_meta.as_ref().and_then(|m| m.accessed().ok())),
+            "ctime" => left_meta.as_ref().and_then(|m| m.created().ok())
+                .cmp(&right_meta.as_ref().and_then(|m| m.created().ok())),
+            _ => left.cmp(right),
+        }.then_with(|| left.cmp(right));
+
+        if reverse { ordering.reverse() } else { ordering }
+    });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct NullHost;
+
+    impl ShellCommandHost for NullHost {
+        fn execute_builtin(
+            &self, _name: &str, _args: &[String], _cwd: &Path, _stdin: Option<&[u8]>,
+        ) -> Result<Option<ExecutionResult>> {
+            Ok(None)
+        }
+
+        fn execute_external(
+            &self, program: &str, _args: &[String], _cwd: &Path,
+            _env: &HashMap<String, String>, _stdin: Option<&[u8]>,
+        ) -> Result<ExecutionResult> {
+            Ok(ExecutionResult::from_parts(format!("external:{program}\n"), String::new(), 0))
+        }
+    }
+
+    #[test]
+    fn state_functions_and_subshells_are_native() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+        shell.execute_text("x=42").unwrap();
+        assert_eq!(shell.env.get("x"), "42");
+        shell.execute_text("f() { x=99; }").unwrap();
+        shell.execute_text("f").unwrap();
+        assert_eq!(shell.env.get("x"), "99");
+        shell.execute_text("(x=7)").unwrap();
+        assert_eq!(shell.env.get("x"), "99");
+    }
+
+    #[test]
+    fn native_expansions_work_without_an_external_shell() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+        assert_eq!(shell.expand_scalar("$((20+22))").unwrap(), "42");
+        assert_eq!(shell.expand_scalar("${missing:-fallback}").unwrap(), "fallback");
+    }
+
+
+    #[test]
+    fn case_conditional_and_arithmetic_commands_work() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+
+        shell.execute_text("x=beta").unwrap();
+        let case_result = shell
+            .execute_text("case $x in alpha) echo no ;; beta|gamma) echo yes ;; *) echo fallback ;; esac")
+            .unwrap();
+        assert!(case_result.stdout.contains("external:echo"));
+
+        assert_eq!(shell.execute_text("[[ -n $x && $x == beta ]]").unwrap().status, 0);
+        assert_eq!(shell.execute_text("[[ $x == nope ]]").unwrap().status, 1);
+
+        shell.execute_text("n=1").unwrap();
+        assert_eq!(shell.execute_text("(( n += 2 ))").unwrap().status, 0);
+        assert_eq!(shell.env.get("n"), "3");
+        assert_eq!(shell.execute_text("(( n > 2 ))").unwrap().status, 0);
+    }
+
+    #[test]
+    fn break_continue_return_and_local_are_native() {
+        let mut shell = Interpreter::new(Box::new(NullHost));
+
+        shell.execute_text("x=outer").unwrap();
+        shell.execute_text("f() { local x=inner; return 7; x=never; }").unwrap();
+        let result = shell.execute_text("f").unwrap();
+        assert_eq!(result.status, 7);
+        assert_eq!(shell.env.get("x"), "outer");
+
+        shell.execute_text("count=0").unwrap();
+        shell.execute_text("for i in 1 2 3 4; do (( count += 1 )); if [[ $i == 2 ]]; then continue; fi; if [[ $i == 3 ]]; then break; fi; done").unwrap();
+        assert_eq!(shell.env.get("count"), "3");
+    }
+
+    struct XargsHost;
+
+    impl ShellCommandHost for XargsHost {
+        fn execute_builtin(
+            &self, _name: &str, _args: &[String], _cwd: &Path, _stdin: Option<&[u8]>,
+        ) -> Result<Option<ExecutionResult>> {
+            Ok(None)
+        }
+
+        fn execute_external(
+            &self, program: &str, args: &[String], _cwd: &Path,
+            _env: &HashMap<String, String>, _stdin: Option<&[u8]>,
+        ) -> Result<ExecutionResult> {
+            if program == "echo" {
+                Ok(ExecutionResult::from_parts(
+                    format!("{}\n", args.join(" ")),
+                    String::new(),
+                    0,
+                ))
+            } else {
+                Ok(ExecutionResult::from_parts(
+                    String::new(),
+                    format!("unknown:{program}\n"),
+                    127,
+                ))
+            }
+        }
+    }
+
+    #[test]
+    fn xargs_consumes_pipeline_input() {
+        let mut shell = Interpreter::new(Box::new(XargsHost));
+        let ast = parse("xargs -n 1 echo").unwrap();
+        let result = shell.execute(&ast, Some(b"uno dos tres\n")).unwrap();
+        assert_eq!(result.stdout, "uno\ndos\ntres\n");
+        assert_eq!(result.status, 0);
+    }
+
+}
+ && chars.get(i + 1) == Some(&'"') {
+                let mut end = i + 2;
+                let mut escaped = false;
+                while end < chars.len() {
+                    if escaped {
+                        escaped = false;
+                    } else if chars[end] == '\\' {
+                        escaped = true;
+                    } else if chars[end] == '"' {
+                        break;
+                    }
+                    end += 1;
+                }
+                if end >= chars.len() { bail!("cadena localizada sin cerrar"); }
+                let body: String = chars[i + 2..end].iter().collect();
+                let expanded = self.expand_scalar(&format!("\"{body}\""))?;
+                out.push_str(&expanded);
                 i = end + 1;
                 continue;
             }

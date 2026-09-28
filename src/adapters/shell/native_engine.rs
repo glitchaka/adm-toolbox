@@ -599,6 +599,14 @@ impl ShellCommandHost for WindowsShellHost {
         names
     }
 
+    fn user_names(&self) -> Vec<String> {
+        windows_net_list("user")
+    }
+
+    fn group_names(&self) -> Vec<String> {
+        windows_net_list("localgroup")
+    }
+
     fn execute_external(
         &self,
         program: &str,
@@ -1217,6 +1225,54 @@ fn signal_number_windows(signal: &str) -> u32 {
         "KILL" => 9,
         "TERM" => 15,
         _ => 15,
+    }
+}
+
+fn windows_net_list(kind: &str) -> Vec<String> {
+    #[cfg(windows)]
+    {
+        let Ok(output) = Command::new("net.exe").arg(kind).output() else {
+            return Vec::new();
+        };
+        if !output.status.success() {
+            return Vec::new();
+        }
+
+        // net.exe prints a localized heading, then a dashed separator, then the
+        // entries in fixed-width columns. Parse only the data section so this
+        // works independently of the UI language.
+        let text = String::from_utf8_lossy(&output.stdout);
+        let mut data = false;
+        let mut values = Vec::new();
+        for line in text.lines() {
+            let trimmed = line.trim();
+            if trimmed.len() >= 8 && trimmed.chars().all(|ch| ch == '-') {
+                data = true;
+                continue;
+            }
+            if !data || trimmed.is_empty() {
+                continue;
+            }
+            // Entries may be prefixed with '*' in localgroup output.
+            for field in trimmed.split_whitespace() {
+                let field = field.trim_start_matches('*').trim();
+                if field.is_empty() { continue; }
+                // The footer is prose; account/group columns don't normally
+                // contain these punctuation marks.
+                if field.ends_with('.') || field.ends_with(':') {
+                    continue;
+                }
+                values.push(field.to_owned());
+            }
+        }
+        values.sort();
+        values.dedup();
+        values
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = kind;
+        Vec::new()
     }
 }
 
