@@ -631,9 +631,35 @@ config reload
 ```bash
 sst-config path
 sst-config edit
+sst-config terminal path
+sst-config terminal edit
 ```
 
-La variable que contiene la ruta es:
+La configuración visual de la terminal vive en:
+
+```text
+config/terminal.toml
+```
+
+Por defecto:
+
+```toml
+[appearance]
+backdrop = "acrylic"
+background_opacity = 82
+background_color = "#111629"
+```
+
+Valores admitidos para `backdrop`:
+
+- `acrylic`: desenfoque/tinte fuerte, pensado para el aspecto de vidrio esmerilado;
+- `blur`: desenfoque más simple;
+- `glass`: cristal DWM clásico;
+- `solid`: fondo opaco sin transparencia.
+
+`background_opacity` acepta valores de `0` a `100`. `background_color` usa formato `#RRGGBB`. Los cambios visuales se aplican al abrir una nueva ventana de SST.
+
+La variable que contiene la ruta de la configuración Bash es:
 
 ```text
 SST_CONFIG
