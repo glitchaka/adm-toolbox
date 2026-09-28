@@ -659,9 +659,9 @@ La distribución portable está basada en **Helix 25.07.1** y SST aporta:
 
 ### Estado actual
 
-**La edición interactiva de Helix todavía no se considera funcional.**
+**helix-sst está funcional dentro de SST.**
 
-El editor se encuentra integrado y puede iniciarse, pero el transporte de entrada/teclado/PTY todavía requiere corrección antes de considerarlo terminado. Por ello no debe usarse todavía como única vía para editar archivos importantes.
+El editor puede iniciarse y utilizarse de forma interactiva desde la terminal nativa, incluyendo edición mediante teclado, navegación y guardado a través del puente PTY/ConPTY integrado.
 
 El log queda en:
 
@@ -1097,7 +1097,6 @@ Entre los datos persistentes se encuentran:
 
 ### Pendiente o parcial
 
-- edición interactiva de helix-sst;
 - drivers reales de `net usage` para routers/AP/firewalls;
 - equivalencia completa con GNU Readline;
 - builtins dinámicos de Bash;
