@@ -795,7 +795,15 @@ impl Interpreter {
         }
 
         let (prepared, temporary) = self.prepare_heredocs(&input)?;
-        let node = parse(&prepared)?;
+        let node = if self.env.option_enabled("interactive")
+            || self.env.option_enabled("expand_aliases")
+        {
+            let tokens = super::lexer::lex(&prepared)?;
+            let tokens = expand_alias_tokens(tokens, &self.env.aliases)?;
+            super::parser::Parser::new(tokens).parse()?
+        } else {
+            parse(&prepared)?
+        };
 
         let result = if self.env.option_enabled("noexec") {
             ExecutionResult::success()
@@ -1769,26 +1777,12 @@ impl Interpreter {
             return Ok(result);
         }
 
-        let mut raw = command.words.clone();
+        let raw = command.words.clone();
 
-        // Alias expansion is applied to the command word, not to assignment
-        // prefixes. Preserve the prefixes and expand the first command word.
-        let mut assignment_count = raw.iter().take_while(|word| is_assignment(word)).count();
-        if assignment_count < raw.len()
-            && (self.env.option_enabled("interactive") || self.env.option_enabled("expand_aliases"))
-        {
-            if let Some(alias) = self.env.aliases.get(&raw[assignment_count]).cloned() {
-                let alias_tokens = super::lexer::lex(&alias)?;
-                let alias_words = alias_tokens.into_iter().filter_map(|token| {
-                    if let super::lexer::Token::Word(word) = token { Some(word) } else { None }
-                }).collect::<Vec<_>>();
-                let mut expanded_raw = raw[..assignment_count].to_vec();
-                expanded_raw.extend(alias_words);
-                expanded_raw.extend(raw[assignment_count + 1..].iter().cloned());
-                raw = expanded_raw;
-                assignment_count = raw.iter().take_while(|word| is_assignment(word)).count();
-            }
-        }
+        // Alias expansion has already happened on lexer tokens in execute_text(),
+        // before parsing. At this point the command structure (including pipes,
+        // redirects and compound operators introduced by an alias) is final.
+        let assignment_count = raw.iter().take_while(|word| is_assignment(word)).count();
 
         if assignment_count == raw.len() {
             for assignment in &raw {
@@ -8866,6 +8860,157 @@ fn bash_builtin_help(name: &str) -> (&'static str, &'static str) {
         "wait" => ("wait [-fn] [-p VAR] [ID ...]", "Espera procesos o jobs."),
         _ => (name, "Builtin Bash."),
     }
+}
+
+fn expand_alias_tokens(
+    tokens: Vec<super::lexer::Token>,
+    aliases: &HashMap<String, String>,
+) -> Result<Vec<super::lexer::Token>> {
+    fn walk(
+        tokens: Vec<super::lexer::Token>,
+        aliases: &HashMap<String, String>,
+        active: &mut HashSet<String>,
+        mut command_position: bool,
+        mut force_next_alias: bool,
+    ) -> Result<(Vec<super::lexer::Token>, bool, bool)> {
+        use super::lexer::Token;
+
+        let mut out = Vec::new();
+        let mut redirect_target = false;
+
+        for token in tokens {
+            if matches!(token, Token::Eof) {
+                continue;
+            }
+
+            if redirect_target {
+                out.push(token);
+                redirect_target = false;
+                continue;
+            }
+
+            match token {
+                Token::Word(word) => {
+                    let assignment = command_position && is_assignment(&word);
+                    let eligible = (command_position || force_next_alias)
+                        && !assignment
+                        && !bash_keywords().contains(&word.as_str());
+
+                    force_next_alias = false;
+
+                    if eligible {
+                        if let Some(alias) = aliases.get(&word).cloned() {
+                            if !active.contains(&word) {
+                                active.insert(word.clone());
+                                let alias_has_trailing_blank =
+                                    alias.ends_with(' ') || alias.ends_with('\t');
+                                let alias_tokens = super::lexer::lex(&alias)?;
+                                let (expanded, next_position, nested_force) = walk(
+                                    alias_tokens,
+                                    aliases,
+                                    active,
+                                    command_position,
+                                    false,
+                                )?;
+                                active.remove(&word);
+                                out.extend(expanded);
+                                command_position = next_position;
+                                force_next_alias = alias_has_trailing_blank || nested_force;
+                                continue;
+                            }
+                        }
+                    }
+
+                    out.push(Token::Word(word));
+                    if !assignment {
+                        command_position = false;
+                    }
+                }
+                Token::Redirect { fd, variable, op } => {
+                    out.push(Token::Redirect { fd, variable, op });
+                    redirect_target = true;
+                }
+                Token::Pipe => {
+                    out.push(Token::Pipe);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::PipeBoth => {
+                    out.push(Token::PipeBoth);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::AndIf => {
+                    out.push(Token::AndIf);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::OrIf => {
+                    out.push(Token::OrIf);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::Amp => {
+                    out.push(Token::Amp);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::Semi => {
+                    out.push(Token::Semi);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::DblSemi => {
+                    out.push(Token::DblSemi);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::SemiAmp => {
+                    out.push(Token::SemiAmp);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::DblSemiAmp => {
+                    out.push(Token::DblSemiAmp);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::LParen => {
+                    out.push(Token::LParen);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::LBrace => {
+                    out.push(Token::LBrace);
+                    command_position = true;
+                    force_next_alias = false;
+                }
+                Token::RParen => {
+                    out.push(Token::RParen);
+                    command_position = false;
+                    force_next_alias = false;
+                }
+                Token::RBrace => {
+                    out.push(Token::RBrace);
+                    command_position = false;
+                    force_next_alias = false;
+                }
+                Token::Arithmetic(expression) => {
+                    out.push(Token::Arithmetic(expression));
+                    command_position = false;
+                    force_next_alias = false;
+                }
+                Token::Eof => unreachable!(),
+            }
+        }
+
+        Ok((out, command_position, force_next_alias))
+    }
+
+    let mut active = HashSet::new();
+    let (mut expanded, _, _) = walk(tokens, aliases, &mut active, true, false)?;
+    expanded.push(super::lexer::Token::Eof);
+    Ok(expanded)
 }
 
 fn bash_builtin_names() -> &'static [&'static str] {
