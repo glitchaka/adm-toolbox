@@ -1297,7 +1297,7 @@ fn which(args: &[String]) -> Result<CommandOutput> {
 
     if is_internal_command(name) {
         return Ok(CommandOutput::ok(format!(
-            "{name}: comando interno de ADM Toolbox\n"
+            "{name}: comando interno de Shell Shock Tool\n"
         )));
     }
 
@@ -1460,7 +1460,7 @@ mod archive_tests {
             .unwrap()
             .as_nanos();
         let root = env::temp_dir().join(format!(
-            "adm-toolbox-{name}-{}-{stamp}",
+            "sst-{name}-{}-{stamp}",
             std::process::id()
         ));
         fs::create_dir_all(&root).unwrap();
