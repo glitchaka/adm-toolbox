@@ -273,7 +273,6 @@ pub struct Interpreter {
     host: Arc<dyn ShellCommandHost>,
     loop_depth: usize,
     source_depth: usize,
-    command_hash: HashMap<String, String>,
     function_sources: HashMap<String, String>,
     disabled_builtins: HashSet<String>,
     completion_specs: HashMap<String, CompletionSpec>,
@@ -300,7 +299,6 @@ impl Interpreter {
             host: Arc::from(host),
             loop_depth: 0,
             source_depth: 0,
-            command_hash: HashMap::new(),
             function_sources: HashMap::new(),
             disabled_builtins: HashSet::new(),
             completion_specs: HashMap::new(),
@@ -2255,7 +2253,7 @@ impl Interpreter {
                     let mut status = 0;
                     for arg in args {
                         if let Some((name, value)) = arg.split_once('=') {
-                            self.env.aliases.insert(name.to_owned(), strip_outer_quotes(value));
+                            self.env.define_alias(name.to_owned(), strip_outer_quotes(value));
                         } else if let Some(value) = self.env.aliases.get(arg) {
                             stdout.push_str(&format!("alias {arg}={}\n", shell_quote(value)));
                         } else {
@@ -2268,9 +2266,9 @@ impl Interpreter {
             }
             "unalias" => {
                 if args.iter().any(|arg| arg == "-a") {
-                    self.env.aliases.clear();
+                    self.env.clear_aliases();
                 } else {
-                    for name in args { self.env.aliases.remove(name); }
+                    for name in args { self.env.remove_alias(name); }
                 }
                 ExecutionResult::success()
             }
@@ -3138,7 +3136,7 @@ impl Interpreter {
 
     fn builtin_hash(&mut self, args: &[String]) -> Result<ExecutionResult> {
         if args.is_empty() {
-            let mut entries: Vec<_> = self.command_hash.iter().collect();
+            let mut entries: Vec<_> = self.env.command_hash.iter().collect();
             entries.sort_by_key(|(name, _)| *name);
             let stdout = entries.into_iter()
                 .map(|(_, path)| format!("0\t{path}\n"))
@@ -3147,13 +3145,13 @@ impl Interpreter {
         }
 
         if args.iter().any(|arg| arg == "-r") {
-            self.command_hash.clear();
+            self.env.clear_command_hash();
             return Ok(ExecutionResult::success());
         }
 
         if args.first().map(String::as_str) == Some("-d") {
             for name in &args[1..] {
-                self.command_hash.remove(name);
+                self.env.remove_hashed_command(name);
             }
             return Ok(ExecutionResult::success());
         }
@@ -3163,7 +3161,7 @@ impl Interpreter {
             let mut stderr = String::new();
             let mut status = 0;
             for name in &args[1..] {
-                if let Some(path) = self.command_hash.get(name) {
+                if let Some(path) = self.env.command_hash.get(name) {
                     stdout.push_str(path);
                     stdout.push('\n');
                 } else {
@@ -3182,7 +3180,7 @@ impl Interpreter {
                     2,
                 ));
             }
-            self.command_hash.insert(args[2].clone(), args[1].clone());
+            self.env.hash_command(args[2].clone(), args[1].clone());
             return Ok(ExecutionResult::success());
         }
 
@@ -3192,7 +3190,7 @@ impl Interpreter {
             match self.host.execute_builtin("which", &[name.clone()], &self.env.cwd, None)? {
                 Some(result) if result.status == 0 => {
                     if let Some(path) = result.stdout.lines().next().filter(|line| !line.is_empty()) {
-                        self.command_hash.insert(name.clone(), path.to_owned());
+                        self.env.hash_command(name.clone(), path.to_owned());
                     } else {
                         status = 1;
                         stderr.push_str(&format!("hash: {name}: no encontrado\n"));
@@ -5721,7 +5719,7 @@ impl Interpreter {
             }
 
             if force_path && all {
-                if let Some(path) = self.command_hash.get(&name) {
+                if let Some(path) = self.env.command_hash.get(&name) {
                     found_any = true;
                     if short { stdout.push_str("file\n"); }
                     else { stdout.push_str(path); stdout.push('\n'); }
@@ -5871,13 +5869,13 @@ impl Interpreter {
     }
 
     fn resolve_hashed_program(&mut self, name: &str) -> Result<Option<String>> {
-        if let Some(path) = self.command_hash.get(name).cloned() {
+        if let Some(path) = self.env.command_hash.get(name).cloned() {
             // Bash does not apply EXECIGNORE to commands already present in the
             // command hash table.
             if !self.env.option_enabled("checkhash") || Path::new(&path).exists() {
                 return Ok(Some(path));
             }
-            self.command_hash.remove(name);
+            self.env.remove_hashed_command(name);
         }
 
         if let Some(found) = self.host.execute_builtin(
@@ -5892,7 +5890,7 @@ impl Interpreter {
                         return Ok(None);
                     }
                     if self.env.option_enabled("hashall") {
-                        self.command_hash.insert(name.to_owned(), path.to_owned());
+                        self.env.hash_command(name.to_owned(), path.to_owned());
                     }
                     return Ok(Some(path.to_owned()));
                 }

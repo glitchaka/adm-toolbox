@@ -28,6 +28,7 @@ pub struct ShellEnvironment {
     pub vars: HashMap<String, String>,
     pub exported: HashMap<String, String>,
     pub aliases: HashMap<String, String>,
+    pub command_hash: HashMap<String, String>,
     pub functions: HashMap<String, AstNode>,
     pub readonly_functions: HashSet<String>,
     pub exported_functions: HashSet<String>,
@@ -112,6 +113,10 @@ impl ShellEnvironment {
         arrays.insert("BASH_ARGC".to_owned(), vec!["0".to_owned()]);
         arrays.insert("BASH_ARGV".to_owned(), Vec::new());
 
+        let mut assoc_arrays = HashMap::new();
+        assoc_arrays.insert("BASH_ALIASES".to_owned(), HashMap::new());
+        assoc_arrays.insert("BASH_CMDS".to_owned(), HashMap::new());
+
         let array_present: HashMap<String, HashSet<usize>> = arrays.iter()
             .map(|(name, values)| {
                 (name.clone(), (0..values.len()).collect::<HashSet<_>>())
@@ -156,13 +161,14 @@ impl ShellEnvironment {
             vars,
             exported,
             aliases: HashMap::new(),
+            command_hash: HashMap::new(),
             functions: HashMap::new(),
             readonly_functions: HashSet::new(),
             exported_functions: HashSet::new(),
             trace_functions: HashSet::new(),
             arrays,
             array_present,
-            assoc_arrays: HashMap::new(),
+            assoc_arrays,
             namerefs: HashMap::new(),
             readonly,
             integer_vars: HashSet::new(),
@@ -443,7 +449,14 @@ impl ShellEnvironment {
         if let Some((base, subscript)) = split_subscript_owned(&name) {
             if self.readonly.contains(&base) { return false; }
             if self.assoc_arrays.contains_key(&base) {
-                self.assoc_arrays.entry(base).or_default().insert(subscript, value);
+                self.assoc_arrays.entry(base.clone()).or_default().insert(subscript.clone(), value.clone());
+                if !self.disabled_special_vars.contains(&base) {
+                    if base == "BASH_ALIASES" {
+                        self.aliases.insert(subscript, value);
+                    } else if base == "BASH_CMDS" {
+                        self.command_hash.insert(subscript, value);
+                    }
+                }
                 return true;
             }
             if let Ok(index) = subscript.parse::<isize>() {
@@ -469,7 +482,14 @@ impl ShellEnvironment {
             return true;
         }
         if let Some(array) = self.assoc_arrays.get_mut(&name) {
-            array.insert("0".to_owned(), value);
+            array.insert("0".to_owned(), value.clone());
+            if !self.disabled_special_vars.contains(&name) {
+                if name == "BASH_ALIASES" {
+                    self.aliases.insert("0".to_owned(), value);
+                } else if name == "BASH_CMDS" {
+                    self.command_hash.insert("0".to_owned(), value);
+                }
+            }
             return true;
         }
 
@@ -904,6 +924,58 @@ impl ShellEnvironment {
         self.set_nameref(name, target)
     }
 
+    pub fn define_alias(&mut self, name: impl Into<String>, value: impl Into<String>) {
+        let name = name.into();
+        let value = value.into();
+        self.aliases.insert(name.clone(), value.clone());
+        if !self.disabled_special_vars.contains("BASH_ALIASES") {
+            self.assoc_arrays.entry("BASH_ALIASES".to_owned()).or_default().insert(name, value);
+        }
+    }
+
+    pub fn remove_alias(&mut self, name: &str) -> bool {
+        let removed = self.aliases.remove(name).is_some();
+        if !self.disabled_special_vars.contains("BASH_ALIASES") {
+            if let Some(array) = self.assoc_arrays.get_mut("BASH_ALIASES") {
+                array.remove(name);
+            }
+        }
+        removed
+    }
+
+    pub fn clear_aliases(&mut self) {
+        self.aliases.clear();
+        if !self.disabled_special_vars.contains("BASH_ALIASES") {
+            self.assoc_arrays.entry("BASH_ALIASES".to_owned()).or_default().clear();
+        }
+    }
+
+    pub fn hash_command(&mut self, name: impl Into<String>, path: impl Into<String>) {
+        let name = name.into();
+        let path = path.into();
+        self.command_hash.insert(name.clone(), path.clone());
+        if !self.disabled_special_vars.contains("BASH_CMDS") {
+            self.assoc_arrays.entry("BASH_CMDS".to_owned()).or_default().insert(name, path);
+        }
+    }
+
+    pub fn remove_hashed_command(&mut self, name: &str) -> bool {
+        let removed = self.command_hash.remove(name).is_some();
+        if !self.disabled_special_vars.contains("BASH_CMDS") {
+            if let Some(array) = self.assoc_arrays.get_mut("BASH_CMDS") {
+                array.remove(name);
+            }
+        }
+        removed
+    }
+
+    pub fn clear_command_hash(&mut self) {
+        self.command_hash.clear();
+        if !self.disabled_special_vars.contains("BASH_CMDS") {
+            self.assoc_arrays.entry("BASH_CMDS".to_owned()).or_default().clear();
+        }
+    }
+
     pub fn export(&mut self, name: impl Into<String>, value: impl Into<String>) -> bool {
         let name = name.into();
         if self.readonly.contains(&name) { return false; }
@@ -1002,7 +1074,7 @@ fn split_subscript_owned(name: &str) -> Option<(String, String)> {
 fn resettable_special_variable(name: &str) -> bool {
     matches!(
         name,
-        "BASHPID" | "BASH_ARGV0" | "BASH_COMMAND" | "BASH_MONOSECONDS"
+        "BASHPID" | "BASH_ALIASES" | "BASH_ARGV0" | "BASH_CMDS" | "BASH_COMMAND" | "BASH_MONOSECONDS"
             | "BASH_SUBSHELL" | "DIRSTACK" | "EPOCHSECONDS" | "EPOCHREALTIME"
             | "FUNCNAME" | "RANDOM" | "SRANDOM" | "SECONDS"
     )
