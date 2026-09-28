@@ -372,7 +372,7 @@ fn shell_quote(value: &str) -> String {
         return value.to_owned();
     }
 
-    format!("'{}'", value.replace('\\'', "'\\\\''"))
+    format!("'{}'", value.replace('\'', "'\"'\"'"))
 }
 
 fn windows_quote(value: &str) -> String {
