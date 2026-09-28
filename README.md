@@ -4,6 +4,14 @@
 
 Integra utilidades de red, diagnóstico, inventario, Wake-on-LAN, monitoreo de tráfico, consulta de dominio, localización de puertos de switch y herramientas de línea de comandos de uso cotidiano.
 
+## Release actual
+
+El corte publicado actualmente es **Shell Shock Tool v0.1.4**, correspondiente al commit `70d0fc737b66156769319a096560bb177b266de1`.
+
+Este release congela el avance actual de la capa Bash nativa. El workflow de publicación terminó correctamente, pero **v0.1.4 no adjunta un ejecutable precompilado**: el release contiene el tag y los archivos fuente generados por GitHub. Para obtener el ejecutable debe compilarse localmente.
+
+La preparación de este corte se realizó **sin compilar ni ejecutar la suite de pruebas**. Por tanto, `v0.1.4` debe considerarse un corte de desarrollo publicado, no una certificación de compatibilidad completa con GNU Bash 5.3.
+
 ## Construcción
 
 ```powershell
@@ -44,9 +52,9 @@ El icono de Shell Shock Tool se genera e incrusta como recurso de Windows a part
 
 ## Shell Bash-compatible
 
-La shell conserva estado entre comandos y entiende construcciones Bash reales, no solamente una lista de comandos que imitan Linux.
+Shell Shock Tool incluye un intérprete Bash propio escrito en Rust. La versión `v0.1.4` amplía de forma importante la cobertura de Bash 5.3, pero no pretende afirmar compatibilidad binaria ni semántica total con GNU Bash sobre Unix.
 
-Ejemplos:
+Ejemplos básicos:
 
 ```bash
 name="laboratorio"
@@ -68,23 +76,51 @@ command_that_works && echo ok
 command_that_fails || echo fallo
 ```
 
-También conserva:
+### Cobertura implementada en v0.1.4
 
-- aliases, variables, `export` y `readonly`;
-- funciones con `local` y `return`;
+El motor actual incluye, entre otras capacidades:
+
+- variables, parámetros posicionales y variables especiales de Bash;
+- aliases y funciones;
+- scopes locales, `local`, `return`, `break`, `continue` y atributos de variables;
+- arrays indexados, arrays asociativos, namerefs y arrays dispersos;
+- `declare`, `typeset`, `readonly`, `mapfile` y `readarray`;
 - `if`, `for`, `for ((...))`, `select`, `while`, `until` y `case ... esac`;
-- terminadores de `case` `;;`, `;&` y `;;&`;
-- `break` y `continue`, incluidos niveles de bucle;
-- condicionales `[[ ... ]]` con cadenas, enteros, archivos y expresiones regulares;
-- comandos y expansiones aritméticas con asignaciones, incremento/decremento y precedencia de operadores;
-- arrays indexados y asociativos, `declare`, `typeset`, `mapfile` y `readarray`;
-- sustitución de comandos, expansión de parámetros, brace expansion, IFS y globbing;
-- heredocs, here-strings y redirecciones de entrada/salida;
-- pipes, operadores lógicos y opciones como `pipefail`, `errexit`, `nounset`, `noexec`, `xtrace`, `noclobber` y `allexport`;
-- `read` interactivo con opciones de prompt, modo silencioso, modo raw, límites de caracteres y arrays;
-- traps `ERR` y `EXIT`, ejecución en segundo plano, `jobs`, `wait` y `fg`;
-- ejecución directa de scripts `.sh` y archivos con shebang Bash/sh;
-- scripts Bash/POSIX compatibles dentro de las capacidades del motor.
+- grupos `{ ...; }`, subshells `(...)`, `[[ ... ]]` y `(( ... ))`;
+- sustitución de comandos, expansiones aritméticas y de parámetros;
+- brace expansion, tilde expansion, IFS y quoting ANSI-C/localizado;
+- globbing, `extglob`, `globstar`, `GLOBIGNORE`, `GLOBSORT`, `dotglob`, `nullglob`, `failglob` y opciones relacionadas;
+- heredocs, here-strings, duplicación de descriptores, redirecciones combinadas y descriptores asignados a variables;
+- pipes, `|&`, pipelines paralelos, `pipefail`, operadores `&&`, `||`, `!` y background con `&`;
+- coprocesos y process substitution `<(...) / >(...)`;
+- jobs con `jobs`, `fg`, `bg`, `wait`, `wait -n` y `disown`;
+- traps, incluidos `ERR`, `EXIT`, `DEBUG` y `RETURN` dentro de las capacidades de Windows;
+- historial, `history`, `fc`, `bind` y programmable completion con `complete`, `compgen` y `compopt`;
+- `set`, `shopt`, opciones de compatibilidad y `compat53`;
+- builtins como `hash`, `getopts`, `exec`, `enable`, `suspend`, `dirs`, `pushd`, `popd`, `umask`, `ulimit`, `times` y `caller`;
+- variables y estado especiales como `PIPESTATUS`, `BASHPID`, `BASH_SUBSHELL`, `BASH_ARGC`, `BASH_ARGV`, `FUNCNAME`, `BASH_SOURCE`, `BASH_LINENO`, `RANDOM`, `SRANDOM`, `SECONDS`, `EPOCHSECONDS`, `EPOCHREALTIME`, `BASH_MONOSECONDS`, `BASH_ALIASES` y `BASH_CMDS`;
+- cambios específicos de Bash 5.3 ya incorporados en el motor, como `read -E`, `compgen -V`, `source -p`, `trap -P`, `array_expand_once`, `bash_source_fullpath` y sustituciones ejecutadas en el shell actual.
+
+### Scripts
+
+Shell Shock Tool reconoce archivos `.sh` y archivos con shebang Bash/sh, además de aceptar un script como argumento del ejecutable.
+
+```bash
+test.sh
+./test.sh
+adm-toolbox.exe test.sh
+```
+
+**Limitación conocida de v0.1.4:** los scripts lanzados desde la shell todavía se despachan mediante una segunda instancia de `adm-toolbox.exe`. En la terminal Win32 propia, un script que necesite entrada interactiva mediante `read` puede fallar al heredar `stdin` con `Controlador no válido (os error 6)`. El reconocimiento y despacho de scripts está implementado; el puente de entrada interactiva de ese proceso hijo sigue pendiente de corrección.
+
+### Diferencias deliberadas o pendientes frente a GNU Bash 5.3
+
+- el control de jobs y las señales se adaptan a procesos y APIs de Windows; no existe un controlling TTY POSIX idéntico al de Unix;
+- pruebas de archivo ligadas a permisos/propietario Unix, como setuid, setgid, sticky bit y ejecutabilidad POSIX, solo pueden aproximarse o carecen de equivalente directo;
+- `disown -h` no reproduce literalmente el comportamiento de SIGHUP de Unix;
+- los builtins cargables dinámicamente mediante `enable -f/-d` no están disponibles;
+- la edición interactiva emula interfaces de Bash/Readline, pero no incorpora GNU Readline 8.3 completo;
+- la conformidad amplia con GNU Bash 5.3 todavía no ha sido certificada mediante una suite exhaustiva comparativa.
 
 Las rutas del prompt se presentan al estilo Unix:
 
@@ -372,12 +408,15 @@ Los avisos y la licencia correspondientes se conservan en `THIRD_PARTY_NOTICES.m
 
 Para una compilación sin Internet puede definirse `ADM_HELIX_ARCHIVE` apuntando al ZIP oficial `helix-25.07.1-x86_64-windows.zip`.
 
-## Estado actual
+## Estado actual de v0.1.4
 
 Implementado actualmente:
 
-- shell Bash-compatible y utilidades Unix integradas;
+- intérprete Bash propio en Rust con cobertura amplia de Bash 5.3;
+- scripts `.sh` y shebang Bash/sh reconocidos y despachados por Shell Shock Tool;
 - terminal Win32 propia, historial, autocompletado y configuración portable;
+- jobs/background, pipelines paralelos, coprocesos y process substitution;
+- arrays, namerefs, atributos, globbing avanzado, history, completion y variables especiales de Bash;
 - información de sistema, procesos, discos, memoria y uptime;
 - consultas administrativas de servicios, usuarios, drivers/PnP, Event Log, Registro y tareas programadas;
 - diagnóstico y descubrimiento de red;
@@ -388,14 +427,18 @@ Implementado actualmente:
 - tráfico por proceso mediante ETW y detección del proceso foreground;
 - editor portable `helix-sst`.
 
-Pendiente dentro del alcance actual:
+Pendiente o conocido en este corte:
 
+- corregir el `stdin` interactivo de scripts `.sh` lanzados desde la terminal Win32;
+- validar de forma explícita `v0.1.4` mediante compilación y pruebas, ya que la preparación del release no las ejecutó;
+- ampliar la suite de conformidad contra GNU Bash 5.3 antes de declarar compatibilidad completa;
 - proveedores reales de `net usage` para obtener consumo por dispositivo desde router/AP/firewall;
 - verificación Authenticode;
 - auditoría estructurada de comandos y acciones administrativas;
 - indicador central de elevación/UAC;
 - confirmación centralizada para operaciones destructivas;
-- proveedores adicionales de infraestructura y compatibilidad Bash/Unix adicional cuando sea necesaria.
+- proveedores adicionales de infraestructura;
+- diferencias de plataforma inevitables o todavía no emuladas respecto de permisos, señales, TTY POSIX y GNU Readline completo.
 
 ## Arquitectura
 
