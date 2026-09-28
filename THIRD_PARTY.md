@@ -1,6 +1,6 @@
 # Third-party components
 
-ADM Toolbox is implemented in Rust and uses Rust crates from the open-source ecosystem.
+Shell Shock Tool is implemented in Rust and uses Rust crates from the open-source ecosystem.
 
 ## brush
 
@@ -9,7 +9,7 @@ ADM Toolbox is implemented in Rust and uses Rust crates from the open-source eco
 - Purpose: Bash-compatible shell semantics and standard shell builtins.
 - License: MIT.
 
-ADM Toolbox integrates brush as Rust library dependencies. It does not bundle an external Bash executable.
+Shell Shock Tool integrates brush as Rust library dependencies. It does not bundle an external Bash executable.
 
 ## snmp2
 
