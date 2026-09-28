@@ -79,6 +79,7 @@ struct WindowsShellHost {
     next_fd: AtomicI32,
     next_job_id: AtomicU32,
     child_cpu_100ns: Mutex<(u64, u64)>,
+    process_substitution_status: Arc<Mutex<HashMap<u32, Option<i32>>>>,
 }
 
 impl WindowsShellHost {
@@ -376,123 +377,119 @@ impl ShellCommandHost for WindowsShellHost {
                 return Err(std::io::Error::last_os_error().into());
             }
 
+            // Spawn the process before returning the substitution pathname and
+            // register its pid independently from the interactive jobs table.
+            // Bash 5.3 allows wait -n to reap process substitutions, but they do
+            // not become normal entries printed by the jobs builtin.
+            let mut command = Command::new(std::env::current_exe()?);
+            command.arg("-c")
+                .arg(source)
+                .current_dir(cwd)
+                .envs(env)
+                .stdin(if direction == '<' { Stdio::null() } else { Stdio::piped() })
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped());
+
+            let mut child = match command.spawn() {
+                Ok(child) => child,
+                Err(error) => {
+                    unsafe { CloseHandle(handle); }
+                    return Err(error).context("no se pudo iniciar sustitución de proceso");
+                }
+            };
+            let pid = child.id();
+            self.process_substitution_status
+                .lock()
+                .unwrap_or_else(|error| error.into_inner())
+                .insert(pid, None);
+
+            let child_stdin = child.stdin.take();
+            let child_stdout = child.stdout.take();
+            let child_stderr = child.stderr.take();
             let handle_value = handle as isize;
-            let source = source.to_owned();
-            let cwd = cwd.to_path_buf();
-            let env = env.clone();
+            let statuses = Arc::clone(&self.process_substitution_status);
             let display = crate::adapters::terminal::io::output_sender();
 
             std::thread::spawn(move || {
                 let handle = handle_value as HANDLE;
                 let connected = unsafe { ConnectNamedPipe(handle, std::ptr::null_mut()) };
                 if connected == 0 {
-                    // ERROR_PIPE_CONNECTED means the client won the race between
-                    // CreateNamedPipe and ConnectNamedPipe and is already usable.
                     let error = unsafe { GetLastError() };
                     if error != 535 {
+                        let _ = child.kill();
+                        let status = child.wait().ok().and_then(|value| value.code()).unwrap_or(1);
+                        if let Ok(mut rows) = statuses.lock() {
+                            rows.insert(pid, Some(status));
+                        }
                         unsafe { CloseHandle(handle); }
                         return;
                     }
                 }
 
+                let stderr_thread = child_stderr.map(|mut stderr| {
+                    let display_stderr = display.clone();
+                    std::thread::spawn(move || {
+                        let mut bytes = Vec::new();
+                        let _ = stderr.read_to_end(&mut bytes);
+                        send_async_terminal_output(display_stderr, &bytes, true);
+                    })
+                });
+
                 if direction == '<' {
-                    let mut command = match std::env::current_exe() {
-                        Ok(exe) => Command::new(exe),
-                        Err(_) => {
-                            unsafe {
-                                DisconnectNamedPipe(handle);
-                                CloseHandle(handle);
-                            }
-                            return;
-                        }
-                    };
-                    command.arg("-c")
-                        .arg(&source)
-                        .current_dir(&cwd)
-                        .envs(&env)
-                        .stdin(Stdio::null())
-                        .stdout(Stdio::piped())
-                        .stderr(Stdio::piped());
-
-                    if let Ok(mut child) = command.spawn() {
-                        let stderr = child.stderr.take();
-                        let display_stderr = display.clone();
-                        let stderr_thread = stderr.map(|mut stderr| std::thread::spawn(move || {
-                            let mut bytes = Vec::new();
-                            let _ = stderr.read_to_end(&mut bytes);
-                            send_async_terminal_output(display_stderr, &bytes, true);
-                        }));
-
-                        if let Some(mut stdout) = child.stdout.take() {
-                            let mut buffer = [0u8; 8192];
-                            loop {
-                                match stdout.read(&mut buffer) {
-                                    Ok(0) | Err(_) => break,
-                                    Ok(size) => {
-                                        let mut offset = 0usize;
-                                        while offset < size {
-                                            let mut written = 0u32;
-                                            let ok = unsafe {
-                                                WriteFile(
-                                                    handle,
-                                                    buffer[offset..size].as_ptr(),
-                                                    (size - offset) as u32,
-                                                    &mut written,
-                                                    std::ptr::null_mut(),
-                                                )
-                                            };
-                                            if ok == 0 || written == 0 { break; }
-                                            offset += written as usize;
-                                        }
+                    if let Some(mut stdout) = child_stdout {
+                        let mut buffer = [0u8; 8192];
+                        'stream: loop {
+                            match stdout.read(&mut buffer) {
+                                Ok(0) | Err(_) => break,
+                                Ok(size) => {
+                                    let mut offset = 0usize;
+                                    while offset < size {
+                                        let mut written = 0u32;
+                                        let ok = unsafe {
+                                            WriteFile(
+                                                handle,
+                                                buffer[offset..size].as_ptr(),
+                                                (size - offset) as u32,
+                                                &mut written,
+                                                std::ptr::null_mut(),
+                                            )
+                                        };
+                                        if ok == 0 || written == 0 { break 'stream; }
+                                        offset += written as usize;
                                     }
                                 }
                             }
                         }
-                        let _ = child.wait();
-                        if let Some(thread) = stderr_thread { let _ = thread.join(); }
                     }
                 } else {
-                    let mut command = match std::env::current_exe() {
-                        Ok(exe) => Command::new(exe),
-                        Err(_) => {
-                            unsafe {
-                                DisconnectNamedPipe(handle);
-                                CloseHandle(handle);
-                            }
-                            return;
-                        }
-                    };
-                    command.arg("-c")
-                        .arg(&source)
-                        .current_dir(&cwd)
-                        .envs(&env)
-                        .stdin(Stdio::piped())
-                        .stdout(Stdio::piped())
-                        .stderr(Stdio::piped());
-
-                    if let Ok(mut child) = command.spawn() {
-                        if let Some(mut stdin) = child.stdin.take() {
-                            let mut buffer = [0u8; 8192];
-                            loop {
-                                let mut read = 0u32;
-                                let ok = unsafe {
-                                    ReadFile(
-                                        handle,
-                                        buffer.as_mut_ptr(),
-                                        buffer.len() as u32,
-                                        &mut read,
-                                        std::ptr::null_mut(),
-                                    )
-                                };
-                                if ok == 0 || read == 0 { break; }
-                                if stdin.write_all(&buffer[..read as usize]).is_err() { break; }
-                            }
-                        }
-                        if let Ok(output) = child.wait_with_output() {
-                            send_async_terminal_output(display.clone(), &output.stdout, false);
-                            send_async_terminal_output(display.clone(), &output.stderr, true);
+                    if let Some(mut stdin) = child_stdin {
+                        let mut buffer = [0u8; 8192];
+                        loop {
+                            let mut read = 0u32;
+                            let ok = unsafe {
+                                ReadFile(
+                                    handle,
+                                    buffer.as_mut_ptr(),
+                                    buffer.len() as u32,
+                                    &mut read,
+                                    std::ptr::null_mut(),
+                                )
+                            };
+                            if ok == 0 || read == 0 { break; }
+                            if stdin.write_all(&buffer[..read as usize]).is_err() { break; }
                         }
                     }
+                    if let Some(mut stdout) = child_stdout {
+                        let mut bytes = Vec::new();
+                        let _ = stdout.read_to_end(&mut bytes);
+                        send_async_terminal_output(display.clone(), &bytes, false);
+                    }
+                }
+
+                let status = child.wait().ok().and_then(|value| value.code()).unwrap_or(1);
+                if let Some(thread) = stderr_thread { let _ = thread.join(); }
+                if let Ok(mut rows) = statuses.lock() {
+                    rows.insert(pid, Some(status));
                 }
 
                 unsafe {
@@ -1032,13 +1029,35 @@ impl ShellCommandHost for WindowsShellHost {
     fn wait_job(&self, pid: Option<u32>) -> Result<i32> {
         if let Some(pid) = pid {
             let job = self.jobs.lock().unwrap_or_else(|e| e.into_inner()).remove(&pid);
-            let Some(mut job) = job else { return Ok(127); };
-            let status = job.child.wait()?.code().unwrap_or(1);
-            self.record_child_cpu(&job.child);
-            for fd in job.pipe_fds {
-                let _ = self.close_fd(fd)?;
+            if let Some(mut job) = job {
+                let status = job.child.wait()?.code().unwrap_or(1);
+                self.record_child_cpu(&job.child);
+                for fd in job.pipe_fds {
+                    let _ = self.close_fd(fd)?;
+                }
+                return Ok(status);
             }
-            return Ok(status);
+
+            loop {
+                let status = {
+                    let mut substitutions = self.process_substitution_status
+                        .lock()
+                        .unwrap_or_else(|error| error.into_inner());
+                    match substitutions.get(&pid).copied() {
+                        Some(Some(status)) => {
+                            substitutions.remove(&pid);
+                            Some(Some(status))
+                        }
+                        Some(None) => Some(None),
+                        None => None,
+                    }
+                };
+                match status {
+                    Some(Some(status)) => return Ok(status),
+                    Some(None) => std::thread::sleep(std::time::Duration::from_millis(20)),
+                    None => return Ok(127),
+                }
+            }
         }
 
         let pids: Vec<u32> = self.jobs
@@ -1058,6 +1077,24 @@ impl ShellCommandHost for WindowsShellHost {
                 }
             }
         }
+
+        loop {
+            let pending = {
+                let substitutions = self.process_substitution_status
+                    .lock()
+                    .unwrap_or_else(|error| error.into_inner());
+                substitutions.values().any(|status| status.is_none())
+            };
+            if !pending { break; }
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
+        let mut substitutions = self.process_substitution_status
+            .lock()
+            .unwrap_or_else(|error| error.into_inner());
+        let completed = std::mem::take(&mut *substitutions);
+        for process_status in completed.into_values().flatten() {
+            status = process_status;
+        }
         Ok(status)
     }
 
@@ -1065,9 +1102,6 @@ impl ShellCommandHost for WindowsShellHost {
         loop {
             let completed = {
                 let mut jobs = self.jobs.lock().unwrap_or_else(|e| e.into_inner());
-                if jobs.is_empty() {
-                    return Ok(None);
-                }
 
                 let mut completed = None;
                 for (pid, job) in jobs.iter_mut() {
@@ -1091,6 +1125,24 @@ impl ShellCommandHost for WindowsShellHost {
                     let _ = self.close_fd(fd)?;
                 }
                 return Ok(Some((pid, status)));
+            }
+
+            {
+                let mut substitutions = self.process_substitution_status
+                    .lock()
+                    .unwrap_or_else(|error| error.into_inner());
+                if let Some(pid) = substitutions.iter()
+                    .find_map(|(pid, status)| status.is_some().then_some(*pid))
+                {
+                    let status = substitutions.remove(&pid).flatten().unwrap_or(1);
+                    return Ok(Some((pid, status)));
+                }
+
+                if self.jobs.lock().unwrap_or_else(|e| e.into_inner()).is_empty()
+                    && substitutions.is_empty()
+                {
+                    return Ok(None);
+                }
             }
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
@@ -1317,6 +1369,7 @@ impl NativeShellEngine {
             next_fd: AtomicI32::new(10),
             next_job_id: AtomicU32::new(1),
             child_cpu_100ns: Mutex::new((0, 0)),
+            process_substitution_status: Arc::new(Mutex::new(HashMap::new())),
         };
         let mut interpreter = Interpreter::new(Box::new(host));
         interpreter.env.export(
