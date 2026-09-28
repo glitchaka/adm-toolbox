@@ -8,7 +8,9 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
+use chrono::Local;
 use serde::Deserialize;
+use sysinfo::System;
 use crossterm::event::{KeyCode as CtKeyCode, KeyEvent as CtKeyEvent, KeyModifiers as CtKeyModifiers};
 use windows_sys::Win32::{
     Foundation::*,
@@ -65,6 +67,8 @@ impl Default for TerminalAppearance {
 struct TerminalConfig {
     #[serde(default)]
     appearance: TerminalAppearance,
+    metrics: System,
+    status_refreshed: Instant,
 }
 
 #[repr(C)]
@@ -211,6 +215,9 @@ pub fn run() -> Result<()> {
             bail!("No se pudo crear la tipografía Nerd Font embebida");
         }
 
+        let mut metrics = System::new_all();
+        metrics.refresh_all();
+
         let state = Box::new(Terminal {
             pty,
             parser: vt100::Parser::new(31, 112, 10_000),
@@ -229,6 +236,8 @@ pub fn run() -> Result<()> {
             blink: Instant::now(),
             font_resource,
             appearance,
+            metrics,
+            status_refreshed: Instant::now(),
         });
 
         let ptr = Box::into_raw(state);
@@ -550,8 +559,69 @@ impl Terminal {
             SetBkMode(dc, TRANSPARENT as i32);
             SetTextColor(dc, FG);
 
-            let title = wide("Shell Shock Tool");
+            let title = wide("SST");
             TextOutW(dc, 38, 7, title.as_ptr(), (title.len() - 1) as i32);
+
+            let cpu = if self.metrics.cpus().is_empty() {
+                0.0
+            } else {
+                self.metrics
+                    .cpus()
+                    .iter()
+                    .map(|cpu| cpu.cpu_usage())
+                    .sum::<f32>()
+                    / self.metrics.cpus().len() as f32
+            };
+            let ram_gib = self.metrics.used_memory() as f64
+                / 1024.0
+                / 1024.0
+                / 1024.0;
+            let now = Local::now();
+            let controls_left = bounds.right - 116;
+
+            // La barra se degrada limpiamente en ventanas estrechas: primero
+            // desaparecen CPU/RAM, luego la fecha, conservando siempre la hora.
+            if bounds.right >= 900 {
+                let cpu_text = wide(&format!("CPU {:>3.0}%", cpu));
+                TextOutW(
+                    dc,
+                    controls_left - 294,
+                    7,
+                    cpu_text.as_ptr(),
+                    (cpu_text.len() - 1) as i32,
+                );
+
+                let ram_text = wide(&format!("RAM {:.1} GiB", ram_gib));
+                TextOutW(
+                    dc,
+                    controls_left - 205,
+                    7,
+                    ram_text.as_ptr(),
+                    (ram_text.len() - 1) as i32,
+                );
+            }
+
+            if bounds.right >= 650 {
+                let date_text = wide(&now.format("%d %b").to_string());
+                TextOutW(
+                    dc,
+                    controls_left - 75,
+                    7,
+                    date_text.as_ptr(),
+                    (date_text.len() - 1) as i32,
+                );
+            }
+
+            if bounds.right >= 420 {
+                let time_text = wide(&now.format("%H:%M").to_string());
+                TextOutW(
+                    dc,
+                    controls_left - 135,
+                    7,
+                    time_text.as_ptr(),
+                    (time_text.len() - 1) as i32,
+                );
+            }
 
             for (button_kind, left, right) in [
                 (TitleButton::Minimize, bounds.right - 109, bounds.right - 75),
@@ -912,6 +982,12 @@ unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wp: WPARAM, lp: LPAR
 
             WM_TIMER => {
                 let mut changed = false;
+
+                if state.status_refreshed.elapsed() >= Duration::from_secs(1) {
+                    state.metrics.refresh_all();
+                    state.status_refreshed = Instant::now();
+                    changed = true;
+                }
 
                 while let Ok(data) = state.pty.output.try_recv() {
                     state.parser.process(&data);
