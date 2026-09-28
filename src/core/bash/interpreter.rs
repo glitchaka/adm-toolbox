@@ -3,6 +3,7 @@ use std::{
     fs::{self, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use anyhow::{anyhow, bail, Result};
@@ -29,6 +30,12 @@ pub struct ExecutionResult {
     pub exit_requested: bool,
     flow: FlowSignal,
     errexit_exempt: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReadCompletionMode {
+    Filename,
+    Bash,
 }
 
 #[derive(Debug, Clone)]
@@ -143,6 +150,20 @@ pub trait ShellCommandHost: Send + Sync {
         self.read_line(prompt, silent)
     }
 
+    fn read_input_with_completion(
+        &self,
+        prompt: &str,
+        silent: bool,
+        delimiter: char,
+        max_chars: Option<usize>,
+        timeout: Option<std::time::Duration>,
+        initial: &str,
+        _mode: ReadCompletionMode,
+        _completer: &mut dyn FnMut(&str, usize) -> Result<Vec<String>>,
+    ) -> Result<Option<String>> {
+        self.read_input(prompt, silent, delimiter, max_chars, timeout, initial)
+    }
+
     fn execute_builtin(
         &self,
         name: &str,
@@ -249,7 +270,7 @@ pub trait ShellCommandHost: Send + Sync {
 
 pub struct Interpreter {
     pub env: ShellEnvironment,
-    host: Box<dyn ShellCommandHost>,
+    host: Arc<dyn ShellCommandHost>,
     loop_depth: usize,
     source_depth: usize,
     command_hash: HashMap<String, String>,
@@ -276,7 +297,7 @@ impl Interpreter {
     pub fn new(host: Box<dyn ShellCommandHost>) -> Self {
         let mut interpreter = Self {
             env: ShellEnvironment::new(),
-            host,
+            host: Arc::from(host),
             loop_depth: 0,
             source_depth: 0,
             command_hash: HashMap::new(),
@@ -537,7 +558,11 @@ impl Interpreter {
     }
 
     pub fn complete_line(&mut self, line: &str, cursor: usize) -> Result<Vec<String>> {
-        let cursor = cursor.min(line.len());
+        let char_cursor = cursor.min(line.chars().count());
+        let cursor = line.char_indices()
+            .nth(char_cursor)
+            .map(|(index, _)| index)
+            .unwrap_or(line.len());
         let before = &line[..cursor];
         let wordbreaks = self.env.get("COMP_WORDBREAKS");
         let start = before.rfind(|ch: char| {
@@ -594,6 +619,14 @@ impl Interpreter {
         }
         let values = self.path_completions(prefix, false);
         Ok(self.apply_completion_filters(values))
+    }
+
+    fn complete_filename_line(&self, line: &str, cursor: usize) -> Vec<String> {
+        let char_cursor = cursor.min(line.chars().count());
+        let before: String = line.chars().take(char_cursor).collect();
+        let start = before.rfind(char::is_whitespace).map_or(0, |index| index + 1);
+        let prefix = &before[start..];
+        self.apply_completion_filters(self.path_completions(prefix, false))
     }
 
     pub fn prepare_history(&mut self, line: &str) -> Result<(String, bool)> {
@@ -4652,6 +4685,8 @@ impl Interpreter {
         let mut raw = false;
         let mut max_chars: Option<usize> = None;
         let mut exact_chars = false;
+        let mut editing = false;
+        let mut bash_completion = false;
         let mut array_name: Option<String> = None;
         let mut delimiter = '\n';
         let mut timeout: Option<std::time::Duration> = None;
@@ -4668,9 +4703,13 @@ impl Interpreter {
                 }
                 "-s" => silent = true,
                 "-r" => raw = true,
-                "-e" | "-E" => {
-                    // Native Shell Shock Tool line editing is always available for
-                    // interactive reads; -E shares the same editing path on Bash 5.3.
+                "-e" => {
+                    editing = true;
+                    bash_completion = false;
+                }
+                "-E" => {
+                    editing = true;
+                    bash_completion = true;
                 }
                 "-n" | "-N" => {
                     exact_chars = args[index] == "-N";
@@ -4732,6 +4771,29 @@ impl Interpreter {
                 text.split(delimiter).next().unwrap_or("").to_owned()
             };
             Some(value)
+        } else if editing {
+            let host = Arc::clone(&self.host);
+            let mode = if bash_completion {
+                ReadCompletionMode::Bash
+            } else {
+                ReadCompletionMode::Filename
+            };
+            let mut completer = |line: &str, cursor: usize| {
+                match mode {
+                    ReadCompletionMode::Filename => Ok(self.complete_filename_line(line, cursor)),
+                    ReadCompletionMode::Bash => self.complete_line(line, cursor),
+                }
+            };
+            host.read_input_with_completion(
+                &prompt,
+                silent,
+                delimiter,
+                max_chars,
+                timeout,
+                &initial,
+                mode,
+                &mut completer,
+            )?
         } else {
             self.host.read_input(
                 &prompt,

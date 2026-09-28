@@ -4,7 +4,7 @@ pub mod interpreter;
 pub mod lexer;
 pub mod parser;
 
-pub use interpreter::{CoprocHandles, ExecutionResult, Interpreter, JobInfo, ShellCommandHost};
+pub use interpreter::{CoprocHandles, ExecutionResult, Interpreter, JobInfo, ReadCompletionMode, ShellCommandHost};
 
 use anyhow::Result;
 use ast::AstNode;

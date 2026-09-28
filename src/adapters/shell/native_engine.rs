@@ -46,7 +46,7 @@ use crate::{
     core::{
         CommandContext,
         ShellExecution,
-        bash::{ExecutionResult, Interpreter, JobInfo, ShellCommandHost},
+        bash::{ExecutionResult, Interpreter, JobInfo, ReadCompletionMode, ShellCommandHost},
         ports::ShellEngine,
     },
 };
@@ -303,6 +303,173 @@ impl ShellCommandHost for WindowsShellHost {
                         }
                     }
                     if !silent { crate::adapters::terminal::io::write(text.as_bytes())?; }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    fn read_input_with_completion(
+        &self,
+        prompt: &str,
+        silent: bool,
+        delimiter: char,
+        max_chars: Option<usize>,
+        timeout: Option<std::time::Duration>,
+        initial: &str,
+        _mode: ReadCompletionMode,
+        completer: &mut dyn FnMut(&str, usize) -> Result<Vec<String>>,
+    ) -> Result<Option<String>> {
+        use crossterm::event::{Event, KeyCode, KeyModifiers};
+
+        crate::adapters::terminal::io::write(prompt.as_bytes())?;
+        crate::adapters::terminal::io::enter_raw()?;
+        struct RawGuard;
+        impl Drop for RawGuard {
+            fn drop(&mut self) { crate::adapters::terminal::io::leave_raw(); }
+        }
+        let _guard = RawGuard;
+
+        let mut line: Vec<char> = initial.chars().collect();
+        let mut cursor = line.len();
+        if !silent && !initial.is_empty() {
+            crate::adapters::terminal::io::write(initial.as_bytes())?;
+        }
+        let started = std::time::Instant::now();
+
+        let redraw = |line: &[char], cursor: usize| -> Result<()> {
+            if silent { return Ok(()); }
+            let text: String = line.iter().collect();
+            crate::adapters::terminal::io::write(format!("\r\x1b[2K{prompt}{text}").as_bytes())?;
+            let back = line.len().saturating_sub(cursor);
+            if back > 0 {
+                crate::adapters::terminal::io::write(format!("\x1b[{back}D").as_bytes())?;
+            }
+            Ok(())
+        };
+
+        loop {
+            if let Some(limit) = max_chars {
+                if line.len() >= limit {
+                    if !silent { crate::adapters::terminal::io::write(b"\r\n")?; }
+                    return Ok(Some(line.iter().collect()));
+                }
+            }
+
+            if let Some(limit) = timeout {
+                let elapsed = started.elapsed();
+                if elapsed >= limit { return Ok(None); }
+                if !crate::adapters::terminal::io::poll(limit - elapsed)? {
+                    return Ok(None);
+                }
+            }
+
+            match crate::adapters::terminal::io::read()? {
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('d') && line.is_empty() =>
+                {
+                    return Ok(None);
+                }
+                Event::Key(key) if key.modifiers.contains(KeyModifiers::CONTROL)
+                    && key.code == KeyCode::Char('c') =>
+                {
+                    if !silent { crate::adapters::terminal::io::write(b"^C\r\n")?; }
+                    return Ok(None);
+                }
+                Event::Key(key) => match key.code {
+                    KeyCode::Enter if delimiter == '\n' => {
+                        if !silent { crate::adapters::terminal::io::write(b"\r\n")?; }
+                        return Ok(Some(line.iter().collect()));
+                    }
+                    KeyCode::Backspace if cursor > 0 => {
+                        cursor -= 1;
+                        line.remove(cursor);
+                        redraw(&line, cursor)?;
+                    }
+                    KeyCode::Delete if cursor < line.len() => {
+                        line.remove(cursor);
+                        redraw(&line, cursor)?;
+                    }
+                    KeyCode::Left => {
+                        cursor = cursor.saturating_sub(1);
+                        redraw(&line, cursor)?;
+                    }
+                    KeyCode::Right => {
+                        cursor = (cursor + 1).min(line.len());
+                        redraw(&line, cursor)?;
+                    }
+                    KeyCode::Home => {
+                        cursor = 0;
+                        redraw(&line, cursor)?;
+                    }
+                    KeyCode::End => {
+                        cursor = line.len();
+                        redraw(&line, cursor)?;
+                    }
+                    KeyCode::Tab if !silent => {
+                        let current: String = line.iter().collect();
+                        let mut matches = completer(&current, cursor)?;
+                        matches.sort();
+                        matches.dedup();
+                        if matches.is_empty() { continue; }
+
+                        let before: String = line[..cursor].iter().collect();
+                        let start_byte = before.rfind(|ch: char| {
+                            ch.is_whitespace() || matches!(ch, ';' | '|' | '&' | '(' | ')')
+                        }).map_or(0, |index| index + 1);
+                        let begin = before[..start_byte].chars().count();
+                        let typed: String = line[begin..cursor].iter().collect();
+
+                        let common = matches.iter().skip(1).fold(matches[0].clone(), |prefix, value| {
+                            let count = prefix.chars().zip(value.chars())
+                                .take_while(|(left, right)| left == right)
+                                .count();
+                            prefix.chars().take(count).collect()
+                        });
+
+                        let replacement = if matches.len() == 1 {
+                            Some(matches[0].clone())
+                        } else if common.chars().count() > typed.chars().count() {
+                            Some(common)
+                        } else {
+                            None
+                        };
+
+                        if let Some(replacement) = replacement {
+                            let chars: Vec<char> = replacement.chars().collect();
+                            line.splice(begin..cursor, chars.iter().copied());
+                            cursor = begin + chars.len();
+                        } else {
+                            crate::adapters::terminal::io::write(
+                                format!("\r\n{}\r\n", matches.join("  ")).as_bytes()
+                            )?;
+                        }
+                        redraw(&line, cursor)?;
+                    }
+                    KeyCode::Char(ch) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        if ch == delimiter {
+                            if !silent && delimiter != '\n' {
+                                let mut buf = [0u8; 4];
+                                crate::adapters::terminal::io::write(ch.encode_utf8(&mut buf).as_bytes())?;
+                            }
+                            return Ok(Some(line.iter().collect()));
+                        }
+                        line.insert(cursor, ch);
+                        cursor += 1;
+                        redraw(&line, cursor)?;
+                    }
+                    _ => {}
+                },
+                Event::Paste(text) => {
+                    for ch in text.chars() {
+                        if ch == delimiter {
+                            return Ok(Some(line.iter().collect()));
+                        }
+                        line.insert(cursor, ch);
+                        cursor += 1;
+                        if max_chars.is_some_and(|limit| line.len() >= limit) { break; }
+                    }
+                    redraw(&line, cursor)?;
                 }
                 _ => {}
             }
