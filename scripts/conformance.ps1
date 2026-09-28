@@ -1,5 +1,5 @@
 param(
-    [string]$Exe = ".\target\debug\adm-toolbox.exe"
+    [string]$Exe = ".\target\debug\sst.exe"
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,7 +36,7 @@ foreach ($case in $cases) {
     else {
         $failed++
         Write-Host "FAIL $($case.Name)" -ForegroundColor Red
-        Write-Host "  ADM exit=$oursExit output=[$ours]"
+        Write-Host "  SST exit=$oursExit output=[$ours]"
         Write-Host "  WSL exit=$bashExit output=[$bash]"
     }
 }
