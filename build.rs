@@ -14,8 +14,8 @@ const HELIX_URL: &str =
     "https://github.com/helix-editor/helix/releases/download/25.07.1/helix-25.07.1-x86_64-windows.zip";
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=ADM_NERD_FONT_FILE");
-    println!("cargo:rerun-if-env-changed=ADM_HELIX_ARCHIVE");
+    println!("cargo:rerun-if-env-changed=SST_NERD_FONT_FILE");
+    println!("cargo:rerun-if-env-changed=SST_HELIX_ARCHIVE");
     println!("cargo:rerun-if-changed=assets/shell-shock-mascot.svg");
 
     let out_dir = PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR no definido"));
@@ -43,9 +43,9 @@ fn main() {
 fn ensure_nerd_font(out_dir: &Path) {
     let destination = out_dir.join(FONT_NAME);
 
-    if let Some(source) = env::var_os("ADM_NERD_FONT_FILE") {
+    if let Some(source) = env::var_os("SST_NERD_FONT_FILE") {
         fs::copy(Path::new(&source), &destination)
-            .expect("No se pudo copiar ADM_NERD_FONT_FILE");
+            .expect("No se pudo copiar SST_NERD_FONT_FILE");
     } else if !destination.is_file() {
         let status = Command::new("curl")
             .args([
@@ -62,7 +62,7 @@ fn ensure_nerd_font(out_dir: &Path) {
 
         if !status.success() {
             panic!(
-                "No se pudo obtener la Nerd Font. Compile con Internet o defina ADM_NERD_FONT_FILE apuntando a JetBrainsMono Nerd Font Mono."
+                "No se pudo obtener la Nerd Font. Compile con Internet o defina SST_NERD_FONT_FILE apuntando a JetBrainsMono Nerd Font Mono."
             );
         }
     }
@@ -79,9 +79,9 @@ fn ensure_nerd_font(out_dir: &Path) {
 fn ensure_helix_archive(out_dir: &Path) {
     let destination = out_dir.join(HELIX_ARCHIVE_NAME);
 
-    if let Some(source) = env::var_os("ADM_HELIX_ARCHIVE") {
+    if let Some(source) = env::var_os("SST_HELIX_ARCHIVE") {
         fs::copy(Path::new(&source), &destination)
-            .expect("No se pudo copiar ADM_HELIX_ARCHIVE");
+            .expect("No se pudo copiar SST_HELIX_ARCHIVE");
     } else if !destination.is_file() {
         let status = Command::new("curl")
             .args([
@@ -98,7 +98,7 @@ fn ensure_helix_archive(out_dir: &Path) {
 
         if !status.success() {
             panic!(
-                "No se pudo obtener Helix {HELIX_VERSION}. Compile con Internet o defina ADM_HELIX_ARCHIVE apuntando al ZIP oficial."
+                "No se pudo obtener Helix {HELIX_VERSION}. Compile con Internet o defina SST_HELIX_ARCHIVE apuntando al ZIP oficial."
             );
         }
     }
