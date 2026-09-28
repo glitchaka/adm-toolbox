@@ -1408,7 +1408,10 @@ impl Interpreter {
         }
 
         if command.words.is_empty() {
-            return Ok(ExecutionResult::success());
+            let mut result = ExecutionResult::success();
+            self.apply_output_redirects(command, &mut result)?;
+            self.finalize_process_substitutions(&mut result)?;
+            return Ok(result);
         }
 
         let mut raw = command.words.clone();
@@ -1438,12 +1441,18 @@ impl Interpreter {
         }
 
         if index == raw.len() {
-            return Ok(ExecutionResult::success());
+            let mut result = ExecutionResult::success();
+            self.apply_output_redirects(command, &mut result)?;
+            self.finalize_process_substitutions(&mut result)?;
+            return Ok(result);
         }
 
         let words = self.expand_words(&raw[index..])?;
         if words.is_empty() {
-            return Ok(ExecutionResult::success());
+            let mut result = ExecutionResult::success();
+            self.apply_output_redirects(command, &mut result)?;
+            self.finalize_process_substitutions(&mut result)?;
+            return Ok(result);
         }
 
         let name = words[0].clone();
