@@ -19,7 +19,7 @@ use crate::core::{
 };
 
 const NETWORK_PROVIDER: &str = "7dd42a49-5329-4832-8dfd-43d979153a88";
-const TRACE_NAME: &str = "ADM-Toolbox-Traffic";
+const TRACE_NAME: &str = "SST-Traffic";
 
 pub struct EtwTrafficMonitorFactory;
 
@@ -64,7 +64,7 @@ impl EtwTrafficMonitor {
             .map_err(|error| anyhow!("no se pudo iniciar ETW: {error:?}"))?;
 
         let processor = thread::Builder::new()
-            .name("adm-toolbox-etw-network".to_owned())
+            .name("sst-etw-network".to_owned())
             .spawn(move || {
                 let _ = UserTrace::process_from_handle(trace_handle);
             })
