@@ -2049,8 +2049,10 @@ impl Interpreter {
         }
         self.env.set_internal_array("BASH_SOURCE", sources);
         self.env.set_internal_array("BASH_LINENO", lines);
-        self.env.set_internal_array("BASH_ARGC", argc);
-        self.env.set_internal_array("BASH_ARGV", argv);
+        if self.env.option_enabled("extdebug") {
+            self.env.set_internal_array("BASH_ARGC", argc);
+            self.env.set_internal_array("BASH_ARGV", argv);
+        }
     }
 
     fn shell_builtin(
@@ -5388,6 +5390,10 @@ impl Interpreter {
                 }
             }
         }
+        if enable && !shell_options && self.env.option_enabled("extdebug") {
+            self.sync_call_stack_arrays();
+        }
+
         ExecutionResult::from_parts(stdout, stderr, status)
     }
 
