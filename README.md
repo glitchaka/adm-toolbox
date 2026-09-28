@@ -254,6 +254,7 @@ net scan 192.168.1.0/24
 net scan --unknown
 net scan --authorized
 net scan --known
+net scan --names
 net scan --json
 net scan --csv
 ```
@@ -261,16 +262,25 @@ net scan --csv
 Escanea una red IPv4 y relaciona los equipos encontrados con:
 
 - dirección IP;
+- nombre del equipo;
 - MAC;
-- hostname;
 - latencia;
 - estado conocido/desconocido;
 - nombre del inventario SST, si existe.
 
+La salida normal prioriza las columnas **IP** y **NOMBRE**. SST intenta resolver el hostname del equipo y, si no hay resolución disponible pero el dispositivo está inventariado, utiliza el nombre guardado en el inventario.
+
 Sin red explícita, SST intenta determinar la red IPv4 local y usa una /24. Por seguridad, el escaneo está limitado a redes /20 o más pequeñas.
 
 `--unknown` muestra solo equipos que no están en el inventario.  
-`--authorized` y `--known` muestran solo equipos conocidos.
+`--authorized` y `--known` muestran solo equipos conocidos.  
+`--names` muestra únicamente IP y nombre del equipo, como un IP Scanner simple:
+
+```text
+IP               NOMBRE
+192.168.1.10     PC-RECEPCION
+192.168.1.21     NOTEBOOK-01
+```
 
 ### Monitor de presencia
 
