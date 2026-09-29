@@ -1,998 +1,208 @@
-# Shell Shock Tool — Alcance y temas a cubrir
+# Shell Shock Tool — Pendientes reales
 
-Shell Shock Tool será una consola portable de soporte técnico para Windows construida en Rust. Su shell base utiliza un motor Bash-compatible escrito en Rust y combina utilidades Unix integradas con herramientas y capacidades nativas de Windows.
+Este archivo contiene **únicamente trabajo pendiente de implementación o de cierre técnico** en el estado actual de `main`.
 
-El foco es administración y diagnóstico de equipos y redes autorizadas. La consola será el centro del producto; la GUI, si existe, será complementaria.
+No es una descripción general de SST ni un registro histórico. Las capacidades ya implementadas se documentan en `README.md`.
 
-## Principio rector: primero una consola Linux, después las herramientas
+Estado de referencia al actualizar este archivo:
 
-Shell Shock Tool no debe sentirse como una colección de utilidades pegadas alrededor de una consola. Debe sentirse, desde que abre hasta que cierra, como trabajar en una shell Linux/Bash coherente.
-
-Esto implica:
-
-- el prompt y la navegación son siempre el centro de la experiencia;
-- no habrá un dashboard principal que sustituya a la terminal;
-- no habrá botones, paneles o ventanas obligatorias para usar las funciones de soporte;
-- todas las funciones importantes deben poder invocarse como comandos;
-- los comandos propios deben comportarse como utilidades Unix: entrada simple, salida predecible, códigos de retorno y posibilidad de encadenarse;
-- cualquier vista más rica será TUI opcional iniciada desde la propia shell, nunca una aplicación separada que rompa el flujo;
-- los comandos deben agruparse por una taxonomía coherente y no crecer como nombres inconexos;
-- `--help`, autocompletado y documentación deben hacer que descubrir funciones se sienta como usar herramientas Linux reales.
-
-Ejemplo de sesión objetivo:
-
-```bash
-manuel@soporte ~
-$ net scan --alive
-10.10.20.15   00:11:22:33:44:55   LAB-PC-01
-10.10.20.37   A4:C3:F0:11:93:02   NOTEBOOK-ALU
-
-manuel@soporte ~
-$ net locate 10.10.20.37
-switch: SW-PISO2
-port:   Gi1/0/27
-vlan:   20
-
-manuel@soporte ~
-$ domain status 10.10.20.37
-hostname: NOTEBOOK-ALU
-domain:   WORKGROUP
-joined:   no
-
-manuel@soporte ~
-$ wol LAB-PC-01
-magic packet sent to 00:11:22:33:44:55
-```
-
-La experiencia debe ser coherente incluso al ejecutar programas nativos:
-
-```bash
-ipconfig /all | grep -i dns
-tasklist | grep -i chrome
-netstat -ano | grep LISTENING
-```
+- producto: **Shell Shock Tool (SST)**;
+- versión: **0.1.5**;
+- plataforma principal: **Windows**;
+- implementación: **Rust**;
+- shell: **intérprete Bash-compatible propio de SST**;
+- objetivo de compatibilidad: **Bash 5.3**;
+- no se usa `brush-core`/`brush-builtins` como motor de la shell;
+- Xilem no forma parte de la base estable actual.
 
 ---
 
+## 1. `net usage`: consumo de Internet de toda la LAN
 
+La infraestructura de configuración de proveedores ya existe, pero todavía falta implementar la obtención real de contadores de tráfico por cliente.
 
-## 1. Objetivos
-
-- Ejecutable/carpeta portable para Windows.
-- Código de Shell Shock Tool y motor de shell construidos en Rust.
-- Motor Bash-compatible embebido; no distribuir un `bash.exe` externo como núcleo de la aplicación.
-- No depender de `cmd.exe` como interfaz principal.
-- Experiencia de terminal tipo Bash/Linux.
-- Scripts, pipes, redirecciones y aliases.
-- Utilidades Unix incluidas.
-- Acceso transparente a herramientas nativas de Windows.
-- Herramientas propias para soporte técnico.
-- Inventario y diagnóstico de red.
-- Wake-on-LAN.
-- Detección de equipos conectados.
-- Identificación de pertenencia a dominio.
-- Identificación, cuando la infraestructura lo permita, de la boca/puerto físico del switch donde está conectado un equipo.
-
----
-
-## 2. Consola y shell
-
-### 2.1 Terminal
-
-- historial de comandos;
-- navegación por historial;
-- edición de línea;
-- autocompletado;
-- copiar/pegar;
-- scrollback;
-- UTF-8;
-- colores ANSI;
-- resize;
-- prompt configurable;
-- directorio actual visible;
-- código de salida del último comando;
-- indicador de privilegios elevados;
-- pestañas o varias sesiones en una fase posterior.
-
-### 2.2 Comportamiento Bash
-
-La shell base debe conservar la semántica y sensación de una terminal Linux. Los comandos SST no deben introducir un sistema de interacción paralelo.
-
-La implementación usa `brush-core`/`brush-builtins`, un motor Bash-compatible escrito en Rust, en vez de mantener un parser Bash casero. Esto permite que aliases, funciones, variables, expansiones, sustitución de comandos, pipes, redirecciones, operadores lógicos y scripts compartan el mismo modelo de ejecución.
-
-Las herramientas SST se registran en ese motor como comandos nativos escritos en Rust.
-
-Debe soportar:
-
-- `cd`
-- `pwd`
-- `ls`
-- `cat`
-- `less`
-- `head`
-- `tail`
-- `grep`
-- `sed`
-- `awk`
-- `find`
-- `sort`
-- `uniq`
-- `cut`
-- `xargs`
-- `wc`
-- `diff`
-- `tee`
-- `tar`
-- `gzip`
-- `zip/unzip`
-- `curl`
-- `ssh/scp/sftp`
-- aliases;
-- variables de entorno;
-- pipes;
-- redirecciones;
-- scripts `.sh`;
-- `&&`, `||`, `;`.
-
-Ejemplo:
-
-```bash
-ipconfig /all | grep -i dns
-tasklist | grep -i chrome
-net scan --alive | sort
-```
-
-### 2.3 Convención de comandos SST
-
-Para evitar que el proyecto termine convertido en un pegote de comandos independientes, las capacidades propias se organizan por familias, igual que una buena CLI Unix moderna.
-
-Estructura propuesta:
-
-```text
-net      red y descubrimiento
-domain   dominio / Active Directory
-switch   switches y puertos
-device   inventario de equipos
-wol      Wake-on-LAN
-diag     diagnóstico
-sys      información local
-```
-
-Ejemplos:
-
-```bash
-net scan
-net scan 10.10.20.0/24
-net neighbors
-net ports 10.10.20.15 22,80,443
-
-domain status LAB-PC-01
-domain status 10.10.20.37
-
-switch locate 00:11:22:33:44:55
-switch show SW-PISO2
-
-device list
-device add 00:11:22:33:44:55 LAB-PC-01
-device unknown
-
-diag network
-diag dns
-diag storage
-
-sys info
-sys disks
-sys services
-```
-
-Reglas de diseño:
-
-- verbo y sustantivo consistentes;
-- salida legible en terminal por defecto;
-- `--json`, `--csv` o salida simple cuando corresponda;
-- posibilidad de usar pipes;
-- códigos de salida útiles para scripts;
-- `--quiet` para scripts;
-- `--help` en cada comando y subcomando;
-- alias cortos solo cuando sean naturales;
-- no duplicar comandos nativos de Windows o Unix sin una razón clara.
-
-Ejemplo:
-
-```bash
-net scan --unknown --json | jq '.[] | .hostname'
-```
-
-### 2.4 TUI opcional, no GUI obligatoria
-
-Cuando una operación se beneficie de una vista interactiva, podrá abrirse una TUI dentro de la terminal, por ejemplo:
-
-```bash
-net monitor
-device tui
-switch map
-```
-
-Estas vistas deben:
-
-- ejecutarse dentro de la terminal;
-- cerrarse y devolver al prompt;
-- respetar teclado;
-- no ser necesarias para acceder a ninguna función;
-- no cambiar el modelo mental de Bash.
-
----
-
-
-
-## 3. Integración con Windows
-
-La shell debe poder ejecutar programas nativos del sistema:
-
-- `ipconfig.exe`
-- `ping.exe`
-- `tracert.exe`
-- `nslookup.exe`
-- `arp.exe`
-- `route.exe`
-- `netstat.exe`
-- `netsh.exe`
-- `tasklist.exe`
-- `taskkill.exe`
-- `systeminfo.exe`
-- `whoami.exe`
-- `hostname.exe`
-- `sc.exe`
-- `reg.exe`
-- `wevtutil.exe`
-- `pnputil.exe`
-- `driverquery.exe`
-- `net.exe`
-- `schtasks.exe`
-- `robocopy.exe`
-- PowerShell cuando esté disponible.
-
-Conversión cómoda entre rutas:
-
-```text
-C:\Users\usuario\Desktop
-/c/Users/usuario/Desktop
-```
-
----
-
-## 4. Comandos propios
-
-### 4.1 Información local
-
-```bash
-sys info
-sys processes
-sys services
-sys disks
-sys memory
-sys users
-sys drivers
-sys events
-sys uptime
-sys hostname
-
-net interfaces
-net routes
-net connections
-```
-
-### 4.2 Diagnóstico
-
-```bash
-diag
-diag network
-diag dns
-diag hardware
-diag storage
-```
-
-La salida debe poder mostrarse en consola y exportarse a TXT, CSV o JSON.
-
----
-
-## 5. Escaneo de red e inventario
-
-El objetivo no es inspeccionar contenido de equipos ajenos, sino saber qué dispositivos están presentes en una red administrada y registrar datos operativos útiles.
-
-### 5.1 Descubrimiento
-
-Comandos previstos:
-
-```bash
-net scan
-net scan 192.168.1.0/24
-net scan --alive
-net scan --details
-net scan --unknown
-```
-
-Datos por equipo, cuando estén disponibles:
-
-- IP;
-- MAC;
-- hostname;
-- estado online/offline;
-- latencia;
-- interfaz local usada;
-- fabricante de la MAC/OUI;
-- fecha/hora de última detección;
-- método con el que fue detectado.
-
-### 5.2 Métodos
-
-- ICMP;
-- ARP;
-- resolución DNS;
-- vecinos IPv6;
-- probes TCP controlados;
-- datos del propio Windows;
-- cachés y tablas locales.
-
----
-
-## 6. Dominio / Active Directory
-
-Shell Shock Tool debe indicar si un equipo pertenece o no a un dominio y, cuando sea posible verificarlo, a cuál.
-
-Salida deseada:
-
-```text
-IP              HOSTNAME        DOMINIO             ESTADO
-10.10.20.15     LAB-PC-01       colegio.local       Dominio
-10.10.20.22     DESKTOP-X91     WORKGROUP           No unido
-10.10.20.37     NOTEBOOK-ALU    desconocido         No verificado
-```
-
-### 6.1 Estados
-
-Distinguir explícitamente:
-
-- unido a dominio;
-- no unido / workgroup;
-- dominio conocido;
-- dominio no verificable;
-- dato inferido;
-- dato confirmado.
-
-### 6.2 Fuentes posibles
-
-Según permisos e infraestructura:
-
-- DNS;
-- Active Directory;
-- LDAP;
-- consultas WMI/CIM autorizadas;
-- SMB/RPC cuando corresponda;
-- nombre de dominio reportado por el propio host;
-- inventario institucional existente.
-
-No presentar una inferencia como confirmación.
-
----
-
-## 7. Identificación de boca/puerto de switch
-
-Requisito: poder saber, cuando la red lo permita, en qué puerto físico del switch aparece un equipo.
-
-Ejemplo:
-
-```text
-HOST            IP            MAC                SWITCH        PUERTO
-LAB-PC-01       10.10.20.15   00:11:22:33:44:55 SW-PISO2      Gi1/0/18
-NOTEBOOK-ALU    10.10.20.37   A4:C3:F0:11:93:02 SW-PISO2      Gi1/0/27
-```
-
-### 7.1 Importante
-
-Un escaneo IP por sí solo no puede saber la boca física del switch.
-
-Para obtenerla hay que consultar la infraestructura de red mediante una o más de estas fuentes:
-
-- tabla MAC/FDB del switch;
-- SNMP;
-- LLDP;
-- CDP, si existe;
-- API del fabricante/controlador;
-- CLI remota autorizada;
-- controlador central de red;
-- inventario de switches.
-
-### 7.2 Flujo de resolución
-
-```text
-IP
- ↓
-MAC
- ↓
-tabla MAC/FDB
- ↓
-switch
- ↓
-puerto físico
-```
-
-Si existen switches encadenados, el sistema debe seguir la MAC hasta encontrar el puerto de acceso final y distinguir enlaces trunk/uplink de puertos de usuario.
-
-### 7.3 Datos a mostrar
-
-- nombre/IP de switch;
-- puerto;
-- VLAN;
-- descripción del puerto;
-- estado del puerto;
-- velocidad;
-- trunk/access;
-- PoE si aplica;
-- última observación.
-
----
-
-## 8. Equipos autorizados / desconocidos
-
-Mantener una base local o importable de dispositivos institucionales.
-
-Comandos previstos:
-
-```bash
-device add <MAC> <nombre>
-device remove <MAC>
-device list
-net scan --unknown
-net scan --authorized
-```
-
-Objetivo:
-
-- detectar equipos no registrados;
-- comparar contra inventario institucional;
-- no etiquetar automáticamente como "intruso" algo que simplemente no esté inventariado.
-
-Estados sugeridos:
-
-- autorizado;
-- conocido;
-- desconocido;
-- pendiente de revisión.
-
----
-
-## 9. Monitorización de presencia
-
-Modo periódico:
-
-```bash
-net monitor
-net monitor --unknown
-```
-
-Eventos:
-
-```text
-[12:41:03] + Nuevo dispositivo
-IP:       10.10.20.37
-MAC:      A4:C3:F0:11:93:02
-Hostname: NOTEBOOK-ALU
-Dominio:  No unido
-Switch:   SW-PISO2
-Puerto:   Gi1/0/27
-Estado:   Desconocido
-```
-
-Debe registrar:
-
-- primera detección;
-- última detección;
-- cambios de IP;
-- cambios de puerto;
-- aparición/desaparición.
-
----
-
-## 10. Wake-on-LAN
-
-Comandos:
-
-```bash
-wol AA:BB:CC:DD:EE:FF
-wol AA:BB:CC:DD:EE:FF 192.168.1.255
-wol LAB-PC-01
-```
-
-Características:
-
-- magic packet;
-- broadcast automático o explícito;
-- resolución por nombre desde inventario;
-- posibilidad de enviar a varios equipos;
-- grupos en una fase posterior.
-
----
-
-## 11. Red y conectividad
-
-Comandos propios o aliases para:
-
-```bash
-net ping
-net trace
-net dns
-net arp
-net neighbors
-net ports
-net interfaces
-net routes
-net connections
-```
-
-Ejemplos:
-
-```bash
-net ports 10.10.20.15 22,80,443,3389
-net dns LAB-PC-01
-net neighbors
-```
-
-El escaneo de puertos debe ser acotado y orientado a diagnóstico, no un escáner agresivo por defecto.
-
----
-
-## 12. Tráfico local y consumo por proceso
-
-Shell Shock Tool debe incluir una herramienta equivalente, en espíritu, a combinar `nethogs`, `iftop`, `ss` y `top`, pero adaptada a Windows y manteniendo el flujo de una consola Linux.
-
-Comando base:
-
-```bash
-net traffic
-```
-
-Debe mostrar qué procesos del equipo local están usando la red y cuánto consumen.
-
-### 12.1 Vista por proceso
-
-Salida esperada:
-
-```text
-PID    PROCESO        SUBIDA      BAJADA      CPU    RAM      DESTINOS
-4120   chrome.exe     42 KB/s     310 KB/s    3.8%   684 MB   8
-1884   OneDrive.exe   1.2 MB/s    95 KB/s     5.1%   221 MB   4
-7316   updater.exe    180 KB/s    12 KB/s     9.4%   96 MB    2
-```
-
-Datos por proceso, cuando estén disponibles:
-
-- PID;
-- nombre del proceso;
-- ruta completa del ejecutable;
-- usuario que lo ejecuta;
-- proceso padre;
-- bytes enviados;
-- bytes recibidos;
-- velocidad actual de subida y bajada;
-- total transferido durante la sesión;
-- CPU;
-- RAM;
-- número de conexiones;
-- IP y puerto local;
-- IP y puerto remoto;
-- protocolo;
-- hostname remoto cuando pueda resolverse;
-- estado de la conexión;
-- firma digital del ejecutable cuando Windows pueda verificarla.
-
-### 12.2 Modos de uso
-
-```bash
-net traffic
-net traffic --watch
-net traffic --top 20
-net traffic --process chrome.exe
-net traffic --pid 4120
-net traffic --background
-net traffic --external
-net traffic --connections
-net traffic --json
-net traffic --csv
-```
-
-`net traffic --watch` debe comportarse como una herramienta Linux interactiva dentro de la terminal: actualización periódica, ordenación por uso y salida al prompt al cerrarla.
-
-### 12.3 Detección de actividad anómala
-
-La herramienta debe ayudar a detectar procesos que consumen recursos o transmiten datos sin que el usuario los esté utilizando activamente.
-
-Puede señalar hechos observables como:
-
-- tráfico sostenido en segundo plano;
-- proceso con alto uso de red;
-- CPU o RAM elevadas junto con actividad de red;
-- conexiones a muchos destinos;
-- ejecutable sin firma verificable;
-- ejecutable corriendo desde una ruta inusual;
-- proceso desconocido para el inventario local;
-- transferencia continua durante largos periodos.
-
-No debe afirmar automáticamente que un proceso es malware solo por presentar alguno de esos indicadores.
-
-Comandos previstos:
-
-```bash
-net traffic --background
-net traffic --unsigned
-net traffic --high-usage
-diag traffic
-```
-
-Ejemplo:
-
-```text
-PROCESO       RED            CPU    RAM     OBSERVACIONES
-updater.exe   2.4 MB/s ↑     11%    96 MB   sin firma; actividad sostenida
-Teams.exe     18 KB/s ↑      2%     410 MB  tráfico en segundo plano
-svchost.exe   3 KB/s ↓       1%     54 MB   firmado por Microsoft
-```
-
-### 12.4 Destinos y privacidad
-
-Para investigar telemetría o aplicaciones que envían información en segundo plano:
-
-```bash
-net traffic --process updater.exe --connections
-```
-
-Salida esperada:
-
-```text
-REMOTE                  PORT   PROTO   SENT       RECEIVED
-telemetry.example.com   443    TCP     84.2 MB    1.8 MB
-203.0.113.44            443    TCP     12.6 MB    620 KB
-```
-
-Por defecto se analizarán metadatos de conexión y volumen, no el contenido de los paquetes.
-
-Una captura de paquetes completa será una capacidad separada y opcional si posteriormente se decide incorporar un proveedor como Npcap.
-
-### 12.5 Implementación en Windows
-
-La primera implementación debe evitar depender de drivers externos para las funciones básicas.
-
-Fuentes previstas:
-
-- ETW para atribución de tráfico por proceso;
-- IP Helper API para conexiones TCP/UDP;
-- APIs de procesos de Windows para PID, ruta, usuario, CPU y memoria;
-- verificación Authenticode para firma digital;
-- resolución DNS para destinos;
-- contadores de rendimiento cuando aporten datos complementarios.
-
-Cuando una métrica requiera privilegios elevados, la salida debe indicarlo claramente en vez de ocultar el dato o inventarlo.
-
-### 12.6 Integración Unix
-
-La salida debe poder encadenarse:
-
-```bash
-net traffic --json | jq '.[] | select(.upload_bps > 100000)'
-net traffic --csv > trafico.csv
-net traffic --background | grep -i unsigned
-```
-
-La TUI es opcional; la salida textual y procesable por pipes es obligatoria.
-
-### 12.7 Uso de ancho de banda de toda la LAN
-
-Shell Shock Tool debe poder mostrar, desde la propia consola, qué dispositivos de la red están consumiendo el enlace a Internet.
-
-Comando base:
-
-```bash
-net usage
-```
-
-Modos previstos:
+Interfaz objetivo:
 
 ```bash
 net usage
 net usage --watch
 net usage --top
 net usage --device 192.168.1.34
-net usage --mac A4:C3:F0:11:93:02
+net usage --mac AA:BB:CC:DD:EE:FF
 net usage --json
 net usage --csv
 ```
 
-Salida esperada:
+Debe mostrar, cuando el proveedor lo permita:
 
-```text
-DEVICE          IP              DOWN        UP          TOTAL
-Notebook-Juan   192.168.1.34    81.7 Mbps   4.2 Mbps    85.9 Mbps
-TV-Living       192.168.1.18    14.3 Mbps   212 Kbps    14.5 Mbps
-PC-Manuel       192.168.1.10     1.8 Mbps    83 Kbps     1.9 Mbps
-Telefono        192.168.1.25    320 Kbps     44 Kbps    364 Kbps
-```
-
-`net usage --watch` debe sentirse como `iftop` o `nethogs`, pero para toda la LAN.
-
-#### Fuente de los datos
-
-Un PC cliente no puede medir de forma fiable el tráfico total de todos los demás equipos de una red conmutada/Wi-Fi únicamente observando su propia interfaz.
-
-Por tanto, `net usage` debe usar uno de estos proveedores:
-
-- API del router/firewall;
-- SNMP;
-- controlador Wi-Fi;
-- estadísticas del gateway;
-- OpenWrt/OPNsense/pfSense u otro proveedor compatible;
-- port mirroring/SPAN cuando exista una interfaz de captura autorizada.
-
-El comando debe abstraer el proveedor. La experiencia de uso seguirá siendo siempre:
-
-```bash
-net usage --watch
-```
-
-sin obligar al técnico a entrar a la GUI del router.
-
-Configuración prevista:
-
-```bash
-net provider add home-router --type snmp --host 192.168.1.1
-net provider add firewall --type opnsense --host 10.0.0.1
-net provider list
-net provider use home-router
-```
-
-Las credenciales se almacenarán mediante el mecanismo seguro definido para proveedores y nunca en texto plano dentro de scripts.
-
-Si el router no expone estadísticas por cliente, el comando debe indicarlo explícitamente y no inventar consumo por dispositivo.
-
-### 12.8 Cuando el router del ISP no entrega tráfico por cliente
-
-Shell Shock Tool no puede reconstruir de forma fiable el consumo individual de toda la LAN desde un PC cualquiera si el gateway no expone esas estadísticas. Para disponer de `net usage` por dispositivo, todo el tráfico debe atravesar o ser visible desde un punto de observación controlado.
-
-Topologías admitidas:
-
-1. **Router propio como gateway principal**  
-   El equipo del ISP queda en bridge/monopuesto cuando sea posible y un router propio compatible con OpenWrt, OPNsense, pfSense u otro proveedor soportado gestiona la LAN.
-
-2. **Router propio detrás del router del ISP**  
-   Si bridge no es viable, todos los clientes se conectan al router propio. Puede existir doble NAT, pero Shell Shock Tool obtiene estadísticas por cliente desde ese segundo router.
-
-3. **AP/controlador Wi-Fi administrable**  
-   Si el punto de acceso expone bytes por estación, Shell Shock Tool consulta el controlador/AP aunque el router del ISP no entregue esa información.
-
-4. **Port mirroring/SPAN**  
-   Para segmentos cableados, un switch administrable puede duplicar el tráfico hacia una interfaz de captura autorizada.
-
-5. **Agente local opcional**  
-   Para equipos administrados, un agente puede reportar tráfico por proceso y consumo local. Esto complementa, pero no reemplaza, la visibilidad del gateway para dispositivos desconocidos.
-
-No se considerará fiable estimar consumo por dispositivo mediante ARP, ping, intensidad Wi-Fi o frecuencia de paquetes observados desde una estación cliente.
-
-El proveedor de tráfico debe declarar capacidades:
-
-```bash
-net provider capabilities
-```
-
-Ejemplo:
-
-```text
-provider: movistar-hgu
-device-discovery: yes
-per-device-traffic: no
-connection-table: limited
-snmp: no
-
-net usage: unavailable with current provider
-reason: gateway does not expose per-device counters
-```
-
----
-
-
-
-## 13. Switches y credenciales
-
-La herramienta debe soportar perfiles de infraestructura sin incrustar contraseñas en scripts.
-
-Temas a cubrir:
-
-- credenciales almacenadas de forma segura;
-- perfiles por fabricante;
-- SNMPv2/SNMPv3;
-- SSH autorizado;
-- API REST cuando exista;
-- timeouts;
-- reintentos;
-- logs;
-- separación entre lectura y acciones de cambio.
-
-Inicialmente, la integración con switches debe ser de solo lectura.
-
----
-
-## 14. Inventario
-
-Posibilidad de mantener:
-
-- equipos;
-- MAC;
-- hostname;
+- dispositivo;
 - IP;
-- dominio;
-- switch;
-- puerto;
-- VLAN;
-- ubicación;
-- propietario institucional;
-- estado;
-- notas.
+- MAC;
+- descarga actual;
+- subida actual;
+- tráfico total o acumulado disponible;
+- origen/proveedor de la medición.
 
-Importación/exportación:
+### Pendiente
 
-- CSV;
-- JSON;
-- TXT;
-- posible integración posterior con inventarios existentes.
+Implementar drivers reales para uno o más de los proveedores ya contemplados por SST:
 
----
+- OpenWrt;
+- OPNsense;
+- pfSense;
+- UniFi;
+- SNMP;
+- proveedor genérico cuando exista una API configurable adecuada.
 
-## 15. Seguridad operacional
+La arquitectura debe mantener `net usage` independiente del fabricante.
 
-Shell Shock Tool debe:
+SST no debe inferir consumo por cliente mediante ARP, ping ni observación de la interfaz local. Si el gateway/controlador no expone contadores por dispositivo, debe indicarlo explícitamente.
 
-- distinguir operaciones de lectura de operaciones destructivas;
-- pedir confirmación para acciones peligrosas;
-- mostrar claramente si está elevado;
-- registrar qué comando se ejecutó;
-- evitar guardar contraseñas en texto plano;
-- no asumir autorización sobre redes externas;
-- limitar por defecto los escaneos al rango explícito o a la subred local.
+### Credenciales
+
+Cuando un proveedor necesite autenticación, falta cerrar un mecanismo seguro para sus credenciales. No deben persistirse secretos en texto plano dentro de scripts ni de la configuración portable.
 
 ---
 
-## 16. Lo que Shell Shock Tool no debe convertirse en
+## 2. Compatibilidad Bash 5.3 restante
 
-- No debe convertirse en un dashboard de administración.
-- No debe convertirse en una colección de ventanas.
-- No debe esconder comandos detrás de botones.
-- No debe tener una interfaz distinta para cada herramienta.
-- No debe reemplazar Bash por un menú de opciones.
-- No debe obligar a usar mouse.
-- No debe introducir nombres arbitrarios cuando existe una convención Unix comprensible.
-- No debe mezclar salida decorativa con salida pensada para scripts.
-- No debe sacrificar pipes, redirecciones o automatización por una presentación visual.
+El motor Bash de SST ya cubre la mayor parte del lenguaje, expansiones, redirecciones, arrays, funciones, traps, jobs, process substitution, coprocesos, programmable completion y builtins principales.
 
-La pregunta de diseño para cada nueva característica será:
+No debe sustituirse por Brush ni por un `bash.exe` externo.
 
-> ¿Cómo se usaría esto si fuera una utilidad nativa de Linux instalada en `/usr/bin`?
+### 2.1 Builtins cargables dinámicamente
 
-Solo después de resolver su interfaz de línea de comandos se considerará una TUI o representación visual opcional.
+Pendiente:
 
----
-
-## 17. Portabilidad
-
-La shell Bash-compatible forma parte del propio binario Rust. No se requiere distribuir `bash.exe`, MSYS2, Cygwin o Git Bash como runtime obligatorio.
-
-Estructura prevista:
-
-```text
-sst/
-├── sst.exe
-├── config/
-│   └── sstrc
-├── scripts/
-├── data/
-│   ├── devices.json
-│   ├── switches.json
-│   ├── network_providers.json
-│   └── network_presence.json
-└── logs/
+```bash
+enable -f archivo builtin
+enable -d builtin
 ```
 
-`config/sstrc` usa sintaxis Bash-compatible y se crea automáticamente en el primer arranque si no existe.
+Actualmente SST no dispone de un ABI/sistema para cargar y descargar builtins binarios dinámicamente.
 
-No requerir instalación tradicional para la consola base. Los ejecutables Windows disponibles en el sistema pueden seguir invocándose desde la shell.
+La implementación deberá definir explícitamente cómo se adapta esta capacidad al modelo Rust/Windows sin comprometer la portabilidad o seguridad de SST.
 
----
+### 2.2 `/dev/tcp` y `/dev/udp`
 
-## 18. Arquitectura
+Pendiente implementar las redirecciones especiales compatibles con Bash:
 
-Principios:
-
-- orientación a objetos donde tenga sentido;
-- SOLID;
-- separación entre terminal, comandos, servicios y proveedores de red;
-- comandos desacoplados;
-- proveedores intercambiables para switches;
-- capa de inventario separada;
-- configuración externa;
-- servicios testeables.
-
-Posible organización:
-
-```text
-Terminal / line editor
-  ↓
-Rust Bash-compatible engine
-  ├── Bash semantics
-  │     ├── aliases / functions / variables
-  │     ├── expansions / substitutions
-  │     ├── pipes / redirections
-  │     └── scripts / control flow
-  │
-  ├── Windows external-command bridge
-  │
-  ├── Unix-like Rust utilities
-  │
-  └── SST Rust builtins
-        ├── NetworkScanner
-        ├── DomainResolver
-        ├── SwitchPortResolver
-        ├── WakeOnLanService
-        ├── TrafficMonitorService
-        ├── ProcessResourceService
-        ├── InventoryService
-        └── DiagnosticService
+```bash
+/dev/tcp/HOST/PORT
+/dev/udp/HOST/PORT
 ```
 
+Deben integrarse con el sistema normal de redirecciones del intérprete y respetar códigos de error y descriptores.
+
+### 2.3 GNU Readline 8.3
+
+SST ya tiene edición de línea, historial, completion y bindings propios.
+
+Falta ampliar la compatibilidad donde sea razonable con el comportamiento de GNU Readline 8.3, especialmente:
+
+- comandos/bindings todavía no reproducidos;
+- variables de Readline;
+- modos y comportamiento fino de edición;
+- semántica de completion dependiente de Readline.
+
+No se requiere incorporar GNU Readline como dependencia si la semántica puede implementarse en el frontend propio.
+
 ---
 
-## 19. Prioridad inicial
+## 3. Diferencias POSIX/Windows que requieren cierre o documentación definitiva
 
-Primera versión funcional, manteniendo siempre la shell como producto principal:
+Estas áreas no son simples comandos ausentes: Bash depende aquí de primitivas POSIX que Windows no ofrece de forma equivalente.
 
-1. terminal portable con experiencia Bash/Linux;
-2. ejecución de comandos Windows sin abandonar la shell;
-3. utilidades Unix básicas;
-4. pipes, redirecciones, aliases y scripts;
-5. autocompletado y `--help` coherentes;
-6. familia `net`: descubrimiento y listado IP/MAC/hostname;
-7. familia `domain`: estado y dominio de cada equipo;
-8. `wol`;
-9. familia `device`: inventario local y equipos desconocidos;
-10. `net scan --unknown`;
-11. `net traffic`: tráfico por proceso, destinos y consumo de CPU/RAM;
-12. familia `switch`: resolución switch/puerto mediante proveedor configurable;
-13. exportación CSV/JSON;
-14. TUI opcionales solo donde realmente aporten valor.
+### `test`
 
-Las capacidades de cambio de configuración de switches quedan fuera de la primera etapa.
+Pendiente decidir o mejorar la adaptación de:
 
-### Estado de implementación actual
+```text
+test -u
+test -g
+test -k
+test -O
+test -G
+test -x
+```
 
-Ya existe una primera implementación de:
+Estado actual:
 
-- shell Bash-compatible embebida en Rust;
-- historial y autocompletado básico de comandos/rutas/subcomandos;
-- configuración portable `sstrc`;
-- utilidades Unix integradas;
-- TUI `top`, `less`, `net monitor` y `net traffic --watch`;
-- `net scan` con JSON/CSV e integración con inventario;
-- inventario persistente de dispositivos;
-- `device unknown` para cruzar presencia observada con el inventario;
-- Wake-on-LAN por MAC o nombre inventariado;
-- resolución de dominio local y verificación CIM opcional;
-- perfiles de gateway para `net usage`;
-- inventario de presencia de LAN;
-- resolución MAC → switch → puerto mediante SNMP read-only;
-- editor modal tipo Vim escrito en Rust.
+- `-u`, `-g` y `-k` devuelven falso;
+- `-O`, `-G` y `-x` son aproximaciones al modelo Windows.
 
-Pendiente dentro del alcance inicial:
+No se debe fingir semántica POSIX inexistente.
 
-- medición ETW de bytes/s por proceso;
-- detección fiable de proceso foreground/background;
-- verificación Authenticode;
-- proveedores reales de contadores LAN por router/AP/firewall;
-- mayor compatibilidad Vim;
-- proveedores adicionales de switch/controlador;
-- completar utilidades Unix de mayor peso cuando sean necesarias.
+### `umask`
+
+SST mantiene actualmente un valor lógico, pero Windows/NTFS no aplica el modelo POSIX de creación de archivos.
+
+Pendiente decidir si se implementa una traducción útil a ACL de Windows o se conserva explícitamente como compatibilidad lógica.
+
+### `ulimit`
+
+Los límites existen en el estado de la shell, pero no se imponen como límites POSIX reales al proceso.
+
+Pendiente evaluar equivalentes mediante primitivas de Windows —por ejemplo Job Objects cuando corresponda— y documentar qué límites pueden ser efectivos.
+
+### Señales, `suspend`, `disown -h` y controlling TTY
+
+Pendiente cerrar la mejor equivalencia posible para:
+
+- señales Unix sobre procesos Windows;
+- `suspend`;
+- semántica de `disown -h`;
+- comportamiento dependiente de controlling TTY;
+- interacción de job control con ConPTY.
+
+La meta es compatibilidad observable donde Windows lo permita, no simular garantías POSIX que el sistema operativo no proporciona.
+
+---
+
+## 4. Conformidad Bash 5.3
+
+Existe una suite comparativa básica, pero todavía falta una campaña exhaustiva de conformidad contra GNU Bash 5.3.
+
+### Pendiente
+
+Ampliar `scripts/conformance.ps1` para cubrir de forma sistemática:
+
+- lexer y parser;
+- quoting;
+- expansiones de parámetros;
+- expansión aritmética;
+- arrays indexados y asociativos;
+- namerefs;
+- scopes;
+- funciones;
+- variables especiales;
+- `set -o`;
+- `shopt`;
+- redirecciones;
+- heredocs y here-strings;
+- process substitution;
+- coprocesos;
+- pipelines;
+- códigos de salida y `PIPESTATUS`;
+- traps;
+- job control;
+- `read`, `mapfile` y entrada interactiva;
+- completion;
+- historial;
+- ejecución de scripts;
+- casos límite de Bash 5.3.
+
+La referencia debe ser el comportamiento observable de GNU Bash 5.3. Las diferencias inevitables por Windows deben quedar clasificadas explícitamente como adaptaciones de plataforma y no como conformidad exacta.
+
+---
+
+## 5. Criterio para retirar elementos de este archivo
+
+Una tarea debe eliminarse de este plan cuando:
+
+1. la capacidad esté implementada en `main`;
+2. la documentación pública correspondiente refleje su comportamiento real;
+3. si requiere validación de compatibilidad, exista cobertura suficiente en la suite de conformidad;
+4. cualquier diferencia inevitable con Linux/POSIX esté documentada de forma explícita.
+
+Este archivo no debe volver a acumular funciones que SST ya tenga implementadas.
