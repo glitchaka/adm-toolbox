@@ -64,50 +64,48 @@ Cuando un proveedor necesite autenticación, falta cerrar un mecanismo seguro pa
 
 ---
 
-## 2. Compatibilidad Bash 5.3 restante
+## 2. Nwash: política de compatibilidad y extensiones Windows
 
-El motor Bash de SST ya cubre la mayor parte del lenguaje, expansiones, redirecciones, arrays, funciones, traps, jobs, process substitution, coprocesos, programmable completion y builtins principales.
+El intérprete de SST se denomina **Nwash** ("No, Windows Again? Shit").
 
-No debe sustituirse por Brush ni por un `bash.exe` externo.
+Nwash toma Bash 5.3 como base de sintaxis y semántica, pero no pretende reproducir mecanismos internos de GNU Bash que dependan de ABI, bibliotecas o primitivas Unix sin una equivalencia útil en Windows.
 
-### 2.1 Builtins cargables dinámicamente
+Regla de diseño:
 
-Pendiente:
+- comportamiento Bash portable: conservar compatibilidad;
+- primitiva POSIX con equivalente Windows: adaptar a Windows;
+- capacidad propia de Windows: exponerla mediante builtins Nwash;
+- infraestructura GNU/Linux sin valor práctico en Windows: no implementarla.
 
-```bash
-enable -f archivo builtin
-enable -d builtin
-```
+Por esta razón `enable -f` y `enable -d` **no son pendientes de Nwash**. La carga binaria de builtins de GNU Bash no forma parte del objetivo.
 
-Actualmente SST no dispone de un ABI/sistema para cargar y descargar builtins binarios dinámicamente.
+### Builtins Nwash Windows incorporados
 
-La implementación deberá definir explícitamente cómo se adapta esta capacidad al modelo Rust/Windows sin comprometer la portabilidad o seguridad de SST.
+- `eventlog`: listar, consultar, inspeccionar, exportar y limpiar Windows Event Log;
+- `service`: listar, consultar, iniciar, detener, pausar, reanudar y reiniciar servicios;
+- `registry`: leer, escribir, eliminar, exportar e importar Registro de Windows;
+- `process`: listar, inspeccionar y terminar procesos;
+- `acl`: consultar y modificar ACL de Windows/NTFS;
+- `pnp`: listar, inspeccionar, habilitar, deshabilitar, reiniciar y reescanear dispositivos PnP.
 
-### 2.2 `/dev/tcp` y `/dev/udp`
+Las operaciones protegidas se integran con el `sudo` de SST.
 
-Pendiente implementar las redirecciones especiales compatibles con Bash:
+### Pendiente de Nwash
+
+#### `/dev/tcp` y `/dev/udp`
+
+Evaluar su incorporación como compatibilidad útil de scripting:
 
 ```bash
 /dev/tcp/HOST/PORT
 /dev/udp/HOST/PORT
 ```
 
-Deben integrarse con el sistema normal de redirecciones del intérprete y respetar códigos de error y descriptores.
+Deben integrarse con el sistema normal de redirecciones del intérprete.
 
-### 2.3 GNU Readline 8.3
+#### Edición de línea
 
-SST ya tiene edición de línea, historial, completion y bindings propios.
-
-Falta ampliar la compatibilidad donde sea razonable con el comportamiento de GNU Readline 8.3, especialmente:
-
-- comandos/bindings todavía no reproducidos;
-- variables de Readline;
-- modos y comportamiento fino de edición;
-- semántica de completion dependiente de Readline.
-
-No se requiere incorporar GNU Readline como dependencia si la semántica puede implementarse en el frontend propio.
-
----
+SST ya tiene edición, historial, completion y bindings propios. Falta ampliar únicamente el comportamiento de GNU Readline que aporte compatibilidad práctica a scripts/configuraciones y a la experiencia interactiva. No se persigue reproducir internamente GNU Readline 8.3.
 
 ## 3. Diferencias POSIX/Windows que requieren cierre o documentación definitiva
 
