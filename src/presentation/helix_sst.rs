@@ -37,6 +37,11 @@ true-color = true
 cursorline = true
 bufferline = "multiple"
 color-modes = true
+end-of-line-diagnostics = "disable"
+
+[editor.inline-diagnostics]
+cursor-line = "disable"
+other-lines = "disable"
 
 [editor.statusline]
 left = ["mode", "spinner", "file-name", "file-modification-indicator"]

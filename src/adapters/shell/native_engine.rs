@@ -814,8 +814,8 @@ impl ShellCommandHost for WindowsShellHost {
                 let _ = child.kill();
                 let output = child.wait_with_output()?;
                 return Ok(ExecutionResult::from_parts(
-                    String::from_utf8_lossy(&output.stdout).into_owned(),
-                    String::from_utf8_lossy(&output.stderr).into_owned(),
+                    decode_process_output(&output.stdout),
+                    decode_process_output(&output.stderr),
                     130,
                 ));
             }
@@ -824,8 +824,8 @@ impl ShellCommandHost for WindowsShellHost {
                 self.record_child_cpu(&child);
                 let output = child.wait_with_output()?;
                 return Ok(ExecutionResult::from_parts(
-                    String::from_utf8_lossy(&output.stdout).into_owned(),
-                    String::from_utf8_lossy(&output.stderr).into_owned(),
+                    decode_process_output(&output.stdout),
+                    decode_process_output(&output.stderr),
                     output.status.code().unwrap_or(1),
                 ));
             }
@@ -960,8 +960,8 @@ impl ShellCommandHost for WindowsShellHost {
         let status = statuses.last().copied().unwrap_or(0);
         Ok(Some((
             ExecutionResult::from_parts(
-                String::from_utf8_lossy(&stdout).into_owned(),
-                String::from_utf8_lossy(&stderr).into_owned(),
+                decode_process_output(&stdout),
+                decode_process_output(&stderr),
                 status,
             ),
             statuses,
@@ -1417,6 +1417,69 @@ fn find_byte_sequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     haystack.windows(needle.len()).position(|window| window == needle)
 }
 
+fn decode_process_output(bytes: &[u8]) -> String {
+    if bytes.is_empty() {
+        return String::new();
+    }
+    if let Ok(text) = std::str::from_utf8(bytes) {
+        return text.to_owned();
+    }
+
+    #[cfg(windows)]
+    {
+        let mut code_page = unsafe {
+            windows_sys::Win32::System::Console::GetConsoleOutputCP()
+        };
+        if code_page == 0 {
+            code_page = unsafe {
+                windows_sys::Win32::Globalization::GetOEMCP()
+            };
+        }
+        if let Some(text) = decode_windows_code_page(bytes, code_page) {
+            return text;
+        }
+    }
+
+    String::from_utf8_lossy(bytes).into_owned()
+}
+
+#[cfg(windows)]
+fn decode_windows_code_page(bytes: &[u8], code_page: u32) -> Option<String> {
+    use windows_sys::Win32::Globalization::MultiByteToWideChar;
+
+    let byte_count = i32::try_from(bytes.len()).ok()?;
+    let wide_count = unsafe {
+        MultiByteToWideChar(
+            code_page,
+            0,
+            bytes.as_ptr(),
+            byte_count,
+            std::ptr::null_mut(),
+            0,
+        )
+    };
+    if wide_count <= 0 {
+        return None;
+    }
+
+    let mut wide = vec![0u16; wide_count as usize];
+    let written = unsafe {
+        MultiByteToWideChar(
+            code_page,
+            0,
+            bytes.as_ptr(),
+            byte_count,
+            wide.as_mut_ptr(),
+            wide_count,
+        )
+    };
+    if written <= 0 {
+        return None;
+    }
+
+    Some(String::from_utf16_lossy(&wide[..written as usize]))
+}
+
 fn limit_utf8_chars(bytes: &[u8], limit: Option<usize>) -> String {
     let text = String::from_utf8_lossy(bytes);
     match limit {
@@ -1460,7 +1523,7 @@ fn windows_net_list(kind: &str) -> Vec<String> {
         // net.exe prints a localized heading, then a dashed separator, then the
         // entries in fixed-width columns. Parse only the data section so this
         // works independently of the UI language.
-        let text = String::from_utf8_lossy(&output.stdout);
+        let text = decode_process_output(&output.stdout);
         let mut data = false;
         let mut values = Vec::new();
         for line in text.lines() {
