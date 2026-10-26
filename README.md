@@ -1,10 +1,13 @@
 # SST Tools
 
-Repositorio canónico de herramientas auxiliares y tutoriales para Shell Shock Tool (SST).
+Repositorio canónico de herramientas auxiliares y manuales operativos de Shell Shock Tool (SST).
 
-Este repositorio ya no contiene el antiguo proyecto `adm-toolbox`. Su rama `main` es un catálogo limpio de herramientas externas que SST puede localizar, descargar y ejecutar de forma controlada, junto con documentación remota consumida directamente desde SST.
+Este repositorio ya no contiene el antiguo proyecto `adm-toolbox`. Su rama `main` cumple dos funciones para SST:
 
-## Reglas
+1. catálogo controlado de herramientas externas que SST puede localizar, descargar, verificar y ejecutar;
+2. backend remoto de documentación exhaustiva consumida directamente por `guide`.
+
+## Herramientas externas
 
 - No se almacenan binarios propietarios de terceros en el repositorio.
 - Cada herramienta tiene un descriptor JSON bajo `tools/`.
@@ -12,45 +15,104 @@ Este repositorio ya no contiene el antiguo proyecto `adm-toolbox`. Su rama `main
 - Cuando el ejecutable tenga firma Authenticode, SST debe validarla antes de ejecutarlo.
 - Una herramienta archivada o proveniente de un mirror debe declararlo explícitamente.
 - Los datos del usuario no forman parte de los paquetes de herramientas.
-- Los tutoriales viven bajo `tutorials/` y SST los consume en memoria; el visor no los guarda como archivos locales.
-- Cuando se implemente activación/licencia en SST, el acceso remoto a tutoriales quedará condicionado a una activación válida sin cambiar los comandos de usuario.
 
-## Catálogo
-
-`catalog.json` es el índice estable que SST puede consultar. Los descriptores individuales contienen versión, origen, ejecutable, parámetros y requisitos de verificación.
+`catalog.json` es el índice estable de herramientas.
 
 ### Office
 
-- `office.sara-legacy`: SaRACmd Enterprise legado para `OfficeScrubScenario`. El paquete no se redistribuye aquí; SST lo descarga bajo demanda y exige firma Authenticode válida de Microsoft en `SaRAcmd.exe`.
+- `office.sara-legacy`: SaRACmd Enterprise legado para `OfficeScrubScenario`. SST lo descarga bajo demanda y exige firma Authenticode válida de Microsoft en `SaRAcmd.exe`.
 - `office.gethelp`: backend actual `GetHelpCmd` de Microsoft para `OfficeScrubScenario`.
 
 ### Sysinternals
 
 - `sysinternals-autologon`: Microsoft Sysinternals Autologon descargado desde Microsoft y verificado antes de ejecutarse desde SST.
 
-## Tutoriales
+## Manuales de SST
 
-El índice remoto está en `tutorials/index.txt`.
+Los manuales viven en `tutorials/` y se mantienen separados del binario principal para poder ampliar o corregir documentación sin incrustar miles de líneas de texto en cada build.
 
-Actualmente incluye:
+`guide` los obtiene por HTTPS y los mantiene en memoria. No se guardan como archivos locales de documentación.
 
-- `office-sara`
-- `office-gethelp`
-- `autologon`
-- `domain`
-- `hostname`
-
-Desde SST:
+El índice es:
 
 ```text
-tools tutorial list
-tools tutorial office-sara
-tools tutorial office-gethelp
-tools tutorial autologon
-tools tutorial domain
-tools tutorial hostname
+tutorials/index.txt
 ```
 
-SST lee el contenido remoto a memoria y lo imprime en la consola. El lector limita los nombres de tutorial y el tamaño máximo del contenido para evitar usarlo como un fetch arbitrario.
+El contrato editorial es:
+
+```text
+tutorials/FORMAT.md
+```
+
+### Cobertura
+
+La documentación no está limitada a las herramientas externas. Debe abarcar toda la superficie pública de SST:
+
+- arranque de sst.exe/Nwash;
+- `notsh` / `net` completo;
+- inventario `device`, switches y Wake-on-LAN;
+- diagnósticos;
+- `sys` y todos sus aliases/subcomandos;
+- dominio, hostname y Autologon;
+- seguridad (`triage`, `intel`, broker y persistencia);
+- administración Windows/Nwash (`eventlog`, `service`, `registry`, `process`, `acl`, `pnp`, `task`, `session`, `share`, `firewall`, `power`);
+- privilegios (`sudo` / `runas`);
+- paquetes `instp`;
+- configuración y fondos;
+- actualización de SST;
+- `tools` y Office;
+- tour;
+- Helix-SST;
+- builtins Bash/Nwash;
+- comandos Unix/GNU-like reimplementados.
+
+### Regla de exhaustividad
+
+Un manual no se considera completo si resume una familia con `etc.`, `[OPCIONES]` o texto equivalente en lugar de enumerar la interfaz real.
+
+Cada capítulo debe auditarse contra el parser/código vigente y documentar:
+
+- todos los subcomandos públicos;
+- todos los aliases públicos;
+- cada flag corto y largo implementado;
+- valores aceptados;
+- defaults;
+- combinaciones válidas;
+- permisos/UAC;
+- efectos y reinicios;
+- estados/códigos relevantes;
+- verificación posterior;
+- limitaciones y diferencias frente a la herramienta original cuando SST implemente solo un subconjunto.
+
+Helpers internos como `__elevated` o `--*-internal` no forman parte de la interfaz del usuario y no se presentan como funciones normales.
+
+Si una ayuda heredada anuncia una opción que el parser actual no implementa realmente, el manual debe decirlo en lugar de fingir compatibilidad.
+
+## Uso desde SST
+
+La puerta de entrada es:
+
+```text
+guide
+```
+
+También se puede abrir un comando o capítulo directamente:
+
+```text
+guide net
+guide sys
+guide autologon
+guide windows-admin
+guide bash-nwash
+guide unix-compat
+guide office-sara
+```
+
+`guide` mantiene una referencia local como fallback cuando existe, pero intenta mostrar el manual completo remoto cuando hay conectividad.
+
+La categoría `Tutoriales` se genera desde el catálogo de manuales para que una persona que recibe SST pueda explorar las capacidades sin conocer previamente los nombres de los comandos.
+
+Cuando se implemente activación/licencia en SST, el transporte de estos manuales podrá exigir una activación válida sin cambiar la interfaz de `guide` ni los nombres de los capítulos.
 
 El código principal de SST permanece en `glitchaka/sst-blueversion`.
