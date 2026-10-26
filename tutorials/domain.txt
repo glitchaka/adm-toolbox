@@ -12,53 +12,167 @@ Este apartado cubre todo lo relacionado con pertenencia del equipo a un dominio 
   - entender los requisitos de DNS, permisos y reinicio
   - diagnosticar fallos habituales
 
-2. Comandos disponibles
+2. Interfaz publica completa
 
-Consultar estado:
+Ayuda:
+
+  sys domain
+  sys domain -h
+  sys domain --help
+  domain
+  domain -h
+  domain --help
+
+Estado:
 
   sys domain status
-
-Alias directo:
-
   domain status
 
-Unir a dominio:
+Unir a dominio con opciones cortas:
 
   sys domain join -d DOMINIO -u CUENTA -p PASSWORD
 
-Unir y colocar la cuenta de equipo en una OU concreta:
+Unir a dominio con opciones largas:
+
+  sys domain join --domain DOMINIO --user CUENTA --password PASSWORD
+
+Unir en una OU especifica:
 
   sys domain join -d DOMINIO -u CUENTA -p PASSWORD -ou "RUTA_OU"
+  sys domain join --domain DOMINIO --user CUENTA --password PASSWORD --ou "RUTA_OU"
 
-Sacar el equipo del dominio:
+Sacar del dominio:
 
   sys domain leave -u CUENTA -p PASSWORD
+  sys domain leave --user CUENTA --password PASSWORD
 
-3. Parametros de join
+Alias directo equivalente:
 
-  -d, --domain     Nombre DNS o nombre esperado del dominio.
-  -u, --user       Cuenta con permisos suficientes para unir el equipo.
-  -p, --password   Contrasena de esa cuenta.
-  -ou, --ou        Ruta LDAP de la OU donde debe crearse o ubicarse la cuenta del equipo.
+  domain join -d DOMINIO -u CUENTA -p PASSWORD
+  domain leave -u CUENTA -p PASSWORD
 
-Ejemplo:
+Subcomandos publicos implementados:
+
+  status
+  join
+  leave
+
+Opciones publicas implementadas:
+
+  -d, --domain       Dominio para `join`.
+  -u, --user         Cuenta usada por `join` o `leave`.
+  -p, --password     Contrasena usada por `join` o `leave`.
+  -ou, --ou          Ruta LDAP opcional de OU para `join`.
+  -h, --help         Muestra ayuda de la familia dominio.
+
+No existen otros subcomandos publicos. Los helpers internos de elevacion no forman parte de la interfaz de usuario.
+
+3. Reglas de cada subcomando
+
+status
+
+  Sintaxis:
+
+    sys domain status
+
+  No acepta parametros funcionales adicionales.
+
+join
+
+  Requiere obligatoriamente:
+
+    -d o --domain
+    -u o --user
+    -p o --password
+
+  Acepta opcionalmente:
+
+    -ou o --ou
+
+leave
+
+  Requiere obligatoriamente:
+
+    -u o --user
+    -p o --password
+
+4. Parametros de join
+
+  -d, --domain
+    Nombre DNS o nombre esperado del dominio.
+
+  -u, --user
+    Cuenta con permisos suficientes para unir el equipo.
+
+  -p, --password
+    Contrasena de esa cuenta.
+
+  -ou, --ou
+    Ruta LDAP completa de la OU donde debe crearse o ubicarse la cuenta del equipo.
+
+Ejemplo corto:
 
   sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD
 
-Con OU:
+Ejemplo largo:
+
+  sys domain join --domain midominio.cl --user MIDOMINIO\administrador --password PASSWORD
+
+Con OU usando opcion corta:
 
   sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD -ou "OU=Equipos,OU=Santiago,DC=midominio,DC=cl"
 
-4. Parametros de leave
+Con OU usando opcion larga:
 
-  -u, --user       Cuenta con permisos para sacar el equipo del dominio.
-  -p, --password   Contrasena de esa cuenta.
+  sys domain join --domain midominio.cl --user MIDOMINIO\administrador --password PASSWORD --ou "OU=Equipos,OU=Santiago,DC=midominio,DC=cl"
 
-Ejemplo:
+5. Parametros de leave
+
+  -u, --user
+    Cuenta con permisos para sacar el equipo del dominio.
+
+  -p, --password
+    Contrasena de esa cuenta.
+
+Ejemplo corto:
 
   sys domain leave -u MIDOMINIO\administrador -p PASSWORD
 
-5. Que devuelve status
+Ejemplo largo:
+
+  sys domain leave --user MIDOMINIO\administrador --password PASSWORD
+
+6. Errores de argumentos que SST detecta
+
+join sin dominio:
+
+  domain join: falta -d/--domain
+
+join sin usuario:
+
+  domain join: falta -u/--user
+
+join sin contrasena:
+
+  domain join: falta -p/--password
+
+leave sin usuario:
+
+  domain leave: falta -u/--user
+
+leave sin contrasena:
+
+  domain leave: falta -p/--password
+
+status con argumentos extra:
+
+  domain status: demasiados argumentos
+
+Accion desconocida:
+
+  domain: accion desconocida: NOMBRE; use status, join o leave
+
+7. Que devuelve status
 
 SST consulta NetGetJoinInformation de Windows.
 
@@ -70,11 +184,15 @@ Ejemplo de equipo no unido:
 
   domain: WORKGROUP / WORKGROUP
 
+Si Windows no entrega un nombre util del grupo de trabajo, SST puede devolver:
+
+  WORKGROUP / UNKNOWN
+
 El valor mostrado corresponde al estado reportado por Windows para la pertenencia actual del equipo.
 
-6. Como funciona join internamente
+8. Como funciona join internamente
 
-SST usa la API nativa NetJoinDomain de Windows con las opciones:
+SST usa la API nativa NetJoinDomain de Windows con:
 
   NETSETUP_JOIN_DOMAIN
   NETSETUP_ACCT_CREATE
@@ -83,13 +201,13 @@ Eso significa que SST solicita la union al dominio y permite crear la cuenta del
 
 SST no depende de Add-Computer de PowerShell para esta funcion.
 
-7. Como funciona leave internamente
+9. Como funciona leave internamente
 
 SST usa NetUnjoinDomain de Windows.
 
 La operacion registra la salida del dominio y requiere reinicio para que el cambio quede completamente efectivo.
 
-8. Elevacion UAC
+10. Elevacion UAC
 
 SST intenta la operacion con el token actual.
 
@@ -97,7 +215,7 @@ Si Windows devuelve acceso denegado, SST eleva solamente la operacion de dominio
 
 Si se cancela UAC, la operacion no se completa.
 
-9. Requisitos antes de unir un equipo
+11. Requisitos antes de unir un equipo
 
 Antes de ejecutar join conviene comprobar:
 
@@ -115,7 +233,7 @@ Si necesitas cambiar el nombre primero:
 
 Luego reinicia antes de unirlo al dominio si quieres evitar que la cuenta de equipo se cree con el nombre anterior.
 
-10. DNS: el punto mas importante
+12. DNS: el punto mas importante
 
 Un equipo puede tener Internet y aun asi no poder unirse al dominio.
 
@@ -123,9 +241,9 @@ Para Active Directory el DNS debe resolver correctamente el dominio y sus servic
 
 Antes de culpar a credenciales o permisos, revisa primero DNS y conectividad corporativa.
 
-11. Uso de OU
+13. Uso de OU
 
-La opcion -ou recibe una ruta LDAP completa.
+La opcion `-ou` / `--ou` recibe una ruta LDAP completa.
 
 Ejemplo:
 
@@ -133,9 +251,9 @@ Ejemplo:
 
 No basta con escribir solo el nombre visible de la OU.
 
-Si omites -ou, Windows usa el contenedor o comportamiento predeterminado del dominio para la cuenta del equipo.
+Si omites `-ou/--ou`, Windows usa el contenedor o comportamiento predeterminado del dominio para la cuenta del equipo.
 
-12. Despues de join
+14. Despues de join
 
 Cuando SST devuelve:
 
@@ -150,7 +268,7 @@ haz lo siguiente:
   4. confirma que devuelve DOMAIN / nombre-del-dominio
   5. comprueba que puedes autenticar o usar los recursos corporativos esperados
 
-13. Despues de leave
+15. Despues de leave
 
 Cuando SST devuelve:
 
@@ -164,11 +282,12 @@ Debe indicar grupo de trabajo en lugar de DOMAIN.
 
 Antes de sacar una estacion de dominio asegurate de que existe una cuenta local utilizable para entrar al equipo despues del reinicio.
 
-14. Seguridad de credenciales
+16. Seguridad de credenciales
 
 La implementacion actual recibe la contrasena mediante:
 
   -p PASSWORD
+  --password PASSWORD
 
 Por ello la contrasena forma parte del comando introducido en SST y puede quedar en el historial.
 
@@ -176,7 +295,7 @@ SST borra de memoria el buffer UTF-16 utilizado para entregar la contrasena a Ne
 
 Cuando exista entrada secreta interactiva, esa sera la forma preferida para operaciones de dominio.
 
-15. Errores habituales
+17. Errores habituales de Windows/NetAPI
 
 Acceso denegado / NetAPI 5:
   La cuenta o el token no tienen permisos suficientes. SST intenta UAC cuando la operacion inicial devuelve acceso denegado. Si falla despues de elevar, revisa permisos de la cuenta en Active Directory.
@@ -196,7 +315,7 @@ Cuenta de equipo existente:
 Join devuelve correcto pero status aun no cambia como esperas:
   Reinicia Windows antes de concluir que fallo.
 
-16. Secuencia recomendada para preparar una estacion
+18. Secuencia recomendada para preparar una estacion
 
   1. Obtener nombre e IP actual.
   2. Cambiar nombre si hace falta:
@@ -211,7 +330,7 @@ Join devuelve correcto pero status aun no cambia como esperas:
   8. Configurar Autologon si la estacion lo requiere:
        sys autologon -u operador -d MIDOMINIO -p PASSWORD
 
-17. Relacion con otros comandos SST
+19. Relacion con otros comandos SST
 
   hostname                 cambia el nombre del equipo
   sys domain status        confirma pertenencia
@@ -220,32 +339,50 @@ Join devuelve correcto pero status aun no cambia como esperas:
   sys whoami               ayuda a revisar el contexto de usuario
   diag                     puede complementar la revision general
 
-18. Limitaciones actuales
+20. Limitaciones actuales
 
   - join y leave son operaciones del equipo local.
   - requieren Windows.
-  - no gestionan por si mismos GPO, OU, permisos de AD ni objetos obsoletos.
+  - no gestionan por si mismos GPO, permisos de AD ni objetos obsoletos.
   - no sustituyen un diagnostico de DNS o Active Directory.
-  - la contrasena se entrega actualmente con -p en la linea de comando.
+  - la contrasena se entrega actualmente con -p/--password en la linea de comando.
+  - `-ou/--ou` solo aplica a join.
 
-19. Resumen rapido
+21. Resumen rapido exhaustivo
+
+Ayuda:
+
+  sys domain
+  sys domain -h
+  sys domain --help
+  domain
+  domain -h
+  domain --help
 
 Estado:
 
   sys domain status
+  domain status
 
-Unir:
+Join:
 
-  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD
+  sys domain join -d DOMINIO -u CUENTA -p PASSWORD [-ou RUTA_OU]
+  sys domain join --domain DOMINIO --user CUENTA --password PASSWORD [--ou RUTA_OU]
 
-Unir en OU:
+Leave:
 
-  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD -ou "OU=Equipos,DC=midominio,DC=cl"
+  sys domain leave -u CUENTA -p PASSWORD
+  sys domain leave --user CUENTA --password PASSWORD
 
-Salir:
+Opciones:
 
-  sys domain leave -u MIDOMINIO\administrador -p PASSWORD
+  -d | --domain
+  -u | --user
+  -p | --password
+  -ou | --ou
+  -h | --help
 
 Despues de join o leave:
 
-  reinicia Windows y verifica con sys domain status.
+  reinicia Windows
+  sys domain status
