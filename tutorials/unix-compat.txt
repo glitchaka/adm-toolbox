@@ -1,173 +1,387 @@
 SST — Compatibilidad Unix/GNU-like implementada
 
-Estos comandos están reimplementados dentro de SST; no se ejecuta automáticamente un binario Unix externo.
+1. Resolución real
 
-BÁSICOS
-  pwd                         directorio actual
-  echo [ARG ...]              imprime argumentos unidos por espacios
-  env                         variables de entorno ordenadas
-  clear                       limpia terminal
-  true                        status 0
-  false                       status 1
+SST registra estos nombres como comandos Unix/GNU-like, pero algunos nombres también son builtins Bash/Nwash. Cuando existe un builtin de Nwash, el intérprete lo resuelve antes que `UnixService`.
 
-LISTADO / TEXTO
-  ls [RUTA]
+Por eso:
+  pwd, echo, printf, true, false y type usan la implementación Bash/Nwash cuando se ejecutan normalmente en la shell.
+  xargs también es interceptado por Nwash y tiene una implementación específica de pipeline.
+
+Para esos nombres, consulta también `guide bash-nwash`.
+
+2. Básicos de UnixService
+
+  env
+    Imprime variables de entorno ordenadas.
+
+  clear
+    Limpia terminal.
+
+3. ls
+
+Formas implementadas:
+  ls
+  ls RUTA
   ls -a [RUTA]
   ls -l [RUTA]
   ls -al [RUTA]
   ls -la [RUTA]
-    -a muestra nombres iniciados en punto; -l muestra tipo/read-only/tamaño.
+
+Opciones:
+  -a  incluye nombres iniciados en punto.
+  -l  salida larga simplificada con tipo/read-only/tamaño.
+
+No se debe asumir soporte de otros flags GNU ls.
+
+4. cat
 
   cat [ARCHIVO ...]
-    sin archivos consume stdin.
 
-  head [-n N] [ARCHIVO]
-  tail [-n N] [ARCHIVO]
-    N default 10; si N no parsea actualmente vuelve a 10.
+Sin archivos consume stdin. Con varios archivos concatena en orden.
+
+5. head / tail
+
+  head [ARCHIVO]
+  head -n N [ARCHIVO]
+  tail [ARCHIVO]
+  tail -n N [ARCHIVO]
+
+Default N=10. Si el valor entregado a -n no puede parsearse, la implementación actual vuelve al default 10.
+
+6. grep
 
   grep PATRON [ARCHIVO]
   grep -i PATRON [ARCHIVO]
   grep -n PATRON [ARCHIVO]
   grep -in PATRON [ARCHIVO]
   grep -ni PATRON [ARCHIVO]
-    -i case-insensitive; -n número de línea; status 1 si no hay match.
+
+Opciones implementadas:
+  -i  case-insensitive.
+  -n  prefija número de línea.
+
+Status 1 si no hay coincidencias. No se deben asumir otros flags GNU grep.
+
+7. wc
 
   wc [ARCHIVO]
-    siempre imprime líneas, palabras y bytes; no implementa flags GNU -l/-w/-c separados.
+
+Sin archivo consume stdin. Imprime siempre tres valores: líneas, palabras y bytes. No implementa selectores GNU `-l`, `-w`, `-c` separados.
+
+8. sort
 
   sort [ARCHIVO]
   sort -r [ARCHIVO]
 
-  uniq [ARCHIVO]
-    elimina duplicados adyacentes.
+  -r  orden inverso.
 
-  cut [-d DELIM] [-f CAMPO] [ARCHIVO]
-    defaults: delimitador tab, campo 1.
+9. uniq
+
+  uniq [ARCHIVO]
+
+Elimina duplicados adyacentes. No implementa flags GNU adicionales.
+
+10. cut
+
+  cut [ARCHIVO]
+  cut -d DELIM [ARCHIVO]
+  cut -f CAMPO [ARCHIVO]
+  cut -d DELIM -f CAMPO [ARCHIVO]
+
+Defaults:
+  delimitador = tab
+  campo = 1
+
+11. tee
 
   tee ARCHIVO
   tee -a ARCHIVO
-    -a append; sin -a trunca.
 
-PAGINADOR
+  -a  append.
+  sin -a trunca/reemplaza.
+
+Siempre replica stdin hacia stdout además del archivo.
+
+12. xargs — implementación Nwash efectiva
+
+`xargs` sí está implementado. Aunque `UnixService` no tenga una rama xargs, Nwash lo intercepta antes y ejecuta `execute_xargs`.
+
+Sintaxis implementada:
+
+  xargs [COMANDO [ARG ...]]
+  xargs -0 [COMANDO [ARG ...]]
+  xargs --null [COMANDO [ARG ...]]
+  xargs -r [COMANDO [ARG ...]]
+  xargs --no-run-if-empty [COMANDO [ARG ...]]
+  xargs -n N [COMANDO [ARG ...]]
+  xargs --max-args N [COMANDO [ARG ...]]
+  xargs -I MARCADOR [COMANDO [ARG ...]]
+  xargs --replace MARCADOR [COMANDO [ARG ...]]
+
+Opciones:
+  -0, --null
+    separa items de stdin por byte NUL.
+
+  -r, --no-run-if-empty
+    si stdin no produce items, no ejecuta el comando.
+
+  -n N, --max-args N
+    máximo N items añadidos por ejecución. N debe ser mayor que cero.
+
+  -I MARCADOR, --replace MARCADOR
+    ejecuta una vez por item y reemplaza MARCADOR dentro de cada palabra del comando.
+
+Default:
+  si no se entrega COMANDO, usa `echo`.
+
+Sin -I:
+  los items se anexan al comando base. Con -n se agrupan de N en N; sin -n se usa el conjunto completo como un chunk.
+
+Con -I:
+  cada item genera una ejecución independiente y el marcador se sustituye en los argumentos del comando.
+
+Con entrada vacía y sin -r:
+  SST ejecuta una vez el comando base sin items.
+
+Ejemplos:
+  printf "uno dos tres\n" | xargs -n 1 echo
+  printf "a\0b\0" | xargs -0 -n 1 echo
+  printf "a b\n" | xargs -I {} echo item={}
+  printf "" | xargs -r echo no-se-ejecuta
+
+No se deben asumir flags GNU xargs que no están enumerados aquí.
+
+13. less / more
+
   less [ARCHIVO]
-  more [ARCHIVO]              misma implementación
-    sin archivo consume stdin.
-    teclas: q/Esc, j/Down, k/Up, PgDn/Space, PgUp, g/Home, G/End.
+  more [ARCHIVO]
 
-SED
+`more` usa la misma implementación. Sin archivo consumen stdin.
+
+Teclas:
+  q, Esc        salir
+  j, Down       bajar una línea
+  k, Up         subir una línea
+  PgDn, Space   página abajo
+  PgUp          página arriba
+  g, Home       inicio
+  G, End        final
+
+14. sed
+
+Formas implementadas:
   sed 's/ANTIGUO/NUEVO/' [ARCHIVO]
   sed 's/ANTIGUO/NUEVO/g' [ARCHIVO]
-    el delimitador puede ser otro carácter; solo sustitución s... está implementada. `g` hace reemplazo global por línea.
 
-AWK
+El delimitador no tiene que ser `/`; se toma del script de sustitución. Solo la familia `s<delim>old<delim>new<delim>[g]` está implementada.
+
+  g  reemplaza todas las coincidencias de cada línea.
+  sin g reemplaza la primera.
+
+No se debe asumir el lenguaje completo de GNU sed.
+
+15. awk
+
   awk PROGRAMA [ARCHIVO]
   awk -F DELIM PROGRAMA [ARCHIVO]
-    subconjunto: expresiones print; campos $0, $N, NR y literales. No es awk completo.
 
-DIFF / HASH / BASE64
+  -F DELIM  separador de campos.
+
+Subconjunto implementado: expresiones `print`, campos `$0`, `$N`, `NR` y literales. No es awk completo.
+
+16. diff
+
   diff ARCHIVO1 ARCHIVO2
-    status 0 idénticos, 1 diferentes.
+
+Status:
+  0  idénticos
+  1  diferentes
+
+17. sha256sum
 
   sha256sum [ARCHIVO]
-    sin archivo calcula stdin.
+
+Sin archivo calcula SHA-256 de stdin.
+
+18. base64
 
   base64 [ARCHIVO]
   base64 -d [ARCHIVO]
   base64 --decode [ARCHIVO]
-    sin archivo consume stdin.
 
-FIND
+  -d, --decode  decodifica.
+
+Sin archivo consume stdin.
+
+19. find
+
   find
   find RUTA
   find RUTA -name PATRON
-    wildcard implementado: `*`; sin RUTA usa cwd.
 
-PRINTF
-  printf FORMATO [ARG ...]
-    soporta escapes: \\n, \\t, \\r, \\\\
-    formatos implementados: %%, %s, %d.
-    No es el printf GNU/Bash completo de formatos avanzados en esta ruta Unix; el builtin Bash `printf` tiene su propia semántica Nwash.
+Sin RUTA usa cwd. El patrón implementa wildcard `*` en la ruta de búsqueda disponible. No se deben asumir predicados GNU find adicionales.
 
-RUTAS
+20. basename / dirname / realpath
+
   basename RUTA
   dirname RUTA
   realpath RUTA
 
-FECHA / ESPERA
+`realpath` resuelve según el modelo de rutas Windows/Nwash.
+
+21. date
+
   date
   date +FORMATO
-    usa formato chrono/strftime; default `%a %b %e %H:%M:%S %Y`.
+
+Default:
+  %a %b %e %H:%M:%S %Y
+
++FORMATO usa formato chrono/strftime soportado por el backend.
+
+22. sleep
 
   sleep DURACION
-    número entero o decimal; sufijos: ms, s, m, h; no admite valores negativos.
 
-ARCHIVOS
-  touch ARCHIVO ...
+DURACION puede ser entero o decimal.
+Sufijos:
+  ms
+  s
+  m
+  h
 
-  mkdir DIRECTORIO ...
-  mkdir -p DIRECTORIO ...
+No admite duración negativa.
 
-  rm RUTA ...
-  rm -f RUTA ...
-  rm -r RUTA ...
-  rm -rf RUTA ...
-  rm -fr RUTA ...
-    directorio requiere -r; -f ignora inexistentes.
+23. touch
+
+  touch ARCHIVO [ARCHIVO ...]
+
+Crea/asegura existencia según la implementación SST. No se deben asumir flags GNU touch adicionales.
+
+24. mkdir
+
+  mkdir DIRECTORIO [DIRECTORIO ...]
+  mkdir -p DIRECTORIO [DIRECTORIO ...]
+
+  -p  crea padres y tolera estructura existente.
+
+25. rm
+
+  rm RUTA [RUTA ...]
+  rm -f RUTA [RUTA ...]
+  rm -r RUTA [RUTA ...]
+  rm -rf RUTA [RUTA ...]
+  rm -fr RUTA [RUTA ...]
+
+  -r  recursivo; requerido para directorios.
+  -f  ignora inexistentes/errores compatibles con force.
+
+Operación destructiva. No hay papelera SST implícita.
+
+26. cp
 
   cp ORIGEN DESTINO
-    exactamente dos operandos; implementación actual usa copia de archivo y NO implementa cp -r.
+
+Exactamente dos operandos. La implementación actual copia archivo; NO implementa `cp -r`.
+
+27. mv
 
   mv ORIGEN DESTINO
-    exactamente dos operandos.
 
-TAR
+Exactamente dos operandos.
+
+28. tar
+
+Modos:
   tar -c... -f ARCHIVO OPERANDOS...
   tar -t... -f ARCHIVO
   tar -x... -f ARCHIVO
 
-Flags implementados, combinables:
-  c   crear
-  x   extraer
-  t   listar
-  z   gzip
-  v   verbose (al crear)
-  f   el siguiente argumento es el archivo tar
-  -C DIRECTORIO   base/destino
+Flags combinables:
+  c  crear
+  x  extraer
+  t  listar
+  z  gzip
+  v  verbose al crear
+  f  el siguiente argumento es ARCHIVO
 
-También acepta bundle inicial sin guion (por ejemplo `czf`) cuando cumple la gramática. Requiere f/ARCHIVO. `.tar.gz` y `.tgz` activan gzip automáticamente.
+Opción separada:
+  -C DIRECTORIO
+    base al crear / destino al extraer según modo.
 
-GZIP / GUNZIP
-  gzip ARCHIVO ...
-  gzip -d ARCHIVO.gz ...
-  gzip --decompress ARCHIVO.gz ...
-  gzip -k ARCHIVO ...
-  gzip --keep ARCHIVO ...
-  gunzip ARCHIVO.gz ...
-  gunzip -k ARCHIVO.gz ...
+También acepta bundle inicial sin guion, por ejemplo:
+  tar czf archivo.tar.gz carpeta
 
-Reconoce:
-  -c, --stdout
-pero actualmente devuelve error explícito porque el pipeline SST es textual y no binario. Por defecto elimina el archivo fuente tras completar; -k/--keep lo conserva.
+Requiere archivo mediante f. Extensiones `.tar.gz` y `.tgz` activan gzip automáticamente.
 
-ZIP
+29. gzip / gunzip
+
+Comprimir:
+  gzip ARCHIVO [ARCHIVO ...]
+  gzip -k ARCHIVO [ARCHIVO ...]
+  gzip --keep ARCHIVO [ARCHIVO ...]
+
+Descomprimir:
+  gzip -d ARCHIVO.gz [ARCHIVO.gz ...]
+  gzip --decompress ARCHIVO.gz [ARCHIVO.gz ...]
+  gunzip ARCHIVO.gz [ARCHIVO.gz ...]
+  gunzip -k ARCHIVO.gz [ARCHIVO.gz ...]
+  gunzip --keep ARCHIVO.gz [ARCHIVO.gz ...]
+
+  -k, --keep  conserva fuente.
+  -d, --decompress  descomprime cuando se invoca gzip.
+
+Reconocidas pero no operativas por limitación textual del pipeline:
+  -c
+  --stdout
+
+Si se usan, SST devuelve error explícito en vez de producir bytes binarios por stdout.
+
+Sin -k, el archivo fuente se elimina tras éxito.
+
+30. zip
+
   zip ARCHIVO.zip ARCHIVO...
   zip -r ARCHIVO.zip RUTA...
   zip --recurse-paths ARCHIVO.zip RUTA...
-    directorios requieren -r/--recurse-paths.
 
-UNZIP
+  -r, --recurse-paths  permite incluir directorios recursivamente.
+
+Directorios sin -r son rechazados.
+
+31. unzip
+
   unzip ARCHIVO.zip
   unzip -l ARCHIVO.zip
   unzip -d DIRECTORIO ARCHIVO.zip
   unzip -o ARCHIVO.zip
-    -l lista; -d elige destino; -o se acepta. Rutas inseguras del ZIP se rechazan mediante enclosed_name.
 
-LOCALIZACIÓN DE COMANDOS
+  -l  lista contenido sin extraer.
+  -d DIRECTORIO  destino.
+  -o  se acepta como overwrite/no-prompt en el flujo compatible.
+
+SST rechaza entradas ZIP con rutas inseguras usando `enclosed_name`.
+
+32. which
+
   which COMANDO
-  type COMANDO
-    informa si es comando interno SST o ruta en PATH.
 
-XARGS — ESTADO REAL ACTUAL
-  `xargs` aparece registrado en la tabla UNIX_COMMANDS, pero `UnixService::execute` no contiene actualmente una rama `xargs`. Por tanto devuelve `comando Unix no implementado` (status 127). No debe presentarse como capacidad funcional hasta implementar esa rama.
+Localiza comando interno/ruta visible según resolución SST/PATH.
 
-Esta advertencia existe precisamente para que el manual no afirme soporte que el código no tiene.
+33. Nombres que tienen prioridad Bash/Nwash
+
+Los siguientes están también registrados en la tabla Unix, pero al ejecutarlos desde Nwash la ruta del builtin de shell tiene prioridad:
+
+  pwd
+  echo
+  printf
+  true
+  false
+  type
+
+Por tanto sus opciones reales están documentadas exhaustivamente en `bash-nwash.txt`.
+
+34. Regla de exactitud
+
+Este capítulo enumera solo opciones que el código actual reconoce. Si un comando GNU tradicional tiene cien flags pero SST implementa dos, el manual muestra esos dos; no se debe inferir compatibilidad por el nombre.
