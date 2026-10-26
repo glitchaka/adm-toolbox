@@ -1,0 +1,33 @@
+SST Tutorial: Sysinternals Autologon
+
+Objetivo
+  Configurar inicio automatico de Windows usando Microsoft Sysinternals Autologon sin abrir su interfaz grafica.
+
+Comando
+  sys autologon -u CUENTA -d DOMINIO -p PASSWORD
+
+Equivalente explicito
+  sys autologon enable -u CUENTA -d DOMINIO -p PASSWORD
+
+Ejemplo de dominio
+  sys autologon -u operador -d CONTOSO -p MiPassword
+
+Ejemplo de cuenta local
+  sys autologon -u operador -d . -p MiPassword
+
+Que hace SST
+  1. Descarga AutoLogon.zip desde Microsoft Sysinternals.
+  2. Selecciona el ejecutable correspondiente a la arquitectura del equipo.
+  3. Valida que la firma Authenticode pertenezca a Microsoft Corporation.
+  4. Solicita elevacion UAC.
+  5. Ejecuta Autologon en modo CLI con /accepteula y las credenciales indicadas.
+  6. Elimina los archivos temporales descargados.
+
+Seguridad
+  Sysinternals Autologon almacena la credencial usando el mecanismo LSA de Windows en vez de dejar DefaultPassword en texto plano en Winlogon.
+
+Advertencia importante
+  Si escribes la clave con -p PASSWORD, la contraseña forma parte de la linea de comando introducida en SST y puede quedar en su historial. Para tareas sensibles debe preferirse una futura entrada interactiva/STDIN cuando este disponible.
+
+Comprobacion
+  Reinicia el equipo y confirma que Windows inicia automaticamente con la cuenta indicada.
