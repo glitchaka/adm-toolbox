@@ -1,34 +1,264 @@
 SST Tutorial: Office / GetHelpCmd
 
-Objetivo
-  Ejecutar el backend actual de Microsoft para OfficeScrubScenario cuando se prefiera GetHelpCmd en vez del SaRACmd legacy.
+1. Objetivo
 
-Comando
+GetHelpCmd es el backend actual distribuido por Microsoft para escenarios de soporte que antes se ejecutaban con SaRA/SaRACmd. SST lo integra como backend alternativo para OfficeScrubScenario.
+
+Usalo para una desinstalacion profunda de Office cuando quieras utilizar la ruta actual de Microsoft o cuando el backend SaRA legacy no pueda completar la limpieza.
+
+2. Comandos
+
+Diagnostico previo y posterior:
+
+  tools office diagnose
+
+Ejecutar GetHelpCmd para Microsoft 365:
+
   tools office scrub-current m365
 
-Todas las versiones compatibles
+Alias del backend:
+
+  tools office gethelp m365
+
+Todas las versiones compatibles:
+
   tools office scrub-current all
 
-Flujo recomendado
-  1. Cierra Outlook, Word, Excel, PowerPoint, OneNote, Teams y cualquier proceso de Office.
-  2. Ejecuta:
+Versiones aceptadas:
+
+  all
+  m365
+  2024
+  2021
+  2019
+  2016
+  2013
+  2010
+  2007
+
+3. Diferencia frente a tools office scrub
+
+  tools office scrub VERSION
+    usa SaRACmd Enterprise legacy.
+
+  tools office scrub-current VERSION
+    usa GetHelpCmd actual descargado desde Microsoft.
+
+Ambos ejecutan OfficeScrubScenario y ambos deben ir seguidos de reinicio y auditoria con tools office diagnose.
+
+4. Antes de ejecutarlo
+
+Cierra:
+
+  - Outlook
+  - Word
+  - Excel
+  - PowerPoint
+  - OneNote
+  - Teams cuando interfiera con Office
+  - procesos de instalacion/reparacion de Office
+
+Luego ejecuta:
+
+  tools office diagnose
+
+Comprueba el producto y version antes de elegir m365, 2021, 2019, etc.
+
+5. Flujo recomendado
+
+  1. Ejecuta:
        tools office diagnose
-  3. Ejecuta el scrub actual:
+  2. Cierra todas las aplicaciones Office.
+  3. Ejecuta, por ejemplo:
        tools office scrub-current m365
-  4. Acepta la elevacion UAC.
-  5. Reinicia Windows cuando termine.
-  6. Audita el resultado:
+  4. Acepta UAC.
+  5. Espera el resultado final de SST.
+  6. Reinicia Windows.
+  7. Ejecuta:
        tools office diagnose
+  8. Comprueba que el estado final corresponda a lo esperado.
 
-Que hace SST
-  - Descarga el paquete Enterprise actual desde Microsoft.
-  - Extrae GetHelpCmd.exe en una carpeta temporal de SST.
-  - Valida la firma Authenticode de Microsoft.
-  - Ejecuta OfficeScrubScenario con la version solicitada.
-  - Elimina los archivos temporales al terminar.
+6. Que hace SST internamente
 
-Cuando usarlo
-  Usa este backend cuando quieras probar la ruta actual de Microsoft o cuando SaRACmd legacy no pueda completar el escenario en un equipo concreto.
+SST:
 
-Nota
-  GetHelpCmd no sustituye la auditoria posterior. Si diagnose indica REMOVED / CORE RESIDUALS PRESENT, el producto fue retirado pero aun quedan componentes principales que deben revisarse.
+  1. crea una carpeta temporal
+  2. descarga el paquete Enterprise desde:
+       https://aka.ms/SaRA_EnterpriseVersionFiles
+  3. extrae GetHelpCmd.zip
+  4. localiza GetHelpCmd.exe
+  5. valida la firma Authenticode del ejecutable
+  6. exige una firma valida de Microsoft Corporation
+  7. solicita UAC
+  8. ejecuta:
+       GetHelpCmd.exe -S OfficeScrubScenario -AcceptEula -OfficeVersion VERSION
+  9. espera que el proceso finalice
+ 10. obtiene el codigo de salida
+ 11. elimina los archivos temporales
+
+7. Estados de diagnostico despues del scrub
+
+INSTALLED / REGISTERED PRODUCT PRESENT
+  Office sigue registrado como producto instalado. La retirada no se completo.
+
+REMOVED / CORE RESIDUALS PRESENT
+  El producto ya no esta registrado, pero aun existen componentes principales de Office/Click-to-Run.
+
+ABSENT / CLEAN
+  SST no detecta producto registrado ni los residuos principales auditados.
+
+Despues de una desinstalacion completa el estado deseado es:
+
+  ABSENT / CLEAN
+
+8. Codigos interpretados por SST
+
+0
+  GetHelpCmd completo el escenario. Reinicia y audita.
+
+6
+  Hay aplicaciones Office/Teams abiertas.
+
+7 o 68
+  No se encontro una instalacion que coincida con la seleccion.
+
+8
+  Existen varias versiones y no se pudo resolver la seleccion.
+
+9
+  Office no pudo retirarse.
+
+10
+  La herramienta no quedo elevada.
+
+66
+  La version solicitada no coincide con la instalada.
+
+67
+  La version indicada fue rechazada.
+
+Cualquier otro codigo se muestra numericamente para diagnostico.
+
+9. Cuando elegir GetHelpCmd
+
+Usalo cuando:
+
+  - quieras la ruta actual de Microsoft
+  - SaRACmd legacy falle
+  - quieras comparar si el backend actual limpia un estado residual que el legacy no resuelve
+  - un cambio reciente de Microsoft haga preferible el paquete actual
+
+10. Cuando probar SaRA legacy en su lugar
+
+Si GetHelpCmd termina con error, no detecta correctamente la instalacion o no logra limpiar un estado antiguo, prueba:
+
+  tools office scrub VERSION
+
+Ejemplo:
+
+  tools office scrub m365
+
+Luego reinicia y vuelve a ejecutar diagnose.
+
+11. Problemas habituales
+
+No aparece UAC:
+  La descarga, extraccion o validacion Authenticode pudo fallar primero. Revisa el error de SST.
+
+Aparece UAC y no hay ventana visible:
+  GetHelpCmd puede trabajar sin una interfaz grafica. SST espera el proceso y devuelve el resultado al terminar.
+
+Codigo 6:
+  Hay procesos abiertos. Cierra Office/Teams y repite.
+
+Codigo 66:
+  La seleccion de version no coincide con la instalacion. Usa diagnose para identificarla.
+
+Codigo 9:
+  La retirada fallo. Ejecuta diagnose y considera SaRA legacy como fallback.
+
+Office desaparece de Programas y caracteristicas pero diagnose muestra residuos:
+  El producto fue retirado pero quedan componentes. Reinicia primero y vuelve a auditar.
+
+12. Residuos y datos de usuario
+
+OfficeScrubScenario tiene como objetivo la instalacion de Office. SST no debe tratar como residuo de instalacion los datos personales del usuario.
+
+No se borran deliberadamente como parte del wrapper SST:
+
+  - PST
+  - documentos Office
+  - archivos personales
+
+Los OST y caches de usuario deben analizarse segun el incidente; no deben eliminarse indiscriminadamente solo porque se esta retirando Office.
+
+13. Relacion con problemas de Outlook
+
+Si el fallo es de inicio de sesion y Office abre normalmente, ejecuta primero:
+
+  tools office diagnose
+
+Revisa AAD BrokerPlugin, TokenBroker, Entra/PRT y caches de autenticacion.
+
+Para volver a registrar AAD BrokerPlugin:
+
+  tools office auth repair
+
+No es necesario desinstalar Office por cualquier fallo de autenticacion.
+
+14. Seguridad
+
+GetHelpCmd se obtiene por HTTPS desde el endpoint de Microsoft.
+
+Antes de ejecutarlo SST valida Authenticode y exige que el certificado del firmante corresponda a Microsoft Corporation.
+
+Si la validacion falla, SST no ejecuta el binario.
+
+15. Secuencia de fallback recomendada
+
+Si Office esta corrupto:
+
+  tools office diagnose
+  tools office scrub m365
+  reinicio
+  tools office diagnose
+
+Si SaRA legacy falla o deja la instalacion en mal estado:
+
+  tools office scrub-current m365
+  reinicio
+  tools office diagnose
+
+Tambien puede invertirse el orden si quieres priorizar el backend actual.
+
+16. Limitaciones
+
+  - requiere Windows
+  - necesita conectividad para descargar el paquete actual
+  - requiere UAC para el scrub
+  - no garantiza que todos los residuos posibles desaparezcan sin reinicio
+  - no sustituye tools office diagnose
+  - no borra automaticamente datos de usuario
+
+17. Resumen rapido
+
+Diagnosticar:
+
+  tools office diagnose
+
+GetHelpCmd para Microsoft 365:
+
+  tools office scrub-current m365
+
+GetHelpCmd para todas las versiones compatibles:
+
+  tools office scrub-current all
+
+SaRA legacy como fallback:
+
+  tools office scrub m365
+
+Siempre despues:
+
+  reinicia Windows
+  tools office diagnose
