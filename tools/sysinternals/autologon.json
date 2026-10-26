@@ -10,8 +10,10 @@
     "authenticode_subject_contains": "O=Microsoft Corporation"
   },
   "integration": {
-    "sst_command": "sys autologon",
-    "mode": "gui",
-    "credentials_in_command_line": false
+    "sst_command": "sys autologon -u CUENTA -d DOMINIO -p PASSWORD",
+    "mode": "cli",
+    "sysinternals_arguments": "/accepteula user domain password",
+    "credentials_in_command_line": true,
+    "opens_gui": false
   }
 }
