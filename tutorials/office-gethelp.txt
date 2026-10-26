@@ -6,28 +6,56 @@ GetHelpCmd es el backend actual distribuido por Microsoft para escenarios de sop
 
 Usalo para una desinstalacion profunda de Office cuando quieras utilizar la ruta actual de Microsoft o cuando el backend SaRA legacy no pueda completar la limpieza.
 
-2. Comandos
+2. Interfaz publica completa relacionada
 
-Diagnostico previo y posterior:
+Builtin principal:
+
+  tools
+
+Aliases del builtin:
+
+  tool
+  utils
+
+Ayuda/listado:
+
+  tools
+  tools list
+  tools -h
+  tools --help
+
+Diagnostico equivalente:
 
   tools office diagnose
+  tools office status
+  tools office verify
 
-Ejecutar GetHelpCmd para Microsoft 365:
+GetHelpCmd equivalente:
 
-  tools office scrub-current m365
+  tools office scrub-current [VERSION]
+  tools office gethelp [VERSION]
 
-Alias del backend:
+SaRA legacy equivalente:
 
-  tools office gethelp m365
+  tools office scrub [VERSION]
+  tools office sara [VERSION]
+  tools office uninstall [VERSION]
+  tools office remove [VERSION]
 
-Todas las versiones compatibles:
+Reparacion AAD Broker:
 
-  tools office scrub-current all
+  tools office auth repair
 
-Versiones aceptadas:
+Los aliases `tool` y `utils` pueden sustituir a `tools` en todos los ejemplos anteriores.
+
+3. VERSION: todos los valores aceptados
+
+VERSION puede ser:
 
   all
   m365
+  365
+  microsoft365
   2024
   2021
   2019
@@ -36,17 +64,102 @@ Versiones aceptadas:
   2010
   2007
 
-3. Diferencia frente a tools office scrub
+Normalizacion:
+
+  all                 -> All
+  m365                 -> M365
+  365                  -> M365
+  microsoft365         -> M365
+  2024                 -> 2024
+  2021                 -> 2021
+  2019                 -> 2019
+  2016                 -> 2016
+  2013                 -> 2013
+  2010                 -> 2010
+  2007                 -> 2007
+
+Si VERSION se omite, `scrub-current` y `gethelp` usan por defecto:
+
+  all
+
+Por lo tanto:
+
+  tools office scrub-current
+
+equivale a:
+
+  tools office scrub-current all
+
+Y:
+
+  tools office gethelp
+
+equivale a:
+
+  tools office gethelp all
+
+4. Ejemplos de todas las selecciones de version
+
+Microsoft 365:
+
+  tools office scrub-current m365
+  tools office scrub-current 365
+  tools office scrub-current microsoft365
+  tools office gethelp m365
+
+Office 2024:
+
+  tools office scrub-current 2024
+
+Office 2021:
+
+  tools office scrub-current 2021
+
+Office 2019:
+
+  tools office scrub-current 2019
+
+Office 2016:
+
+  tools office scrub-current 2016
+
+Office 2013:
+
+  tools office scrub-current 2013
+
+Office 2010:
+
+  tools office scrub-current 2010
+
+Office 2007:
+
+  tools office scrub-current 2007
+
+Todas las versiones compatibles detectables:
+
+  tools office scrub-current all
+
+Default equivalente:
+
+  tools office scrub-current
+
+5. Diferencia frente a SaRA legacy
 
   tools office scrub VERSION
-    usa SaRACmd Enterprise legacy.
+  tools office sara VERSION
+  tools office uninstall VERSION
+  tools office remove VERSION
+
+usan SaRACmd Enterprise legacy.
 
   tools office scrub-current VERSION
-    usa GetHelpCmd actual descargado desde Microsoft.
+  tools office gethelp VERSION
 
-Ambos ejecutan OfficeScrubScenario y ambos deben ir seguidos de reinicio y auditoria con tools office diagnose.
+usan GetHelpCmd actual descargado desde Microsoft.
 
-4. Antes de ejecutarlo
+Ambos caminos ejecutan OfficeScrubScenario y ambos deben ir seguidos de reinicio y auditoria con `tools office diagnose`.
+
+6. Antes de ejecutarlo
 
 Cierra:
 
@@ -58,13 +171,15 @@ Cierra:
   - Teams cuando interfiera con Office
   - procesos de instalacion/reparacion de Office
 
-Luego ejecuta:
+Luego ejecuta cualquiera de las formas equivalentes:
 
   tools office diagnose
+  tools office status
+  tools office verify
 
-Comprueba el producto y version antes de elegir m365, 2021, 2019, etc.
+Comprueba producto y version antes de elegir m365, 2021, 2019, etc.
 
-5. Flujo recomendado
+7. Flujo recomendado
 
   1. Ejecuta:
        tools office diagnose
@@ -78,7 +193,7 @@ Comprueba el producto y version antes de elegir m365, 2021, 2019, etc.
        tools office diagnose
   8. Comprueba que el estado final corresponda a lo esperado.
 
-6. Que hace SST internamente
+8. Que hace SST internamente
 
 SST:
 
@@ -96,7 +211,7 @@ SST:
  10. obtiene el codigo de salida
  11. elimina los archivos temporales
 
-7. Estados de diagnostico despues del scrub
+9. Estados de diagnostico despues del scrub
 
 INSTALLED / REGISTERED PRODUCT PRESENT
   Office sigue registrado como producto instalado. La retirada no se completo.
@@ -111,7 +226,7 @@ Despues de una desinstalacion completa el estado deseado es:
 
   ABSENT / CLEAN
 
-8. Codigos interpretados por SST
+10. Codigos interpretados por SST
 
 0
   GetHelpCmd completo el escenario. Reinicia y audita.
@@ -139,7 +254,18 @@ Despues de una desinstalacion completa el estado deseado es:
 
 Cualquier otro codigo se muestra numericamente para diagnostico.
 
-9. Cuando elegir GetHelpCmd
+11. Errores de sintaxis que SST detecta
+
+VERSION fuera de la lista:
+  SST rechaza la orden antes de lanzar GetHelpCmd.
+
+Mas de una VERSION:
+  `scrub-current` y `gethelp` solo aceptan cero o una VERSION.
+
+Accion Office desconocida:
+  SST devuelve error de accion desconocida.
+
+12. Cuando elegir GetHelpCmd
 
 Usalo cuando:
 
@@ -148,11 +274,14 @@ Usalo cuando:
   - quieras comparar si el backend actual limpia un estado residual que el legacy no resuelve
   - un cambio reciente de Microsoft haga preferible el paquete actual
 
-10. Cuando probar SaRA legacy en su lugar
+13. Cuando probar SaRA legacy en su lugar
 
-Si GetHelpCmd termina con error, no detecta correctamente la instalacion o no logra limpiar un estado antiguo, prueba:
+Si GetHelpCmd termina con error, no detecta correctamente la instalacion o no logra limpiar un estado antiguo, prueba una de las formas equivalentes:
 
   tools office scrub VERSION
+  tools office sara VERSION
+  tools office uninstall VERSION
+  tools office remove VERSION
 
 Ejemplo:
 
@@ -160,7 +289,7 @@ Ejemplo:
 
 Luego reinicia y vuelve a ejecutar diagnose.
 
-11. Problemas habituales
+14. Problemas habituales
 
 No aparece UAC:
   La descarga, extraccion o validacion Authenticode pudo fallar primero. Revisa el error de SST.
@@ -180,7 +309,7 @@ Codigo 9:
 Office desaparece de Programas y caracteristicas pero diagnose muestra residuos:
   El producto fue retirado pero quedan componentes. Reinicia primero y vuelve a auditar.
 
-12. Residuos y datos de usuario
+15. Residuos y datos de usuario
 
 OfficeScrubScenario tiene como objetivo la instalacion de Office. SST no debe tratar como residuo de instalacion los datos personales del usuario.
 
@@ -192,7 +321,7 @@ No se borran deliberadamente como parte del wrapper SST:
 
 Los OST y caches de usuario deben analizarse segun el incidente; no deben eliminarse indiscriminadamente solo porque se esta retirando Office.
 
-13. Relacion con problemas de Outlook
+16. Relacion con problemas de Outlook
 
 Si el fallo es de inicio de sesion y Office abre normalmente, ejecuta primero:
 
@@ -206,7 +335,7 @@ Para volver a registrar AAD BrokerPlugin:
 
 No es necesario desinstalar Office por cualquier fallo de autenticacion.
 
-14. Seguridad
+17. Seguridad
 
 GetHelpCmd se obtiene por HTTPS desde el endpoint de Microsoft.
 
@@ -214,7 +343,7 @@ Antes de ejecutarlo SST valida Authenticode y exige que el certificado del firma
 
 Si la validacion falla, SST no ejecuta el binario.
 
-15. Secuencia de fallback recomendada
+18. Secuencia de fallback recomendada
 
 Si Office esta corrupto:
 
@@ -231,7 +360,7 @@ Si SaRA legacy falla o deja la instalacion en mal estado:
 
 Tambien puede invertirse el orden si quieres priorizar el backend actual.
 
-16. Limitaciones
+19. Limitaciones
 
   - requiere Windows
   - necesita conectividad para descargar el paquete actual
@@ -240,25 +369,52 @@ Tambien puede invertirse el orden si quieres priorizar el backend actual.
   - no sustituye tools office diagnose
   - no borra automaticamente datos de usuario
 
-17. Resumen rapido
+20. Resumen rapido exhaustivo
 
-Diagnosticar:
+Ayuda:
+
+  tools
+  tools list
+  tools -h
+  tools --help
+
+Aliases:
+
+  tools
+  tool
+  utils
+
+Diagnostico:
 
   tools office diagnose
+  tools office status
+  tools office verify
 
-GetHelpCmd para Microsoft 365:
+GetHelpCmd:
 
-  tools office scrub-current m365
+  tools office scrub-current [VERSION]
+  tools office gethelp [VERSION]
 
-GetHelpCmd para todas las versiones compatibles:
+SaRA legacy:
 
-  tools office scrub-current all
+  tools office scrub [VERSION]
+  tools office sara [VERSION]
+  tools office uninstall [VERSION]
+  tools office remove [VERSION]
 
-SaRA legacy como fallback:
+Auth:
 
-  tools office scrub m365
+  tools office auth repair
 
-Siempre despues:
+VERSION:
+
+  all | m365 | 365 | microsoft365 | 2024 | 2021 | 2019 | 2016 | 2013 | 2010 | 2007
+
+Default:
+
+  all
+
+Siempre despues del scrub:
 
   reinicia Windows
   tools office diagnose
