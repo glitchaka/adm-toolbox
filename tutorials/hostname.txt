@@ -1,0 +1,25 @@
+SST Tutorial: Nombre del equipo
+
+Objetivo
+  Consultar o cambiar el nombre del equipo desde SST.
+
+Consultar nombre actual
+  hostname
+
+Cambiar nombre
+  hostname NUEVO_NOMBRE
+
+Forma equivalente
+  sys hostname NUEVO_NOMBRE
+
+Que hace SST
+  - Valida el nombre solicitado.
+  - Si la sesion no esta elevada, solicita UAC solo para la operacion de renombrado.
+  - En un equipo local cambia el nombre mediante la API nativa de Windows.
+  - Si el equipo ya pertenece a un dominio, usa la ruta de dominio para intentar renombrar tambien la cuenta del equipo en Active Directory.
+
+Despues del cambio
+  Reinicia Windows para que el nuevo nombre quede completamente efectivo.
+
+Ejemplo
+  hostname LAB-PC-042
