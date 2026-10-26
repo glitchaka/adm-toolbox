@@ -1,33 +1,251 @@
 SST Tutorial: Dominio de Active Directory
 
-Objetivo
-  Consultar el estado de union a dominio, unir el equipo a Active Directory o retirarlo desde SST.
+1. Objetivo
 
-Estado
+Este apartado cubre todo lo relacionado con pertenencia del equipo a un dominio de Active Directory desde SST:
+
+  - consultar si el equipo pertenece a un dominio o grupo de trabajo
+  - unir el equipo a un dominio
+  - crear la cuenta de equipo durante la union cuando corresponde
+  - indicar una OU concreta
+  - sacar el equipo del dominio
+  - entender los requisitos de DNS, permisos y reinicio
+  - diagnosticar fallos habituales
+
+2. Comandos disponibles
+
+Consultar estado:
+
   sys domain status
 
-Unir a dominio
+Alias directo:
+
+  domain status
+
+Unir a dominio:
+
   sys domain join -d DOMINIO -u CUENTA -p PASSWORD
 
-Con OU especifica
-  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD -ou "OU=Equipos,DC=midominio,DC=cl"
+Unir y colocar la cuenta de equipo en una OU concreta:
 
-Sacar del dominio
+  sys domain join -d DOMINIO -u CUENTA -p PASSWORD -ou "RUTA_OU"
+
+Sacar el equipo del dominio:
+
+  sys domain leave -u CUENTA -p PASSWORD
+
+3. Parametros de join
+
+  -d, --domain     Nombre DNS o nombre esperado del dominio.
+  -u, --user       Cuenta con permisos suficientes para unir el equipo.
+  -p, --password   Contrasena de esa cuenta.
+  -ou, --ou        Ruta LDAP de la OU donde debe crearse o ubicarse la cuenta del equipo.
+
+Ejemplo:
+
+  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD
+
+Con OU:
+
+  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD -ou "OU=Equipos,OU=Santiago,DC=midominio,DC=cl"
+
+4. Parametros de leave
+
+  -u, --user       Cuenta con permisos para sacar el equipo del dominio.
+  -p, --password   Contrasena de esa cuenta.
+
+Ejemplo:
+
   sys domain leave -u MIDOMINIO\administrador -p PASSWORD
 
-Que hace SST
-  - status consulta el estado de union del equipo.
-  - join usa la API nativa de Windows para unir el equipo al dominio y crear la cuenta de equipo cuando corresponde.
-  - leave usa la API nativa de Windows para retirar el equipo del dominio.
-  - SST solicita elevacion UAC cuando la operacion lo necesita.
+5. Que devuelve status
 
-Requisitos practicos
-  - El equipo debe resolver correctamente el DNS del dominio.
-  - Debe tener conectividad hacia los controladores de dominio.
-  - La cuenta usada debe tener permisos suficientes para unir o retirar el equipo.
+SST consulta NetGetJoinInformation de Windows.
 
-Despues de join o leave
-  Reinicia Windows para completar el cambio.
+Ejemplo de equipo unido:
 
-Seguridad
-  Si usas -p PASSWORD, la contraseña forma parte de la linea de comando introducida en SST. Para uso sensible debe preferirse una futura entrada interactiva/STDIN cuando este disponible.
+  domain: DOMAIN / MIDOMINIO
+
+Ejemplo de equipo no unido:
+
+  domain: WORKGROUP / WORKGROUP
+
+El valor mostrado corresponde al estado reportado por Windows para la pertenencia actual del equipo.
+
+6. Como funciona join internamente
+
+SST usa la API nativa NetJoinDomain de Windows con las opciones:
+
+  NETSETUP_JOIN_DOMAIN
+  NETSETUP_ACCT_CREATE
+
+Eso significa que SST solicita la union al dominio y permite crear la cuenta del equipo cuando sea necesario y la cuenta utilizada tenga permisos para ello.
+
+SST no depende de Add-Computer de PowerShell para esta funcion.
+
+7. Como funciona leave internamente
+
+SST usa NetUnjoinDomain de Windows.
+
+La operacion registra la salida del dominio y requiere reinicio para que el cambio quede completamente efectivo.
+
+8. Elevacion UAC
+
+SST intenta la operacion con el token actual.
+
+Si Windows devuelve acceso denegado, SST eleva solamente la operacion de dominio mediante UAC. No es necesario iniciar toda la consola como administrador de forma permanente.
+
+Si se cancela UAC, la operacion no se completa.
+
+9. Requisitos antes de unir un equipo
+
+Antes de ejecutar join conviene comprobar:
+
+  - que el equipo tiene direccion IP valida
+  - que el DNS configurado puede resolver el dominio
+  - que el dominio resuelve a sus controladores
+  - que existe conectividad hacia la red corporativa
+  - que la hora del equipo no esta desfasada de forma importante
+  - que la cuenta usada tiene permisos de union
+  - que el nombre del equipo es el definitivo o aceptable
+
+Si necesitas cambiar el nombre primero:
+
+  hostname NUEVO_NOMBRE
+
+Luego reinicia antes de unirlo al dominio si quieres evitar que la cuenta de equipo se cree con el nombre anterior.
+
+10. DNS: el punto mas importante
+
+Un equipo puede tener Internet y aun asi no poder unirse al dominio.
+
+Para Active Directory el DNS debe resolver correctamente el dominio y sus servicios. Si el equipo usa un DNS publico o incorrecto, join puede fallar aunque haya conectividad general.
+
+Antes de culpar a credenciales o permisos, revisa primero DNS y conectividad corporativa.
+
+11. Uso de OU
+
+La opcion -ou recibe una ruta LDAP completa.
+
+Ejemplo:
+
+  -ou "OU=Equipos,OU=Santiago,DC=midominio,DC=cl"
+
+No basta con escribir solo el nombre visible de la OU.
+
+Si omites -ou, Windows usa el contenedor o comportamiento predeterminado del dominio para la cuenta del equipo.
+
+12. Despues de join
+
+Cuando SST devuelve:
+
+  domain: union a DOMINIO registrada correctamente; reinicio requerido.
+
+haz lo siguiente:
+
+  1. reinicia Windows
+  2. vuelve a abrir SST
+  3. ejecuta:
+       sys domain status
+  4. confirma que devuelve DOMAIN / nombre-del-dominio
+  5. comprueba que puedes autenticar o usar los recursos corporativos esperados
+
+13. Despues de leave
+
+Cuando SST devuelve:
+
+  domain: salida del dominio registrada correctamente; reinicio requerido.
+
+reinicia Windows y luego ejecuta:
+
+  sys domain status
+
+Debe indicar grupo de trabajo en lugar de DOMAIN.
+
+Antes de sacar una estacion de dominio asegurate de que existe una cuenta local utilizable para entrar al equipo despues del reinicio.
+
+14. Seguridad de credenciales
+
+La implementacion actual recibe la contrasena mediante:
+
+  -p PASSWORD
+
+Por ello la contrasena forma parte del comando introducido en SST y puede quedar en el historial.
+
+SST borra de memoria el buffer UTF-16 utilizado para entregar la contrasena a NetJoinDomain/NetUnjoinDomain despues de la llamada, pero eso no elimina el hecho de que el valor haya aparecido inicialmente en la linea de comando.
+
+Cuando exista entrada secreta interactiva, esa sera la forma preferida para operaciones de dominio.
+
+15. Errores habituales
+
+Acceso denegado / NetAPI 5:
+  La cuenta o el token no tienen permisos suficientes. SST intenta UAC cuando la operacion inicial devuelve acceso denegado. Si falla despues de elevar, revisa permisos de la cuenta en Active Directory.
+
+Parametro invalido / NetAPI o Win32 87:
+  Revisa dominio, OU y sintaxis. Una ruta OU incorrecta puede provocar fallo.
+
+No se encuentra el dominio:
+  Revisa DNS, VPN, red corporativa y conectividad con controladores de dominio.
+
+Credenciales incorrectas:
+  Confirma usuario, dominio de la cuenta y contrasena.
+
+Cuenta de equipo existente:
+  Puede requerir permisos sobre ese objeto o revisar si la cuenta existente corresponde a la misma estacion.
+
+Join devuelve correcto pero status aun no cambia como esperas:
+  Reinicia Windows antes de concluir que fallo.
+
+16. Secuencia recomendada para preparar una estacion
+
+  1. Obtener nombre e IP actual.
+  2. Cambiar nombre si hace falta:
+       hostname LAB-PC-042
+  3. Reiniciar.
+  4. Comprobar red y DNS.
+  5. Unir al dominio:
+       sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD
+  6. Reiniciar.
+  7. Verificar:
+       sys domain status
+  8. Configurar Autologon si la estacion lo requiere:
+       sys autologon -u operador -d MIDOMINIO -p PASSWORD
+
+17. Relacion con otros comandos SST
+
+  hostname                 cambia el nombre del equipo
+  sys domain status        confirma pertenencia
+  sys autologon            configura inicio automatico
+  notsh / net              diagnostica conectividad
+  sys whoami               ayuda a revisar el contexto de usuario
+  diag                     puede complementar la revision general
+
+18. Limitaciones actuales
+
+  - join y leave son operaciones del equipo local.
+  - requieren Windows.
+  - no gestionan por si mismos GPO, OU, permisos de AD ni objetos obsoletos.
+  - no sustituyen un diagnostico de DNS o Active Directory.
+  - la contrasena se entrega actualmente con -p en la linea de comando.
+
+19. Resumen rapido
+
+Estado:
+
+  sys domain status
+
+Unir:
+
+  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD
+
+Unir en OU:
+
+  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD -ou "OU=Equipos,DC=midominio,DC=cl"
+
+Salir:
+
+  sys domain leave -u MIDOMINIO\administrador -p PASSWORD
+
+Despues de join o leave:
+
+  reinicia Windows y verifica con sys domain status.
