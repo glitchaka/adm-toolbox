@@ -1,0 +1,34 @@
+SST Tutorial: Office / GetHelpCmd
+
+Objetivo
+  Ejecutar el backend actual de Microsoft para OfficeScrubScenario cuando se prefiera GetHelpCmd en vez del SaRACmd legacy.
+
+Comando
+  tools office scrub-current m365
+
+Todas las versiones compatibles
+  tools office scrub-current all
+
+Flujo recomendado
+  1. Cierra Outlook, Word, Excel, PowerPoint, OneNote, Teams y cualquier proceso de Office.
+  2. Ejecuta:
+       tools office diagnose
+  3. Ejecuta el scrub actual:
+       tools office scrub-current m365
+  4. Acepta la elevacion UAC.
+  5. Reinicia Windows cuando termine.
+  6. Audita el resultado:
+       tools office diagnose
+
+Que hace SST
+  - Descarga el paquete Enterprise actual desde Microsoft.
+  - Extrae GetHelpCmd.exe en una carpeta temporal de SST.
+  - Valida la firma Authenticode de Microsoft.
+  - Ejecuta OfficeScrubScenario con la version solicitada.
+  - Elimina los archivos temporales al terminar.
+
+Cuando usarlo
+  Usa este backend cuando quieras probar la ruta actual de Microsoft o cuando SaRACmd legacy no pueda completar el escenario en un equipo concreto.
+
+Nota
+  GetHelpCmd no sustituye la auditoria posterior. Si diagnose indica REMOVED / CORE RESIDUALS PRESENT, el producto fue retirado pero aun quedan componentes principales que deben revisarse.
