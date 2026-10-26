@@ -1,33 +1,166 @@
 SST Tutorial: Sysinternals Autologon
 
-Objetivo
-  Configurar inicio automatico de Windows usando Microsoft Sysinternals Autologon sin abrir su interfaz grafica.
+1. Que es
 
-Comando
+Autologon configura el inicio automatico de Windows con una cuenta concreta. SST no reimplementa el almacenamiento de la credencial: descarga y ejecuta Microsoft Sysinternals Autologon en modo CLI y sin abrir su interfaz grafica.
+
+SST usa el paquete oficial de Microsoft, valida la firma Authenticode antes de ejecutarlo y elimina los archivos temporales cuando termina.
+
+2. Cuando usarlo
+
+Usalo cuando un equipo deba iniciar sesion automaticamente despues de encenderse o reiniciarse, por ejemplo:
+
+  - kioscos
+  - equipos de sala
+  - estaciones de monitoreo
+  - terminales dedicados
+  - equipos que deben levantar una aplicacion automaticamente
+  - laboratorios o estaciones administradas con una cuenta operacional fija
+
+No lo uses en equipos donde el inicio automatico con una cuenta con privilegios elevados suponga un riesgo innecesario.
+
+3. Sintaxis
+
+Forma corta:
+
   sys autologon -u CUENTA -d DOMINIO -p PASSWORD
 
-Equivalente explicito
+Forma explicita:
+
   sys autologon enable -u CUENTA -d DOMINIO -p PASSWORD
 
-Ejemplo de dominio
+Alias directo:
+
+  autologon -u CUENTA -d DOMINIO -p PASSWORD
+
+Parametros:
+
+  -u, --user       Nombre de la cuenta que iniciara sesion.
+  -d, --domain     Dominio de Windows. Para una cuenta local puede usarse el nombre del equipo o '.'.
+  -p, --password   Contrasena de la cuenta.
+
+Los tres parametros son obligatorios en la implementacion actual.
+
+4. Ejemplos
+
+Cuenta de dominio:
+
   sys autologon -u operador -d CONTOSO -p MiPassword
 
-Ejemplo de cuenta local
+Cuenta local usando punto como dominio local:
+
   sys autologon -u operador -d . -p MiPassword
 
-Que hace SST
-  1. Descarga AutoLogon.zip desde Microsoft Sysinternals.
-  2. Selecciona el ejecutable correspondiente a la arquitectura del equipo.
-  3. Valida que la firma Authenticode pertenezca a Microsoft Corporation.
-  4. Solicita elevacion UAC.
-  5. Ejecuta Autologon en modo CLI con /accepteula y las credenciales indicadas.
-  6. Elimina los archivos temporales descargados.
+Cuenta local especificando el nombre del equipo:
 
-Seguridad
-  Sysinternals Autologon almacena la credencial usando el mecanismo LSA de Windows en vez de dejar DefaultPassword en texto plano en Winlogon.
+  sys autologon -u operador -d LAB-PC-042 -p MiPassword
 
-Advertencia importante
-  Si escribes la clave con -p PASSWORD, la contraseña forma parte de la linea de comando introducida en SST y puede quedar en su historial. Para tareas sensibles debe preferirse una futura entrada interactiva/STDIN cuando este disponible.
+5. Que hace SST internamente
 
-Comprobacion
-  Reinicia el equipo y confirma que Windows inicia automaticamente con la cuenta indicada.
+Al ejecutar el comando SST:
+
+  1. Comprueba que usuario, dominio y contrasena no esten vacios.
+  2. Crea una carpeta temporal bajo el espacio de herramientas de SST.
+  3. Descarga por HTTPS:
+       https://download.sysinternals.com/files/AutoLogon.zip
+  4. Extrae el paquete evitando rutas ZIP inseguras.
+  5. Selecciona el ejecutable segun la arquitectura:
+       x64      -> Autologon64.exe
+       ARM64    -> Autologon64a.exe
+       otras    -> Autologon.exe
+  6. Valida con Authenticode que el ejecutable este firmado por Microsoft Corporation.
+  7. Solicita UAC si la operacion necesita elevacion.
+  8. Ejecuta Autologon sin mostrar su GUI con:
+       /accepteula usuario dominio password
+  9. Espera el resultado del proceso.
+ 10. Considera correcta la operacion solo si Autologon devuelve codigo 0.
+ 11. Elimina el ZIP y los binarios temporales descargados.
+
+6. Donde queda la credencial
+
+Sysinternals Autologon utiliza el mecanismo de secretos LSA de Windows para almacenar la credencial utilizada por el inicio automatico. SST no crea un archivo con la contrasena ni conserva una copia en su directorio de herramientas.
+
+Esto no convierte el inicio automatico en un mecanismo equivalente a un inicio interactivo protegido. Un administrador local o un usuario con capacidad suficiente sobre el equipo puede acceder a informacion sensible del sistema. La cuenta usada debe tener solo los permisos necesarios.
+
+7. Advertencia sobre -p
+
+La sintaxis actual recibe la contrasena como argumento:
+
+  -p PASSWORD
+
+Eso significa que la contrasena se escribe en la linea de comando introducida en SST y puede quedar en el historial de la terminal. Tambien se entrega al proceso de Autologon como argumento, porque ese es el modo CLI soportado por la herramienta de Sysinternals.
+
+Cuando SST incorpore entrada secreta interactiva, la documentacion indicara la forma preferida para evitar escribir la contrasena directamente en el comando.
+
+8. Elevacion UAC
+
+No es necesario abrir SST completo como administrador. SST eleva la operacion necesaria para Autologon cuando corresponde.
+
+Si el usuario cancela UAC, la configuracion no se aplica.
+
+9. Comprobacion despues de configurarlo
+
+La comprobacion definitiva es reiniciar Windows:
+
+  1. Guarda cualquier trabajo abierto.
+  2. Reinicia el equipo.
+  3. Verifica que Windows inicia sesion automaticamente con la cuenta indicada.
+  4. Comprueba que el entorno esperado del usuario carga correctamente.
+
+Si la cuenta tiene una contrasena expirada, bloqueada o modificada posteriormente, el inicio automatico puede dejar de funcionar.
+
+10. Problemas habituales
+
+El comando pide UAC y luego falla:
+  Revisa el mensaje devuelto por SST. La descarga, la firma o Autologon pueden haber fallado.
+
+No puede descargar Autologon:
+  Comprueba conectividad HTTPS hacia download.sysinternals.com.
+
+SST rechaza la herramienta por firma:
+  No fuerces la ejecucion. SST solo acepta el ejecutable si Authenticode valida una firma de Microsoft Corporation.
+
+Autologon devuelve un codigo distinto de 0:
+  SST informa el codigo. La configuracion no debe considerarse aplicada.
+
+Windows muestra la pantalla de inicio igualmente:
+  Comprueba que la cuenta siga habilitada, que la contrasena no haya cambiado y que no exista una politica de Windows que interfiera con el inicio automatico.
+
+11. Relacion con otros comandos SST
+
+Antes de preparar una estacion puede ser util:
+
+  hostname NUEVO_NOMBRE
+  sys domain status
+  sys domain join -d DOMINIO -u CUENTA -p PASSWORD
+  sys autologon -u CUENTA -d DOMINIO -p PASSWORD
+
+Una secuencia habitual de provision es:
+
+  1. cambiar nombre del equipo
+  2. reiniciar si corresponde
+  3. unir al dominio
+  4. reiniciar
+  5. configurar Autologon
+  6. reiniciar y validar
+
+12. Limitaciones actuales
+
+  - La implementacion actual configura Autologon; todavia no expone desde SST un subcomando disable.
+  - La implementacion actual requiere -p/--password en la linea de comando.
+  - Necesita acceso a Internet para descargar el paquete oficial cuando se ejecuta.
+  - La herramienta es exclusiva de Windows.
+
+13. Resumen rapido
+
+Configurar cuenta de dominio:
+
+  sys autologon -u operador -d CONTOSO -p PASSWORD
+
+Configurar cuenta local:
+
+  sys autologon -u operador -d . -p PASSWORD
+
+Despues:
+
+  reinicia Windows y confirma que la sesion se abre automaticamente.
