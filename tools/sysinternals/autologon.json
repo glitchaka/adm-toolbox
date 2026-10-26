@@ -1,0 +1,17 @@
+{
+  "id": "sysinternals-autologon",
+  "name": "Sysinternals Autologon",
+  "vendor": "Microsoft Sysinternals",
+  "version": "3.10",
+  "source": "https://download.sysinternals.com/files/AutoLogon.zip",
+  "documentation": "https://learn.microsoft.com/sysinternals/downloads/autologon",
+  "verification": {
+    "https_only": true,
+    "authenticode_subject_contains": "O=Microsoft Corporation"
+  },
+  "integration": {
+    "sst_command": "sys autologon",
+    "mode": "gui",
+    "credentials_in_command_line": false
+  }
+}
