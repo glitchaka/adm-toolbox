@@ -1,0 +1,64 @@
+SST — Editor Helix-SST
+
+Nombres:
+  helix
+  hx
+  helix-sst
+
+Abrir/crear:
+  helix ARCHIVO...
+  hx ARCHIVO...
+
+Ayuda integrada SST:
+  helix --help
+  helix -h
+  helix --guide
+
+Versión:
+  helix --version
+  helix -V
+
+Créditos/licencia:
+  helix --credits
+
+Tutorial upstream:
+  helix --tutor
+
+Helix-SST actual:
+  integración 0.2.3
+  base Helix 25.07.1
+  licencia upstream MPL-2.0
+
+Controles esenciales documentados por SST:
+  i                         NORMAL -> INSERTAR
+  Esc                       volver a NORMAL/cancelar
+  Flechas                   mover cursor
+  Backspace / Supr          borrar en INSERTAR
+  Ctrl+V                    pegar en INSERTAR
+  Alt+d                     insertar —
+  Ctrl+g                    atajo alternativo para —
+  F2                        sugerencias ortográficas
+  u                         deshacer en NORMAL
+  Ctrl+r                    rehacer
+  /texto + Enter            buscar
+  n                         siguiente coincidencia
+  :w + Enter                guardar
+  :w otro.sh + Enter        guardar como
+  :q + Enter                salir
+  :q! + Enter               salir descartando cambios
+  :wq + Enter               guardar y salir
+  F1                        abrir guía
+  :bc + Enter               cerrar buffer de guía
+  Ctrl+Q                    abortar editor sin guardar cambios pendientes
+
+Corrector:
+  archivos .txt y Markdown usan corrector local español de Chile; no envía texto a servicio externo.
+
+Rutas:
+  config/helix-sst/config.toml
+  config/helix-sst/helix.log
+  config/helix-sst/.spell-user
+
+Cuando Helix termina con error SST muestra la cola de helix.log si está disponible. Código 130 se interpreta como editor abortado y cambios sin guardar descartados.
+
+Las demás órdenes/modos propios de Helix upstream pueden existir dentro del binario Helix, pero este capítulo enumera las integraciones y controles que SST garantiza/documenta explícitamente.

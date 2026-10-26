@@ -1,0 +1,73 @@
+SST — Opciones de invocación de sst.exe / Nwash
+
+Estas opciones corresponden al parser de arranque de SST cuando se usa como shell/CLI.
+
+Ayuda y versión:
+  --help
+  --version
+
+Ejecución:
+  -c COMANDO               ejecuta COMANDO
+  -s                       lee comandos desde stdin
+  -i                       fuerza shell interactiva
+  -l, --login              shell de login
+
+Archivos de inicio:
+  --norc                   no carga ~/.bashrc
+  --noprofile              no carga archivos de perfil
+  --rcfile ARCHIVO         usa ARCHIVO como rc
+  --init-file ARCHIVO      alias funcional de --rcfile
+  --noediting              desactiva edición interactiva de línea
+
+Modos/opciones:
+  --posix                  activa opción POSIX
+  --restricted             activa restricted_shell
+  --verbose                activa verbose
+  --debugger               activa extdebug + functrace + errtrace
+
+Opciones set:
+  -o OPCION                activa una opción de set
+  +o OPCION                desactiva una opción de set
+
+Opciones shopt:
+  -O OPCION                activa una opción shopt
+  +O OPCION                desactiva una opción shopt
+
+Flags cortos combinables interpretados por SST:
+  -a / +a                  allexport on/off
+  -e / +e                  errexit on/off
+  -f / +f                  noglob on/off
+  -h / +h                  hashall on/off
+  -m / +m                  monitor/job control on/off
+  -n / +n                  noexec on/off
+  -u / +u                  nounset on/off
+  -v / +v                  verbose on/off
+  -x / +x                  xtrace on/off
+  -B / +B                  braceexpand on/off
+  -C / +C                  noclobber on/off
+  -E / +E                  errtrace on/off
+  -H / +H                  histexpand on/off
+  -P / +P                  physical on/off
+  -T / +T                  functrace on/off
+
+Flags que SST solo acepta en forma positiva dentro de bundles:
+  -i                       interactiva
+  -l                       login
+  -s                       stdin script
+  -r                       restricted_shell
+
+Operando de script:
+  sst ARCHIVO [ARGS]
+
+Separador:
+  --                       termina el parseo de opciones; lo restante son operandos.
+
+Ejemplos:
+  sst -c "sys info"
+  sst -i
+  sst --norc -i
+  sst -eu script.sh
+  sst -O extglob -c "..."
+  sst --rcfile mi-rc.sh -i
+
+Las opciones internas de GUI/broker usadas por SST para su propio arranque/elevación no forman parte de esta interfaz operativa y no deben utilizarse como comandos normales.

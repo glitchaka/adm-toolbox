@@ -1,0 +1,60 @@
+SST — Inventario de dispositivos: device
+
+Acción por defecto:
+  device                   equivale a device list
+
+Ayuda:
+  device help
+  device --help
+  device -h
+
+Listado:
+  device list
+  device list --json
+  device list --csv
+
+Detalle:
+  device show MAC
+  device show NOMBRE
+
+Alta/actualización:
+  device add MAC NOMBRE
+  device add IP NOMBRE
+  device add MAC|IP NOMBRE --note TEXTO
+
+NOMBRE puede contener varias palabras. --note consume el texto restante como nota. Si la MAC ya existe, SST actualiza nombre y nota cuando se entrega una nueva nota.
+
+Cuando el objetivo es IPv4, SST intenta resolver la MAC por vecino/ARP. Si no puede, recomienda ejecutar net scan o comprobar que el equipo esté en el mismo segmento.
+
+Baja:
+  device remove MAC
+
+Desconocidos observados:
+  device unknown
+  device unknown --json
+  device unknown --csv
+
+Ruta de persistencia:
+  device path
+
+MAC:
+  acepta formato con ':' o '-'; SST normaliza a AA:BB:CC:DD:EE:FF.
+  MAC local/private se marca porque puede ser aleatoria y no identificar el hardware físico estable.
+
+Campos útiles:
+  mac
+  name
+  notes
+  mac_scope
+  vendor
+  ieee_registry
+  last_ip
+  last_hostname
+  last_seen
+  discovery
+
+Relación con otros comandos:
+  net scan
+  net identify
+  switch locate NOMBRE
+  wol NOMBRE

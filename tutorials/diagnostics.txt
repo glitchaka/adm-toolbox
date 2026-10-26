@@ -1,0 +1,25 @@
+SST — Diagnósticos compuestos: diag
+
+Acción por defecto:
+  diag                     equivale a diag network
+
+Ayuda:
+  diag help
+  diag --help
+  diag -h
+
+Subcomandos:
+  diag network             diagnóstico de red agregado
+  diag dns [HOST]          resolución DNS; HOST por defecto: example.com
+  diag hardware            combina sys info + sys memory + sys disks
+  diag storage             equivalente compuesto sobre sys disks
+  diag traffic             delega en net traffic
+  diag domain              consulta domain status local
+
+Ejemplos:
+  diag
+  diag dns intranet.midominio.cl
+  diag hardware
+  diag domain
+
+`diag` no reemplaza las herramientas específicas; sirve para una primera fotografía y luego se profundiza con net, sys, domain, triage u otras.

@@ -1,0 +1,142 @@
+SST — Builtins Bash/Nwash registrados
+
+Nwash busca compatibilidad orientada a Bash 5.3; no lanza bash.exe. La lista pública registrada es:
+
+  :
+  .                       alias semántico de source
+  [                       alias semántico de test
+  alias
+  bg
+  bind
+  break
+  builtin
+  caller
+  cd
+  command
+  compgen
+  complete
+  compopt
+  continue
+  declare
+  dirs
+  disown
+  echo
+  enable
+  eval
+  exec
+  exit
+  export
+  false
+  fc
+  fg
+  getopts
+  hash
+  help
+  history
+  jobs
+  kill
+  let
+  local
+  logout
+  mapfile
+  popd
+  printf
+  pushd
+  pwd
+  read
+  readarray
+  readonly
+  return
+  set
+  shift
+  shopt
+  source
+  suspend
+  test
+  times
+  trap
+  true
+  type
+  typeset
+  ulimit
+  umask
+  unalias
+  unset
+  wait
+
+Sintaxis documentada por el parser/guide actual:
+
+  :
+  source ARCHIVO [ARGS]
+  test EXPRESION
+  alias [NOMBRE[=VALOR] ...]
+  unalias [-a] NOMBRE ...
+  cd [DIR]
+  pwd [-LP]
+  echo [-neE] [ARG ...]
+  printf [-v VAR] FORMATO [ARG ...]
+  export [-fn] [NOMBRE[=VALOR] ...]
+  unset [-fv] NOMBRE ...
+  readonly [-aAf] [NOMBRE[=VALOR] ...]
+  local [OPCIONES] NOMBRE[=VALOR] ...
+  declare [OPCIONES] [NOMBRE[=VALOR] ...]
+  typeset [OPCIONES] [NOMBRE[=VALOR] ...]
+  read [OPCIONES] [NOMBRE ...]
+  mapfile [OPCIONES] [ARRAY]
+  readarray [OPCIONES] [ARRAY]
+  set [OPCIONES] [--] [ARG ...]
+  shopt [-pqsu] [OPCION ...]
+  shift [N]
+  getopts OPTSTRING NOMBRE [ARG ...]
+  eval [ARG ...]
+  let EXPRESION ...
+  trap [-lp] [[ARG] SIGNAL ...]
+  break [N]
+  continue [N]
+  return [N]
+  exit [N]
+  logout [N]
+  true
+  false
+  jobs [OPCIONES] [JOB ...]
+  fg [JOB]
+  bg [JOB ...]
+  wait [-fn] [ID ...]
+  disown [-arh] [JOB ...]
+  kill [-s SIGNAL|-SIGNAL] PID|JOB ...
+  suspend [-f]
+  history [OPCIONES] [N]
+  fc [-e EDITOR] [-lnr] [PRIMERO [ULTIMO]]
+  bind [OPCIONES]
+  complete [OPCIONES] [NOMBRE ...]
+  compgen [OPCIONES] [PALABRA]
+  compopt [OPCIONES] [NOMBRE ...]
+  command [-pVv] COMANDO [ARG ...]
+  builtin BUILTIN [ARG ...]
+  type [-afptP] NOMBRE ...
+  hash [-lr] [-p RUTA] [NOMBRE ...]
+  enable [-a] [-dnps] [-f ARCHIVO] [NOMBRE ...]
+  exec [-cl] [-a NOMBRE] [COMANDO [ARG ...]]
+  umask [-pS] [MODO]
+  ulimit [OPCIONES] [LIMITE]
+  times
+  caller [N]
+  dirs [-clpv] [+N|-N]
+  pushd [-n] [DIR|+N|-N]
+  popd [-n] [+N|-N]
+  help [-dms] [PATRON ...]
+
+Familias importantes:
+  variables/atributos: declare, typeset, local, export, readonly, unset
+  entrada: read, mapfile/readarray
+  control: break, continue, return, exit, trap
+  opciones: set, shopt
+  jobs: jobs, fg, bg, wait, disown, kill, suspend
+  historial: history, fc
+  completado: complete, compgen, compopt, bind
+  resolución: command, builtin, type, hash, enable
+  pila directorios: dirs, pushd, popd
+
+Para opciones de arranque de la shell (-c/-i/-l/-o/-O/etc.) consulta shell-invocation.txt.
+
+IMPORTANTE: esta lista describe la interfaz que SST declara compatible. Cuando una opción concreta tenga una limitación frente a GNU Bash, la referencia efectiva es el comportamiento actual de Nwash y `help BUILTIN` dentro de SST.

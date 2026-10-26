@@ -1,0 +1,51 @@
+SST — Privilegios: sudo / runas
+
+Nombres:
+  sudo
+  runas                    alias exacto; no ejecuta runas.exe
+
+Ayuda:
+  sudo -h
+  sudo --help
+
+Estado:
+  sudo --status
+
+Escalar la sesión completa un nivel:
+  sudo
+
+Escalera:
+  USER / ADMIN_FILTERED -> ADMINISTRATOR -> LOCAL_SYSTEM -> TRUSTEDINSTALLER -> MAX
+
+Ejecutar como Administrador:
+  sudo COMANDO [ARG ...]
+
+Ejecutar como LOCAL SYSTEM:
+  sudo --system COMANDO [ARG ...]
+
+Ejecutar como TrustedInstaller:
+  sudo --trustedinstaller COMANDO [ARG ...]
+
+Ejemplos:
+  sudo service stop Spooler
+  sudo registry set ...
+  sudo --system whoami
+  sudo --trustedinstaller registry get ...
+
+Comportamiento:
+  - desde usuario/admin filtrado, Administrador usa UAC
+  - si ya está elevado, SYSTEM usa token/proceso nativo apropiado
+  - TrustedInstaller se obtiene a partir de contexto elevado suficiente
+  - SST habilita privilegios estándar del token cuando corresponde
+
+`sudo` sin comando hace handoff a una nueva sesión SST con el siguiente nivel. No es lo mismo que ejecutar un solo comando elevado.
+
+No documentar/usar manualmente:
+  --admin-internal
+  --system-internal
+  --trustedinstaller-internal
+
+Esos switches son transporte interno entre procesos SST, no interfaz pública.
+
+Riesgo:
+  SYSTEM y TrustedInstaller pueden modificar componentes que un Administrador normal no puede. Úsalos solo para operaciones concretas cuya consecuencia entiendas.

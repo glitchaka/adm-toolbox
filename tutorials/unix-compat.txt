@@ -1,0 +1,173 @@
+SST — Compatibilidad Unix/GNU-like implementada
+
+Estos comandos están reimplementados dentro de SST; no se ejecuta automáticamente un binario Unix externo.
+
+BÁSICOS
+  pwd                         directorio actual
+  echo [ARG ...]              imprime argumentos unidos por espacios
+  env                         variables de entorno ordenadas
+  clear                       limpia terminal
+  true                        status 0
+  false                       status 1
+
+LISTADO / TEXTO
+  ls [RUTA]
+  ls -a [RUTA]
+  ls -l [RUTA]
+  ls -al [RUTA]
+  ls -la [RUTA]
+    -a muestra nombres iniciados en punto; -l muestra tipo/read-only/tamaño.
+
+  cat [ARCHIVO ...]
+    sin archivos consume stdin.
+
+  head [-n N] [ARCHIVO]
+  tail [-n N] [ARCHIVO]
+    N default 10; si N no parsea actualmente vuelve a 10.
+
+  grep PATRON [ARCHIVO]
+  grep -i PATRON [ARCHIVO]
+  grep -n PATRON [ARCHIVO]
+  grep -in PATRON [ARCHIVO]
+  grep -ni PATRON [ARCHIVO]
+    -i case-insensitive; -n número de línea; status 1 si no hay match.
+
+  wc [ARCHIVO]
+    siempre imprime líneas, palabras y bytes; no implementa flags GNU -l/-w/-c separados.
+
+  sort [ARCHIVO]
+  sort -r [ARCHIVO]
+
+  uniq [ARCHIVO]
+    elimina duplicados adyacentes.
+
+  cut [-d DELIM] [-f CAMPO] [ARCHIVO]
+    defaults: delimitador tab, campo 1.
+
+  tee ARCHIVO
+  tee -a ARCHIVO
+    -a append; sin -a trunca.
+
+PAGINADOR
+  less [ARCHIVO]
+  more [ARCHIVO]              misma implementación
+    sin archivo consume stdin.
+    teclas: q/Esc, j/Down, k/Up, PgDn/Space, PgUp, g/Home, G/End.
+
+SED
+  sed 's/ANTIGUO/NUEVO/' [ARCHIVO]
+  sed 's/ANTIGUO/NUEVO/g' [ARCHIVO]
+    el delimitador puede ser otro carácter; solo sustitución s... está implementada. `g` hace reemplazo global por línea.
+
+AWK
+  awk PROGRAMA [ARCHIVO]
+  awk -F DELIM PROGRAMA [ARCHIVO]
+    subconjunto: expresiones print; campos $0, $N, NR y literales. No es awk completo.
+
+DIFF / HASH / BASE64
+  diff ARCHIVO1 ARCHIVO2
+    status 0 idénticos, 1 diferentes.
+
+  sha256sum [ARCHIVO]
+    sin archivo calcula stdin.
+
+  base64 [ARCHIVO]
+  base64 -d [ARCHIVO]
+  base64 --decode [ARCHIVO]
+    sin archivo consume stdin.
+
+FIND
+  find
+  find RUTA
+  find RUTA -name PATRON
+    wildcard implementado: `*`; sin RUTA usa cwd.
+
+PRINTF
+  printf FORMATO [ARG ...]
+    soporta escapes: \\n, \\t, \\r, \\\\
+    formatos implementados: %%, %s, %d.
+    No es el printf GNU/Bash completo de formatos avanzados en esta ruta Unix; el builtin Bash `printf` tiene su propia semántica Nwash.
+
+RUTAS
+  basename RUTA
+  dirname RUTA
+  realpath RUTA
+
+FECHA / ESPERA
+  date
+  date +FORMATO
+    usa formato chrono/strftime; default `%a %b %e %H:%M:%S %Y`.
+
+  sleep DURACION
+    número entero o decimal; sufijos: ms, s, m, h; no admite valores negativos.
+
+ARCHIVOS
+  touch ARCHIVO ...
+
+  mkdir DIRECTORIO ...
+  mkdir -p DIRECTORIO ...
+
+  rm RUTA ...
+  rm -f RUTA ...
+  rm -r RUTA ...
+  rm -rf RUTA ...
+  rm -fr RUTA ...
+    directorio requiere -r; -f ignora inexistentes.
+
+  cp ORIGEN DESTINO
+    exactamente dos operandos; implementación actual usa copia de archivo y NO implementa cp -r.
+
+  mv ORIGEN DESTINO
+    exactamente dos operandos.
+
+TAR
+  tar -c... -f ARCHIVO OPERANDOS...
+  tar -t... -f ARCHIVO
+  tar -x... -f ARCHIVO
+
+Flags implementados, combinables:
+  c   crear
+  x   extraer
+  t   listar
+  z   gzip
+  v   verbose (al crear)
+  f   el siguiente argumento es el archivo tar
+  -C DIRECTORIO   base/destino
+
+También acepta bundle inicial sin guion (por ejemplo `czf`) cuando cumple la gramática. Requiere f/ARCHIVO. `.tar.gz` y `.tgz` activan gzip automáticamente.
+
+GZIP / GUNZIP
+  gzip ARCHIVO ...
+  gzip -d ARCHIVO.gz ...
+  gzip --decompress ARCHIVO.gz ...
+  gzip -k ARCHIVO ...
+  gzip --keep ARCHIVO ...
+  gunzip ARCHIVO.gz ...
+  gunzip -k ARCHIVO.gz ...
+
+Reconoce:
+  -c, --stdout
+pero actualmente devuelve error explícito porque el pipeline SST es textual y no binario. Por defecto elimina el archivo fuente tras completar; -k/--keep lo conserva.
+
+ZIP
+  zip ARCHIVO.zip ARCHIVO...
+  zip -r ARCHIVO.zip RUTA...
+  zip --recurse-paths ARCHIVO.zip RUTA...
+    directorios requieren -r/--recurse-paths.
+
+UNZIP
+  unzip ARCHIVO.zip
+  unzip -l ARCHIVO.zip
+  unzip -d DIRECTORIO ARCHIVO.zip
+  unzip -o ARCHIVO.zip
+    -l lista; -d elige destino; -o se acepta. Rutas inseguras del ZIP se rechazan mediante enclosed_name.
+
+LOCALIZACIÓN DE COMANDOS
+  which COMANDO
+  type COMANDO
+    informa si es comando interno SST o ruta en PATH.
+
+XARGS — ESTADO REAL ACTUAL
+  `xargs` aparece registrado en la tabla UNIX_COMMANDS, pero `UnixService::execute` no contiene actualmente una rama `xargs`. Por tanto devuelve `comando Unix no implementado` (status 127). No debe presentarse como capacidad funcional hasta implementar esa rama.
+
+Esta advertencia existe precisamente para que el manual no afirme soporte que el código no tiene.

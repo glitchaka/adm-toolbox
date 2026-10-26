@@ -1,0 +1,46 @@
+SST — Consulta de dominio: domain
+
+IMPORTANTE: este comando es distinto de `sys domain`.
+
+`domain` consulta pertenencia local o remota. `sys domain` administra join/leave del equipo local.
+
+Acción por defecto:
+  domain                   equivale a domain status
+
+Ayuda:
+  domain help
+  domain --help
+  domain -h
+
+Sintaxis:
+  domain status [EQUIPO] [--verify|--cim] [--json]
+
+EQUIPO opcional:
+  sin objetivo -> equipo local
+  COMPUTERNAME actual -> local
+  localhost -> local
+  127.0.0.1 -> local
+  ::1 -> local
+  otro nombre/IP -> consulta remota
+
+Opciones:
+  --verify                 solicita validación remota adicional
+  --cim                    alias funcional de --verify
+  --json                   salida JSON estructurada
+
+Salida textual:
+  hostname
+  domain
+  joined                   yes/no/unknown
+  source
+  confidence
+  logon_server
+
+Ejemplos:
+  domain
+  domain status
+  domain status PC-042
+  domain status PC-042 --verify
+  domain status PC-042 --cim --json
+
+Para unir/sacar el equipo local usa el capítulo domain.txt y comandos `sys domain ...`.

@@ -1,0 +1,64 @@
+SST — Gestor de paquetes: instp
+
+Catálogo interactivo:
+  instp
+  instp browse
+  instp catalog               alias de browse
+
+Ayuda:
+  instp help
+  instp -h
+  instp --help
+
+Búsqueda:
+  instp search
+  instp search TEXTO
+
+Información:
+  instp info PAQUETE
+  instp show PAQUETE          alias
+
+Instalar:
+  instp install PAQUETE
+  instp add PAQUETE           alias
+
+Eliminar:
+  instp remove PAQUETE
+  instp rm PAQUETE
+  instp uninstall PAQUETE
+
+Listar instalados:
+  instp list
+  instp ls
+
+Actualizar índices de repositorios:
+  instp update
+
+Localizar qué paquete instaló un comando:
+  instp which COMANDO
+
+Repositorios:
+  instp repo                 equivale a repo list
+  instp repo list
+  instp repo add NOMBRE URL
+  instp repo add NOMBRE URL PRIORIDAD
+  instp repo remove NOMBRE
+  instp repo rm NOMBRE
+  instp repo update
+
+PRIORIDAD debe ser entero; default=50.
+
+Caché:
+  instp cache clean
+
+Diagnóstico:
+  instp doctor
+
+Modelo de aislamiento:
+  - herramientas portables se instalan bajo el espacio SST
+  - SST añade rutas al PATH de su propio proceso, no al PATH global de Windows
+  - tras instalar/eliminar comandos expuestos puede ser necesario reiniciar SST para refrescar la sesión
+  - `info` muestra categoría, portabilidad, fuente, método de instalación y comandos expuestos
+  - fuentes pueden provenir de GitHub Releases o URL según descriptor
+
+No confundir `instp update` (repositorios de paquetes) con `update` (actualización de SST).

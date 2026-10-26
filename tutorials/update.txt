@@ -1,0 +1,25 @@
+SST — Actualización: update
+
+Acción por defecto:
+  update                   equivale a update status
+
+Estado:
+  update status
+
+Buscar nueva versión:
+  update check
+
+Preparar/instalar actualización:
+  update install
+
+Ayuda:
+  update help
+  update -h
+  update --help
+
+`check` consulta el canal configurado. `install` descarga/verifica la actualización y la deja preparada para aplicarse al cerrar SST según el mecanismo de update del programa.
+
+No confundir:
+  update                    actualiza SST
+  instp update              actualiza repositorios de paquetes instp
+  intel update              limpia/actualiza estado de fuentes/caché de inteligencia

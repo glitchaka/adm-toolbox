@@ -1,0 +1,24 @@
+SST — Wake-on-LAN: wol
+
+Sintaxis completa:
+  wol MAC [BROADCAST]
+  wol NOMBRE [BROADCAST]
+
+Objetivo obligatorio:
+  MAC                   dirección física
+  NOMBRE                nombre existente en inventario device
+
+BROADCAST opcional:
+  por defecto: 255.255.255.255:9
+
+Ejemplos:
+  wol AA:BB:CC:DD:EE:FF
+  wol PC-LAB-04
+  wol PC-LAB-04 192.168.10.255:9
+
+SST normaliza la MAC y construye/envía el Magic Packet. No garantiza que el equipo despierte: BIOS/UEFI, NIC, energía, VLAN, routers y política de red deben permitir Wake-on-LAN.
+
+Relacionado:
+  device show NOMBRE
+  net scan
+  net identify

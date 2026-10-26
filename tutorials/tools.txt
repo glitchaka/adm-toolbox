@@ -1,0 +1,49 @@
+SST — Herramientas auxiliares: tools / tool / utils
+
+Nombres equivalentes:
+  tools
+  tool
+  utils
+
+Listado/ayuda:
+  tools
+  tools list
+  tools -h
+  tools --help
+
+Familia Office:
+  tools office diagnose
+  tools office status          alias de diagnose
+  tools office verify          alias de diagnose
+  tools office auth repair
+
+SaRA legacy — aliases equivalentes:
+  tools office scrub [VERSION]
+  tools office sara [VERSION]
+  tools office uninstall [VERSION]
+  tools office remove [VERSION]
+
+Backend GetHelpCmd:
+  tools office scrub-current [VERSION]
+  tools office gethelp [VERSION]
+
+VERSION aceptada:
+  all
+  m365
+  365                       alias de m365
+  microsoft365              alias de m365
+  2024
+  2021
+  2019
+  2016
+  2013
+  2010
+  2007
+
+Default si se omite VERSION: all.
+
+Para detalle completo de estados, códigos, firma y recuperación:
+  office-sara.txt
+  office-gethelp.txt
+
+`auth repair` vuelve a registrar Microsoft.AAD.BrokerPlugin para el usuario actual y rechaza la operación si detecta Office abierto.

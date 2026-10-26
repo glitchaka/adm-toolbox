@@ -1,13 +1,49 @@
-SST Tutorials
+SST — Manual operativo completo
 
-office-sara       Desinstalacion profunda de Microsoft 365/Office con SaRA legacy y diagnostico posterior.
-office-gethelp    Backend actual GetHelpCmd para OfficeScrubScenario.
-autologon         Configurar inicio automatico con Microsoft Sysinternals Autologon desde SST.
-domain            Consultar, unir y sacar un equipo de un dominio de Active Directory.
-hostname          Consultar y cambiar el nombre del equipo, incluido un equipo unido a dominio.
+Este índice cubre la interfaz pública de Shell Shock Tool. Cada capítulo se audita contra el parser/código real de SST: subcomandos, aliases, flags, valores, defaults, permisos y efectos.
 
-Uso:
-  tools tutorial <nombre>
+EMPEZAR
+  overview.txt          Inventario global de capacidades y comandos.
+  shell-invocation.txt  Opciones con las que se inicia sst.exe/Nwash.
+  guide.txt             Uso del manual interactivo y criterios de documentación.
 
-Ejemplo:
-  tools tutorial autologon
+RED
+  network.txt           notsh/net: interfaces, DNS, ping, trace, ARP, conflictos, puertos, scan, monitor, presence, identify, traffic, usage y provider.
+  device.txt            Inventario por MAC/IP, conocidos/desconocidos y exportación.
+  switch.txt            Perfiles SNMP y localización MAC -> switch/puerto.
+  wol.txt               Wake-on-LAN por MAC o equipo inventariado.
+  diagnostics.txt       diag network/dns/hardware/storage/traffic/domain.
+
+SISTEMA / WINDOWS
+  system.txt            sys completo: procesos, memoria, discos, servicios, usuarios, impresoras, drivers, eventos, Registro, tareas y seguridad integrada.
+  domain-status.txt     domain: consulta local/remota de pertenencia a dominio.
+  domain.txt            sys domain: status/join/leave y OU.
+  hostname.txt          Consulta y renombrado del equipo.
+  autologon.txt         Sysinternals Autologon integrado.
+  windows-admin.txt     eventlog, service, registry, process, acl, pnp, task, session, share, firewall y power.
+  sudo.txt              Administrador, LOCAL SYSTEM y TrustedInstaller.
+
+SEGURIDAD
+  security.txt          triage, intel y sys security: inspect/why/diff/suspicious/safe/startup/persistence/services --impact.
+
+PAQUETES / SST
+  instp.txt             Catálogo y gestor portable de paquetes SST.
+  config.txt            Configuración, fondos, carrusel, sst-path y reload.
+  update.txt            Estado, búsqueda e instalación de actualizaciones SST.
+  tools.txt             tools/tool/utils y herramientas Office.
+  office-sara.txt       OfficeScrubScenario con SaRACmd legacy.
+  office-gethelp.txt    OfficeScrubScenario con GetHelpCmd actual.
+  tour.txt              Tour interactivo y ejemplos empaquetados.
+
+EDITOR
+  helix.txt             helix/hx/helix-sst, opciones y controles de Helix-SST.
+
+SHELL / COMPATIBILIDAD
+  bash-nwash.txt        Builtins Bash/Nwash expuestos y sintaxis soportada.
+  unix-compat.txt       Comandos Unix/GNU-like reimplementados y todas sus opciones implementadas.
+
+REGLA DE COBERTURA
+  FORMAT.md             Contrato: no se omiten flags, aliases ni defaults públicos.
+
+NOTA
+  Helpers internos de elevación (por ejemplo __elevated o --*-internal) no se presentan como interfaz pública. Si una entrada está registrada pero todavía no tiene implementación funcional, el manual lo dice explícitamente en vez de fingir soporte.

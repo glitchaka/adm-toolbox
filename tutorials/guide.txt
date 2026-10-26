@@ -1,0 +1,32 @@
+SST — Guide / manual interactivo
+
+Objetivo:
+  `guide` es la puerta de entrada para descubrir comandos y documentación desde la propia terminal.
+
+Formas:
+  guide
+  guide COMANDO
+  guide search TEXTO
+  guide -h
+  guide --help
+
+Interfaz:
+  Up/Down                  navegación
+  PgUp/PgDn                scroll/salto
+  Home/End                 inicio/final
+  Enter                     abrir/cerrar detalle
+  Backspace                volver desde detalle
+  /                         modo búsqueda
+  c / C                     cambiar categoría
+  q / Q / x / X / Esc      salir
+
+La documentación remota de `adm-toolbox/tutorials` está diseñada para incorporarse a guide mediante streaming en memoria. Cuando la activación/licencia de SST esté implementada, ese transporte podrá exigir una activación válida sin cambiar los nombres de los capítulos ni la experiencia del usuario.
+
+Regla editorial:
+  - toda opción pública debe figurar
+  - todo alias público debe figurar
+  - defaults y valores admitidos deben figurar
+  - helpers internos no se presentan como funciones normales
+  - una capacidad registrada pero no implementada se marca como tal
+
+Consulta también FORMAT.md.

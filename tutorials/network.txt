@@ -1,0 +1,214 @@
+SST — Red: notsh / net
+
+1. Nombres
+
+  notsh SUBCOMANDO ...
+  net SUBCOMANDO ...        alias completo de notsh
+
+Compatibilidad adicional:
+  notsh wlan show interfaces
+  notsh wifi show interfaces
+  notsh wireless show interfaces
+  notsh lan show interfaces
+  notsh ethernet show interfaces
+  notsh show interfaces
+  notsh link                -> interfaces
+  notsh addr                -> interfaces
+  notsh route               -> routes
+  notsh neigh               -> neighbors
+  notsh neighbor            -> neighbors
+  notsh ss                  -> connections
+  notsh socket              -> connections
+  notsh sockets             -> connections
+  notsh resolve ...         -> dns ...
+
+2. Interfaces y estado
+
+  net interfaces
+  net connections
+  net routes
+  net neighbors
+  net arp                   alias de neighbors
+
+3. DNS
+
+  net dns HOST
+  net dns IP
+  net resolve HOST|IP
+
+Hace resolución directa o inversa según el objetivo.
+
+4. ICMP
+
+  net ping HOST
+  net ping HOST -c N
+
+N admitido: 1..100.
+
+  net trace HOST
+  net traceroute HOST       alias
+
+5. Conflictos IPv4
+
+Aliases equivalentes:
+  net conflict
+  net conflicts
+  net duplicate-ip
+  net duplicates
+
+Formas:
+  net conflicts
+  net conflicts IP
+  net conflicts IP --seconds N
+  net conflicts --json
+
+La detección observa cambios de propietario ARP: una IPv4 con dos o más MAC dentro de la ventana. Una ejecución sin hallazgos no demuestra por sí sola que no exista duplicidad.
+
+6. Puertos TCP
+
+  net ports HOST
+  net ports HOST 22,80,443
+
+La lista es una lista separada por comas de puertos a comprobar.
+
+7. Escaneo de red
+
+  net scan
+  net scan RED
+
+Filtros:
+  --unknown                solo no inventariados/no autorizados según clasificación
+  --authorized             autorizados
+  --known                  conocidos
+  --names                  intenta/resalta nombres
+
+Formatos:
+  --json
+  --csv
+
+Sin RED, SST intenta inferir la red IPv4 local. El escaneo está limitado a /20 o redes más pequeñas para evitar barridos excesivos.
+
+8. Monitor de presencia/chat LAN
+
+  net monitor [RED]
+  net monitor [RED] --unknown
+  net monitor [RED] -m TEXTO
+  net monitor [RED] --message TEXTO
+  net monitor [RED] --say TEXTO
+
+-m, --message y --say son equivalentes para arrancar publicando un mensaje inicial.
+
+Teclas:
+  q o Esc                 salir cuando no estás editando el prompt
+  Enter                    abrir prompt Mensaje>
+  Esc                      cancelar edición dentro del prompt
+
+Comandos de chat:
+  ::whoisalive
+  ::room NOMBRE [CLAVE]
+  ::join NOMBRE [CLAVE]    alias funcional de ::room
+  ::leave
+  ::where
+  ::rooms
+  ::pm IP MENSAJE
+  ::fingerprint
+  ::lore
+  ::peers
+  ::clear
+  ::help
+
+Salas con CLAVE: Argon2id + XChaCha20-Poly1305.
+PM: X25519 + XChaCha20-Poly1305; el peer debe haberse descubierto primero con ::whoisalive.
+
+9. Historial de presencia
+
+  net presence
+  net presence --json
+  net presence --csv
+
+10. Identificación
+
+  net identify IP
+  net identify MAC
+  net identify NOMBRE
+  net identify OBJETIVO --json
+
+Muestra MAC, scope global/local, fabricante IEEE, inventario, método de detección y último avistamiento cuando están disponibles.
+
+11. Tráfico por proceso
+
+  net traffic
+
+Opciones implementadas:
+  --watch
+  --top N
+  --pid PID
+  --process NOMBRE
+  --background
+  --high-usage
+  --unsigned
+  --connections
+  --json
+  --csv
+
+12. Consumo LAN por proveedor
+
+  net usage
+
+Opciones:
+  --watch
+  --top
+  --top N
+  --device IP
+  --mac MAC
+  --json
+  --csv
+
+Requiere un proveedor activo que exponga contadores por cliente.
+
+13. Proveedores
+
+  net provider list
+  net provider list --json
+  net provider add NOMBRE --type TIPO --host HOST
+  net provider add NOMBRE --type TIPO --host HOST --user-env VAR
+  net provider add NOMBRE --type TIPO --host HOST --secret-env VAR
+  net provider add NOMBRE --type TIPO --host HOST --community-env VAR
+  net provider use NOMBRE
+  net provider current
+  net provider remove NOMBRE
+  net provider capabilities
+  net provider capabilities NOMBRE
+  net provider path
+
+TIPO admitido:
+  openwrt
+  opnsense
+  pfsense
+  unifi
+  snmp
+  generic
+
+Las credenciales se referencian por variables de entorno; los descriptores no deben guardar secretos en texto plano.
+
+14. Ayuda contextual
+
+  net help
+  net help scan
+  net help monitor
+  net help presence
+  net help identify
+  net help traffic
+  net help usage
+  net help provider
+  net help ping
+  net help conflict
+  net help ports
+  net help dns
+  net help trace
+  net help interfaces
+  net help connections
+  net help routes
+  net help neighbors
+
+También se aceptan --help y -h como entrada general a la ayuda de notsh.

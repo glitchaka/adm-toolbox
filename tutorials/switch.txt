@@ -1,0 +1,67 @@
+SST — Switches SNMP: switch
+
+Acción por defecto:
+  switch                   equivale a switch list
+
+Ayuda:
+  switch help
+  switch --help
+  switch -h
+
+Listar perfiles:
+  switch list
+  switch list --json
+
+Crear/actualizar perfil:
+  switch add NOMBRE --host HOST --community-env VARIABLE
+
+Opcional:
+  --description TEXTO
+
+Obligatorios:
+  --host HOST
+  --community-env VARIABLE
+
+La comunidad SNMP no se guarda en el perfil: SST almacena el nombre de la variable de entorno que contiene el secreto.
+
+Mostrar perfil:
+  switch show NOMBRE
+
+Eliminar:
+  switch remove NOMBRE
+
+Capacidades del locator:
+  switch capabilities
+
+Ruta del archivo de perfiles:
+  switch path
+
+Localizar una MAC/equipo:
+  switch locate MAC
+  switch locate NOMBRE
+
+Filtros/opciones:
+  --switch NOMBRE          consulta solo el switch indicado
+  --vlan N                 restringe/indica VLAN al locator
+  --json                   salida JSON
+
+La localización puede devolver:
+  switch
+  host
+  mac
+  vlan
+  bridge_port
+  if_index
+  interface
+  alias
+  pvid
+  speed_mbps
+  status
+
+Si se usa un NOMBRE, SST lo resuelve primero mediante el inventario device.
+
+Errores comunes:
+  - no hay switches configurados -> usa switch add
+  - variable de comunidad ausente -> define la variable de entorno requerida
+  - MAC no vista -> puede no estar en la FDB, estar detrás de otro equipo, VLAN incorrecta o switch no consultado
+  - --switch apunta a perfil inexistente -> corrige el nombre

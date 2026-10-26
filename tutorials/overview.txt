@@ -1,0 +1,104 @@
+SST — Inventario global de capacidades
+
+1. Objetivo
+
+Este capítulo sirve como mapa completo de Shell Shock Tool. Para la sintaxis exhaustiva usa el capítulo específico indicado.
+
+2. Comandos principales registrados
+
+Red:
+  notsh                 alias: net
+  device
+  switch
+  wol
+  diag
+
+Sistema:
+  sys
+  aliases públicos de sys: ps, top, df, free, hostname, autologon, whoami, uname, kill, uptime, fetch, neofetch, fastfetch
+  domain                consulta local/remota de pertenencia a dominio
+
+Seguridad:
+  triage
+  intel
+
+Privilegios:
+  sudo                  alias: runas
+
+Windows/Nwash:
+  eventlog
+  service
+  registry
+  process
+  acl
+  pnp
+  task
+  session
+  share
+  firewall
+  power
+
+Paquetes y mantenimiento:
+  instp
+  update
+  tools                 aliases: tool, utils
+
+Editor y configuración:
+  helix                 aliases: hx, helix-sst
+  sst-config
+  sst-path
+  tour                  alias visible del selector de tour
+  guide                 manual interactivo
+
+Compatibilidad Unix/GNU-like registrada:
+  pwd echo env clear ls cat head tail grep wc sort uniq cut xargs tee less more sed awk diff sha256sum base64 find printf basename dirname realpath date sleep true false touch mkdir rm cp mv tar gzip gunzip zip unzip which type
+
+Builtins Bash/Nwash:
+  :  .  [  alias  bg  bind  break  builtin  caller  cd  command  compgen  complete  compopt  continue  declare  dirs  disown  echo  enable  eval  exec  exit  export  false  fc  fg  getopts  hash  help  history  jobs  kill  let  local  logout  mapfile  popd  printf  pushd  pwd  read  readarray  readonly  return  set  shift  shopt  source  suspend  test  times  trap  true  type  typeset  ulimit  umask  unalias  unset  wait
+
+3. Capacidades por área
+
+Red:
+  - inspección de interfaces, rutas, vecinos y conexiones
+  - DNS, ping, traceroute y puertos TCP
+  - detección de conflictos IPv4
+  - escaneo y monitorización de presencia
+  - identificación MAC/vendor/inventario
+  - tráfico por proceso
+  - telemetría por proveedores LAN
+  - localización física por SNMP
+  - Wake-on-LAN
+
+Sistema Windows:
+  - procesos, árbol, CPU/RAM, kill y monitor top
+  - discos, memoria, uptime y fetch
+  - servicios, usuarios, impresoras, drivers, eventos, registro y tareas
+  - dominio, hostname y Autologon
+  - Event Log, servicios, ACL, PnP, SMB, firewall y energía
+
+Seguridad:
+  - triage activo y por PID
+  - historial local de linajes padre/hijo
+  - inspección/diff/why
+  - persistencia e inicio automático
+  - relaciones de confianza explícitas con sys safe
+  - fuentes de inteligencia local/externa
+
+Privilegios:
+  - elevación por UAC a Administrador
+  - ejecución/sesión LOCAL SYSTEM
+  - ejecución/sesión TrustedInstaller
+
+Shell:
+  - capa de compatibilidad Bash 5.3/Nwash
+  - pipelines, redirecciones, jobs y builtins implementados
+  - comandos Unix-like reimplementados de forma nativa
+
+4. Cómo descubrir capacidad desde SST
+
+  guide
+  guide NOMBRE
+  guide search TEXTO
+  COMANDO --help
+
+El objetivo del catálogo remoto es ampliar guide con manuales operativos extensos sin meter toda la documentación dentro del binario.

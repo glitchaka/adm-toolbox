@@ -1,0 +1,200 @@
+SST — Sistema: sys
+
+1. Nombre y aliases
+
+Principal:
+  sys SUBCOMANDO ...
+
+Aliases públicos directos:
+  ps
+  top
+  df
+  free
+  hostname
+  autologon
+  whoami
+  uname
+  kill
+  uptime
+  fetch
+  neofetch
+  fastfetch
+
+2. Información
+
+  sys info                   resumen host/OS/kernel/uptime/CPU/memoria
+  sys processes              alias interno: sys ps; alias global: ps
+  sys top                    TUI de procesos
+  sys disks                  alias interno: sys df; alias global: df
+  sys memory                 alias interno: sys free; alias global: free
+  sys uptime                 alias global: uptime
+  sys hostname               consulta nombre actual
+  hostname                   consulta nombre actual
+  sys whoami                 alias global: whoami
+  sys uname
+  sys uname -a               alias global uname admite lo mismo
+
+Top TUI:
+  c                         ordenar hermanos por CPU
+  m                         ordenar por memoria
+  q o Esc                   salir
+
+3. Fetch
+
+Nombres equivalentes:
+  sys fetch
+  fetch
+  neofetch
+  fastfetch
+
+Opciones:
+  --small                   logo compacto
+  --full                    aceptado como forma explícita de tamaño completo; el tamaño completo es el default
+  --plain                   sin ANSI, apto para archivo/pipe
+  --stdout                  alias de --plain
+  -h, --help
+
+4. Kill nativo
+
+  sys kill PID
+  sys kill PID --tree
+  sys kill PID -t
+  sys kill NOMBRE
+  sys kill NOMBRE --tree
+  kill ...                  alias global
+
+Por nombre termina coincidencias del nombre de proceso. --tree/-t incluye descendientes. Procesos protegidos pueden fallar por permisos.
+
+5. Servicios de consulta
+
+  sys services
+  sys services --running
+  sys services --stopped
+  sys services NOMBRE
+  sys services --impact
+
+--impact es una vista de seguridad/rendimiento: correlaciona servicios con PID, CPU y RAM; no recomienda deshabilitarlos.
+
+6. Usuarios
+
+  sys users
+  sys users USUARIO
+  sys users --domain
+  sys users USUARIO --domain
+
+7. Impresoras
+
+  sys printers
+  sys printers --default
+  sys printers NOMBRE
+  sys printer
+  sys printer NOMBRE
+  sys printer NOMBRE --ip
+
+`sys printer` sin nombre selecciona la predeterminada. SST muestra cola, servidor, recurso compartido, puerto, IP resoluble, driver y ubicación. No usa PowerShell para enumerarlas.
+
+8. Drivers / PnP de solo lectura
+
+  sys drivers
+  sys drivers --verbose
+  sys drivers --signed
+  sys drivers --csv
+  sys drivers --pnp
+  sys drivers --devices
+
+--pnp enumera paquetes con pnputil; --devices enumera dispositivos conectados; las otras vistas usan driverquery.
+
+9. Eventos
+
+  sys events
+  sys events LOG
+  sys events --log LOG
+  sys events --count N
+  sys events --query XPATH
+  sys events --format text
+  sys events --format xml
+  sys events --logs
+  sys events --publishers
+
+Defaults:
+  LOG=System
+  count=20
+  format=text
+
+N para --count: 1..500.
+
+10. Registro de solo lectura
+
+Nombres:
+  sys registry ...
+  sys reg ...
+
+Formas:
+  sys registry CLAVE
+  sys registry query CLAVE
+  sys registry CLAVE --value NOMBRE
+  sys registry CLAVE --default
+  sys registry CLAVE --recursive
+  sys registry CLAVE --find TEXTO
+  sys registry CLAVE --find TEXTO --keys
+  sys registry CLAVE --find TEXTO --data
+
+La CLAVE debe ir antes de las opciones.
+
+11. Tareas programadas de consulta
+
+Nombres:
+  sys tasks
+  sys scheduled-tasks
+
+Opciones:
+  sys tasks
+  sys tasks --verbose
+  sys tasks --csv
+  sys tasks NOMBRE
+  sys tasks NOMBRE --csv
+  sys tasks NOMBRE --xml
+
+12. Seguridad integrada en sys
+
+  sys startup
+  sys persistence
+  sys suspicious
+  sys why PID
+  sys inspect PID
+  sys inspect PID --deep
+  sys diff PID
+  sys safe PID [PID ...]
+  sys safe list
+  sys safe remove ID [ID ...]
+
+Broker autenticado avanzado:
+  sys inspect PID --broker --start-time FILETIME
+  sys suspend PID --start-time FILETIME
+  sys resume PID --start-time FILETIME
+  sys kill PID --broker --start-time FILETIME
+
+El broker valida identidad de instancia con PID/start-time para evitar actuar sobre un PID reutilizado. Las mutaciones requieren token/privilegio suficiente.
+
+13. Dominio, hostname y Autologon
+
+Administración local:
+  sys domain status
+  sys domain join ...
+  sys domain leave ...
+
+Renombrado:
+  sys hostname NUEVO_NOMBRE
+
+Autologon:
+  sys autologon ...
+
+Véanse domain.txt, hostname.txt y autologon.txt para opciones completas y advertencias de credenciales/reinicio.
+
+14. Ayuda
+
+  sys help
+  sys -h
+  sys --help
+
+La ayuda corta del propio sys no enumera toda la semántica avanzada; este manual es la referencia extensa.

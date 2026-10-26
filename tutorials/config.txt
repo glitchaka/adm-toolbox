@@ -1,0 +1,55 @@
+SST — Configuración portable: config / sst-config / sst-path
+
+Backend nativo:
+  sst-config
+
+Ruta de configuración:
+  sst-config
+  sst-config path
+
+Editar:
+  sst-config edit
+
+Fondos — listar:
+  sst-config bg
+  sst-config bg list
+
+Desactivar:
+  sst-config bg off
+  sst-config bg none          alias
+
+Fondo fijo:
+  sst-config bg NOMBRE
+  sst-config bg NUMERO
+
+NOMBRE puede coincidir con nombre de archivo o stem. NUMERO corresponde al listado actual.
+
+Carrusel:
+  sst-config bg carrousel
+  sst-config bg carousel      alias ortográfico
+  sst-config bg carrousel MINUTOS
+
+MINUTOS:
+  entero 1..60
+  default 3
+
+Rotación manual:
+  sst-config bg next
+
+Formatos reconocidos por la carpeta bg según SST:
+  PNG, JPG, JPEG, WebP, BMP, GIF, ICO, TIFF
+
+Variables gestionadas:
+  SST_BACKGROUND_MODE
+  SST_BACKGROUND_IMAGE
+  SST_BACKGROUND_CAROUSEL_MINUTES
+
+Reload:
+  sst-config reload           deliberadamente devuelve error indicando que reload debe ejecutarse mediante la función Bash `config`/`reload`, porque recargar el entorno pertenece a la shell.
+
+Rutas:
+  sst-path PATH
+
+`sst-path` traduce/resuelve rutas estilo /c/... contra el directorio de trabajo al modelo Windows.
+
+La función/builtin `config` de Nwash es la interfaz de usuario preferida cuando esté cargada por el entorno; `sst-config` es el backend explícito.

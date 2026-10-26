@@ -1,0 +1,116 @@
+SST — Seguridad: triage, intel y subcomandos sys
+
+1. triage
+
+Ayuda:
+  triage help
+  triage -h
+  triage --help
+
+Formas públicas:
+  triage                       muestra nueva revisión activa
+  triage PID                   why + inspect + diff del proceso
+  triage --deep                añade memoria, conexiones, startup y servicios
+  triage PID --deep            investigación profunda del PID
+  triage --memory              informe centrado en presión/uso de RAM
+  triage --ram                 alias de --memory
+  triage --scan                fuerza nuevo preload/scan con progreso
+  triage --refresh             alias de --scan
+
+El análisis usa historial local de ejecutables y relaciones padre/hijo. Una relación aprendida solo reduce la novedad histórica; no convierte por sí misma al proceso en confiable.
+
+2. sys why
+
+  sys why PID
+
+Explica clasificación y razones disponibles. NORMAL significa que las reglas actuales no encontraron señales relevantes; no significa garantía de seguridad.
+
+3. sys inspect
+
+  sys inspect PID
+  sys inspect PID --deep
+
+Base: PID/PPID, nombre, inicio, CPU, RAM, ruta, línea de comando e I/O. --deep añade linaje/hijos y vistas ampliadas disponibles.
+
+Broker:
+  sys inspect PID --broker --start-time FILETIME
+
+4. sys diff
+
+  sys diff PID
+
+Compara relación padre actual y línea de comando contra observaciones históricas cuando existe evidencia suficiente. Puede reconocer relaciones explicitamente confiadas o baseline aprendido.
+
+5. sys suspicious
+
+  sys suspicious
+
+Muestra procesos que superan las reglas de atención actuales.
+
+6. sys safe — relaciones de confianza del operador
+
+Listar:
+  sys safe
+  sys safe list
+
+Añadir la relación hijo<-padre observada en uno o varios PID:
+  sys safe PID
+  sys safe PID PID ...
+
+Eliminar por ID:
+  sys safe remove ID
+  sys safe remove #ID
+  sys safe remove ID ID ...
+
+La confianza neutraliza únicamente la anomalía de padre histórico para esa pareja exacta; no desactiva otras señales.
+
+7. Persistencia
+
+  sys startup
+  sys persistence
+
+startup consulta claves Run/RunOnce de HKCU/HKLM y carpetas Startup. persistence añade recordatorio/vistas relacionadas con tareas y servicios.
+
+8. Servicios por impacto
+
+  sys services --impact
+
+Ordena servicios observados por consumo, relacionando servicio, PID, CPU, RAM y proceso. Es descriptivo; no implica que el servicio deba deshabilitarse.
+
+9. Broker de proceso
+
+  sys suspend PID --start-time FILETIME
+  sys resume PID --start-time FILETIME
+  sys kill PID --broker --start-time FILETIME
+
+Son operaciones sensibles. El start-time ayuda a validar que el PID siga refiriéndose a la misma instancia.
+
+10. Intel
+
+Acción por defecto:
+  intel                     equivale a intel status
+
+Ayuda:
+  intel help
+  intel -h
+  intel --help
+
+Subcomandos:
+  intel status              fuentes, enabled/disabled, adapter, TTL y auth
+  intel sources             descriptor/endpoint/prioridad de fuentes
+  intel update              limpia caché expirada y muestra capacidad/estado auth
+  intel lookup INDICADOR    consulta listas locales, caché y fuentes externas habilitadas
+
+Adapters reconocidos en update:
+  abusech_hash
+  abusech_ioc
+  abusech_url
+  behavior_catalog
+
+Otros adapters se muestran como unsupported hasta que exista implementación.
+
+`intel lookup` primero revisa listas locales. Para fuentes externas usa caché según TTL y después consulta live cuando corresponde.
+
+11. Qué NO es SST triage
+
+No sustituye EDR, antivirus, sandbox, memoria forense ni investigación forense completa. Las conclusiones dependen de las fuentes y datos disponibles.
