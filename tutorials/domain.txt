@@ -1,0 +1,33 @@
+SST Tutorial: Dominio de Active Directory
+
+Objetivo
+  Consultar el estado de union a dominio, unir el equipo a Active Directory o retirarlo desde SST.
+
+Estado
+  sys domain status
+
+Unir a dominio
+  sys domain join -d DOMINIO -u CUENTA -p PASSWORD
+
+Con OU especifica
+  sys domain join -d midominio.cl -u MIDOMINIO\administrador -p PASSWORD -ou "OU=Equipos,DC=midominio,DC=cl"
+
+Sacar del dominio
+  sys domain leave -u MIDOMINIO\administrador -p PASSWORD
+
+Que hace SST
+  - status consulta el estado de union del equipo.
+  - join usa la API nativa de Windows para unir el equipo al dominio y crear la cuenta de equipo cuando corresponde.
+  - leave usa la API nativa de Windows para retirar el equipo del dominio.
+  - SST solicita elevacion UAC cuando la operacion lo necesita.
+
+Requisitos practicos
+  - El equipo debe resolver correctamente el DNS del dominio.
+  - Debe tener conectividad hacia los controladores de dominio.
+  - La cuenta usada debe tener permisos suficientes para unir o retirar el equipo.
+
+Despues de join o leave
+  Reinicia Windows para completar el cambio.
+
+Seguridad
+  Si usas -p PASSWORD, la contraseña forma parte de la linea de comando introducida en SST. Para uso sensible debe preferirse una futura entrada interactiva/STDIN cuando este disponible.
