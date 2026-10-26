@@ -1,42 +1,439 @@
 SST Tutorial: Office / SaRA legacy
 
-Objetivo
-  Quitar Microsoft 365/Office con el escenario OfficeScrubScenario de SaRACmd y comprobar despues si quedaron residuos.
+1. Objetivo
 
-Comandos principales
+Este tutorial cubre la desinstalacion profunda de Microsoft 365 y versiones compatibles de Microsoft Office usando el escenario OfficeScrubScenario del SaRACmd Enterprise legado, integrado en SST.
+
+No se trata de una desinstalacion normal desde Programas y caracteristicas. El objetivo es retirar Office cuando:
+
+  - la desinstalacion normal falla
+  - Office queda parcialmente instalado
+  - Click-to-Run queda corrupto
+  - Outlook/Excel/Word dejan de iniciar correctamente
+  - una reparacion no es suficiente
+  - se necesita limpiar una instalacion antes de reinstalar
+
+2. Comandos relacionados
+
+Diagnostico:
+
   tools office diagnose
-  tools office scrub m365
-  tools office scrub all
-  tools office scrub-current m365
 
-Flujo recomendado
-  1. Cierra Outlook, Word, Excel, PowerPoint, OneNote, Teams y cualquier proceso de Office.
+Alias equivalente:
+
+  tools office verify
+
+Desinstalacion con SaRA legacy:
+
+  tools office scrub VERSION
+
+Alias explicito:
+
+  tools office sara VERSION
+
+Backend actual alternativo:
+
+  tools office scrub-current VERSION
+
+Reparacion de autenticacion WAM/AAD Broker:
+
+  tools office auth repair
+
+3. Versiones aceptadas
+
+VERSION puede ser:
+
+  all
+  m365
+  2024
+  2021
+  2019
+  2016
+  2013
+  2010
+  2007
+
+Ejemplos:
+
+  tools office scrub m365
+  tools office scrub 2021
+  tools office scrub all
+
+Para Microsoft 365 Apps / O365ProPlusRetail normalmente corresponde:
+
+  tools office scrub m365
+
+Usa all solo cuando realmente quieras retirar todas las versiones compatibles que pueda detectar el escenario.
+
+4. Antes de ejecutar scrub
+
+Cierra completamente:
+
+  - Outlook
+  - Word
+  - Excel
+  - PowerPoint
+  - OneNote
+  - Teams cuando interfiera con componentes Office
+  - instaladores o reparaciones de Office en curso
+
+Luego ejecuta:
+
+  tools office diagnose
+
+Guarda mentalmente o anota:
+
+  - State
+  - Registered products
+  - Click-to-Run version
+  - Product
+  - Platform
+  - ClickToRunSvc
+  - Office16 root
+  - Outlook.exe
+  - Outlook version
+
+Ese diagnostico sirve como punto de comparacion despues del scrub.
+
+5. Que revisa tools office diagnose
+
+OFFICE
+
+  State
+    Estado calculado por SST segun producto registrado y componentes principales.
+
+  Registered products
+    Productos Microsoft 365/Office visibles en las claves de desinstalacion de Windows.
+
+  Click-to-Run version
+    Version registrada por Click-to-Run cuando existe configuracion residual o activa.
+
+  Product
+    ProductReleaseIds reportado por Click-to-Run.
+
+  Platform
+    x86 o x64 segun la configuracion detectada.
+
+  Update channel
+    Canal configurado de Office.
+
+  ClickToRunSvc
+    Estado del servicio Microsoft Office Click-to-Run.
+
+  Office16 root
+    Carpeta principal Office16 detectada.
+
+  Outlook.exe
+    Ruta del ejecutable Outlook clasico si existe.
+
+  Outlook version
+    Version del ejecutable detectado.
+
+AUTHENTICATION
+
+  WebView2 Runtime
+  WebView2 processes
+  AAD BrokerPlugin
+  CloudExperienceHost
+  TokenBroker
+
+ENTRA / WINDOWS
+
+  Domain Joined
+  Entra Joined
+  Workplace Joined
+  PRT
+
+AUTH CACHE
+
+  OneAuth
+  TokenBroker
+  IdentityCache
+
+Esto permite distinguir un problema de instalacion Office de un problema de autenticacion o identidad de Windows.
+
+6. Interpretacion de State
+
+INSTALLED / REGISTERED PRODUCT PRESENT
+
+  Windows todavia tiene un producto Microsoft 365/Office registrado como instalado.
+
+REMOVED / CORE RESIDUALS PRESENT
+
+  El producto ya no aparece como producto instalado, pero SST aun detecta componentes principales como configuracion Click-to-Run, servicio, carpeta Office16 u Outlook.exe.
+
+ABSENT / CLEAN
+
+  SST no detecta producto Office registrado ni los residuos principales que audita.
+
+El objetivo de una retirada completa es llegar a ABSENT / CLEAN despues de completar limpieza y reinicio.
+
+7. Como funciona tools office scrub
+
+Al ejecutar, por ejemplo:
+
+  tools office scrub m365
+
+SST:
+
+  1. crea un directorio temporal de trabajo
+  2. descarga el paquete SaRACmd Enterprise legado configurado para SST
+  3. extrae el ZIP de forma controlada
+  4. localiza SaRAcmd.exe
+  5. valida su firma Authenticode
+  6. exige que la firma pertenezca a Microsoft Corporation
+  7. solicita elevacion UAC
+  8. ejecuta:
+       SaRAcmd.exe -S OfficeScrubScenario -AcceptEula -OfficeVersion M365
+  9. espera que termine el proceso
+ 10. interpreta el codigo de salida
+ 11. elimina el directorio temporal
+
+SST no modifica el binario SaRA. Se utiliza como backend legado y SST controla descarga, firma, ejecucion y resultado.
+
+8. Por que existe SaRA legacy en SST
+
+Microsoft retiro el flujo clasico de Support and Recovery Assistant y traslado escenarios a GetHelpCmd. Sin embargo, SaRACmd Enterprise antiguo sigue siendo util como backend de desinstalacion profunda en situaciones donde el comportamiento legado resulta mas efectivo o conocido.
+
+SST conserva ambos caminos:
+
+  SaRA legacy:
+    tools office scrub VERSION
+
+  GetHelpCmd actual:
+    tools office scrub-current VERSION
+
+9. Flujo recomendado completo
+
+Caso tipico: Microsoft 365 corrupto.
+
+  1. Cierra Office.
   2. Ejecuta:
        tools office diagnose
-     para identificar producto, version, Click-to-Run y residuos actuales.
-  3. Para Microsoft 365 Apps ejecuta:
+  3. Si corresponde Microsoft 365:
        tools office scrub m365
-     SST descarga el paquete SaRACmd legacy, localiza SaRAcmd.exe, valida la firma Authenticode de Microsoft y ejecuta OfficeScrubScenario con elevacion UAC.
-  4. Reinicia Windows cuando termine.
-  5. Vuelve a ejecutar:
+  4. Acepta UAC.
+  5. Espera el resultado final de SST.
+  6. Reinicia Windows.
+  7. Ejecuta de nuevo:
        tools office diagnose
+  8. Comprueba State.
+  9. Si aparece ABSENT / CLEAN, reinstala Office si corresponde.
+ 10. Despues de reinstalar, vuelve a ejecutar diagnose para confirmar version y componentes.
 
-Interpretacion del diagnostico
+10. Codigos que SST interpreta
+
+Codigo 0
+  El backend termino correctamente. Reinicia y audita con diagnose.
+
+Codigo 6
+  Hay aplicaciones Office/Teams abiertas. Cierralas y repite.
+
+Codigo 7 o 68
+  No se encontro una instalacion que coincida con la seleccion indicada.
+
+Codigo 8
+  Se detectaron varias versiones y la herramienta no pudo resolver correctamente la seleccion.
+
+Codigo 9
+  No se pudo quitar Office.
+
+Codigo 10
+  La herramienta no quedo elevada correctamente.
+
+Codigo 66
+  La version solicitada no coincide con la instalacion detectada.
+
+Codigo 67
+  La version indicada fue rechazada por el escenario.
+
+Otros codigos
+  SST muestra el codigo numerico devuelto para permitir diagnostico posterior.
+
+11. Que ocurre si diagnose sigue mostrando INSTALLED
+
+Si despues de que el scrub termina, reinicias y sigue apareciendo:
+
   INSTALLED / REGISTERED PRODUCT PRESENT
-    Office sigue registrado como producto instalado.
 
-  REMOVED / CORE RESIDUALS PRESENT
-    El producto ya no esta registrado, pero quedan componentes de Click-to-Run, servicios o archivos de Office.
+la retirada no se completo.
 
-  ABSENT / CLEAN
-    SST no detecta un producto Office registrado ni los residuos principales que audita.
+Revisa:
 
-Backend alternativo
+  - codigo devuelto por SaRA
+  - si habia procesos Office abiertos
+  - si Windows Installer/Click-to-Run estaba reparando o actualizando simultaneamente
+  - si se uso la VERSION correcta
+
+Puedes probar el backend actual:
+
   tools office scrub-current m365
 
-  Usa GetHelpCmd actual de Microsoft en vez de SaRACmd legacy.
+12. Que ocurre si aparece REMOVED / CORE RESIDUALS PRESENT
 
-Notas
-  - scrub all intenta retirar todas las versiones compatibles detectadas.
-  - SST no elimina PST, OST ni documentos del usuario como parte de la limpieza.
-  - Si hay aplicaciones de Office abiertas, OfficeScrubScenario puede abortar.
+Esto significa que la desinstalacion principal se realizo, pero quedan componentes importantes.
+
+Ejemplos posibles:
+
+  - ClickToRunSvc
+  - configuracion Click-to-Run
+  - carpeta Microsoft Office\root\Office16
+  - OUTLOOK.EXE u otros binarios
+
+No confundas este estado con una instalacion sana.
+
+Reinicia primero si acabas de ejecutar el scrub. Algunos componentes pueden desaparecer al completar operaciones pendientes durante el arranque.
+
+Luego vuelve a ejecutar:
+
+  tools office diagnose
+
+Si persiste REMOVED / CORE RESIDUALS PRESENT, el equipo necesita limpieza residual adicional antes de considerarlo limpio.
+
+13. Que NO elimina SST como residuo de instalacion
+
+SST no debe tratar como basura de instalacion los datos del usuario.
+
+No se deben borrar automaticamente:
+
+  - archivos PST
+  - archivos OST solo por existir
+  - documentos Word/Excel/PowerPoint
+  - plantillas personales
+  - archivos del usuario
+  - datos que puedan formar parte de perfiles o correo recuperable
+
+El objetivo es limpiar la instalacion de Office, no los datos del usuario.
+
+14. SaRA y problemas de autenticacion Outlook
+
+Si Outlook abre pero falla el flujo de inicio de sesion o Actualizar contrasena, el problema puede no ser la instalacion de Office.
+
+Ejecuta:
+
+  tools office diagnose
+
+Revisa especialmente:
+
+  AAD BrokerPlugin
+  CloudExperienceHost
+  TokenBroker
+  Domain Joined
+  Entra Joined
+  Workplace Joined
+  PRT
+  OneAuth
+  IdentityCache
+
+Para volver a registrar AAD BrokerPlugin:
+
+  tools office auth repair
+
+Cierra primero las aplicaciones de Office.
+
+No uses scrub como primera respuesta a cualquier problema de autenticacion si Office inicia normalmente y el diagnostico apunta a WAM/Entra.
+
+15. Cuando usar SaRA y cuando GetHelpCmd
+
+Usa SaRA legacy cuando:
+
+  - quieres el comportamiento historico del OfficeScrubScenario
+  - GetHelpCmd no completa la retirada
+  - estas reparando instalaciones antiguas o estados extraños
+
+Usa GetHelpCmd cuando:
+
+  - quieres probar el backend actual distribuido por Microsoft
+  - SaRA legacy falla en un equipo concreto
+  - quieres comparar resultados entre ambos backends
+
+16. Seguridad de la descarga
+
+El paquete legacy proviene de una fuente archivada, por lo que SST no confia ciegamente en el archivo descargado.
+
+Antes de ejecutarlo SST valida Authenticode sobre SaRAcmd.exe y exige una firma valida de Microsoft Corporation.
+
+Si la firma no valida, SST rechaza la ejecucion.
+
+17. Problemas habituales
+
+No aparece UAC:
+  La descarga, extraccion o validacion de firma pudo fallar antes de llegar a la elevacion. Lee el error que devuelve SST.
+
+Aparece UAC pero parece no pasar nada:
+  SaRACmd puede trabajar sin una interfaz grafica visible. SST espera el proceso y debe informar el resultado cuando termine.
+
+Codigo 6:
+  Cierra aplicaciones Office/Teams y repite.
+
+Codigo 66:
+  Revisa que hayas elegido m365/2021/etc. correctamente.
+
+Codigo 9:
+  La herramienta no pudo retirar Office. Prueba diagnose y despues el backend alternativo.
+
+Despues del scrub sigue Office en Programas y caracteristicas:
+  La retirada fallo o no termino. No asumas que desaparecio solo porque SaRA se ejecuto.
+
+Office desaparecio de Programas y caracteristicas pero diagnose muestra residuos:
+  El producto fue retirado, pero aun no esta limpio. Reinicia y vuelve a auditar.
+
+18. Secuencia de recuperacion recomendada
+
+Para Office que no inicia o queda corrupto:
+
+  tools office diagnose
+  tools office scrub m365
+  reinicio
+  tools office diagnose
+
+Si sigue con residuos o falla:
+
+  tools office scrub-current m365
+  reinicio
+  tools office diagnose
+
+Cuando el estado sea limpio:
+
+  reinstala Microsoft 365/Office
+  tools office diagnose
+
+19. Limitaciones
+
+  - SaRACmd legacy no es codigo fuente mantenido por SST.
+  - SST puede actualizar el wrapper, validaciones, auditoria y fallbacks, pero no modificar internamente el binario de Microsoft.
+  - el scrub requiere acceso de red para obtener el paquete si no esta disponible localmente
+  - algunas operaciones requieren UAC
+  - una desinstalacion correcta puede requerir reinicio
+  - diagnose audita un conjunto de residuos principales; no sustituye un analisis forense completo del sistema
+
+20. Resumen rapido
+
+Diagnosticar:
+
+  tools office diagnose
+
+Quitar Microsoft 365 con SaRA legacy:
+
+  tools office scrub m365
+
+Quitar cualquier version compatible:
+
+  tools office scrub all
+
+Backend alternativo actual:
+
+  tools office scrub-current m365
+
+Reparar AAD BrokerPlugin:
+
+  tools office auth repair
+
+Despues de cualquier scrub:
+
+  reinicia Windows
+  tools office diagnose
+
+Estado final deseado:
+
+  ABSENT / CLEAN
