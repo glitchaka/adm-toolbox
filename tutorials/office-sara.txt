@@ -1,0 +1,42 @@
+SST Tutorial: Office / SaRA legacy
+
+Objetivo
+  Quitar Microsoft 365/Office con el escenario OfficeScrubScenario de SaRACmd y comprobar despues si quedaron residuos.
+
+Comandos principales
+  tools office diagnose
+  tools office scrub m365
+  tools office scrub all
+  tools office scrub-current m365
+
+Flujo recomendado
+  1. Cierra Outlook, Word, Excel, PowerPoint, OneNote, Teams y cualquier proceso de Office.
+  2. Ejecuta:
+       tools office diagnose
+     para identificar producto, version, Click-to-Run y residuos actuales.
+  3. Para Microsoft 365 Apps ejecuta:
+       tools office scrub m365
+     SST descarga el paquete SaRACmd legacy, localiza SaRAcmd.exe, valida la firma Authenticode de Microsoft y ejecuta OfficeScrubScenario con elevacion UAC.
+  4. Reinicia Windows cuando termine.
+  5. Vuelve a ejecutar:
+       tools office diagnose
+
+Interpretacion del diagnostico
+  INSTALLED / REGISTERED PRODUCT PRESENT
+    Office sigue registrado como producto instalado.
+
+  REMOVED / CORE RESIDUALS PRESENT
+    El producto ya no esta registrado, pero quedan componentes de Click-to-Run, servicios o archivos de Office.
+
+  ABSENT / CLEAN
+    SST no detecta un producto Office registrado ni los residuos principales que audita.
+
+Backend alternativo
+  tools office scrub-current m365
+
+  Usa GetHelpCmd actual de Microsoft en vez de SaRACmd legacy.
+
+Notas
+  - scrub all intenta retirar todas las versiones compatibles detectadas.
+  - SST no elimina PST, OST ni documentos del usuario como parte de la limpieza.
+  - Si hay aplicaciones de Office abiertas, OfficeScrubScenario puede abortar.
