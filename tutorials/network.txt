@@ -1,17 +1,27 @@
 SST — Red: notsh / net
 
-1. Nombres
+1. Nombres y rutas equivalentes
 
+Comando principal:
   notsh SUBCOMANDO ...
-  net SUBCOMANDO ...        alias completo de notsh
 
-Compatibilidad adicional:
+Alias completo:
+  net SUBCOMANDO ...
+
+Compatibilidad estilo netsh:
+  notsh wlan
   notsh wlan show interfaces
+  notsh wifi
   notsh wifi show interfaces
+  notsh wireless
   notsh wireless show interfaces
+  notsh lan
   notsh lan show interfaces
+  notsh ethernet
   notsh ethernet show interfaces
   notsh show interfaces
+
+Compatibilidad tipo Unix/SST:
   notsh link                -> interfaces
   notsh addr                -> interfaces
   notsh route               -> routes
@@ -22,33 +32,103 @@ Compatibilidad adicional:
   notsh sockets             -> connections
   notsh resolve ...         -> dns ...
 
-2. Interfaces y estado
+Sin subcomando:
+  notsh
+  net
 
+Ambos ejecutan `interfaces`.
+
+2. Interfaces
+
+Todas:
   net interfaces
-  net connections
-  net routes
-  net neighbors
-  net arp                   alias de neighbors
+  notsh show interfaces
+  notsh link
+  notsh addr
 
-3. DNS
+Wi-Fi solamente:
+  notsh wlan
+  notsh wlan show interfaces
+  notsh wifi
+  notsh wifi show interfaces
+  notsh wireless
+  notsh wireless show interfaces
+
+Ethernet/cableado solamente:
+  notsh lan
+  notsh lan show interfaces
+  notsh ethernet
+  notsh ethernet show interfaces
+
+La vista Wi-Fi usa la sonda de interfaces de SST basada en IP Helper y evita consultar SSID/BSSID cuando no es necesario, para no depender de permisos de ubicación de Windows.
+
+3. Conexiones
+
+  net connections
+  notsh ss
+  notsh socket
+  notsh sockets
+
+Muestra protocolo, local, remoto, estado y PID propietario.
+
+4. Rutas
+
+  net routes
+  notsh route
+
+Muestra la tabla de rutas reportada por la sonda nativa de red de SST.
+
+5. Vecinos / ARP
+
+  net neighbors
+  net arp
+  notsh neigh
+  notsh neighbor
+
+Muestra IP, MAC, tipo de MAC y fabricante cuando puede atribuir OUI.
+
+6. DNS
 
   net dns HOST
   net dns IP
-  net resolve HOST|IP
+  net resolve HOST
+  net resolve IP
 
-Hace resolución directa o inversa según el objetivo.
+HOST:
+  resolución directa; deduplica y ordena direcciones devueltas.
 
-4. ICMP
+IP:
+  resolución inversa; si no existe nombre devuelve `-`.
+
+No hay flags adicionales implementados para dns.
+
+7. Ping ICMP
 
   net ping HOST
   net ping HOST -c N
 
-N admitido: 1..100.
+Opciones:
+  -c N  cantidad de ecos.
+
+Default:
+  N=4
+
+Rango:
+  1..100
+
+Cada eco usa TTL 128 y timeout de 1 segundo. El comando devuelve status 0 si recibe al menos una respuesta y 1 si no recibe ninguna.
+
+8. Traceroute ICMP
 
   net trace HOST
-  net traceroute HOST       alias
+  net traceroute HOST
 
-5. Conflictos IPv4
+Alias:
+  traceroute = trace
+
+No tiene flags adicionales. SST prueba TTL 1..30 con timeout aproximado de 700 ms por salto y devuelve status 0 solo si llega al destino.
+
+9. Conflictos IPv4
 
 Aliases equivalentes:
   net conflict
@@ -59,54 +139,161 @@ Aliases equivalentes:
 Formas:
   net conflicts
   net conflicts IP
+  net conflicts --seconds N
+  net conflicts -s N
   net conflicts IP --seconds N
+  net conflicts IP -s N
   net conflicts --json
+  net conflicts IP --json
 
-La detección observa cambios de propietario ARP: una IPv4 con dos o más MAC dentro de la ventana. Una ejecución sin hallazgos no demuestra por sí sola que no exista duplicidad.
+Opciones:
+  --seconds N
+  -s N
+    duración de observación.
 
-6. Puertos TCP
+  --json
+    salida JSON.
+
+Default:
+  ventana = 5 segundos
+
+Rango:
+  1..30 segundos
+
+Sin IP:
+  muestrea repetidamente la tabla ARP completa.
+
+Con IP:
+  usa resolución activa de vecino/SendARP repetida para esa IPv4.
+
+Conflicto:
+  una misma IPv4 observada con dos o más MAC distintas dentro de la ventana.
+
+Status:
+  0  no se observó conflicto durante la ventana
+  1  se observó al menos un conflicto
+
+Una ejecución sin hallazgos no demuestra ausencia de duplicidad: una caché estable puede ocultar al segundo equipo.
+
+10. Puertos TCP
 
   net ports HOST
-  net ports HOST 22,80,443
+  net ports HOST LISTA
 
-La lista es una lista separada por comas de puertos a comprobar.
+LISTA:
+  puertos separados por coma.
 
-7. Escaneo de red
+Ejemplo:
+  net ports servidor 22,80,443,3389
+
+Default si se omite LISTA:
+  22,80,443,445,3389
+
+Cada puerto usa connect TCP con timeout aproximado de 500 ms y se muestra como:
+  open
+  closed/filtered
+
+Valores no parseables dentro de LISTA se descartan silenciosamente por la implementación actual.
+
+11. Escaneo IPv4
 
   net scan
   net scan RED
 
 Filtros:
-  --unknown                solo no inventariados/no autorizados según clasificación
-  --authorized             autorizados
-  --known                  conocidos
-  --names                  intenta/resalta nombres
+  --unknown
+    conserva solo no inventariados.
 
-Formatos:
+  --authorized
+    conserva conocidos/inventariados.
+
+  --known
+    alias funcional de --authorized.
+
+Salida/nombres:
+  --names
+    imprime solo IP y nombre mostrado.
+
   --json
+    salida JSON completa.
+
   --csv
+    salida CSV completa.
 
-Sin RED, SST intenta inferir la red IPv4 local. El escaneo está limitado a /20 o redes más pequeñas para evitar barridos excesivos.
+Prioridad de salida:
+  --json se procesa antes que --names/--csv.
+  --names se procesa antes que --csv.
 
-8. Monitor de presencia/chat LAN
+Sin RED:
+  SST intenta inferir la red IPv4 local.
 
-  net monitor [RED]
+Límite de seguridad:
+  solo /20 o prefijos más específicos (/21, /24, etc.). Redes mayores que /20 se rechazan.
+
+Métodos de detección usados por la sonda de hosts:
+  ARP
+  ICMP
+  TCP 445
+  TCP 3389
+  TCP 80
+  TCP 443
+  TCP 135
+  TCP 22
+
+El barrido trabaja por lotes de hasta 48 hosts concurrentes y usa timeout aproximado de 300 ms por prueba primaria.
+
+12. Monitor de presencia/chat LAN
+
+Formas:
+  net monitor
+  net monitor RED
   net monitor [RED] --unknown
   net monitor [RED] -m TEXTO
   net monitor [RED] --message TEXTO
   net monitor [RED] --say TEXTO
 
--m, --message y --say son equivalentes para arrancar publicando un mensaje inicial.
+Opciones:
+  --unknown
+    muestra solo dispositivos no inventariados.
 
-Teclas:
-  q o Esc                 salir cuando no estás editando el prompt
-  Enter                    abrir prompt Mensaje>
-  Esc                      cancelar edición dentro del prompt
+  -m TEXTO
+  --message TEXTO
+  --say TEXTO
+    formas equivalentes para arrancar publicando un mensaje inicial.
 
-Comandos de chat:
+RED:
+  opcional; si falta SST infiere la red local.
+  debe ser /20 o más pequeña.
+
+Opciones desconocidas se rechazan. Más de una RED/argumento posicional inesperado también se rechaza.
+
+Mensaje inicial:
+  no puede quedar vacío después de sanitización.
+
+Teclas fuera del prompt:
+  Enter       abre `Mensaje>`
+  q           salir
+  Esc         salir
+
+Teclas dentro del prompt:
+  Enter       enviar/ejecutar comando de chat
+  Esc         cancelar edición
+  Backspace   borrar
+  Space       insertar espacio
+  caracteres  añadir texto
+
+Límite del input interactivo:
+  120 caracteres.
+
+Ciclo:
+  SST vuelve a escanear aproximadamente cada 3 segundos.
+  un equipo debe faltar 3 escaneos consecutivos antes de marcarse offline.
+
+Comandos del chat:
+  ::help
   ::whoisalive
   ::room NOMBRE [CLAVE]
-  ::join NOMBRE [CLAVE]    alias funcional de ::room
+  ::join NOMBRE [CLAVE]
   ::leave
   ::where
   ::rooms
@@ -115,71 +302,193 @@ Comandos de chat:
   ::lore
   ::peers
   ::clear
-  ::help
 
-Salas con CLAVE: Argon2id + XChaCha20-Poly1305.
-PM: X25519 + XChaCha20-Poly1305; el peer debe haberse descubierto primero con ::whoisalive.
+Detalles:
+  ::room y ::join son equivalentes.
+  CLAVE puede contener espacios; se deriva sobre el texto restante.
+  salas con CLAVE usan Argon2id + XChaCha20-Poly1305.
+  ::pm usa X25519 + XChaCha20-Poly1305.
+  antes de PM el peer debe conocerse; `::whoisalive` ayuda a descubrir identidades.
+  ::fingerprint muestra fingerprint criptográfico local.
+  ::peers lista terminales SST con identidad conocida.
+  ::clear limpia mensajes visibles, no el lore de sesión.
+  ::lore guarda el historial de mensajes de la sesión en el directorio actual con nombre `sst-net-monitor-lore-YYYYMMDD-HHMMSS.txt`.
 
-9. Historial de presencia
+13. Historial persistente de presencia
 
   net presence
   net presence --json
   net presence --csv
 
-10. Identificación
+Sin flags:
+  tabla ordenada por `last_seen` descendente.
+
+JSON:
+  serializa registros completos.
+
+CSV:
+  columnas mac,ip,hostname,mac_scope,vendor,discovery,first_seen,last_seen.
+
+No hay otros filtros implementados en `presence`.
+
+14. Identificación
 
   net identify IP
   net identify MAC
   net identify NOMBRE
   net identify OBJETIVO --json
 
-Muestra MAC, scope global/local, fabricante IEEE, inventario, método de detección y último avistamiento cuando están disponibles.
+OBJETIVO puede ser:
+  IPv4
+  MAC
+  nombre inventariado exacto case-insensitive
 
-11. Tráfico por proceso
+Para IP intenta:
+  - probe activo
+  - ARP
+  - reverse DNS
+  - historial de presencia
 
+Para MAC/nombre cruza inventario e historial.
+
+Campos:
+  target
+  ip
+  hostname
+  mac
+  mac_scope
+  vendor
+  ieee_registry
+  inventory / inventory_name
+  registered
+  discovery
+  response
+  last_seen
+
+  --json  salida JSON.
+
+No hay otros flags implementados.
+
+15. Tráfico por proceso
+
+Base:
   net traffic
 
-Opciones implementadas:
-  --watch
+Modo continuo:
+  net traffic --watch
+  net traffic -w
+
+Filtros/opciones:
   --top N
+    máximo de filas en salida de tabla. Default 50.
+
   --pid PID
+    limita al PID parseable indicado.
+
   --process NOMBRE
+    coincidencia substring case-insensitive sobre nombre de proceso.
+
   --background
+    excluye el proceso foreground actual.
+
   --high-usage
+    conserva procesos que superen al menos uno de estos umbrales:
+      tráfico combinado >= 100 KiB/s
+      CPU >= 10%
+
   --unsigned
+    conserva procesos cuya firma Authenticode no sea `valid`.
+
   --connections
+    cambia a vista de conexiones TCP/UDP por proceso.
+
   --json
+    salida JSON.
+
   --csv
+    salida CSV.
 
-12. Consumo LAN por proveedor
+Telemetría:
+  intenta ETW para bytes por proceso. Si ETW no está disponible, la vista sigue funcionando con conexiones/CPU/RAM y lo informa.
 
+`--connections`:
+  puede combinarse con --pid, --process, --top, --json y --csv.
+  en salida textual `--top` limita filas; JSON/CSV devuelven las filas filtradas completas antes del `.take(top)` textual actual.
+
+`--watch`/`-w`:
+  refresca aproximadamente cada 1 segundo.
+  q o Esc salen.
+  los demás filtros se conservan.
+
+16. Consumo LAN por proveedor
+
+Base:
   net usage
 
-Opciones:
-  --watch
-  --top
+Modo continuo:
+  net usage --watch
+  net usage -w
+
+Filtros:
   --top N
   --device IP
   --mac MAC
+
+Formatos:
   --json
   --csv
 
-Requiere un proveedor activo que exponga contadores por cliente.
+`--top` sin un valor siguiente es tolerado por el parser genérico pero no aplica truncado; para limitar filas usa siempre `--top N`.
 
-13. Proveedores
+--watch/-w:
+  refresca cada 2 segundos y mantiene los demás filtros.
 
+Requisito:
+  debe existir un proveedor activo.
+
+Tipos con obtención de uso implementada hoy:
+  openwrt   consume endpoint JSON normalizado configurado en host
+  generic   consume endpoint JSON normalizado
+
+Tipos declarados pero que requieren adaptador/MIB específico para uso:
+  opnsense
+  pfsense
+  unifi
+  snmp
+
+17. Proveedores
+
+Acción por defecto:
+  net provider
+  net provider list
+
+Listar:
   net provider list
   net provider list --json
+
+Crear/actualizar:
+  net provider add NOMBRE --host HOST
   net provider add NOMBRE --type TIPO --host HOST
-  net provider add NOMBRE --type TIPO --host HOST --user-env VAR
-  net provider add NOMBRE --type TIPO --host HOST --secret-env VAR
-  net provider add NOMBRE --type TIPO --host HOST --community-env VAR
-  net provider use NOMBRE
-  net provider current
-  net provider remove NOMBRE
-  net provider capabilities
-  net provider capabilities NOMBRE
-  net provider path
+  net provider add NOMBRE --host HOST --user-env VAR
+  net provider add NOMBRE --host HOST --secret-env VAR
+  net provider add NOMBRE --host HOST --community-env VAR
+  net provider add NOMBRE --type TIPO --host HOST --user-env VAR --secret-env VAR --community-env VAR
+
+Opciones add:
+  --type TIPO
+    default: generic
+
+  --host HOST
+    obligatorio
+
+  --user-env VAR
+    nombre de variable de entorno con usuario HTTP.
+
+  --secret-env VAR
+    nombre de variable de entorno con contraseña/token.
+
+  --community-env VAR
+    nombre de variable de entorno con community SNMP.
 
 TIPO admitido:
   openwrt
@@ -189,11 +498,44 @@ TIPO admitido:
   snmp
   generic
 
-Las credenciales se referencian por variables de entorno; los descriptores no deben guardar secretos en texto plano.
+Si el perfil ya existe con el mismo nombre, `add` lo actualiza.
+El primer proveedor añadido queda activo automáticamente.
 
-14. Ayuda contextual
+Seleccionar activo:
+  net provider use NOMBRE
 
+Ver activo:
+  net provider current
+
+Eliminar:
+  net provider remove NOMBRE
+
+Si se elimina el activo, el primer proveedor restante pasa a activo.
+
+Capacidades:
+  net provider capabilities
+    usa activo.
+
+  net provider capabilities NOMBRE
+    consulta perfil explícito.
+
+Ruta de almacenamiento:
+  net provider path
+
+Credenciales HTTP:
+  SST toma secretos desde variables de entorno y los pasa a curl mediante config por stdin, evitando poner `user:password` o Bearer token en la línea de comando del proceso curl.
+
+18. Ayuda contextual
+
+General:
   net help
+  net --help
+  net -h
+  notsh help
+  notsh --help
+  notsh -h
+
+Temas:
   net help scan
   net help monitor
   net help presence
@@ -203,12 +545,30 @@ Las credenciales se referencian por variables de entorno; los descriptores no de
   net help provider
   net help ping
   net help conflict
+  net help conflicts
+  net help duplicate-ip
+  net help duplicates
   net help ports
   net help dns
   net help trace
+  net help traceroute
   net help interfaces
   net help connections
   net help routes
   net help neighbors
+  net help arp
 
-También se aceptan --help y -h como entrada general a la ayuda de notsh.
+19. Relación con otras herramientas SST
+
+  device            inventario persistente
+  switch            MAC -> switch/puerto
+  wol               Wake-on-LAN
+  diag network      diagnóstico compuesto
+  diag dns          DNS rápido
+  sys printers      puede ayudar con impresoras/red
+  sys domain / domain
+                    dominio local/consulta remota
+
+20. Regla de exactitud
+
+No se debe inferir soporte por semejanza con netsh/ip/ss. Solo las opciones enumeradas aquí están implementadas por la superficie pública actual de `notsh`/`net`.
