@@ -19,33 +19,66 @@ Usalo cuando un equipo deba iniciar sesion automaticamente despues de encenderse
 
 No lo uses en equipos donde el inicio automatico con una cuenta con privilegios elevados suponga un riesgo innecesario.
 
-3. Sintaxis
+3. Interfaz publica completa
 
-Forma corta:
+Ayuda:
+
+  sys autologon
+  sys autologon -h
+  sys autologon --help
+  autologon
+  autologon -h
+  autologon --help
+
+Configuracion directa:
 
   sys autologon -u CUENTA -d DOMINIO -p PASSWORD
+  sys autologon --user CUENTA --domain DOMINIO --password PASSWORD
 
-Forma explicita:
+Forma explicita con subcomando `enable`:
 
   sys autologon enable -u CUENTA -d DOMINIO -p PASSWORD
+  sys autologon enable --user CUENTA --domain DOMINIO --password PASSWORD
 
-Alias directo:
+Alias directo del builtin `sys`:
 
   autologon -u CUENTA -d DOMINIO -p PASSWORD
+  autologon enable -u CUENTA -d DOMINIO -p PASSWORD
 
-Parametros:
+Opciones publicas implementadas:
 
   -u, --user       Nombre de la cuenta que iniciara sesion.
-  -d, --domain     Dominio de Windows. Para una cuenta local puede usarse el nombre del equipo o '.'.
+  -d, --domain     Dominio de Windows o contexto de cuenta local.
   -p, --password   Contrasena de la cuenta.
+  -h, --help       Muestra la ayuda de Autologon dentro de SST.
 
-Los tres parametros son obligatorios en la implementacion actual.
+Subcomandos publicos implementados:
 
-4. Ejemplos
+  enable           Explicita que se esta configurando/habilitando Autologon. Es opcional: omitirlo produce el mismo flujo de configuracion.
+
+No existen actualmente otros subcomandos publicos de Autologon en SST.
+
+Los tres valores `user`, `domain` y `password` son obligatorios para configurar Autologon.
+
+4. Combinaciones equivalentes
+
+Estas formas configuran el mismo flujo:
+
+  sys autologon -u operador -d CONTOSO -p PASSWORD
+  sys autologon enable -u operador -d CONTOSO -p PASSWORD
+  sys autologon --user operador --domain CONTOSO --password PASSWORD
+  autologon -u operador -d CONTOSO -p PASSWORD
+  autologon enable --user operador --domain CONTOSO --password PASSWORD
+
+5. Ejemplos
 
 Cuenta de dominio:
 
   sys autologon -u operador -d CONTOSO -p MiPassword
+
+Cuenta de dominio usando opciones largas:
+
+  sys autologon --user operador --domain CONTOSO --password MiPassword
 
 Cuenta local usando punto como dominio local:
 
@@ -55,7 +88,31 @@ Cuenta local especificando el nombre del equipo:
 
   sys autologon -u operador -d LAB-PC-042 -p MiPassword
 
-5. Que hace SST internamente
+Forma explicita:
+
+  sys autologon enable -u operador -d CONTOSO -p MiPassword
+
+6. Validacion de argumentos
+
+SST exige:
+
+  - usuario no vacio
+  - dominio no vacio
+  - contrasena no vacia
+
+Si falta `-u/--user`, SST devuelve:
+
+  autologon: falta -u/--user
+
+Si falta `-d/--domain`, SST devuelve:
+
+  autologon: falta -d/--domain
+
+Si falta `-p/--password`, SST devuelve:
+
+  autologon: falta -p/--password
+
+7. Que hace SST internamente
 
 Al ejecutar el comando SST:
 
@@ -76,29 +133,30 @@ Al ejecutar el comando SST:
  10. Considera correcta la operacion solo si Autologon devuelve codigo 0.
  11. Elimina el ZIP y los binarios temporales descargados.
 
-6. Donde queda la credencial
+8. Donde queda la credencial
 
 Sysinternals Autologon utiliza el mecanismo de secretos LSA de Windows para almacenar la credencial utilizada por el inicio automatico. SST no crea un archivo con la contrasena ni conserva una copia en su directorio de herramientas.
 
 Esto no convierte el inicio automatico en un mecanismo equivalente a un inicio interactivo protegido. Un administrador local o un usuario con capacidad suficiente sobre el equipo puede acceder a informacion sensible del sistema. La cuenta usada debe tener solo los permisos necesarios.
 
-7. Advertencia sobre -p
+9. Advertencia sobre -p/--password
 
 La sintaxis actual recibe la contrasena como argumento:
 
   -p PASSWORD
+  --password PASSWORD
 
 Eso significa que la contrasena se escribe en la linea de comando introducida en SST y puede quedar en el historial de la terminal. Tambien se entrega al proceso de Autologon como argumento, porque ese es el modo CLI soportado por la herramienta de Sysinternals.
 
 Cuando SST incorpore entrada secreta interactiva, la documentacion indicara la forma preferida para evitar escribir la contrasena directamente en el comando.
 
-8. Elevacion UAC
+10. Elevacion UAC
 
 No es necesario abrir SST completo como administrador. SST eleva la operacion necesaria para Autologon cuando corresponde.
 
 Si el usuario cancela UAC, la configuracion no se aplica.
 
-9. Comprobacion despues de configurarlo
+11. Comprobacion despues de configurarlo
 
 La comprobacion definitiva es reiniciar Windows:
 
@@ -109,7 +167,7 @@ La comprobacion definitiva es reiniciar Windows:
 
 Si la cuenta tiene una contrasena expirada, bloqueada o modificada posteriormente, el inicio automatico puede dejar de funcionar.
 
-10. Problemas habituales
+12. Problemas habituales
 
 El comando pide UAC y luego falla:
   Revisa el mensaje devuelto por SST. La descarga, la firma o Autologon pueden haber fallado.
@@ -126,7 +184,7 @@ Autologon devuelve un codigo distinto de 0:
 Windows muestra la pantalla de inicio igualmente:
   Comprueba que la cuenta siga habilitada, que la contrasena no haya cambiado y que no exista una politica de Windows que interfiera con el inicio automatico.
 
-11. Relacion con otros comandos SST
+13. Relacion con otros comandos SST
 
 Antes de preparar una estacion puede ser util:
 
@@ -144,22 +202,41 @@ Una secuencia habitual de provision es:
   5. configurar Autologon
   6. reiniciar y validar
 
-12. Limitaciones actuales
+14. Limitaciones actuales
 
-  - La implementacion actual configura Autologon; todavia no expone desde SST un subcomando disable.
+  - La implementacion actual configura Autologon; no expone `disable`.
+  - No expone actualmente `status` para Autologon.
   - La implementacion actual requiere -p/--password en la linea de comando.
   - Necesita acceso a Internet para descargar el paquete oficial cuando se ejecuta.
   - La herramienta es exclusiva de Windows.
 
-13. Resumen rapido
+15. Resumen rapido exhaustivo
 
-Configurar cuenta de dominio:
+Ayuda:
 
-  sys autologon -u operador -d CONTOSO -p PASSWORD
+  sys autologon
+  sys autologon -h
+  sys autologon --help
 
-Configurar cuenta local:
+Configurar:
 
-  sys autologon -u operador -d . -p PASSWORD
+  sys autologon -u CUENTA -d DOMINIO -p PASSWORD
+  sys autologon --user CUENTA --domain DOMINIO --password PASSWORD
+
+Configurar con `enable`:
+
+  sys autologon enable -u CUENTA -d DOMINIO -p PASSWORD
+
+Alias directo:
+
+  autologon -u CUENTA -d DOMINIO -p PASSWORD
+
+Opciones:
+
+  -u | --user
+  -d | --domain
+  -p | --password
+  -h | --help
 
 Despues:
 
