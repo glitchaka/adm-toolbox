@@ -1,10 +1,16 @@
-SST — Builtins Bash/Nwash registrados
+SST — Bash/Nwash: referencia exhaustiva de builtins y opciones
 
-Nwash busca compatibilidad orientada a Bash 5.3; no lanza bash.exe. La lista pública registrada es:
+1. Alcance
+
+Nwash es la capa de shell de SST orientada a compatibilidad con Bash 5.3. No ejecuta bash.exe. Esta referencia se audita contra `src/core/bash/interpreter.rs`, no contra la ayuda abreviada heredada.
+
+Se documentan todas las opciones públicas que el parser actual implementa. Cuando una opción aparece en una ayuda corta pero no tiene semántica propia en el código actual, se marca explícitamente.
+
+Builtins registrados:
 
   :
-  .                       alias semántico de source
-  [                       alias semántico de test
+  .
+  [
   alias
   bg
   bind
@@ -64,79 +70,1188 @@ Nwash busca compatibilidad orientada a Bash 5.3; no lanza bash.exe. La lista pú
   unset
   wait
 
-Sintaxis documentada por el parser/guide actual:
+Palabras reservadas reconocidas:
+
+  !
+  [[
+  ]]
+  case
+  coproc
+  do
+  done
+  elif
+  else
+  esac
+  fi
+  for
+  function
+  if
+  in
+  select
+  then
+  time
+  until
+  while
+  {
+  }
+
+2. Builtins mínimos
 
   :
+    No hace nada. Devuelve status 0.
+
+  true
+    Devuelve status 0.
+
+  false
+    Devuelve status 1.
+
+3. Navegación
+
+cd
+
+  cd
+    Va a HOME/USERPROFILE.
+
+  cd DIR
+    Cambia a DIR.
+
+  cd -
+    Cambia a OLDPWD e imprime el destino.
+
+Comportamiento adicional:
+  - acepta una ruta Windows con espacios escrita como varios argumentos si la unión exacta de esos argumentos es un directorio existente
+  - usa CDPATH cuando el destino simple no existe directamente
+  - shopt `cdable_vars` permite usar el contenido de una variable como directorio
+  - shopt `cdspell` permite corregir una diferencia ortográfica simple
+  - restricted_shell bloquea cd
+
+Compatibilidad declarada pero no implementada específicamente:
+  `help cd` anuncia `cd [-L|-P] [DIR]`, pero el parser actual de `cd` no interpreta -L ni -P como flags. No deben usarse como capacidad garantizada de SST.
+
+pwd
+
+  pwd
+  pwd -L
+  pwd -P
+
+  -P  canonicaliza la ruta física.
+  -L  equivale actualmente al comportamiento por defecto; no tiene rama separada.
+
+4. Alias
+
+alias
+
+  alias
+    Lista todos los alias.
+
+  alias NOMBRE=VALOR
+    Define o reemplaza un alias.
+
+  alias NOMBRE
+    Consulta un alias concreto.
+
+unalias
+
+  unalias NOMBRE [NOMBRE ...]
+  unalias -a
+
+  -a  elimina todos los alias.
+
+5. Salida: echo
+
+  echo [ARG ...]
+  echo -n [ARG ...]
+  echo -e [ARG ...]
+  echo -E [ARG ...]
+
+Flags combinables si el bundle contiene únicamente n/e/E:
+  -ne
+  -nE
+  -en
+  -eE
+  etc. en cualquier combinación válida de n/e/E.
+
+  -n  no añade newline final.
+  -e  interpreta escapes.
+  -E  desactiva interpretación de escapes.
+
+Con -e se reconocen escapes Bash/Nwash como:
+  \\a  bell
+  \\b  backspace
+  \\c  detener salida
+  \\e, \\E  ESC
+  \\f  form feed
+  \\n  newline
+  \\r  carriage return
+  \\t  tab
+  \\v  vertical tab
+  \\\\  backslash
+  octal, \\xHH, \\uHHHH, \\UHHHHHHHH
+
+6. Salida: printf
+
+Sintaxis:
+
+  printf FORMATO [ARG ...]
+  printf -v VARIABLE FORMATO [ARG ...]
+
+Única opción de comando implementada:
+  -v VARIABLE  guarda el resultado en VARIABLE en vez de stdout.
+
+Especificadores implementados:
+  %%
+  %s
+  %S
+  %q
+  %Q
+  %b
+  %c
+  %C
+  %d
+  %i
+  %u
+  %o
+  %x
+  %X
+  %f
+  %F
+  %e
+  %E
+  %g
+  %G
+
+Flags/formato implementados dentro de `%...`:
+  -       alineación izquierda
+  +       fuerza signo positivo en numéricos
+  espacio antepone espacio a positivos cuando no hay +
+  0       relleno con cero cuando procede
+  #       forma alternativa; por ejemplo prefijo 0x/0X en hexadecimal y 0 en octal
+  N       ancho explícito
+  *       ancho tomado del siguiente argumento
+  .N      precisión explícita
+  .*      precisión tomada del siguiente argumento
+  l       modificador admitido para s/c, convertido internamente a S/C
+
+%q/%Q realizan quoting de shell; # con q/Q fuerza single-quote. %b interpreta escapes del argumento.
+
+7. Variables: export
+
+  export
+  export -p
+  export NOMBRE
+  export NOMBRE=VALOR
+  export -n NOMBRE [NOMBRE ...]
+  export -f FUNCION [FUNCION ...]
+  export -nf FUNCION [FUNCION ...]
+  export -pf
+
+Flags:
+  -p  imprime exportaciones; sin argumentos también imprime.
+  -n  quita atributo export.
+  -f  opera sobre funciones en vez de variables.
+
+8. Variables: unset
+
+  unset NOMBRE [NOMBRE ...]
+  unset -v NOMBRE [NOMBRE ...]
+  unset -f FUNCION [FUNCION ...]
+  unset -n NAMEREF [NAMEREF ...]
+
+Flags:
+  -v  variables solamente.
+  -f  funciones solamente.
+  -n  quita nameref sin eliminar el objeto destino.
+
+No se pueden eliminar variables/funciones readonly.
+
+9. Variables: declare / typeset / local
+
+`declare` y `typeset` comparten implementación. `local` usa la misma maquinaria pero solo dentro de una función.
+
+Sintaxis:
+
+  declare [FLAGS] [NOMBRE[=VALOR] ...]
+  typeset [FLAGS] [NOMBRE[=VALOR] ...]
+  local [FLAGS] NOMBRE[=VALOR] ...
+
+Atributos `-` implementados:
+  -a  array indexado
+  -A  array asociativo
+  -r  readonly
+  -x  export
+  -p  imprimir declaraciones
+  -i  valor entero/arithmetic assignment
+  -n  nameref
+  -l  transformar a minúsculas
+  -u  transformar a mayúsculas
+  -t  trace
+  -g  global aun dentro de una función
+  -I  heredar binding local existente
+  -f  operar sobre funciones
+  -F  mostrar nombres de funciones; con extdebug incluye metadatos de fuente
+
+Los flags pueden combinarse, por ejemplo:
+  declare -ax arr
+  declare -A map
+  declare -ir contador=4
+  local -n ref=objetivo
+
+Forma `+`:
+  +n  quita nameref
+  +i  quita atributo integer
+  +u  quita uppercase
+  +l  quita lowercase
+  +t  quita trace
+  +x  quita export
+
+Funciones con +:
+  +x y +t quitan atributos correspondientes.
+  +r no puede quitar readonly de una función readonly y devuelve error.
+
+`local -`:
+  localiza las opciones de shell dentro de la función; solo es válido dentro de una función.
+
+Arrays:
+  declare -a arr=(...)
+  declare -A map=([clave]=valor ...)
+  índices explícitos `[N]=...` están soportados.
+
+10. readonly
+
+  readonly
+  readonly -p
+  readonly NOMBRE[=VALOR] ...
+  readonly -a NOMBRE [NOMBRE ...]
+  readonly -A NOMBRE [NOMBRE ...]
+  readonly -f FUNCION [FUNCION ...]
+  readonly -pf
+
+Flags implementados:
+  -p  imprime readonly actuales; sin argumentos también imprime.
+  -a  prepara/marca array indexado.
+  -A  prepara/marca array asociativo.
+  -f  opera sobre funciones.
+
+`-r` puede aparecer en sintaxis Bash convencional pero no tiene una rama diferenciada: readonly es ya la acción por defecto.
+
+11. Entrada: read
+
+Sintaxis completa implementada:
+
+  read [-r] [-s] [-e|-E] [-p PROMPT] [-n N|-N N] [-a ARRAY] [-d DELIM] [-t SEGUNDOS] [-u FD] [-i TEXTO] [--] [NOMBRE ...]
+
+Opciones:
+  -p PROMPT   prompt.
+  -s          entrada silenciosa.
+  -r          raw; no colapsa backslashes.
+  -e          edición interactiva + completion de archivos.
+  -E          edición interactiva + completion Bash/Nwash.
+  -n N        máximo N caracteres.
+  -N N        exige exactamente N caracteres; status 1 si recibe menos.
+  -a ARRAY    divide por IFS y guarda en array.
+  -d DELIM    primer carácter como delimitador; si falta carácter usa NUL.
+  -t SEGUNDOS timeout float no negativo.
+  -u FD       lee desde descriptor.
+  -i TEXTO    texto inicial en modo edición.
+  --          fin de opciones; lo restante son variables.
+
+Sin NOMBRE usa REPLY.
+Con varias variables usa IFS; la última recibe el resto de campos.
+
+12. mapfile / readarray
+
+`readarray` es alias funcional de la misma implementación de `mapfile`.
+
+Sintaxis completa:
+
+  mapfile [-t] [-s N] [-n N] [-O N] [-d DELIM] [-u FD] [-C CALLBACK] [-c QUANTUM] [--] [ARRAY]
+  readarray [-t] [-s N] [-n N] [-O N] [-d DELIM] [-u FD] [-C CALLBACK] [-c QUANTUM] [--] [ARRAY]
+
+Opciones:
+  -t           quita delimitador final de cada registro.
+  -s N         salta N registros iniciales.
+  -n N         lee como máximo N registros; N=0 no limita.
+  -O N         empieza a escribir en índice N y conserva contenido previo.
+  -d DELIM     usa primer carácter; sin carácter usa NUL.
+  -u FD        lee desde descriptor.
+  -C CALLBACK  ejecuta callback periódicamente.
+  -c QUANTUM   frecuencia de callback; default 5000; mínimo efectivo 1.
+  --           fin de opciones; siguiente argumento es ARRAY.
+
+ARRAY por defecto: MAPFILE.
+
+13. Opciones de shell: set
+
+Sin argumentos:
+  set
+    imprime variables y funciones.
+
+Parámetros posicionales:
+  set -- ARG [ARG ...]
+
+Flags cortos activables con `-` y desactivables con `+`:
+  a  allexport
+  b  notify
+  e  errexit
+  f  noglob
+  h  hashall
+  k  keyword
+  p  privileged
+  H  histexpand
+  m  monitor
+  n  noexec
+  P  physical
+  t  onecmd
+  u  nounset
+  v  verbose
+  x  xtrace
+  B  braceexpand
+  C  noclobber
+  E  errtrace
+  T  functrace
+
+Ejemplos:
+  set -e
+  set +e
+  set -eux
+  set +x
+
+Opciones nominales:
+  set -o NOMBRE
+  set +o NOMBRE
+
+Nombres admitidos por el parser:
+  allexport
+  braceexpand
+  emacs
+  errexit
+  errtrace
+  functrace
+  hashall
+  histexpand
+  history
+  ignoreeof
+  interactive-comments
+  keyword
+  monitor
+  noclobber
+  noexec
+  noglob
+  nolog
+  notify
+  nounset
+  onecmd
+  physical
+  pipefail
+  posix
+  privileged
+  verbose
+  vi
+  xtrace
+
+Listar estados:
+  set -o
+  set +o
+
+Activar posix también habilita `inherit_errexit`, `expand_aliases` y exporta POSIXLY_CORRECT=y. Al desactivar posix elimina POSIXLY_CORRECT.
+
+14. shopt
+
+Sintaxis:
+
+  shopt
+  shopt -p
+  shopt -q NOMBRE [NOMBRE ...]
+  shopt -s [NOMBRE ...]
+  shopt -u [NOMBRE ...]
+  shopt -p -s [NOMBRE ...]
+  shopt -p -u [NOMBRE ...]
+  shopt -o [-p|-q|-s|-u] [NOMBRE ...]
+
+Flags:
+  -s  habilita.
+  -u  deshabilita.
+  -q  no imprime salida normal; status refleja estado/errores.
+  -p  formato reutilizable `shopt -s/-u ...`.
+  -o  opera sobre la lista de opciones de `set -o` en vez de shopt.
+
+No se pueden usar -s y -u simultáneamente.
+
+Nombres shopt admitidos:
+  array_expand_once
+  assoc_expand_once
+  autocd
+  bash_source_fullpath
+  cdable_vars
+  cdspell
+  checkhash
+  checkjobs
+  checkwinsize
+  cmdhist
+  compat31
+  compat32
+  compat40
+  compat41
+  compat42
+  compat43
+  compat44
+  compat50
+  compat51
+  compat52
+  compat53
+  complete_fullquote
+  direxpand
+  dirspell
+  dotglob
+  execfail
+  expand_aliases
+  extdebug
+  extglob
+  extquote
+  failglob
+  force_fignore
+  globasciiranges
+  globskipdots
+  globstar
+  gnu_errfmt
+  histappend
+  histreedit
+  histverify
+  hostcomplete
+  huponexit
+  inherit_errexit
+  interactive_comments
+  lastpipe
+  lithist
+  localvar_inherit
+  localvar_unset
+  login_shell
+  mailwarn
+  no_empty_cmd_completion
+  nocaseglob
+  nocasematch
+  noexpand_translation
+  nullglob
+  patsub_replacement
+  progcomp
+  progcomp_alias
+  promptvars
+  restricted_shell
+  shift_verbose
+  sourcepath
+  varredir_close
+  xpg_echo
+
+Detalles especiales:
+  - array_expand_once y assoc_expand_once se mantienen sincronizadas.
+  - al habilitar compatXX SST deshabilita las otras compatXX y actualiza BASH_COMPAT.
+  - extdebug sincroniza BASH_ARGC/BASH_ARGV.
+
+15. source / .
+
+Sintaxis real:
+
   source ARCHIVO [ARGS]
+  . ARCHIVO [ARGS]
+  source -p PATH ARCHIVO [ARGS]
+  . -p PATH ARCHIVO [ARGS]
+
+  -p PATH  usa PATH explícito de búsqueda para localizar ARCHIVO.
+
+Sin -p, si no se entrega una ruta explícita y shopt `sourcepath` está activo, SST busca en PATH.
+ARGS reemplaza temporalmente parámetros posicionales durante el source.
+
+16. test / [
+
+Formas:
   test EXPRESION
-  alias [NOMBRE[=VALOR] ...]
-  unalias [-a] NOMBRE ...
-  cd [DIR]
-  pwd [-LP]
-  echo [-neE] [ARG ...]
-  printf [-v VAR] FORMATO [ARG ...]
-  export [-fn] [NOMBRE[=VALOR] ...]
-  unset [-fv] NOMBRE ...
-  readonly [-aAf] [NOMBRE[=VALOR] ...]
-  local [OPCIONES] NOMBRE[=VALOR] ...
-  declare [OPCIONES] [NOMBRE[=VALOR] ...]
-  typeset [OPCIONES] [NOMBRE[=VALOR] ...]
-  read [OPCIONES] [NOMBRE ...]
-  mapfile [OPCIONES] [ARRAY]
-  readarray [OPCIONES] [ARRAY]
-  set [OPCIONES] [--] [ARG ...]
-  shopt [-pqsu] [OPCION ...]
-  shift [N]
+  [ EXPRESION ]
+
+Operadores unarios reconocidos por el parser:
+  -a  existe
+  -b  block device cuando host lo soporta
+  -c  char device cuando host lo soporta
+  -d  directorio
+  -e  existe
+  -f  archivo regular
+  -g  reconocido; actualmente resultado false en backend nativo
+  -h  symlink
+  -k  reconocido; actualmente resultado false
+  -L  symlink
+  -N  modified > accessed
+  -O  existe; aproximación Windows de ownership
+  -p  pipe cuando host lo soporta
+  -r  readable
+  -R  nameref
+  -s  tamaño > 0
+  -S  socket cuando host lo soporta
+  -t  descriptor es terminal
+  -u  reconocido; actualmente resultado false
+  -v  variable establecida
+  -w  writable
+  -x  archivo existente/ejecutable según modelo Windows
+  -n  string no vacío
+  -z  string vacío
+  -o  opción shell activa
+
+Operadores binarios:
+  =
+  ==
+  !=
+  <
+  >
+  -eq
+  -ne
+  -lt
+  -le
+  -gt
+  -ge
+  -nt
+  -ot
+  -ef
+  -a
+  -o
+
+También se soportan negación y agrupación de expresiones según el parser de test.
+
+17. getopts
+
   getopts OPTSTRING NOMBRE [ARG ...]
-  eval [ARG ...]
-  let EXPRESION ...
-  trap [-lp] [[ARG] SIGNAL ...]
+
+Comportamiento:
+  - usa ARG explícitos si se proporcionan; si no, parámetros posicionales.
+  - actualiza OPTIND y OPTARG.
+  - optstring con `:` inicial activa modo silencioso Bash.
+  - soporta flags cortos agrupados.
+  - un `:` después de una letra en OPTSTRING indica que esa opción requiere argumento.
+  - `--` finaliza opciones de la fuente analizada.
+
+18. Control de flujo builtins
+
   break [N]
   continue [N]
   return [N]
+  shift [N]
   exit [N]
   logout [N]
-  true
-  false
-  jobs [OPCIONES] [JOB ...]
-  fg [JOB]
-  bg [JOB ...]
-  wait [-fn] [ID ...]
-  disown [-arh] [JOB ...]
-  kill [-s SIGNAL|-SIGNAL] PID|JOB ...
-  suspend [-f]
-  history [OPCIONES] [N]
-  fc [-e EDITOR] [-lnr] [PRIMERO [ULTIMO]]
-  bind [OPCIONES]
-  complete [OPCIONES] [NOMBRE ...]
-  compgen [OPCIONES] [PALABRA]
-  compopt [OPCIONES] [NOMBRE ...]
-  command [-pVv] COMANDO [ARG ...]
+
+`logout` solo funciona cuando `login_shell` está activo.
+`exit`/logout pueden advertir de jobs activos si shopt `checkjobs` está activo. Con `huponexit` + login_shell, SST envía HUP a jobs activos al salir.
+
+  eval [ARG ...]
+    concatena/evalúa como shell.
+
+  let EXPRESION [EXPRESION ...]
+    evalúa expresiones aritméticas.
+
   builtin BUILTIN [ARG ...]
-  type [-afptP] NOMBRE ...
-  hash [-lr] [-p RUTA] [NOMBRE ...]
-  enable [-a] [-dnps] [-f ARCHIVO] [NOMBRE ...]
-  exec [-cl] [-a NOMBRE] [COMANDO [ARG ...]]
-  umask [-pS] [MODO]
-  ulimit [OPCIONES] [LIMITE]
+    fuerza ejecución del builtin.
+
+19. trap
+
+Formas:
+  trap
+  trap -p [SIGNAL ...]
+  trap -l
+  trap -P SIGNAL [SIGNAL ...]
+  trap ACTION SIGNAL [SIGNAL ...]
+  trap - SIGNAL [SIGNAL ...]
+  trap SIGNAL
+
+  -l  lista señales.
+  -p  imprime traps en formato reutilizable.
+  -P  imprime solo acción configurada para señales solicitadas; status 1 si falta alguna.
+  ACTION=- restaura/elimina trap.
+  una única SIGNAL sin ACTION elimina ese trap en la implementación actual.
+
+Señales reconocidas:
+  HUP INT QUIT ILL TRAP ABRT BUS FPE KILL USR1 SEGV USR2 PIPE ALRM TERM STKFLT CHLD CONT STOP TSTP TTIN TTOU URG XCPU XFSZ VTALRM PROF WINCH IO PWR SYS
+
+Pseudo-señales internas soportadas donde corresponde:
+  EXIT
+  DEBUG
+  RETURN
+  ERR
+
+Se aceptan nombres con o sin prefijo SIG y números de señal.
+
+20. Jobs: jobs
+
+  jobs
+  jobs -p
+  jobs -l
+  jobs -r
+  jobs -s
+  jobs JOBSPEC [JOBSPEC ...]
+
+  -p  solo PID.
+  -l  formato largo con PID.
+  -r  solo running.
+  -s  solo stopped.
+
+JOBSPEC soportado:
+  %   job actual
+  %%  job actual
+  %+  job actual
+  %-  job anterior
+  %N  job ID N
+  %prefijo  única orden que empieza con prefijo
+  %?texto   única orden que contiene texto
+  PID       coincidencia por PID
+
+Nota exacta:
+  la ayuda heredada anuncia `jobs -n`, pero la función actual no implementa semántica específica para -n. No se presenta como capacidad funcional.
+
+21. Jobs: fg / bg
+
+  fg [JOBSPEC]
+  bg [JOBSPEC]
+
+Sin JOBSPEC usan el job actual. bg/fg envían CONT cuando el job está detenido. fg espera la finalización.
+
+Aunque la ayuda corta muestra `bg [JOB ...]`, la implementación actual utiliza solo el primer jobspec entregado.
+
+22. Jobs: wait
+
+  wait
+  wait PID [PID ...]
+  wait JOBSPEC [JOBSPEC ...]
+  wait -n
+  wait -n -p VARIABLE
+  wait -p VARIABLE PID|JOBSPEC [PID|JOBSPEC ...]
+  wait -f [PID|JOBSPEC ...]
+  wait -- ID...
+
+  -n  espera el próximo job que termina.
+  -p VARIABLE  guarda PID asociado al resultado.
+  -f  aceptado por compatibilidad; actualmente no cambia la lógica de espera respecto al comportamiento base.
+  --  fin de opciones.
+
+Sin objetivos delega espera general al host.
+
+23. Jobs: disown
+
+  disown
+  disown JOBSPEC [JOBSPEC ...]
+  disown -a
+  disown -r
+  disown -h [JOBSPEC ...]
+
+  -a  todos los jobs.
+  -r  solo running.
+  -h  se considera ya satisfecho en Windows/SST porque SST no envía SIGHUP a hijos normales al salir; no elimina el job.
+
+Sin argumentos opera sobre el job actual.
+
+24. Jobs/procesos: kill builtin Bash
+
+No confundir con el alias global `kill` de `sys`, que puede resolverse por la capa de comandos según contexto. Dentro de Nwash el builtin soporta:
+
+  kill -l [SIGNAL]
+  kill -L [SIGNAL]
+  kill -s SIGNAL PID|JOBSPEC ...
+  kill -n SIGNAL PID|JOBSPEC ...
+  kill -SIGNAL PID|JOBSPEC ...
+  kill -- PID|JOBSPEC ...
+
+  -l, -L  lista señales o convierte señal/número.
+  -s      selecciona señal.
+  -n      selecciona señal por nombre/número en la misma ruta del parser.
+  -SIGNAL forma abreviada.
+
+Signal 0 es admitida. JOBSPEC usa la gramática indicada en la sección Jobs.
+
+25. suspend
+
+  suspend
+  suspend -f
+
+Ambas formas muestran `Shell suspendida. Pulse Enter para continuar.` y esperan Enter en el host actual. Cualquier otra opción devuelve error.
+
+26. history
+
+  history
+  history N
+  history -c
+  history -d POSICION
+  history -d START-END
+  history -w
+  history -a
+  history -r
+  history -n
+
+  N     muestra últimas N entradas.
+  -c    vacía historial persistente.
+  -d    elimina posición o rango; admite índices negativos y rangos como -5--2.
+  -w    reescribe HISTFILE con el estado actual.
+  -a    aceptada; idempotente en SST porque el motor interactivo ya persiste al aceptar comandos.
+  -r    aceptada; idempotente por el mismo diseño.
+  -n    aceptada; idempotente por el mismo diseño.
+
+HISTTIMEFORMAT controla cómo se renderizan timestamps existentes.
+
+27. fc
+
+Formas y flags:
+
+  fc [-e EDITOR] [-l] [-n] [-r] [-s] [PRIMERO [ULTIMO]]
+  fc -s [ANTIGUO=NUEVO] [SELECTOR]
+  fc -- ...
+
+  -e EDITOR  editor a usar.
+  -l         lista en vez de ejecutar.
+  -n         omite números al listar.
+  -r         orden inverso.
+  -s         reejecuta una entrada; puede hacer sustitución ANTIGUO=NUEVO.
+  --         fin de opciones.
+
+Flags l/n/r/s pueden agruparse.
+Selectores pueden ser números positivos, offsets negativos o prefijos de comandos.
+Editor: `-e` > FCEDIT > EDITOR > `vi`. `-e -` evita abrir editor.
+En modo posix más de dos operandos de rango produce error.
+
+28. bind
+
+  bind
+  bind -l
+  bind -q FUNCION
+  bind -u FUNCION
+  bind -f ARCHIVO
+  bind -p [FUNCION ...]
+  bind -P [FUNCION ...]
+  bind -s [FUNCION ...]
+  bind -S [FUNCION ...]
+  bind -v [FUNCION ...]
+  bind -V [FUNCION ...]
+  bind -r CLAVE
+  bind -m KEYMAP BINDING...
+  bind -x BINDING
+  bind -x CLAVE COMANDO
+  bind "CLAVE":FUNCION
+
+Funciones que SST anuncia:
+  beginning-of-line
+  end-of-line
+  forward-char
+  backward-char
+  delete-char
+  backward-delete-char
+  previous-history
+  next-history
+  complete
+  clear-screen
+  unix-line-discard
+  quoted-insert
+  bash-vi-complete
+  execute-named-command
+  export-completions
+
+  -l  lista nombres de funciones.
+  -q  muestra qué teclas invocan una función.
+  -u  elimina bindings asociados a una función.
+  -f  carga bindings `clave:acción` desde archivo; ignora vacíos/comentarios.
+  -p/-P/-s/-S/-v/-V  imprimen bindings actuales en el backend SST; no tienen formatos diferenciados hoy.
+  -r CLAVE elimina binding.
+  -m KEYMAP acepta/consume el keymap por compatibilidad, pero SST mantiene un único mapa nativo.
+  -x asocia comando de shell (`shell:...`).
+
+29. enable
+
+  enable
+  enable -a
+  enable -p
+  enable -s
+  enable -n NOMBRE [NOMBRE ...]
+  enable NOMBRE [NOMBRE ...]
+  enable -s -n NOMBRE...
+  enable -f ...
+  enable -d ...
+
+  -n  deshabilita builtin.
+  -s  restringe listado/acción a builtins especiales.
+  -a  imprime todos, incluidos deshabilitados.
+  -p  imprime habilitados.
+  -f, -d  son reconocidos pero devuelven error explícito: builtins cargables dinámicamente no están disponibles en esta compilación nativa.
+
+Builtins especiales según SST:
+  : . break continue eval exec exit export readonly return set shift trap unset
+
+30. completion: complete
+
+Especificación común soportada:
+  -W WORDLIST
+  -A ACTION
+  -F FUNCTION
+  -C COMMAND
+  -P PREFIX
+  -S SUFFIX
+  -o OPTION
+
+Atajos de acción:
+  -a  alias
+  -b  builtin
+  -c  command
+  -d  directory
+  -e  export
+  -f  file
+  -g  group
+  -j  job
+  -k  keyword
+  -s  service
+  -u  user
+  -v  variable
+
+Separador:
+  --
+
+Formas de complete:
+  complete
+  complete -p
+  complete -r
+  complete -r NOMBRE [NOMBRE ...]
+  complete [ESPECIFICACION] NOMBRE [NOMBRE ...]
+
+  -p  imprime specs actuales.
+  -r sin nombres elimina todas.
+  -r con nombres elimina esas specs.
+
+ACTION reconocidas por el motor:
+  alias
+  arrayvar
+  binding
+  builtin
+  disabled
+  enabled
+  export
+  function
+  helptopic
+  variable
+  keyword
+  job
+  running
+  stopped
+  signal
+  setopt
+  shopt
+  user
+  group
+  service
+  hostname
+  directory
+  file
+  command
+
+31. completion: compgen
+
+  compgen [ESPECIFICACION] [PREFIJO]
+  compgen -V ARRAY [ESPECIFICACION] [PREFIJO]
+
+Usa las mismas opciones de especificación de `complete`:
+  -W -A -F -C -P -S -o
+  -a -b -c -d -e -f -g -j -k -s -u -v
+  --
+
+  -V ARRAY  guarda candidatos en ARRAY en vez de stdout.
+
+El último operando no-option se usa como prefijo. Status 1 si no hay candidatos.
+
+32. completion: compopt
+
+  compopt
+  compopt -o OPTION NOMBRE [NOMBRE ...]
+  compopt +o OPTION NOMBRE [NOMBRE ...]
+
+  -o  añade opción a specs indicadas.
+  +o  elimina opción.
+
+Sin nombres imprime opciones almacenadas para todas las specs.
+La opción con comportamiento explícito observado en el render de candidatos es `fullquote`; otros strings pueden almacenarse pero no deben asumirse funcionales si el motor no los consulta.
+
+33. Resolución: command
+
+  command COMANDO [ARG ...]
+  command -v NOMBRE [NOMBRE ...]
+  command -V NOMBRE [NOMBRE ...]
+  command -p COMANDO [ARG ...]
+  command -- COMANDO [ARG ...]
+
+Flags combinables:
+  -v  consulta corta.
+  -V  descripción detallada.
+  -p  intenta ruta por defecto del sistema; en Windows prioriza System32/SystemRoot antes de fallback.
+
+34. Resolución: type
+
+  type NOMBRE [NOMBRE ...]
+  type -a NOMBRE...
+  type -t NOMBRE...
+  type -p NOMBRE...
+  type -P NOMBRE...
+  type -f NOMBRE...
+  type -- NOMBRE...
+
+Flags combinables:
+  -a  todas las coincidencias.
+  -t  imprime tipo corto: alias/function/keyword/builtin/file.
+  -p  solo ruta.
+  -P  fuerza búsqueda de ruta.
+  -f  suprime funciones.
+
+35. Resolución: hash
+
+  hash
+  hash NOMBRE [NOMBRE ...]
+  hash -r
+  hash -d NOMBRE [NOMBRE ...]
+  hash -t NOMBRE [NOMBRE ...]
+  hash -p RUTA NOMBRE
+
+  sin args lista tabla.
+  NOMBRE resuelve vía `which` y cachea.
+  -r limpia toda la tabla.
+  -d elimina entradas.
+  -t imprime rutas cacheadas.
+  -p inserta una ruta manual para un nombre.
+
+Discrepancia:
+  la ayuda heredada anuncia `-l`, pero la implementación actual no tiene rama funcional para `hash -l`. No se garantiza.
+
+36. exec
+
+  exec
+  exec COMANDO [ARG ...]
+  exec -a NOMBRE COMANDO [ARG ...]
+  exec -c COMANDO [ARG ...]
+  exec -l COMANDO [ARG ...]
+
+Parser actual:
+  -a consume NOMBRE, pero ese argv0 alternativo no se aplica aún al proceso.
+  -c y -l se aceptan, pero no tienen semántica diferenciada en el backend actual.
+  sin COMANDO activa persistencia de redirecciones para la siguiente ejecución.
+  con COMANDO ejecuta y marca salida de la shell salvo fallo 126/127 según interactive/execfail.
+  restricted_shell bloquea exec.
+
+Por tanto `-a/-c/-l` son compatibilidad sintáctica parcial, no equivalencia completa con GNU Bash.
+
+37. umask
+
+  umask
+  umask -p
+  umask -S
+  umask -p -S
+  umask MASCARA
+
+MASCARA octal:
+  0000..0777
+
+MASCARA simbólica:
+  cláusulas separadas por coma
+  who: u g o a; vacío equivale a a
+  operadores: = + -
+  permisos: r w x
+
+Ejemplos:
+  umask 022
+  umask u=rwx,g=rx,o=
+  umask g-w,o-rwx
+
+  -S  salida simbólica.
+  -p  salida reutilizable `umask ...`.
+
+38. ulimit
+
+  ulimit
+  ulimit -a
+  ulimit -S FLAG [LIMITE]
+  ulimit -H FLAG [LIMITE]
+  ulimit FLAG [LIMITE]
+
+LIMITE:
+  entero no negativo
+  unlimited
+
+Sin FLAG se usa `-f`.
+`-S` y `-H` se aceptan, pero el backend SST mantiene un único valor por recurso y no distingue límites soft/hard internamente hoy.
+
+Flags de recurso:
+  -b  socket buffer size
+  -c  core file size
+  -d  data seg size
+  -e  scheduling priority
+  -f  file size
+  -i  pending signals
+  -k  kqueues
+  -l  max locked memory
+  -m  max memory size
+  -n  open files
+  -p  pipe size
+  -q  POSIX message queues
+  -r  real-time priority
+  -s  stack size
+  -t  cpu time
+  -u  max user processes
+  -v  virtual memory
+  -x  file locks
+  -P  pseudoterminals
+  -R  real-time non-blocking time
+  -T  max threads
+
+  -a  lista todos los recursos.
+
+39. times
+
   times
-  caller [N]
-  dirs [-clpv] [+N|-N]
-  pushd [-n] [DIR|+N|-N]
-  popd [-n] [+N|-N]
-  help [-dms] [PATRON ...]
 
-Familias importantes:
-  variables/atributos: declare, typeset, local, export, readonly, unset
-  entrada: read, mapfile/readarray
-  control: break, continue, return, exit, trap
-  opciones: set, shopt
-  jobs: jobs, fg, bg, wait, disown, kill, suspend
-  historial: history, fc
-  completado: complete, compgen, compopt, bind
-  resolución: command, builtin, type, hash, enable
-  pila directorios: dirs, pushd, popd
+Sin opciones. Muestra user/system de shell y user/system acumulado de hijos.
 
-Para opciones de arranque de la shell (-c/-i/-l/-o/-O/etc.) consulta shell-invocation.txt.
+40. caller
 
-IMPORTANTE: esta lista describe la interfaz que SST declara compatible. Cuando una opción concreta tenga una limitación frente a GNU Bash, la referencia efectiva es el comportamiento actual de Nwash y `help BUILTIN` dentro de SST.
+  caller
+  caller N
+
+N default 0; imprime `line function source` del frame solicitado. Status 1 si no existe.
+
+41. pila de directorios: dirs
+
+  dirs
+  dirs -c
+  dirs -p
+  dirs -v
+  dirs +N
+  dirs -N
+
+  -c  limpia stack guardado.
+  -p  una entrada por línea.
+  -v  una entrada por línea con índice.
+  +N  desde izquierda.
+  -N  desde derecha.
+
+Discrepancia:
+  la ayuda heredada menciona -l, pero el parser no aplica comportamiento especial para -l. No se garantiza como función distinta.
+
+42. pushd
+
+  pushd
+  pushd -n
+  pushd DIR
+  pushd -n DIR
+  pushd +N
+  pushd -N
+  pushd -n +N
+  pushd -n -N
+
+  -n  modifica stack sin cambiar cwd.
+  sin operando intercambia las dos primeras entradas; falla si no hay otra.
+  +N/-N rotan la pila.
+  restricted_shell lo bloquea.
+
+43. popd
+
+  popd
+  popd -n
+  popd +N
+  popd -N
+  popd -n +N
+  popd -n -N
+
+  -n  elimina entrada sin cambiar cwd.
+  sin operando elimina la entrada actual y cambia al siguiente.
+  restricted_shell lo bloquea.
+
+44. help
+
+  help
+  help PATRON [PATRON ...]
+  help -s PATRON...
+  help -d PATRON...
+
+  -s  salida corta de sintaxis.
+  -d  descripción sin encabezado de uso completo.
+  PATRON acepta patrones glob contra nombres de builtin.
+
+Discrepancia:
+  el help heredado anuncia `-m`; la implementación actual no evalúa -m de forma diferenciada. No se presenta como formato soportado específico.
+
+45. Sintaxis de shell no-builtin relevante
+
+El parser Nwash soporta, entre otras construcciones que afectan cómo se usan los builtins:
+
+  COMANDO1 ; COMANDO2
+  COMANDO1 && COMANDO2
+  COMANDO1 || COMANDO2
+  COMANDO1 | COMANDO2
+  COMANDO1 |& COMANDO2
+  COMANDO &
+  ! COMANDO
+  ( COMANDOS )
+  { COMANDOS; }
+  if / elif / else / fi
+  while / until
+  for NAME in ...
+  for (( init; cond; update ))
+  select NAME in ...
+  case ... esac
+  [[ ... ]]
+  (( ... ))
+  function NAME ... / NAME() {...}
+  coproc
+  time
+
+Terminadores case soportados:
+  ;;
+  ;&
+  ;;&
+
+Redirecciones renderizadas/soportadas por AST:
+  <
+  >
+  >>
+  <&
+  >&
+  <<<
+  <>
+  >|
+  &>
+  &>>
+  {var}>... / descriptores variables según soporte de redirección persistente
+
+Heredoc:
+  <<DELIM
+  <<-DELIM
+  delimitador quoted evita expansión; <<- permite strip de tabs.
+
+Sustituciones/expansiones relevantes:
+  $(comando)
+  `comando`
+  $((aritmética))
+  ${parametro...}
+  <(comando)
+  >(comando)
+  brace expansion
+  globbing/extglob según opciones
+
+46. Diferencias deliberadas frente a GNU Bash
+
+Nwash no debe asumirse idéntico a Bash porque comparta nombres. Casos ya identificados en esta auditoría:
+
+  - cd -L/-P: help los anuncia, parser actual no los trata como flags.
+  - jobs -n: help lo anuncia, no hay semántica específica.
+  - hash -l: help lo anuncia, no hay semántica específica.
+  - bind -p/-P/-s/-S/-v/-V: comparten formato de listado en SST.
+  - bind -m acepta keymap pero SST usa un único mapa nativo.
+  - exec -a/-c/-l: aceptados con semántica parcial.
+  - ulimit -S/-H: aceptados pero SST no mantiene dos límites separados.
+  - wait -f: aceptado pero no cambia la espera en el backend actual.
+
+Estas diferencias deben corregirse en el código si se busca equivalencia Bash; mientras tanto el manual describe el comportamiento real.
+
+47. Opciones de arranque
+
+Las opciones de lanzamiento de sst.exe/Nwash (`-c`, `-i`, `-l`, `-s`, `-o/+o`, `-O/+O`, `--norc`, `--noprofile`, `--rcfile`, etc.) están enumeradas en:
+
+  guide shell-invocation
+
+48. Regla de mantenimiento
+
+Si se añade un flag al parser de un builtin, este capítulo debe actualizarse en el mismo ciclo. No se considera documentado un builtin mientras quede una rama pública del parser sin enumerar.
