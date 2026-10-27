@@ -1,32 +1,85 @@
 SST — Guide / manual interactivo
 
-Objetivo:
-  `guide` es la puerta de entrada para descubrir comandos y documentación desde la propia terminal.
+Objetivo
 
-Formas:
+`guide` es la puerta de entrada para descubrir y consultar toda la documentación de SST desde la propia terminal.
+
+Formas públicas
+
   guide
   guide COMANDO
   guide search TEXTO
   guide -h
   guide --help
 
-Interfaz:
-  Up/Down                  navegación
-  PgUp/PgDn                scroll/salto
+Estructura
+
+La pantalla inicial muestra áreas funcionales de SST. Las capacidades propias de SST aparecen primero. Nwash/Bash y los comandos Unix compatibles están separados como capas de compatibilidad y no dominan la pantalla inicial.
+
+Áreas principales
+
+  Sistema
+  Red
+  Diagnóstico
+  Windows
+  Seguridad
+  Privilegios
+  Herramientas
+  Office
+  Paquetes
+  Configuración
+  Actualización
+  Editor
+  Nwash / Bash
+  Unix
+  Ejemplos
+
+Dentro de cada área se muestran los comandos o capacidades reales. Al seleccionar uno se abre directamente su documentación completa; no existe una categoría paralela de tutoriales ni capítulos internos visibles para el usuario.
+
+Controles — áreas y comandos
+
+  Up/Down                  navegar
+  PgUp/PgDn                salto
   Home/End                 inicio/final
-  Enter                     abrir/cerrar detalle
-  Backspace                volver desde detalle
-  /                         modo búsqueda
-  c / C                     cambiar categoría
-  q / Q / x / X / Esc      salir
+  Enter                     abrir área o manual del comando
+  Backspace                volver al nivel anterior
+  /                         buscar en toda la guía
+  q / Q / x / X            salir
+  Esc                       volver o salir según el nivel
 
-La documentación remota de `adm-toolbox/tutorials` está diseñada para incorporarse a guide mediante streaming en memoria. Cuando la activación/licencia de SST esté implementada, ese transporte podrá exigir una activación válida sin cambiar los nombres de los capítulos ni la experiencia del usuario.
+Controles — manual de un comando
 
-Regla editorial:
-  - toda opción pública debe figurar
-  - todo alias público debe figurar
-  - defaults y valores admitidos deben figurar
-  - helpers internos no se presentan como funciones normales
-  - una capacidad registrada pero no implementada se marca como tal
+  Up/Down                  desplazamiento línea a línea
+  PgUp/PgDn                desplazamiento por páginas
+  Home/End                 inicio/final
+  Backspace / Enter / Esc  volver al área
+  q / Q / x / X            salir de Guide
 
-Consulta también FORMAT.md.
+Búsqueda
+
+  guide search TEXTO
+
+También puede iniciarse con `/` dentro de Guide. La búsqueda usa nombre, aliases, área y descripción de las capacidades visibles.
+
+Regla editorial
+
+Cada comando debe incluir en su propia ficha, cuando aplique:
+
+  descripción y caso de uso
+  sintaxis completa
+  todos los subcomandos
+  todos los flags cortos y largos
+  todos los aliases públicos
+  parámetros y valores admitidos
+  valores por defecto
+  combinaciones válidas
+  ejemplos reales
+  permisos y UAC
+  backend utilizado
+  efectos y cambios realizados
+  salida esperada
+  errores habituales
+  validación posterior
+  recuperación o reversión
+
+No se permiten `etc.`, `[OPCIONES]` genéricos ni familias resumidas cuando el parser de SST implementa opciones concretas. Helpers internos no se presentan como funciones normales.
