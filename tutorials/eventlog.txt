@@ -1,0 +1,66 @@
+SST — eventlog
+
+Qué hace
+
+Consulta y administra Windows Event Log desde SST.
+
+Formas públicas
+
+  eventlog list
+  eventlog publishers
+  eventlog info LOG
+  eventlog read [LOG] [--count N] [--query XPATH] [--xml]
+  eventlog export LOG ARCHIVO [--query XPATH] [--overwrite]
+  eventlog clear LOG [--backup ARCHIVO]
+
+Defaults
+
+  eventlog read
+    LOG = System
+    count = 20
+    salida = texto
+    orden = newest-first
+
+Opciones
+
+  --count N
+    cantidad máxima de eventos en read.
+
+  --query XPATH
+    filtra mediante XPath cuando el backend lo admite.
+
+  --xml
+    devuelve XML en read.
+
+  --overwrite
+    permite reemplazar el archivo de exportación.
+
+  --backup ARCHIVO
+    respalda el log antes de limpiarlo.
+
+Backend
+
+  wevtutil.exe
+
+Permisos
+
+Lectura suele funcionar con el usuario actual. Exportar o limpiar logs protegidos puede requerir elevación.
+
+Efectos
+
+`clear` elimina los eventos del log seleccionado. Si se usa `--backup`, primero intenta guardar una copia.
+
+Ejemplos
+
+  eventlog read System --count 50
+  eventlog read Application --query "*[System[(Level=2)]]"
+  eventlog export System C:\Temp\system.evtx --overwrite
+  eventlog clear Application --backup C:\Temp\application.evtx
+
+Validación
+
+Después de exportar, verifica que el archivo exista. Después de clear, ejecuta `eventlog read LOG --count 5`.
+
+Recuperación
+
+Un log limpiado no puede reconstruirse desde SST. Si se creó backup, conserva el .evtx para análisis posterior.

@@ -1,0 +1,53 @@
+SST — share
+
+Qué hace
+
+Consulta y administra recursos compartidos SMB de Windows.
+
+Formas públicas
+
+  share list
+  share sessions
+  share files
+  share add NOMBRE RUTA
+  share remove NOMBRE
+
+Backend
+
+  net.exe
+
+Comportamiento
+
+`share remove` usa eliminación sin confirmación interactiva del backend.
+
+Parámetros
+
+  NOMBRE
+    nombre del recurso compartido.
+
+  RUTA
+    ruta local que se expondrá mediante SMB.
+
+Permisos
+
+Crear o eliminar shares y consultar determinadas sesiones/archivos abiertos suele requerir elevación.
+
+Ejemplos
+
+  share list
+  share sessions
+  share files
+  share add Publico C:\Publico
+  share remove Publico
+
+Riesgos
+
+Crear un share puede exponer archivos a la red según ACL del recurso y permisos SMB. Eliminar un share corta acceso de clientes conectados.
+
+Validación
+
+Después de add/remove usa `share list`.
+
+Recuperación
+
+Si eliminaste un share por error, vuelve a crearlo con `share add NOMBRE RUTA` y revisa sus permisos.

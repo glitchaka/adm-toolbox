@@ -1,0 +1,66 @@
+SST — registry
+
+Qué hace
+
+Consulta, crea, modifica, elimina, exporta e importa claves y valores del Registro de Windows.
+
+Formas públicas
+
+  registry get CLAVE
+  registry get CLAVE --value NOMBRE
+  registry get CLAVE --default
+  registry get CLAVE --recursive
+
+  registry set CLAVE NOMBRE DATO [--type TIPO]
+  registry set-default CLAVE DATO [--type TIPO]
+
+  registry delete CLAVE --value NOMBRE
+  registry delete CLAVE --default
+  registry delete CLAVE --key
+
+  registry export CLAVE ARCHIVO [--overwrite]
+  registry import ARCHIVO
+
+Tipos admitidos
+
+  REG_SZ
+  REG_EXPAND_SZ
+  REG_DWORD
+  REG_QWORD
+  REG_MULTI_SZ
+  REG_BINARY
+
+Defaults
+
+Si `set` o `set-default` omite `--type`, SST usa el tipo por defecto definido por la implementación del backend; para scripts críticos conviene especificarlo explícitamente.
+
+Backend
+
+  reg.exe
+
+Comportamiento
+
+`set`, `set-default` y las operaciones delete se ejecutan con confirmación forzada del backend cuando corresponde.
+
+Permisos
+
+HKCU suele estar disponible al usuario actual. HKLM y otras ramas protegidas pueden requerir elevación.
+
+Ejemplos
+
+  registry get "HKCU\Software\Microsoft"
+  registry get "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" --value ProductName
+  registry set "HKCU\Software\MiApp" Enabled 1 --type REG_DWORD
+  registry export "HKCU\Software\MiApp" C:\Temp\miapp.reg --overwrite
+
+Riesgos
+
+Modificar o eliminar valores incorrectos puede afectar Windows o aplicaciones. `delete --key` elimina la clave indicada.
+
+Validación
+
+Después de set/delete usa `registry get` sobre la misma clave/valor.
+
+Recuperación
+
+Antes de cambios delicados usa `registry export`. Para restaurar un respaldo válido usa `registry import ARCHIVO`.

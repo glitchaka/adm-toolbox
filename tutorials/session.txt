@@ -1,0 +1,50 @@
+SST — session
+
+Qué hace
+
+Consulta y administra sesiones de usuario locales y RDP.
+
+Formas públicas
+
+  session list
+  session users
+  session logoff ID
+  session message ID TEXTO
+
+Backend
+
+  query.exe
+  quser.exe cuando corresponde
+  logoff.exe
+  msg.exe
+
+Parámetros
+
+  ID
+    identificador de sesión reportado por Windows.
+
+  TEXTO
+    mensaje enviado a la sesión indicada. Puede contener varias palabras.
+
+Permisos
+
+Consultar la sesión propia suele funcionar sin elevación. Cerrar o enviar mensajes a sesiones ajenas puede requerir permisos administrativos.
+
+Ejemplos
+
+  session list
+  session users
+  session message 2 "El equipo será reiniciado"
+  session logoff 2
+
+Riesgos
+
+`logoff` cierra la sesión seleccionada y puede causar pérdida de trabajo no guardado.
+
+Validación
+
+Después de logoff vuelve a ejecutar `session list`.
+
+Recuperación
+
+Una sesión cerrada no puede reanudarse; el usuario debe iniciar sesión nuevamente.

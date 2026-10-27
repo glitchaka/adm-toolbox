@@ -1,0 +1,62 @@
+SST — task
+
+Qué hace
+
+Consulta y controla tareas programadas de Windows.
+
+Formas públicas
+
+  task list
+  task list --verbose
+  task list --csv
+  task show NOMBRE
+  task show NOMBRE --xml
+  task run NOMBRE
+  task end NOMBRE
+  task enable NOMBRE
+  task disable NOMBRE
+  task delete NOMBRE
+
+Opciones
+
+  --verbose
+    solicita detalle ampliado en list.
+
+  --csv
+    devuelve list en formato CSV del backend.
+
+  --xml
+    devuelve definición XML en show.
+
+Backend
+
+  schtasks.exe
+
+Comportamiento de delete
+
+La eliminación se ejecuta con confirmación forzada del backend.
+
+Permisos
+
+Tareas del sistema o de otros usuarios pueden requerir elevación.
+
+Ejemplos
+
+  task list
+  task list --verbose
+  task show "\\Microsoft\\Windows\\..." --xml
+  task run "\\MiTarea"
+  task disable "\\MiTarea"
+  task enable "\\MiTarea"
+
+Riesgos
+
+Deshabilitar o eliminar tareas puede afectar mantenimiento, seguridad, actualizaciones o aplicaciones.
+
+Validación
+
+Después de run/end/enable/disable/delete usa `task show NOMBRE` o `task list`.
+
+Recuperación
+
+Una tarea eliminada no puede reconstruirse automáticamente desde SST. Si necesitas capacidad de reversión, conserva antes su XML con `task show NOMBRE --xml`.

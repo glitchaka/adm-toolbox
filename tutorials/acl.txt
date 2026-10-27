@@ -1,0 +1,54 @@
+SST — acl
+
+Qué hace
+
+Consulta y modifica ACL NTFS de archivos y directorios.
+
+Formas públicas
+
+  acl show RUTA
+  acl grant RUTA USUARIO PERMISO
+  acl deny RUTA USUARIO PERMISO
+  acl revoke RUTA USUARIO
+  acl inherit RUTA on
+  acl inherit RUTA off
+  acl reset RUTA
+
+PERMISO
+
+El valor se pasa a icacls. Valores habituales:
+
+  F   Full control
+  M   Modify
+  RX  Read and execute
+  R   Read
+  W   Write
+
+Backend
+
+  icacls.exe
+
+Permisos
+
+Modificar ACL de rutas protegidas o pertenecientes a otros usuarios puede requerir elevación.
+
+Ejemplos
+
+  acl show C:\Datos
+  acl grant C:\Datos DOMINIO\usuario RX
+  acl deny C:\Datos DOMINIO\usuario W
+  acl revoke C:\Datos DOMINIO\usuario
+  acl inherit C:\Datos off
+  acl reset C:\Datos
+
+Riesgos
+
+Una ACL incorrecta puede bloquear el acceso al propietario, administradores, servicios o aplicaciones.
+
+Validación
+
+Después de cualquier cambio ejecuta `acl show RUTA`.
+
+Recuperación
+
+`acl reset RUTA` intenta restablecer permisos heredados/por defecto según icacls. Antes de cambios complejos conviene documentar o exportar la ACL existente por medios administrativos.

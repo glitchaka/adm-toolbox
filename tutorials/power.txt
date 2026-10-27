@@ -1,0 +1,52 @@
+SST — power
+
+Qué hace
+
+Ejecuta acciones de energía y sesión de Windows.
+
+Formas públicas
+
+  power shutdown
+  power shutdown --force
+  power restart
+  power restart --force
+  power logoff
+  power logoff --force
+  power hibernate
+
+Opción
+
+  --force
+    fuerza cierre de aplicaciones en shutdown/restart/logoff.
+
+Backend
+
+  shutdown.exe para shutdown, restart y logoff.
+  hibernación usa el mecanismo Windows implementado por SST.
+
+Comportamiento
+
+shutdown/restart/logoff usan timeout 0.
+
+Permisos
+
+Algunas acciones pueden requerir privilegios según política del equipo.
+
+Ejemplos
+
+  power restart
+  power restart --force
+  power shutdown
+  power hibernate
+
+Riesgos
+
+`--force` puede provocar pérdida de datos no guardados. shutdown/restart/logoff afectan inmediatamente a la sesión o al equipo.
+
+Validación
+
+La acción es observable directamente. Si una política bloquea la operación, SST devuelve el error del backend.
+
+Recuperación
+
+No existe undo para shutdown/restart/logoff una vez ejecutados. Usa `--force` solo cuando sea necesario.

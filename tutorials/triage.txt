@@ -1,0 +1,87 @@
+SST — triage
+
+Qué hace
+
+Analiza procesos, relaciones padre/hijo, memoria, conexiones, persistencia y otras señales locales para priorizar investigación de seguridad.
+
+Formas públicas
+
+  triage
+  triage PID
+  triage --deep
+  triage PID --deep
+  triage --memory
+  triage --ram
+  triage --scan
+  triage --refresh
+  triage help
+  triage -h
+  triage --help
+
+Opciones y aliases
+
+  --deep
+    añade memoria, conexiones, startup y servicios al análisis.
+
+  --memory
+    genera informe centrado en presión y uso de RAM.
+
+  --ram
+    alias exacto de --memory.
+
+  --scan
+    fuerza un nuevo preload/scan con progreso.
+
+  --refresh
+    alias exacto de --scan.
+
+PID
+
+Con PID, triage combina la explicación, inspección y comparación histórica disponibles para ese proceso.
+
+Cómo interpretar resultados
+
+El historial local de ejecutables y relaciones padre/hijo reduce o aumenta novedad histórica. Una relación aprendida no convierte por sí sola un proceso en confiable.
+
+NORMAL significa que las reglas actuales no encontraron señales relevantes con la evidencia disponible. No significa garantía de seguridad.
+
+Comandos relacionados
+
+  sys why PID
+  sys inspect PID
+  sys inspect PID --deep
+  sys diff PID
+  sys suspicious
+  sys safe
+  sys startup
+  sys persistence
+  sys services --impact
+
+Operaciones sensibles de proceso
+
+  sys suspend PID --start-time FILETIME
+  sys resume PID --start-time FILETIME
+  sys kill PID --broker --start-time FILETIME
+
+`--start-time` ayuda a validar que el PID siga correspondiendo a la misma instancia antes de actuar.
+
+Permisos
+
+La lectura básica usa el contexto actual. Inspecciones u operaciones sobre procesos protegidos pueden requerir el broker/elevación de SST.
+
+Ejemplos
+
+  triage
+  triage --deep
+  triage 4321
+  triage 4321 --deep
+  triage --memory
+  triage --scan
+
+Qué NO es
+
+Triage no sustituye antivirus, EDR, sandbox, memoria forense ni una investigación forense completa. La conclusión depende de datos y fuentes disponibles.
+
+Validación
+
+Ante una señal concreta, usa los comandos relacionados (`sys inspect`, `sys why`, `sys diff`, conexiones, startup, servicios) para confirmar el contexto antes de tomar acciones destructivas.

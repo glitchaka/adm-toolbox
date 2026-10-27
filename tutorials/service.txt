@@ -1,0 +1,61 @@
+SST — service
+
+Qué hace
+
+Consulta y controla servicios de Windows.
+
+Formas públicas
+
+  service list
+  service list --running
+  service list --stopped
+  service status NOMBRE
+  service start NOMBRE
+  service stop NOMBRE
+  service pause NOMBRE
+  service resume NOMBRE
+  service restart NOMBRE
+
+Opciones de list
+
+  --running
+    muestra servicios en ejecución.
+
+  --stopped
+    muestra servicios detenidos.
+
+Backend
+
+  sc.exe
+
+Comportamiento de restart
+
+`restart` solicita stop, espera que el servicio alcance STOPPED durante aproximadamente 10 segundos y después solicita start.
+
+Permisos
+
+Consultar suele funcionar sin elevación. start/stop/pause/resume/restart pueden requerir Administrador según ACL del servicio.
+
+Ejemplos
+
+  service status Spooler
+  service stop Spooler
+  service start Spooler
+  service restart Spooler
+  service list --running
+
+Validación
+
+Usa `service status NOMBRE` después de cualquier mutación.
+
+Errores habituales
+
+  servicio inexistente
+  acceso denegado
+  servicio que no admite pause/resume
+  dependencia que impide stop
+  timeout esperando STOPPED
+
+Recuperación
+
+Si una operación deja un servicio detenido de forma no deseada, usa `service start NOMBRE`. Antes de tocar servicios críticos, comprueba dependencias y función del servicio.

@@ -1,0 +1,56 @@
+SST — pnp
+
+Qué hace
+
+Consulta y controla dispositivos Plug and Play de Windows.
+
+Formas públicas
+
+  pnp list
+  pnp list --connected
+  pnp list --disconnected
+  pnp list --problem
+  pnp info INSTANCE_ID
+  pnp enable INSTANCE_ID
+  pnp disable INSTANCE_ID
+  pnp restart INSTANCE_ID
+  pnp scan
+
+Filtros de list
+
+  --connected
+    muestra dispositivos conectados.
+
+  --disconnected
+    muestra dispositivos no presentes/desconectados.
+
+  --problem
+    muestra dispositivos con estado de problema.
+
+Backend
+
+  pnputil.exe
+
+Permisos
+
+enable, disable, restart y scan pueden requerir elevación.
+
+Ejemplos
+
+  pnp list --problem
+  pnp info "PCI\\VEN_..."
+  pnp disable "PCI\\VEN_..."
+  pnp enable "PCI\\VEN_..."
+  pnp scan
+
+Riesgos
+
+Deshabilitar un adaptador de red, almacenamiento, teclado u otro dispositivo crítico puede interrumpir inmediatamente el equipo o la conectividad.
+
+Validación
+
+Después de una mutación usa `pnp info INSTANCE_ID` o `pnp list` con el filtro correspondiente.
+
+Recuperación
+
+Si se deshabilitó un dispositivo por error, usa `pnp enable INSTANCE_ID`. Si Windows no actualiza el inventario, usa `pnp scan`.

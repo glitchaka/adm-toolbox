@@ -1,0 +1,57 @@
+SST — firewall
+
+Qué hace
+
+Consulta estado y reglas de Windows Defender Firewall y cambia el estado de perfiles.
+
+Formas públicas
+
+  firewall status
+  firewall rules
+  firewall rule NOMBRE
+  firewall enable PROFILE
+  firewall disable PROFILE
+
+PROFILE admitido
+
+  domain
+  private
+  public
+  all
+
+Backend
+
+  netsh.exe advfirewall
+
+Comportamiento
+
+`enable` y `disable` cambian el estado del perfil indicado. No crean ni eliminan reglas.
+
+Permisos
+
+Cambiar perfiles requiere privilegios administrativos.
+
+Ejemplos
+
+  firewall status
+  firewall rules
+  firewall rule "Remote Desktop - User Mode (TCP-In)"
+  firewall enable domain
+  firewall disable private
+
+Riesgos
+
+Deshabilitar un perfil reduce protección de red. Habilitarlo puede cortar tráfico que dependía de reglas o estados previos.
+
+Validación
+
+Después de enable/disable ejecuta `firewall status`.
+
+Recuperación
+
+Invierte la acción sobre el mismo perfil:
+
+  firewall enable PROFILE
+  firewall disable PROFILE
+
+según el estado que quieras restaurar.

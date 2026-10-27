@@ -1,0 +1,53 @@
+SST — process
+
+Qué hace
+
+Lista procesos Windows, muestra detalle/árbol y termina procesos.
+
+Formas públicas
+
+  process list
+  process info PID
+  process tree PID
+  process kill PID
+  process kill PID --tree
+  process kill PID --force
+  process kill PID --tree --force
+
+Opciones de kill
+
+  --tree
+    incluye el árbol de procesos descendientes.
+
+  --force
+    solicita terminación forzada al backend.
+
+Backend
+
+  list/info: tasklist.exe
+  kill: taskkill.exe
+  tree: información interna de procesos de SST
+
+Permisos
+
+Procesos de otros usuarios, elevados o protegidos pueden requerir `sudo`.
+
+Ejemplos
+
+  process list
+  process info 1234
+  process tree 1234
+  process kill 1234
+  process kill 1234 --tree --force
+
+Riesgos
+
+Terminar procesos puede causar pérdida de datos o interrumpir servicios. `--tree` amplía el alcance a descendientes.
+
+Validación
+
+Después de kill vuelve a ejecutar `process info PID` o `process list`.
+
+Recuperación
+
+Un proceso terminado no puede reanudarse. Debe iniciarse de nuevo desde su aplicación o servicio correspondiente.

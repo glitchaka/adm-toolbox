@@ -1,0 +1,72 @@
+SST — intel
+
+Qué hace
+
+Consulta el estado de las fuentes de inteligencia configuradas en SST y realiza lookups de indicadores.
+
+Formas públicas
+
+  intel
+  intel status
+  intel sources
+  intel update
+  intel lookup INDICADOR
+  intel help
+  intel -h
+  intel --help
+
+Default
+
+  intel
+
+equivale a:
+
+  intel status
+
+Subcomandos
+
+  status
+    muestra fuentes, enabled/disabled, adapter, TTL y estado de autenticación.
+
+  sources
+    muestra descriptor, endpoint y prioridad de las fuentes configuradas.
+
+  update
+    limpia caché expirada y muestra capacidad/estado de autenticación de fuentes.
+
+  lookup INDICADOR
+    consulta listas locales, caché y fuentes externas habilitadas.
+
+Adapters reconocidos por la implementación actual
+
+  abusech_hash
+  abusech_ioc
+  abusech_url
+  behavior_catalog
+
+Otros adapters pueden mostrarse como unsupported mientras no exista implementación específica.
+
+Orden de lookup
+
+1. listas locales
+2. caché válida según TTL
+3. consulta live a fuentes externas habilitadas cuando corresponde
+
+Permisos y red
+
+Las fuentes externas requieren conectividad y, según proveedor, credenciales configuradas. `status` y `sources` permiten comprobar el estado antes de hacer lookup.
+
+Ejemplos
+
+  intel status
+  intel sources
+  intel update
+  intel lookup 44d88612fea8a8f36de82e1278abb02f
+
+Interpretación
+
+Una coincidencia es una señal para investigación, no una prueba aislada de compromiso. Una ausencia de coincidencia tampoco demuestra legitimidad.
+
+Validación
+
+Si un lookup falla, revisa `intel status`, autenticación, TTL/caché y conectividad. Correlaciona el resultado con `triage`, `sys inspect` y otras evidencias locales.
