@@ -1,0 +1,120 @@
+SST — tools office auth repair
+
+Qué hace
+
+Re-registra Microsoft.AAD.BrokerPlugin para el usuario actual de Windows. Está orientado a fallos de autenticación de Office/Outlook relacionados con WAM/AAD Broker.
+
+Forma pública
+
+  tools office auth repair
+
+No tiene aliases adicionales y no acepta argumentos después de `repair`.
+
+Qué valida antes de actuar
+
+SST busca procesos abiertos de:
+
+  OUTLOOK
+  WINWORD
+  EXCEL
+  POWERPNT
+  ONENOTE
+
+Si detecta cualquiera de ellos, no ejecuta la reparación y devuelve código 6 indicando qué aplicaciones deben cerrarse.
+
+Qué archivo utiliza
+
+SST requiere el manifiesto de Windows:
+
+  %windir%\SystemApps\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\Appxmanifest.xml
+
+Si el manifiesto no existe, devuelve código 2.
+
+Qué operación ejecuta
+
+SST invoca Windows PowerShell internamente y registra de nuevo el paquete con:
+
+  Add-AppxPackage -Register <Appxmanifest.xml> -DisableDevelopmentMode -ForceApplicationShutdown
+
+Después consulta:
+
+  Get-AppxPackage Microsoft.AAD.BrokerPlugin
+
+para confirmar que el paquete quedó registrado y mostrar su versión.
+
+Qué NO hace
+
+No elimina automáticamente:
+
+  %LOCALAPPDATA%\Microsoft\OneAuth
+  %LOCALAPPDATA%\Microsoft\TokenBroker
+  %LOCALAPPDATA%\Microsoft\IdentityCache
+
+No limpia TPM.
+No elimina credenciales de dominio.
+No desinstala Office.
+No reinstala WebView2.
+No cambia la unión Entra/Domain del equipo.
+
+Salida correcta
+
+La salida normal incluye:
+
+  AAD BrokerPlugin registrado correctamente para el usuario actual. Versión: <VERSION>
+
+Después SST indica que se vuelva a abrir Outlook y se pruebe la autenticación.
+
+Códigos relevantes
+
+  0
+    BrokerPlugin registrado correctamente.
+
+  1
+    Add-AppxPackage/Get-AppxPackage devolvió un error no clasificado específicamente.
+
+  2
+    No se encontró el manifiesto Microsoft.AAD.BrokerPlugin esperado.
+
+  6
+    Hay aplicaciones de Office abiertas. Deben cerrarse antes de repetir la operación.
+
+Permisos
+
+La operación se realiza para el usuario actual. El comando no debe utilizarse como sustituto de una reparación general de Windows o Office.
+
+Cuándo usarlo
+
+Úsalo cuando `tools office diagnose` muestre que Office está instalado y la cadena básica de Windows/Entra existe, pero Outlook u otra aplicación Office falla al abrir o completar la autenticación WAM.
+
+Ejemplo de flujo
+
+  tools office diagnose
+  tools office auth repair
+  tools office diagnose
+
+Después abre Outlook y vuelve a intentar la acción que estaba fallando.
+
+Si el error cambia
+
+Un cambio desde una ventana de autenticación que se cierra sin explicación a un error concreto de credencial/criptografía es información útil: el flujo avanzó más lejos. No repitas reparaciones destructivas sin revisar el nuevo error.
+
+Si sigue fallando
+
+1. Ejecuta nuevamente:
+
+     tools office diagnose
+
+2. Revisa especialmente:
+
+     AAD BrokerPlugin
+     TokenBroker
+     Entra Joined
+     Domain Joined
+     PRT
+     WebView2 Runtime
+
+3. Si Office además deja de iniciar o aparecen errores de Click-to-Run, trata primero el problema de instalación de Office. `auth repair` no repara binarios de Office.
+
+Recuperación
+
+El comando usa el manifiesto original de Windows para volver a registrar BrokerPlugin. No reemplaza binarios ni borra el paquete. Si la operación falla, el mensaje de PowerShell se devuelve por stderr para poder diagnosticar la causa.
