@@ -1,49 +1,75 @@
 SST — Manual operativo completo
 
-Este índice cubre la interfaz pública de Shell Shock Tool. Cada capítulo se audita contra el parser/código real de SST: subcomandos, aliases, flags, valores, defaults, permisos y efectos.
+Este índice cubre la interfaz pública de Shell Shock Tool. Guide presenta estas referencias por áreas y comandos; los nombres internos de archivos no forman parte de la interfaz del usuario.
 
-EMPEZAR
-  overview.txt          Inventario global de capacidades y comandos.
-  shell-invocation.txt  Opciones con las que se inicia sst.exe/Nwash.
-  guide.txt             Uso del manual interactivo y criterios de documentación.
+SISTEMA
+  system.txt              sys completo y aliases públicos.
+  hostname.txt            consulta y renombrado del equipo.
+  domain.txt              sys domain status/join/leave y OU.
+  autologon.txt           sys autologon con Sysinternals Autologon.
 
 RED
-  network.txt           notsh/net: interfaces, DNS, ping, trace, ARP, conflictos, puertos, scan, monitor, presence, identify, traffic, usage y provider.
-  device.txt            Inventario por MAC/IP, conocidos/desconocidos y exportación.
-  switch.txt            Perfiles SNMP y localización MAC -> switch/puerto.
-  wol.txt               Wake-on-LAN por MAC o equipo inventariado.
-  diagnostics.txt       diag network/dns/hardware/storage/traffic/domain.
+  network.txt             notsh/net completo.
+  device.txt              inventario por MAC/IP.
+  switch.txt              localización MAC -> switch/puerto.
+  wol.txt                 Wake-on-LAN.
 
-SISTEMA / WINDOWS
-  system.txt            sys completo: procesos, memoria, discos, servicios, usuarios, impresoras, drivers, eventos, Registro, tareas y seguridad integrada.
-  domain-status.txt     domain: consulta local/remota de pertenencia a dominio.
-  domain.txt            sys domain: status/join/leave y OU.
-  hostname.txt          Consulta y renombrado del equipo.
-  autologon.txt         Sysinternals Autologon integrado.
-  windows-admin.txt     eventlog, service, registry, process, acl, pnp, task, session, share, firewall y power.
-  sudo.txt              Administrador, LOCAL SYSTEM y TrustedInstaller.
+DIAGNÓSTICO
+  diagnostics.txt         diag y sus diagnósticos compuestos.
+
+WINDOWS
+  domain-status.txt       domain local/remoto.
+  eventlog.txt            Event Log.
+  service.txt             servicios.
+  registry.txt            Registro.
+  process.txt             procesos.
+  acl.txt                 ACL NTFS.
+  pnp.txt                 Plug and Play.
+  task.txt                tareas programadas.
+  session.txt             sesiones locales/RDP.
+  share.txt               recursos compartidos SMB.
+  firewall.txt            Windows Defender Firewall.
+  power.txt               energía y cierre de sesión.
 
 SEGURIDAD
-  security.txt          triage, intel y sys security: inspect/why/diff/suspicious/safe/startup/persistence/services --impact.
+  triage.txt              análisis de seguridad y procesos.
+  intel.txt               inteligencia y lookups.
 
-PAQUETES / SST
-  instp.txt             Catálogo y gestor portable de paquetes SST.
-  config.txt            Configuración, fondos, carrusel, sst-path y reload.
-  update.txt            Estado, búsqueda e instalación de actualizaciones SST.
-  tools.txt             tools/tool/utils y herramientas Office.
-  office-sara.txt       OfficeScrubScenario con SaRACmd legacy.
-  office-gethelp.txt    OfficeScrubScenario con GetHelpCmd actual.
-  tour.txt              Tour interactivo y ejemplos empaquetados.
+PRIVILEGIOS
+  sudo.txt                Administrador, LOCAL SYSTEM y TrustedInstaller.
+
+HERRAMIENTAS / OFFICE
+  tools.txt               tools/tool/utils.
+  office-diagnose.txt     tools office diagnose/status/verify.
+  office-auth-repair.txt  tools office auth repair.
+  office-sara.txt         tools office scrub/sara/uninstall/remove.
+  office-gethelp.txt      tools office scrub-current/gethelp.
+
+PAQUETES
+  instp.txt               gestor portable de paquetes SST.
+
+CONFIGURACIÓN
+  config.txt              config, reload, sst-config, fondos y sst-path.
+
+ACTUALIZACIÓN
+  update.txt              estado, búsqueda y aplicación de actualizaciones.
 
 EDITOR
-  helix.txt             helix/hx/helix-sst, opciones y controles de Helix-SST.
+  helix.txt               helix/hx/helix-sst.
 
-SHELL / COMPATIBILIDAD
-  bash-nwash.txt        Builtins Bash/Nwash expuestos y sintaxis soportada.
-  unix-compat.txt       Comandos Unix/GNU-like reimplementados y todas sus opciones implementadas.
+NWASH / BASH
+  bash-nwash.txt          referencia exhaustiva. Guide extrae la sección del builtin seleccionado.
+
+UNIX
+  unix-compat.txt         referencia exhaustiva. Guide extrae la sección del comando seleccionado.
+
+EJEMPLOS
+  tour.txt                ejemplos prácticos empaquetados.
+
+GUÍA
+  guide.txt               funcionamiento del manual interactivo.
+  FORMAT.md               contrato de cobertura documental.
 
 REGLA DE COBERTURA
-  FORMAT.md             Contrato: no se omiten flags, aliases ni defaults públicos.
 
-NOTA
-  Helpers internos de elevación (por ejemplo __elevated o --*-internal) no se presentan como interfaz pública. Si una entrada está registrada pero todavía no tiene implementación funcional, el manual lo dice explícitamente en vez de fingir soporte.
+Cada ficha debe documentar toda la interfaz pública que corresponda: subcomandos, aliases, flags cortos/largos, parámetros, valores admitidos, defaults, combinaciones, ejemplos, permisos, efectos, backend, errores, validación y recuperación. Helpers internos no se presentan como comandos normales.
