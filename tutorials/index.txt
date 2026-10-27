@@ -63,13 +63,10 @@ NWASH / BASH
 UNIX
   unix-compat.txt         referencia exhaustiva. Guide extrae la sección del comando seleccionado.
 
-EJEMPLOS
-  tour.txt                ejemplos prácticos empaquetados.
-
 GUÍA
   guide.txt               funcionamiento del manual interactivo.
   FORMAT.md               contrato de cobertura documental.
 
 REGLA DE COBERTURA
 
-Cada ficha debe documentar toda la interfaz pública que corresponda: subcomandos, aliases, flags cortos/largos, parámetros, valores admitidos, defaults, combinaciones, ejemplos, permisos, efectos, backend, errores, validación y recuperación. Helpers internos no se presentan como comandos normales.
+Cada ficha debe documentar toda la interfaz pública que corresponda: subcomandos, aliases, flags cortos/largos, parámetros, valores admitidos, defaults, combinaciones, ejemplos, permisos, efectos, backend, errores, validación y recuperación. Los ejemplos viven dentro de la ficha del comando; no existe un tour separado. Helpers internos no se presentan como comandos normales.
