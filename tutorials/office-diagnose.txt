@@ -1,0 +1,149 @@
+SST — tools office diagnose
+
+Qué hace
+
+Audita el estado real de Microsoft Office/Outlook y de la cadena de autenticación usada por Office. No modifica el equipo.
+
+Formas públicas
+
+  tools office diagnose
+  tools office status
+  tools office verify
+
+`status` y `verify` son aliases exactos de `diagnose`.
+
+No acepta parámetros adicionales. Si se entregan argumentos extra, SST devuelve error 2.
+
+Qué revisa — OFFICE
+
+State
+
+  INSTALLED / REGISTERED PRODUCT PRESENT
+    Windows mantiene al menos un producto Microsoft 365 / Microsoft Office registrado en las claves de desinstalación.
+
+  REMOVED / CORE RESIDUALS PRESENT
+    El producto ya no está registrado como instalado, pero quedan componentes centrales de Click-to-Run/Office, por ejemplo servicio, configuración, Office16 root u Outlook.exe.
+
+  ABSENT / CLEAN
+    No se detecta un producto registrado ni los residuos centrales que comprueba SST.
+
+Registered products
+  Cuenta productos Microsoft 365 / Microsoft Office registrados y muestra nombre y versión de cada uno.
+
+Click-to-Run version
+  Lee VersionToReport o ClientVersionToReport desde:
+  HKLM\SOFTWARE\Microsoft\Office\ClickToRun\Configuration
+
+Product
+  ProductReleaseIds de Click-to-Run.
+
+Platform
+  Arquitectura reportada por Click-to-Run, normalmente x64 o x86.
+
+Update channel
+  Canal configurado en Click-to-Run.
+
+ClickToRunSvc
+  Estado del servicio Microsoft Office Click-to-Run. Puede ser Running, Stopped o ABSENT.
+
+Office16 root
+  Busca:
+  %ProgramFiles%\Microsoft Office\root\Office16
+  %ProgramFiles(x86)%\Microsoft Office\root\Office16
+
+Outlook.exe
+  Busca OUTLOOK.EXE dentro de las raíces Office16 anteriores.
+
+Outlook version
+  Lee FileVersion del ejecutable detectado.
+
+Qué revisa — AUTHENTICATION
+
+WebView2 Runtime
+  Detecta el Runtime de Microsoft Edge WebView2 desde EdgeUpdate y, como fallback, desde la carpeta de instalación de EdgeWebView.
+
+WebView2 processes
+  Cuenta procesos msedgewebview2 activos en ese momento. El número por sí solo no significa error.
+
+AAD BrokerPlugin
+  Consulta el paquete AppX Microsoft.AAD.BrokerPlugin del usuario actual.
+
+CloudExperienceHost
+  Consulta Microsoft.Windows.CloudExperienceHost.
+
+TokenBroker
+  Consulta el servicio TokenBroker y muestra su estado o ABSENT.
+
+Qué revisa — ENTRA / WINDOWS
+
+SST ejecuta dsregcmd.exe /status y extrae:
+
+  Domain Joined
+    DomainJoined.
+
+  Entra Joined
+    AzureAdJoined.
+
+  Workplace Joined
+    WorkplaceJoined.
+
+  PRT
+    AzureAdPrt. YES significa que Windows informa un Primary Refresh Token presente.
+
+Qué revisa — AUTH CACHE
+
+Comprueba únicamente presencia de las carpetas; diagnose no las elimina:
+
+  OneAuth
+    %LOCALAPPDATA%\Microsoft\OneAuth
+
+  TokenBroker
+    %LOCALAPPDATA%\Microsoft\TokenBroker
+
+  IdentityCache
+    %LOCALAPPDATA%\Microsoft\IdentityCache
+
+Valores posibles:
+  PRESENT
+  ABSENT
+
+Interpretación después de desinstalar Office
+
+Si Programas y características ya no muestra Office pero diagnose devuelve:
+
+  REMOVED / CORE RESIDUALS PRESENT
+
+la desinstalación eliminó el producto registrado, pero quedan residuos centrales. No debe interpretarse como una instalación válida.
+
+Después de un scrub y reinicio, el objetivo de una limpieza completa es:
+
+  State ................ ABSENT / CLEAN
+  Registered products .. 0
+  ClickToRunSvc ........ ABSENT
+  Office16 root ........ ABSENT
+  Outlook.exe .......... ABSENT
+
+Los componentes de Windows usados por otras aplicaciones, como WebView2, AAD BrokerPlugin o TokenBroker, no forman parte de Office y no deben eliminarse solo para obtener ABSENT / CLEAN.
+
+Errores
+
+Si PowerShell interno no puede completar la auditoría, SST devuelve el mensaje capturado y el código de salida del proceso. Si no se obtiene ninguna salida, devuelve:
+
+  tools office diagnose: no se obtuvo información del sistema
+
+Permisos
+
+Es un comando de lectura. No requiere UAC para la información normalmente accesible al usuario actual.
+
+Validación recomendada
+
+Antes de intervenir:
+  tools office diagnose
+
+Después de auth repair:
+  tools office diagnose
+
+Después de scrub + reinicio:
+  tools office diagnose
+
+No usar un único campo como prueba aislada. La conclusión debe salir del conjunto: producto registrado, Click-to-Run, archivos, Outlook y estado de autenticación.
