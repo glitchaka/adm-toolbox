@@ -1,9 +1,18 @@
-SST — Herramientas auxiliares: tools / tool / utils
+SST — Herramientas de mantenimiento: tools / tool / utils
 
 Nombres equivalentes:
   tools
   tool
   utils
+
+Objetivo:
+  `tools` es el punto de entrada para utilidades de diagnóstico, reparación,
+  limpieza y desinstalación profunda organizadas por producto o proveedor.
+  No pertenece a Office: Office es sólo una de sus familias.
+
+Modelo de comandos:
+  tools list
+  tools <producto> <acción> [opciones]
 
 Listado/ayuda:
   tools
@@ -11,7 +20,9 @@ Listado/ayuda:
   tools -h
   tools --help
 
-Familia Office:
+Familias implementadas actualmente:
+
+Office / Microsoft 365:
   tools office diagnose
   tools office status          alias de diagnose
   tools office verify          alias de diagnose
@@ -42,8 +53,34 @@ VERSION aceptada:
 
 Default si se omite VERSION: all.
 
+Diseño de nuevas familias:
+  Cada producto/proveedor se incorpora debajo de `tools` manteniendo una
+  interfaz homogénea cuando corresponda:
+
+  tools <producto> diagnose
+  tools <producto> repair
+  tools <producto> remove
+
+  SST puede combinar diagnóstico propio antes/después con la herramienta
+  oficial del fabricante. Las utilidades externas no se consideran parte del
+  código de SST: deben descargarse desde su fuente oficial, validarse antes de
+  ejecutarse y mantenerse aisladas en la carpeta temporal de `tools`.
+
+  Un desinstalador de fabricante no debe sustituirse por una limpieza genérica
+  de archivos/Registro cuando el proveedor dispone de una herramienta oficial.
+  La verificación posterior de residuos sí puede ser responsabilidad de SST.
+
+Office — detalle:
+  diagnose/verify revisa instalación, residuos, versión/build de Office,
+  Outlook, WebView2, WAM/AAD Broker, TokenBroker, estado Entra/PRT y cachés.
+
+  auth repair vuelve a registrar Microsoft.AAD.BrokerPlugin para el usuario
+  actual y rechaza la operación si detecta Office abierto.
+
+  scrub/sara usa SaRACmd Enterprise legacy y verifica la firma Microsoft antes
+  de ejecutar OfficeScrubScenario. scrub-current conserva GetHelpCmd como
+  backend alternativo actual.
+
 Para detalle completo de estados, códigos, firma y recuperación:
   office-sara.txt
   office-gethelp.txt
-
-`auth repair` vuelve a registrar Microsoft.AAD.BrokerPlugin para el usuario actual y rechaza la operación si detecta Office abierto.
