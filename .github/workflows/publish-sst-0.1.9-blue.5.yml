@@ -23,8 +23,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p updates/blue
-          curl -L --fail --silent --show-error --connect-timeout 15 --max-time 240 "$DOWNLOAD_URL" -o updates/blue/sst.exe
+          mkdir -p updates/blue "$RUNNER_TEMP/sst-update"
+          curl -L --fail --silent --show-error --connect-timeout 15 --max-time 240 "$DOWNLOAD_URL" -o "$RUNNER_TEMP/sst-update.zip"
+          unzip -o "$RUNNER_TEMP/sst-update.zip" -d "$RUNNER_TEMP/sst-update"
+          cp "$RUNNER_TEMP/sst-update/sst.exe" updates/blue/sst.exe
           echo "$EXPECTED_SHA256  updates/blue/sst.exe" | sha256sum -c -
           actual_size="$(stat -c%s updates/blue/sst.exe)"
           test "$actual_size" = "$EXPECTED_SIZE"
