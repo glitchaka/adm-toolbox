@@ -2,7 +2,34 @@ SST — Guide / manual interactivo
 
 Objetivo
 
-`guide` es la puerta de entrada para descubrir y consultar toda la documentación de SST desde la propia terminal.
+`guide` es un visor interactivo de la documentación publicada en el repositorio. El ejecutable SST no contiene el catálogo de áreas, comandos, aliases ni descripciones.
+
+Fuente de verdad
+
+  tutorials/guide-index.json
+
+Ese archivo define:
+
+  orden y nombre de las áreas
+  descripciones de las áreas
+  comandos visibles
+  aliases
+  resúmenes
+  relación comando -> manual
+  tipo de extracción del manual
+  textos principales de la interfaz de Guide
+
+Los documentos abiertos por cada entrada viven también bajo `tutorials/`.
+
+Esto permite agregar, quitar, mover o renombrar contenido de Guide sin recompilar SST. Una nueva entrada documental se publica modificando el repositorio; el binario conserva únicamente el motor TUI que descarga, valida, indexa y renderiza el catálogo.
+
+Disponibilidad
+
+`guide` carga `guide-index.json` al invocarse. No existe un catálogo local de respaldo.
+
+Si el repositorio no responde, el índice no existe o el JSON es inválido, Guide no inventa ni muestra contenido embebido: el comando devuelve únicamente una línea vacía.
+
+Los manuales individuales se descargan cuando se abren y se mantienen en memoria durante la sesión para evitar descargas y parseos repetidos.
 
 Formas públicas
 
@@ -12,11 +39,7 @@ Formas públicas
   guide -h
   guide --help
 
-Estructura
-
-La pantalla inicial muestra áreas funcionales de SST. Las capacidades propias de SST aparecen primero. Nwash/Bash y los comandos Unix compatibles están separados como capas de compatibilidad y no dominan la pantalla inicial.
-
-Áreas principales
+Estructura actual publicada
 
   Sistema
   Red
@@ -25,17 +48,17 @@ La pantalla inicial muestra áreas funcionales de SST. Las capacidades propias d
   Seguridad
   Privilegios
   Herramientas
-  Office
   Paquetes
+  Arch / Portabilidad
   Configuración
   Actualización
   Editor
   Nwash / Bash
   Unix
 
-Dentro de cada área se muestran los comandos o capacidades reales. Al seleccionar uno se abre directamente su documentación completa; no existe una categoría paralela de tutoriales, manuales internos ni un tour separado.
+Office no es un área independiente. Sus acciones pertenecen a Herramientas mediante la familia `tools office ...`.
 
-Los ejemplos prácticos pertenecen a la ficha del propio comando. Una persona que abra `service`, `notsh`, `sys`, `sudo`, `read`, `ls`, etc. debe encontrar ahí mismo sintaxis, opciones, ejemplos y recuperación sin tener que ir a otro apartado de aprendizaje.
+Dentro de cada área se muestran las entradas definidas por `guide-index.json`. Al seleccionar una, Guide abre el documento indicado por el propio índice.
 
 Controles — áreas y comandos
 
@@ -60,7 +83,21 @@ Búsqueda
 
   guide search TEXTO
 
-También puede iniciarse con `/` dentro de Guide. La búsqueda usa nombre, aliases, área y descripción de las capacidades visibles.
+También puede iniciarse con `/` dentro de Guide. El índice de búsqueda se construye una sola vez al abrir Guide usando nombre, aliases, área y descripción publicados por el repositorio.
+
+Rendimiento
+
+Guide es dirigido por eventos. No redibuja toda la pantalla periódicamente cuando el usuario no hace nada.
+
+Se vuelve a renderizar únicamente al cambiar:
+
+  selección
+  búsqueda
+  scroll
+  vista
+  tamaño de terminal
+
+Los manuales descargados y su versión ya envuelta al ancho actual se mantienen en caché de memoria para evitar volver a descargar, extraer y envolver el mismo texto en cada frame.
 
 Regla editorial
 
