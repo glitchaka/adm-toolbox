@@ -1,0 +1,63 @@
+name: Publish SST 0.1.9-blue.5
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-sst-0.1.9-blue.5.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      DOWNLOAD_URL: 'https://sdmntprbrazilsouth.oaiusercontent.com/files/00000000-7ba4-820e-8334-42970c55f5c2/raw?se=2026-10-28T01%3A36%3A37Z&sp=r&sv=2026-02-06&sr=b&scid=0f647fd1-761a-5fab-a3d0-b55e3ad7cf44&skoid=68f37fa7-4e08-478b-93f3-c72d563a0ab3&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-27T12%3A02%3A19Z&ske=2026-10-28T12%3A02%3A19Z&sks=b&skv=2026-02-06&sig=FEGstq7eBSoEgKoM8suKlgJIOwVpQJXGssnP9%2BQ%2BvWY%3D'
+      EXPECTED_SHA256: 'd7c6c991e60da491b17adaddb92ce466590284f378b30e6a72b6cf8a14033cc9'
+      EXPECTED_SIZE: '51525632'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and verify SST 0.1.9-blue.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p updates/blue
+          curl -L --fail --silent --show-error --connect-timeout 15 --max-time 240 "$DOWNLOAD_URL" -o updates/blue/sst.exe
+          echo "$EXPECTED_SHA256  updates/blue/sst.exe" | sha256sum -c -
+          actual_size="$(stat -c%s updates/blue/sst.exe)"
+          test "$actual_size" = "$EXPECTED_SIZE"
+
+      - name: Activate blue channel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          manifest = {
+              'schema': 1,
+              'version': '0.1.9-blue.5',
+              'channel': 'blue',
+              'published_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+              'asset_url': 'sst.exe',
+              'sha256': 'd7c6c991e60da491b17adaddb92ce466590284f378b30e6a72b6cf8a14033cc9',
+              'size': 51525632,
+              'previous_version': '0.1.8-blue.4',
+              'changes': [
+                  "La configuración de apariencia incorpora SST_FONT_COLOR='#DFE8EF' para cambiar el color base del texto de la terminal y aplicarlo con config reload, sin alterar los colores ANSI explícitos de comandos, avisos o neofetch.",
+                  'El logo ANSI de neofetch restaura el azul eléctrico original en los bloques de iluminación del logotipo SST, manteniendo intactos el cuerpo gris y las sombras azules oscuras.',
+                  'Mantiene los fixes ya incorporados en 0.1.8-blue.4, incluido el diagnóstico moderno de Microsoft 365 Click-to-Run y el updater automático.'
+              ]
+          }
+          with open('updates/blue/sst-update.json', 'w', encoding='utf-8', newline='\n') as f:
+              json.dump(manifest, f, ensure_ascii=False, indent=2)
+              f.write('\n')
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add updates/blue/sst.exe updates/blue/sst-update.json
+          git commit -m 'Publish SST 0.1.9-blue.5 update channel'
+          git push
