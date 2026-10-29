@@ -1,0 +1,216 @@
+name: Publish SST blue channel
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versión exacta de SST, por ejemplo 0.1.9-blue.7'
+        required: true
+        type: string
+      download_url:
+        description: 'URL HTTPS del ZIP de release generado por SST'
+        required: true
+        type: string
+      archive_sha256:
+        description: 'SHA-256 del ZIP de release'
+        required: true
+        type: string
+      archive_size:
+        description: 'Tamaño exacto del ZIP en bytes'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sst-blue-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ inputs.version }}
+      DOWNLOAD_URL: ${{ inputs.download_url }}
+      ARCHIVE_SHA256: ${{ inputs.archive_sha256 }}
+      ARCHIVE_SIZE: ${{ inputs.archive_size }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download and verify release archive
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:DOWNLOAD_URL -notmatch '^https://') {
+            throw 'download_url debe usar HTTPS.'
+          }
+          if ($env:ARCHIVE_SHA256 -notmatch '^[0-9a-fA-F]{64}$') {
+            throw 'archive_sha256 no es un SHA-256 válido.'
+          }
+          [int64]$expectedSize = 0
+          if (-not [int64]::TryParse($env:ARCHIVE_SIZE, [ref]$expectedSize) -or $expectedSize -le 0) {
+            throw 'archive_size debe ser un entero positivo.'
+          }
+
+          $archive = Join-Path $env:RUNNER_TEMP 'sst-release.zip'
+          $extract = Join-Path $env:RUNNER_TEMP 'sst-release'
+          if (Test-Path -LiteralPath $archive) { Remove-Item -Force -LiteralPath $archive }
+          if (Test-Path -LiteralPath $extract) { Remove-Item -Recurse -Force -LiteralPath $extract }
+
+          & curl.exe -L --fail --silent --show-error --proto '=https' --tlsv1.2 `
+            --retry 3 --retry-all-errors --connect-timeout 10 --max-time 300 `
+            $env:DOWNLOAD_URL -o $archive
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudo descargar el ZIP de release.' }
+
+          $actualSize = (Get-Item -LiteralPath $archive).Length
+          if ($actualSize -ne $expectedSize) {
+            throw "Tamaño del ZIP incorrecto: $actualSize != $expectedSize"
+          }
+          $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash.ToLowerInvariant()
+          if ($actualHash -ne $env:ARCHIVE_SHA256.ToLowerInvariant()) {
+            throw "SHA-256 del ZIP incorrecto: $actualHash != $($env:ARCHIVE_SHA256.ToLowerInvariant())"
+          }
+
+          Expand-Archive -LiteralPath $archive -DestinationPath $extract -Force
+          "EXTRACT_DIR=$extract" >> $env:GITHUB_ENV
+
+      - name: Validate packaged SST
+        id: package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $files = Get-ChildItem -LiteralPath $env:EXTRACT_DIR -Recurse -File
+          $sst = @($files | Where-Object Name -eq 'sst.exe')
+          $manifestFile = @($files | Where-Object Name -eq 'sst-update.json')
+          $versionFile = @($files | Where-Object Name -eq 'version.txt')
+          $setupName = "SST-Setup-$env:VERSION.exe"
+          $setup = @($files | Where-Object Name -eq $setupName)
+
+          if ($sst.Count -ne 1) { throw "El ZIP debe contener exactamente un sst.exe; encontrados: $($sst.Count)" }
+          if ($manifestFile.Count -ne 1) { throw "El ZIP debe contener exactamente un sst-update.json; encontrados: $($manifestFile.Count)" }
+          if ($versionFile.Count -ne 1) { throw "El ZIP debe contener exactamente un version.txt; encontrados: $($versionFile.Count)" }
+          if ($setup.Count -ne 1) { throw "El ZIP debe contener exactamente un $setupName; encontrados: $($setup.Count)" }
+
+          $packagedVersion = (Get-Content -Raw -LiteralPath $versionFile[0].FullName).Trim()
+          if ($packagedVersion -ne $env:VERSION) {
+            throw "version.txt=$packagedVersion, esperado=$env:VERSION"
+          }
+
+          $manifest = Get-Content -Raw -LiteralPath $manifestFile[0].FullName | ConvertFrom-Json
+          if ($manifest.schema -ne 1) { throw "Schema de update inesperado: $($manifest.schema)" }
+          if ($manifest.version -ne $env:VERSION) { throw "Manifest version=$($manifest.version), esperado=$env:VERSION" }
+          if ($manifest.channel -ne 'blue') { throw "Canal inesperado: $($manifest.channel)" }
+
+          $exeHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $sst[0].FullName).Hash.ToLowerInvariant()
+          $exeSize = (Get-Item -LiteralPath $sst[0].FullName).Length
+          if ($exeHash -ne ([string]$manifest.sha256).ToLowerInvariant()) {
+            throw "SHA-256 de sst.exe no coincide con el manifiesto: $exeHash != $($manifest.sha256)"
+          }
+          if ($exeSize -ne [int64]$manifest.size) {
+            throw "Tamaño de sst.exe no coincide con el manifiesto: $exeSize != $($manifest.size)"
+          }
+
+          $reported = (& $sst[0].FullName --version 2>&1 | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) { throw "sst.exe --version terminó con código $LASTEXITCODE" }
+          if ($reported -notmatch [regex]::Escape($env:VERSION)) {
+            throw "sst.exe no reporta $env:VERSION: $reported"
+          }
+
+          $setupHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $setup[0].FullName).Hash.ToLowerInvariant()
+          $setupSize = (Get-Item -LiteralPath $setup[0].FullName).Length
+          if ($manifest.setup.sha256 -and $setupHash -ne ([string]$manifest.setup.sha256).ToLowerInvariant()) {
+            throw 'SHA-256 del setup no coincide con el manifiesto.'
+          }
+          if ($manifest.setup.size -and $setupSize -ne [int64]$manifest.setup.size) {
+            throw 'Tamaño del setup no coincide con el manifiesto.'
+          }
+
+          "sst=$($sst[0].FullName)" >> $env:GITHUB_OUTPUT
+          "manifest=$($manifestFile[0].FullName)" >> $env:GITHUB_OUTPUT
+          "setup=$($setup[0].FullName)" >> $env:GITHUB_OUTPUT
+          "exe_sha256=$exeHash" >> $env:GITHUB_OUTPUT
+          "exe_size=$exeSize" >> $env:GITHUB_OUTPUT
+
+      - name: Publish immutable release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SST_PATH: ${{ steps.package.outputs.sst }}
+          SETUP_PATH: ${{ steps.package.outputs.setup }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = "sst-v$env:VERSION"
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $env:SST_PATH $env:SETUP_PATH --clobber
+          } else {
+            gh release create $tag --target main --title "SST $env:VERSION" --notes "Publicación binaria del canal blue de SST $env:VERSION."
+            if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear la release pública.' }
+            gh release upload $tag $env:SST_PATH $env:SETUP_PATH --clobber
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudieron publicar los assets de la release.' }
+
+      - name: Verify public binary before channel activation
+        shell: pwsh
+        env:
+          MANIFEST_PATH: ${{ steps.package.outputs.manifest }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $manifest = Get-Content -Raw -LiteralPath $env:MANIFEST_PATH | ConvertFrom-Json
+          $download = Join-Path $env:RUNNER_TEMP 'sst-public.exe'
+          & curl.exe -L --fail --silent --show-error --proto '=https' --tlsv1.2 `
+            --retry 3 --retry-all-errors --connect-timeout 10 --max-time 180 `
+            $manifest.asset_url -o $download
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudo descargar el sst.exe público.' }
+
+          $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $download).Hash.ToLowerInvariant()
+          $actualSize = (Get-Item -LiteralPath $download).Length
+          if ($actualHash -ne ([string]$manifest.sha256).ToLowerInvariant()) { throw 'SHA-256 del binario público incorrecto.' }
+          if ($actualSize -ne [int64]$manifest.size) { throw 'Tamaño del binario público incorrecto.' }
+
+      - name: Activate blue channel last
+        shell: pwsh
+        env:
+          MANIFEST_PATH: ${{ steps.package.outputs.manifest }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path 'updates/blue' | Out-Null
+          Copy-Item -Force -LiteralPath $env:MANIFEST_PATH -Destination 'updates/blue/sst-update.json'
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add updates/blue/sst-update.json
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Publish SST $env:VERSION blue channel"
+            git push
+          } else {
+            Write-Host 'El manifiesto del canal ya coincide con esta release.'
+          }
+
+      - name: Verify activated channel
+        shell: pwsh
+        env:
+          EXPECTED_SHA: ${{ steps.package.outputs.exe_sha256 }}
+          EXPECTED_SIZE: ${{ steps.package.outputs.exe_size }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $manifestUrl = 'https://raw.githubusercontent.com/glitchaka/adm-toolbox/main/updates/blue/sst-update.json'
+          $deadline = [DateTime]::UtcNow.AddMinutes(2)
+          do {
+            try {
+              $published = Invoke-RestMethod -Uri $manifestUrl -Headers @{ 'Cache-Control' = 'no-cache' }
+              if ($published.version -eq $env:VERSION -and
+                  ([string]$published.sha256).ToLowerInvariant() -eq $env:EXPECTED_SHA.ToLowerInvariant() -and
+                  [int64]$published.size -eq [int64]$env:EXPECTED_SIZE) {
+                Write-Host "Canal blue verificado en SST $env:VERSION"
+                exit 0
+              }
+            } catch {
+              Write-Host "Esperando propagación: $($_.Exception.Message)"
+            }
+            Start-Sleep -Seconds 3
+          } while ([DateTime]::UtcNow -lt $deadline)
+          throw 'El canal blue público no reflejó la release esperada dentro del plazo.'
