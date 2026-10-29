@@ -1,0 +1,154 @@
+name: Publish SST staging branch
+
+on:
+  push:
+    branches:
+      - 'sst-publish-*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sst-blue-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate staged release
+        id: package
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $PWD 'stage'
+          $versionFile = Join-Path $root 'version.txt'
+          $manifestFile = Join-Path $root 'sst-update.json'
+          $sst = Join-Path $root 'sst.exe'
+          if (-not (Test-Path -LiteralPath $versionFile -PathType Leaf)) { throw 'Falta stage/version.txt' }
+          if (-not (Test-Path -LiteralPath $manifestFile -PathType Leaf)) { throw 'Falta stage/sst-update.json' }
+          if (-not (Test-Path -LiteralPath $sst -PathType Leaf)) { throw 'Falta stage/sst.exe' }
+
+          $version = (Get-Content -Raw -LiteralPath $versionFile).Trim()
+          if ($version -notmatch '^0\.1\.9-blue\.\d+$') { throw "Versión de staging inválida: $version" }
+          $setup = Join-Path $root "SST-Setup-$version.exe"
+          if (-not (Test-Path -LiteralPath $setup -PathType Leaf)) { throw "Falta $setup" }
+
+          $manifest = Get-Content -Raw -LiteralPath $manifestFile | ConvertFrom-Json
+          if ($manifest.schema -ne 1 -or $manifest.version -ne $version -or $manifest.channel -ne 'blue') {
+            throw 'El manifiesto de staging no coincide con la versión/canal esperado.'
+          }
+
+          $exeHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $sst).Hash.ToLowerInvariant()
+          $exeSize = (Get-Item -LiteralPath $sst).Length
+          if ($exeHash -ne ([string]$manifest.sha256).ToLowerInvariant() -or $exeSize -ne [int64]$manifest.size) {
+            throw 'sst.exe no coincide con SHA-256/tamaño del manifiesto.'
+          }
+
+          $setupHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $setup).Hash.ToLowerInvariant()
+          $setupSize = (Get-Item -LiteralPath $setup).Length
+          if ($manifest.setup.sha256 -and $setupHash -ne ([string]$manifest.setup.sha256).ToLowerInvariant()) { throw 'SHA-256 del setup no coincide.' }
+          if ($manifest.setup.size -and $setupSize -ne [int64]$manifest.setup.size) { throw 'Tamaño del setup no coincide.' }
+
+          $reported = (& $sst --version 2>&1 | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0 -or $reported -notmatch [regex]::Escape($version)) {
+            throw "sst.exe no reporta $version: $reported"
+          }
+
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "sst=$sst" >> $env:GITHUB_OUTPUT
+          "setup=$setup" >> $env:GITHUB_OUTPUT
+          "manifest=$manifestFile" >> $env:GITHUB_OUTPUT
+          "sha256=$exeHash" >> $env:GITHUB_OUTPUT
+          "size=$exeSize" >> $env:GITHUB_OUTPUT
+
+      - name: Publish public release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.package.outputs.version }}
+          SST_PATH: ${{ steps.package.outputs.sst }}
+          SETUP_PATH: ${{ steps.package.outputs.setup }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = "sst-v$env:VERSION"
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $env:SST_PATH $env:SETUP_PATH --clobber
+          } else {
+            gh release create $tag --target main --title "SST $env:VERSION" --notes "Publicación binaria del canal blue de SST $env:VERSION."
+            if ($LASTEXITCODE -ne 0) { throw 'No se pudo crear la release pública.' }
+            gh release upload $tag $env:SST_PATH $env:SETUP_PATH --clobber
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudieron subir los assets públicos.' }
+
+      - name: Verify public updater binary
+        shell: pwsh
+        env:
+          MANIFEST_PATH: ${{ steps.package.outputs.manifest }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $manifest = Get-Content -Raw -LiteralPath $env:MANIFEST_PATH | ConvertFrom-Json
+          $download = Join-Path $env:RUNNER_TEMP 'sst-public.exe'
+          & curl.exe -L --fail --silent --show-error --proto '=https' --tlsv1.2 --retry 3 --retry-all-errors --connect-timeout 10 --max-time 180 $manifest.asset_url -o $download
+          if ($LASTEXITCODE -ne 0) { throw 'No se pudo descargar el binario público.' }
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $download).Hash.ToLowerInvariant()
+          $size = (Get-Item -LiteralPath $download).Length
+          if ($hash -ne ([string]$manifest.sha256).ToLowerInvariant() -or $size -ne [int64]$manifest.size) {
+            throw 'El binario público no coincide con el manifiesto.'
+          }
+
+      - name: Activate blue channel on main
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+          MANIFEST_PATH: ${{ steps.package.outputs.manifest }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $saved = Join-Path $env:RUNNER_TEMP 'sst-update.json'
+          Copy-Item -LiteralPath $env:MANIFEST_PATH -Destination $saved -Force
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git checkout main
+          New-Item -ItemType Directory -Force -Path 'updates/blue' | Out-Null
+          Copy-Item -LiteralPath $saved -Destination 'updates/blue/sst-update.json' -Force
+          git add updates/blue/sst-update.json
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Publish SST $env:VERSION blue channel"
+            git push origin main
+          }
+
+      - name: Verify activated channel
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+          EXPECTED_SHA: ${{ steps.package.outputs.sha256 }}
+          EXPECTED_SIZE: ${{ steps.package.outputs.size }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $url = 'https://raw.githubusercontent.com/glitchaka/adm-toolbox/main/updates/blue/sst-update.json'
+          $deadline = [DateTime]::UtcNow.AddMinutes(2)
+          do {
+            try {
+              $m = Invoke-RestMethod -Uri $url -Headers @{ 'Cache-Control' = 'no-cache' }
+              if ($m.version -eq $env:VERSION -and ([string]$m.sha256).ToLowerInvariant() -eq $env:EXPECTED_SHA.ToLowerInvariant() -and [int64]$m.size -eq [int64]$env:EXPECTED_SIZE) {
+                Write-Host "Canal blue verificado en SST $env:VERSION"
+                exit 0
+              }
+            } catch { Write-Host $_.Exception.Message }
+            Start-Sleep -Seconds 3
+          } while ([DateTime]::UtcNow -lt $deadline)
+          throw 'El canal blue no reflejó la versión esperada.'
+
+      - name: Remove staging branch
+        if: ${{ success() }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: gh api --method DELETE "repos/${{ github.repository }}/git/refs/heads/$env:BRANCH"
