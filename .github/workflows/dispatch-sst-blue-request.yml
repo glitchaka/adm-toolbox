@@ -21,6 +21,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ ! -f .release/sst-blue-request.json ]]; then
+            echo 'Publication request removed; nothing to dispatch.'
+            exit 0
+          fi
           VERSION=$(jq -r '.version' .release/sst-blue-request.json)
           DOWNLOAD_URL=$(jq -r '.download_url' .release/sst-blue-request.json)
           ARCHIVE_SHA256=$(jq -r '.archive_sha256' .release/sst-blue-request.json)
