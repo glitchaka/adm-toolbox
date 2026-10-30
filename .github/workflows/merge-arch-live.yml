@@ -1,0 +1,42 @@
+name: Merge Arch into live guide
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/merge-arch-live.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Merge Arch catalog into live guide index
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          guide_path = Path('tutorials/guide-index.json')
+          arch_path = Path('tutorials/arch-index.json')
+          guide = json.loads(guide_path.read_text(encoding='utf-8'))
+          arch = json.loads(arch_path.read_text(encoding='utf-8'))
+          guide['areas'] = [a for a in guide['areas'] if a.get('id') != 'arch']
+          guide['entries'] = [e for e in guide['entries'] if e.get('area') != 'arch']
+          insert_at = next((i for i,a in enumerate(guide['areas']) if a.get('id') == 'config'), len(guide['areas']))
+          for area in arch.get('areas', []):
+              guide['areas'].insert(insert_at, area)
+              insert_at += 1
+          package_end = max((i for i,e in enumerate(guide['entries']) if e.get('area') == 'packages'), default=-1) + 1
+          guide['entries'][package_end:package_end] = arch.get('entries', [])
+          guide_path.write_text(json.dumps(guide, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add tutorials/guide-index.json
+          git rm .github/workflows/merge-arch-live.yml
+          git commit -m 'Expose Arch portability catalog in live guide'
+          git push
