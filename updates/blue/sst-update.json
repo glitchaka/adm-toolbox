@@ -1,15 +1,26 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.5",
+  "version": "0.1.9-blue.8",
   "channel": "blue",
-  "published_at": "2026-10-28T01:33:23.068959Z",
-  "asset_url": "sst.exe",
-  "sha256": "d7c6c991e60da491b17adaddb92ce466590284f378b30e6a72b6cf8a14033cc9",
-  "size": 51525632,
-  "previous_version": "0.1.8-blue.4",
+  "published_at": "2026-10-30T07:30:59.9293494+00:00",
+  "asset_url": "https://github.com/glitchaka/adm-toolbox/releases/download/sst-v0.1.9-blue.8/sst.exe",
+  "sha256": "6c6bc363a09d7d4669ed36bfb7368fc12c1c3be8c56f95524b0cca84b1239981",
+  "size": 54458880,
   "changes": [
-    "La configuración de apariencia incorpora SST_FONT_COLOR='#DFE8EF' para cambiar el color base del texto de la terminal y aplicarlo con config reload, sin alterar los colores ANSI explícitos de comandos, avisos o neofetch.",
-    "El logo ANSI de neofetch restaura el azul eléctrico original en los bloques de iluminación del logotipo SST, manteniendo intactos el cuerpo gris y las sombras azules oscuras.",
-    "Mantiene los fixes ya incorporados en 0.1.8-blue.4, incluido el diagnóstico moderno de Microsoft 365 Click-to-Run y el updater automático."
-  ]
+    "Corrige fallos de Nwash/Bash detectados por la batería de caja negra y regresiones internas.",
+    "Optimiza el consumo en reposo de la terminal reduciendo polling, refrescos de sistema y frecuencia de renderizado.",
+    "`guide` usa el índice y la documentación remotos como única fuente de contenido; sin repositorio disponible no muestra un catálogo embebido obsoleto.",
+    "El updater distingue correctamente entre \"al día\" y \"no se pudo comprobar el canal\" y aplica actualizaciones preparadas al arrancar.",
+    "Endurece el reemplazo de `sst.exe` con staging local, verificación y rollback.",
+    "Hace reproducible el build con caché compartida de assets entre perfiles Cargo.",
+    "La verificación del SFX sigue comprobando extracción y SHA-256, pero el tiempo de autoeliminación del instalador ya no bloquea la publicación del `sst.exe` del canal blue."
+  ],
+  "setup": {
+    "name": "SST-Setup-0.1.9-blue.8.exe",
+    "url": "https://github.com/glitchaka/adm-toolbox/releases/download/sst-v0.1.9-blue.8/SST-Setup-0.1.9-blue.8.exe",
+    "sha256": "0a7016bee7ea4e20983034427b63c1319b81d19b3d61384a70484fc903d094b3",
+    "size": 54847033,
+    "single_use": true,
+    "package_id": "1d86bcb825d7b881000470dd482464f5"
+  }
 }
