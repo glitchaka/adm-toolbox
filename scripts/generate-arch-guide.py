@@ -2,10 +2,8 @@
 import hashlib
 import io
 import json
-import os
 import pathlib
 import re
-import shutil
 import tarfile
 import urllib.request
 
@@ -36,13 +34,10 @@ def one(meta, key, default=""):
 
 
 def clean_dep(value: str):
-    # Keep Arch's dependency expression, only normalize whitespace.
     return " ".join(value.split())
 
 
 def topic_for(name: str):
-    # guide .8's numbered-section extractor tokenizes punctuation; give it the
-    # same token stream so package names such as python-foo still match.
     return " ".join(re.findall(r"[A-Za-z0-9]+", name)) or name
 
 
@@ -94,7 +89,6 @@ def main():
     with GUIDE.open("r", encoding="utf-8") as fh:
         guide = json.load(fh)
 
-    # Replace any previous hand-written Arch seed completely.
     guide["areas"] = [area for area in guide.get("areas", []) if area.get("id") != "arch"]
     guide["entries"] = [entry for entry in guide.get("entries", []) if entry.get("area") != "arch"]
 
@@ -102,16 +96,12 @@ def main():
     for repo in REPOS:
         packages.extend(fetch_repo(repo))
 
-    # Stable repos may contain the same package name in different repos only in
-    # unusual transitions. Prefer core > extra > multilib deterministically.
     rank = {"core": 0, "extra": 1, "multilib": 2}
     selected = {}
     for package in sorted(packages, key=lambda p: (p["name"].lower(), rank[p["repo"]])):
         selected.setdefault(package["name"], package)
     packages = sorted(selected.values(), key=lambda p: p["name"].lower())
 
-    # Keep this separate from normal SST documentation: one first-level area,
-    # positioned after the ordinary guide areas, backed by generated package data.
     guide["areas"].append({
         "id": "arch",
         "name": "Arch / Portabilidad",
@@ -123,11 +113,14 @@ def main():
     entries = []
     for package in packages:
         name = package["name"]
+        topic = topic_for(name)
         shard = shard_for(name)
         number = shard_counts.get(shard, 0) + 1
         shard_counts[shard] = number
         body = [
-            f"{number}. {name}",
+            # The heading uses the same normalized tokens that guide .8 searches.
+            # The real package name remains on the next line for display.
+            f"{number}. {topic}",
             f"Paquete: {name}",
             f"Repositorio: {package['repo']}",
             f"Versión: {package['version']}",
@@ -151,21 +144,18 @@ def main():
             "manual": {
                 "file": f"arch-{shard}",
                 "section": "unix",
-                "topic": topic_for(name),
+                "topic": topic,
             },
         })
 
     guide["entries"].extend(entries)
 
-    # Compact JSON is intentional: SST .8 limits the remote catalog to 2 MiB.
     encoded = json.dumps(guide, ensure_ascii=False, separators=(",", ":")) + "\n"
     size = len(encoded.encode("utf-8"))
     if size > MAX_INDEX:
         raise SystemExit(f"guide-index.json would be {size} bytes (> {MAX_INDEX})")
     GUIDE.write_text(encoded, encoding="utf-8")
 
-    # Remove previous generated shards and recreate them. 256 shards keep every
-    # file well below SST's 512 KiB per-manual limit.
     for old in TUTORIALS.glob("arch-[0-9a-f][0-9a-f].txt"):
         old.unlink()
     for shard, lines in shard_lines.items():
@@ -174,7 +164,6 @@ def main():
         if path.stat().st_size > 512 * 1024:
             raise SystemExit(f"{path.name} exceeds SST manual limit")
 
-    # Remove obsolete seed files/index from the three-item mock catalog.
     for obsolete in ("arch-index.json", "arch-ripgrep.txt", "arch-htop.txt", "arch-tcpdump.txt"):
         path = TUTORIALS / obsolete
         if path.exists():
