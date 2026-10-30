@@ -1,0 +1,21 @@
+Proyecto: tcpdump
+Paquete Arch: extra/tcpdump
+Versión Arch: 4.99.7-1
+Upstream: https://www.tcpdump.org/
+Lenguaje principal: C
+Licencia: BSD-3-Clause
+Descripción: Analizador de paquetes de red para consola.
+
+Dependencias Arch:
+- glibc
+- libcap-ng
+- libcrypto.so=4-64
+- libpcap
+- libpcap.so=1-64
+- openssl
+
+Dependencias de build:
+- cmake
+- libcap-ng
+- libpcap
+- openssl
