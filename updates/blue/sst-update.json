@@ -9,8 +9,8 @@
   "changes": [
     "Corrige fallos de Nwash/Bash detectados por la batería de caja negra y regresiones internas.",
     "Optimiza el consumo en reposo de la terminal reduciendo polling, refrescos de sistema y frecuencia de renderizado.",
-    "`guide` usa el índice y la documentación remotos como única fuente de contenido; sin repositorio disponible no muestra un catálogo embebido obsoleto.",
-    "El updater distingue correctamente entre \"al día\" y \"no se pudo comprobar el canal\" y aplica actualizaciones preparadas al arrancar.",
+    "`guide` usa el índice y la documentación remotos como única fuente de contenido; sin repositorio disponible devuelve solo una línea vacía y no muestra categorías ni permite navegar por un catálogo embebido.",
+    "Mantiene el aviso existente del updater cuando no se puede comprobar el canal y aplica actualizaciones preparadas al arrancar.",
     "Endurece el reemplazo de `sst.exe` con staging local, verificación y rollback.",
     "Hace reproducible el build con caché compartida de assets entre perfiles Cargo.",
     "La verificación del SFX sigue comprobando extracción y SHA-256, pero el tiempo de autoeliminación del instalador ya no bloquea la publicación del `sst.exe` del canal blue."
