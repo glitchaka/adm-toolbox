@@ -1,0 +1,974 @@
+1. acme-user
+Paquete: acme-user
+Repositorio: extra
+Versión: 1.1.0-1
+Arquitectura: any
+Descripción: acme-tiny systemd files for running as dedicated user instead of root.
+Upstream: https://github.com/ArchangeGabriel/acme-user
+Licencia: CC0-1.0
+Dependencias: acme-tiny, systemd
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+2. alsa-firmware
+Paquete: alsa-firmware
+Repositorio: extra
+Versión: 1.2.4-4
+Arquitectura: any
+Descripción: Firmware binaries for loader programs in alsa-tools and hotplug firmware loader
+Upstream: https://alsa-project.org/
+Licencia: BSD, GPL2, LGPL2.1, custom
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+3. avahi-gtk
+Paquete: avahi-gtk
+Repositorio: extra
+Versión: 1:0.9rc5-2
+Arquitectura: x86_64
+Descripción: Service Discovery for Linux using mDNS/DNS-SD (compatible with Bonjour) - GTK tools and UI library
+Upstream: https://github.com/avahi/avahi
+Licencia: LGPL-2.1-or-later
+Dependencias: avahi=1:0.9rc5-2, gdbm, glib2, glibc, gtk3, python, python-dbus, python-gobject
+Opcionales: —
+Compilación: doxygen, git, glib2-devel, gobject-introspection, graphviz, gtk3, python-dbus, python-gobject, python-twisted, systemd, xmltoman
+Pruebas: —
+Proporciona: libavahi-ui-gtk3.so=0-64
+Estado SST: [ ]
+
+4. bingrep
+Paquete: bingrep
+Repositorio: extra
+Versión: 0.12.1-2
+Arquitectura: x86_64
+Descripción: Cross-platform binary parser and colorizer
+Upstream: https://github.com/m4b/bingrep
+Licencia: MIT
+Dependencias: glibc, libgcc
+Opcionales: —
+Compilación: cargo
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+5. cargo-generate-rpm
+Paquete: cargo-generate-rpm
+Repositorio: extra
+Versión: 0.21.1-1
+Arquitectura: x86_64
+Descripción: Cargo helper command to generate a binary RPM package
+Upstream: https://github.com/cat-in-136/cargo-generate-rpm
+Licencia: MIT
+Dependencias: cargo, glibc, libgcc, xz, zstd
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+6. cockpit
+Paquete: cockpit
+Repositorio: extra
+Versión: 370-1
+Arquitectura: x86_64
+Descripción: A systemd web based user interface for Linux servers
+Upstream: https://cockpit-project.org/
+Licencia: LGPL-2.1-or-later
+Dependencias: krb5, libssh, json-glib, glib-networking, libpwquality, systemd, openssl, kexec-tools, python, gobject-introspection-runtime
+Opcionales: cockpit-storaged: manage storage, cockpit-packagekit: manage packaged, cockpit-podman: user interface for managing podman containers, cockpit-machines: user interface for managing virtual machines, pcp: reading performance metrics, polkit: elevate privileges, sudo: elevate privileges, networkmanager: manage network connections, sssd: authentication, sscg: generate self-signed certificate, dmidecode: access hardware information
+Compilación: krb5, libssh, json-glib, glib-networking, glib2-devel, systemd, asciidoc, git, intltool, gtk-doc, gobject-introspection, networkmanager, xmlto, npm, pcp, python-installer, python-wheel, python-build, python-pip
+Pruebas: —
+Proporciona: cockpit-pcp
+Estado SST: [ ]
+
+7. cups-pdf
+Paquete: cups-pdf
+Repositorio: extra
+Versión: 3.0.3-1
+Arquitectura: x86_64
+Descripción: PDF printer for cups
+Upstream: https://www.cups-pdf.de/welcome.shtml
+Licencia: GPL-2.0-or-later
+Dependencias: cups, libcups, ghostscript, glibc
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+8. deepin-image-editor
+Paquete: deepin-image-editor
+Repositorio: extra
+Versión: 6.5.2-2
+Arquitectura: x86_64
+Descripción: Public library for deepin-image-viewer and deepin-album
+Upstream: https://github.com/linuxdeepin/image-editor
+Licencia: GPL-3.0-or-later
+Dependencias: dtk6core, dtk6gui, dtk6widget, qt6-base, qt6-svg, libtiff, ffmpegthumbnailer, libmediainfo, glibc, libgcc, libstdc++, deepin-util-dfm
+Opcionales: —
+Compilación: git, cmake, ninja, qt6-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+9. docbook-dsssl
+Paquete: docbook-dsssl
+Repositorio: extra
+Versión: 1.79-10
+Arquitectura: any
+Descripción: DSSSL Stylesheets for DocBook
+Upstream: http://docbook.sourceforge.net/
+Licencia: LicenseRef-docbook-dsssl
+Dependencias: sgml-common, perl
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+10. dtk6systemsettings
+Paquete: dtk6systemsettings
+Repositorio: extra
+Versión: 6.0.2-2
+Arquitectura: x86_64
+Descripción: Qt-based development library for system settings on Deepin.
+Upstream: https://github.com/linuxdeepin/dtk6systemsettings
+Licencia: LGPL-3.0-or-later
+Dependencias: dtk6core, glibc, libgcc, libstdc++, libxcrypt, qt6-base
+Opcionales: —
+Compilación: git, qt6-tools, qt6-base, ninja, cmake, doxygen, graphviz
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+11. fcitx5-lua
+Paquete: fcitx5-lua
+Repositorio: extra
+Versión: 5.0.18-1
+Arquitectura: x86_64
+Descripción: Lua support for Fcitx 5
+Upstream: https://github.com/fcitx/fcitx5-lua
+Licencia: LGPL-2.1-or-later
+Dependencias: fcitx5, lua
+Opcionales: —
+Compilación: git, extra-cmake-modules, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+12. firefox-developer-edition-i18n-sl
+Paquete: firefox-developer-edition-i18n-sl
+Repositorio: extra
+Versión: 160.0b3-1
+Arquitectura: any
+Descripción: Slovenian language pack for Firefox Developer Edition
+Upstream: https://www.mozilla.org/firefox/developer
+Licencia: MPL-2.0
+Dependencias: firefox-developer-edition>=160.0b3
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+13. firefox-ublock-origin
+Paquete: firefox-ublock-origin
+Repositorio: extra
+Versión: 1.75.0-1
+Arquitectura: any
+Descripción: Efficient blocker add-on for various browsers. Fast, potent, and lean
+Upstream: https://github.com/gorhill/uBlock
+Licencia: GPL-3.0-or-later
+Dependencias: —
+Opcionales: —
+Compilación: git, python, strip-nondeterminism, zip
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+14. gimp-help-uk
+Paquete: gimp-help-uk
+Repositorio: extra
+Versión: 3.2.0-2
+Arquitectura: any
+Descripción: Ukrainian help files for Gimp
+Upstream: https://docs.gimp.org/
+Licencia: GFDL-1.2-or-later
+Dependencias: —
+Opcionales: —
+Compilación: python, docbook-xsl
+Pruebas: —
+Proporciona: gimp-help=3.2.0-2
+Estado SST: [ ]
+
+15. git-graph
+Paquete: git-graph
+Repositorio: extra
+Versión: 0.8.3-1
+Arquitectura: x86_64
+Descripción: show clear git graphs arranged following different branching model
+Upstream: https://github.com/mlange-42/git-graph
+Licencia: MIT
+Dependencias: glibc, libgcc, libgit2, libgit2.so=1.9-64, zlib, libz.so
+Opcionales: —
+Compilación: cargo
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+16. haskell-bytestring-handle
+Paquete: haskell-bytestring-handle
+Repositorio: extra
+Versión: 0.1.0.6-334
+Arquitectura: x86_64
+Descripción: ByteString-backed Handles
+Upstream: http://hub.darcs.net/ganesh/bytestring-handle
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs
+Opcionales: —
+Compilación: ghc, uusi, haskell-hunit, haskell-quickcheck, haskell-test-framework, haskell-test-framework-hunit, haskell-test-framework-quickcheck2
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+17. haskell-lens-action
+Paquete: haskell-lens-action
+Repositorio: extra
+Versión: 0.2.6-408
+Arquitectura: x86_64
+Descripción: Monadic Getters and Folds
+Upstream: https://github.com/ekmett/lens-action
+Licencia: BSD
+Dependencias: ghc-libs, haskell-comonad, haskell-contravariant, haskell-lens, haskell-profunctors, haskell-semigroupoids
+Opcionales: —
+Compilación: ghc, uusi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. haskell-polysemy
+Paquete: haskell-polysemy
+Repositorio: extra
+Versión: 1.9.2.0-178
+Arquitectura: x86_64
+Descripción: Higher-order, low-boilerplate, zero-cost free monads
+Upstream: https://github.com/isovector/polysemy
+Licencia: BSD
+Dependencias: ghc-libs, haskell-async, haskell-first-class-families, haskell-syb, haskell-th-abstraction, haskell-type-errors, haskell-unagi-chan
+Opcionales: —
+Compilación: ghc, uusi, haskell-cabal-doctest, haskell-hspec-discover, haskell-doctest, haskell-hspec, haskell-inspection-testing
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+19. haskell-retrie
+Paquete: haskell-retrie
+Repositorio: extra
+Versión: 2.0.0-11
+Arquitectura: x86_64
+Descripción: A powerful, easy-to-use codemodding tool for Haskell.
+Upstream: https://github.com/xich/retrie
+Licencia: MIT
+Dependencias: ghc-libs, haskell-ansi-terminal, haskell-async, haskell-data-default, haskell-ghc, haskell-ghc-exactprint, haskell-ghc-paths, haskell-src-exts, haskell-list-t, haskell-optparse-applicative, haskell-random-shuffle, haskell-syb, haskell-unordered-containers
+Opcionales: —
+Compilación: ghc, haskell-hunit, haskell-tasty, haskell-temporary
+Pruebas: git, mercurial
+Proporciona: —
+Estado SST: [ ]
+
+20. haskell-skein
+Paquete: haskell-skein
+Repositorio: extra
+Versión: 1.0.9.4-58
+Arquitectura: x86_64
+Descripción: Skein, a family of cryptographic hash functions. Includes Skein-MAC as well.
+Upstream: https://github.com/meteficha/skein
+Licencia: BSD
+Dependencias: ghc-libs, haskell-cereal, haskell-crypto-api, haskell-tagged
+Opcionales: —
+Compilación: ghc
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+21. haskell-unicode-transforms
+Paquete: haskell-unicode-transforms
+Repositorio: extra
+Versión: 0.4.0.1-250
+Arquitectura: x86_64
+Descripción: Unicode transforms (normalization NFC/NFD/NFKC/NFKD)
+Upstream: https://github.com/composewell/unicode-transforms/
+Licencia: BSD
+Dependencias: ghc-libs, haskell-unicode-data
+Opcionales: —
+Compilación: ghc, uusi, haskell-hspec, haskell-quickcheck, haskell-split, haskell-text-icu
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+22. haskell-unsafe
+Paquete: haskell-unsafe
+Repositorio: extra
+Versión: 0.0-23
+Arquitectura: x86_64
+Descripción: Unified interface to unsafe functions
+Upstream: http://code.haskell.org/~thielema/unsafe/
+Licencia: BSD
+Dependencias: ghc-libs
+Opcionales: —
+Compilación: ghc
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+23. hipdnn
+Paquete: hipdnn
+Repositorio: extra
+Versión: 7.2.4-1
+Arquitectura: x86_64
+Descripción: Graph-based deep learning library for AMD GPUs
+Upstream: https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipdnn
+Licencia: MIT
+Dependencias: rocm-core, hip-runtime-amd, miopen-hip, glibc, gcc-libs, flatbuffers
+Opcionales: —
+Compilación: cmake, ninja, rocm-cmake, rocm-llvm, rocm-toolchain, python, nlohmann-json, spdlog, gtest
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+24. hunspell-es_cu
+Paquete: hunspell-es_cu
+Repositorio: extra
+Versión: 1:2.9-1
+Arquitectura: any
+Descripción: Spanish (Cuba) hunspell dictionary
+Upstream: https://github.com/sbosio/rla-es
+Licencia: LGPL-3.0-or-later
+Dependencias: hunspell
+Opcionales: —
+Compilación: qt6-webengine
+Pruebas: —
+Proporciona: hunspell-dictionary
+Estado SST: [ ]
+
+25. kapptemplate
+Paquete: kapptemplate
+Repositorio: extra
+Versión: 26.08.2-1
+Arquitectura: x86_64
+Descripción: KDE Template Generator
+Upstream: https://apps.kde.org/kapptemplate/
+Licencia: GPL-2.0-or-later, LGPL-2.0-or-later
+Dependencias: glibc, karchive, kconfig, kconfigwidgets, kcoreaddons, ki18n, kiconthemes, kirigami, kirigami-addons, libstdc++, qqc2-desktop-style, qt6-base, qt6-declarative
+Opcionales: —
+Compilación: extra-cmake-modules, kdoctools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+26. kde-utilities-meta
+Paquete: kde-utilities-meta
+Repositorio: extra
+Versión: 26.08-2
+Arquitectura: any
+Descripción: Meta package for KDE utilities applications
+Upstream: https://www.archlinux.org/
+Licencia: None
+Dependencias: ark, filelight, francis, isoimagewriter, kalk, kalm, kate, kbackup, kcalc, kcharselect, kclock, kdebugsettings, kdf, kdialog, keditbookmarks, keepsecret, keysmith, kfind, kgpg, kongress, konsole, krecorder, kteatime, ktimer, ktrip, kwalletmanager, kweather, markdownpart, qrca, skanpage, sweeper, telly-skout, yakuake
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+27. ko
+Paquete: ko
+Repositorio: extra
+Versión: 0.19.1-1
+Arquitectura: x86_64
+Descripción: Build and deploy Go container images
+Upstream: https://github.com/ko-build/ko
+Licencia: Apache-2.0
+Dependencias: glibc
+Opcionales: —
+Compilación: repro-go
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+28. libetpan
+Paquete: libetpan
+Repositorio: extra
+Versión: 1.10.1-1
+Arquitectura: x86_64
+Descripción: A portable middleware for email access
+Upstream: https://www.etpan.org/libetpan.html
+Licencia: BSD-3-Clause AND BSD-3-Clause-Attribution AND BSD-4-Clause
+Dependencias: gnutls, libsasl, zlib, glibc
+Opcionales: —
+Compilación: expat
+Pruebas: —
+Proporciona: libetpan.so=26-64
+Estado SST: [ ]
+
+29. libiscsi
+Paquete: libiscsi
+Repositorio: extra
+Versión: 1.20.3-1
+Arquitectura: x86_64
+Descripción: Clientside library to implement the iSCSI protocol
+Upstream: https://github.com/sahlberg/libiscsi
+Licencia: LGPL-2.1-or-later
+Dependencias: glibc, gnutls, popt, libgcrypt
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+30. libreoffice-still-sat
+Paquete: libreoffice-still-sat
+Repositorio: extra
+Versión: 26.2.6-1
+Arquitectura: any
+Descripción: Santali language pack for LibreOffice still
+Upstream: https://www.documentfoundation.org
+Licencia: LGPL-3.0-or-later
+Dependencias: libreoffice-still
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: libreoffice-sat, libreoffice-still-i18n=26.2.6-1
+Estado SST: [ ]
+
+31. libsigc++-docs
+Paquete: libsigc++-docs
+Repositorio: extra
+Versión: 2.12.2-1
+Arquitectura: x86_64
+Descripción: Callback Framework for C++ (documentation)
+Upstream: https://libsigcplusplus.github.io/libsigcplusplus/
+Licencia: LGPL-2.1-or-later
+Dependencias: —
+Opcionales: —
+Compilación: git, meson, mm-common
+Pruebas: —
+Proporciona: libsigc++2.0-docs=2.12.2
+Estado SST: [ ]
+
+32. libsysstat
+Paquete: libsysstat
+Repositorio: extra
+Versión: 1.1.0-1
+Arquitectura: x86_64
+Descripción: Library to query system statistics (net, resource usage, ...)
+Upstream: https://github.com/lxqt/libsysstat
+Licencia: LGPL2.1
+Dependencias: qt6-base
+Opcionales: —
+Compilación: lxqt-build-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+33. lua51-decasify
+Paquete: lua51-decasify
+Repositorio: extra
+Versión: 0.11.4-1
+Arquitectura: x86_64
+Descripción: cast strings to title-case according to locale specific style guides including Turkish (Rock for Lua 5.1)
+Upstream: https://github.com/alerque/decasify
+Licencia: LGPL-3.0-only
+Dependencias: glibc, libgcc
+Opcionales: —
+Compilación: cargo, jq, lua, lua-luarocks-build-rust-mlua, lua51, lua51-luarocks-build-rust-mlua, lua52, lua52-luarocks-build-rust-mlua, lua53, lua53-luarocks-build-rust-mlua, lua54, lua54-luarocks-build-rust-mlua, luarocks, python-build, python-installer, python-wheel, python-maturin
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+34. lua52-semver
+Paquete: lua52-semver
+Repositorio: extra
+Versión: 1.2.1-3
+Arquitectura: any
+Descripción: an implementation of semantic versioning (semver.org 2.0.0) in pure Lua
+Upstream: https://github.com/kikito/semver.lua
+Licencia: MIT
+Dependencias: lua52
+Opcionales: —
+Compilación: lua, lua51, lua52, lua53, lua54, luarocks
+Pruebas: busted
+Proporciona: —
+Estado SST: [ ]
+
+35. lua52-socket
+Paquete: lua52-socket
+Repositorio: extra
+Versión: 1:3.1.0-2
+Arquitectura: x86_64
+Descripción: Networking support library for the Lua language
+Upstream: https://github.com/lunarmodules/luasocket
+Licencia: MIT
+Dependencias: lua52
+Opcionales: —
+Compilación: lua, lua51, lua52, lua53, lua54, luarocks
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+36. modemmanager-qt
+Paquete: modemmanager-qt
+Repositorio: extra
+Versión: 6.31.0-1
+Arquitectura: x86_64
+Descripción: Qt wrapper for ModemManager DBus API
+Upstream: https://develop.kde.org/products/frameworks/
+Licencia: LGPL-2.0-only, LGPL-3.0-only
+Dependencias: libstdc++, glibc, modemmanager, qt6-base
+Opcionales: —
+Compilación: doxygen, extra-cmake-modules, qt6-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+37. openvr
+Paquete: openvr
+Repositorio: extra
+Versión: 2.15.6-2
+Arquitectura: x86_64
+Descripción: API and runtime that allows access to VR hardware from multiple vendors
+Upstream: https://github.com/ValveSoftware/openvr
+Licencia: BSD-3-Clause
+Dependencias: jsoncpp, libgl
+Opcionales: —
+Compilación: cmake
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+38. perl-alien-build-plugin-download-gitlab
+Paquete: perl-alien-build-plugin-download-gitlab
+Repositorio: extra
+Versión: 0.01-7
+Arquitectura: any
+Descripción: Alien::Build plugin to download from GitLab
+Upstream: https://metacpan.org/release/Alien-Build-Plugin-Download-GitLab
+Licencia: PerlArtistic
+Dependencias: perl-alien-build, perl-path-tiny, perl-uri
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+39. perl-mail-spf
+Paquete: perl-mail-spf
+Repositorio: extra
+Versión: 3.20260331-1
+Arquitectura: any
+Descripción: Perl module that provides SPF support
+Upstream: https://search.cpan.org/dist/Mail-SPF/
+Licencia: BSD-3-Clause
+Dependencias: perl-error, perl-netaddr-ip, perl-uri, perl-net-dns, perl
+Opcionales: —
+Compilación: perl-module-build, perl-net-dns-resolver-programmable
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+40. potrace
+Paquete: potrace
+Repositorio: extra
+Versión: 1.16-5
+Arquitectura: x86_64
+Descripción: Utility for tracing a bitmap (input: PBM,PGM,PPM,BMP; output: EPS,PS,PDF,SVG,DXF,PGM,Gimppath,XFig)
+Upstream: http://potrace.sourceforge.net/
+Licencia: GPL-2.0-or-later
+Dependencias: glibc, zlib, libz.so=1-64
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+41. python-cogapp
+Paquete: python-cogapp
+Repositorio: extra
+Versión: 3.6.0-1
+Arquitectura: any
+Descripción: A code generator for executing Python snippets in source files
+Upstream: https://nedbatchelder.com/code/cog
+Licencia: MIT
+Dependencias: python
+Opcionales: —
+Compilación: git, python-build, python-installer, python-wheel, python-setuptools
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+42. python-elastic-transport
+Paquete: python-elastic-transport
+Repositorio: extra
+Versión: 9.4.2-1
+Arquitectura: any
+Descripción: Transport classes and utilities shared among Python Elastic client libraries
+Upstream: https://github.com/elastic/elastic-transport-python
+Licencia: Apache-2.0
+Dependencias: python, python-aiohttp, python-certifi, python-httpx, python-orjson, python-requests, python-sniffio, python-urllib3
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-pytest, python-pytest-asyncio, python-pytest-httpbin, python-pytest-httpserver, python-pytest-rerunfailures, python-respx, python-trio, python-trustme
+Proporciona: —
+Estado SST: [ ]
+
+43. python-ldap3
+Paquete: python-ldap3
+Repositorio: extra
+Versión: 2.9.1-10
+Arquitectura: any
+Descripción: A strictly RFC 4510 conforming LDAP V3 pure Python client library
+Upstream: https://github.com/cannatag/ldap3
+Licencia: LGPL-3.0-or-later
+Dependencias: python-pyasn1
+Opcionales: —
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+44. python-netifaces
+Paquete: python-netifaces
+Repositorio: extra
+Versión: 0.11.0-9
+Arquitectura: x86_64
+Descripción: Portable module to access network interface information in Python
+Upstream: https://alastairs-place.net/netifaces/
+Licencia: MIT
+Dependencias: python
+Opcionales: —
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+45. python-pluggy
+Paquete: python-pluggy
+Repositorio: extra
+Versión: 1.7.0-1
+Arquitectura: any
+Descripción: Plugin and hook calling mechanisms for python
+Upstream: https://github.com/pytest-dev/pluggy
+Licencia: MIT
+Dependencias: python
+Opcionales: —
+Compilación: git, python-setuptools-scm, python-setuptools, python-build, python-installer, python-wheel
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+46. python-py-key-value-aio
+Paquete: python-py-key-value-aio
+Repositorio: extra
+Versión: 0.4.6-1
+Arquitectura: any
+Descripción: Asynchronous interface for pluggable key-value stores
+Upstream: https://github.com/strawgate/py-key-value
+Licencia: Apache-2.0
+Dependencias: python, python-beartype, python-typing_extensions
+Opcionales: python-aiofile: file tree backend, python-aiohttp: Elasticsearch backend, python-anyio: file tree backend, python-asyncpg: PostgreSQL backend, python-cachetools: memory backend, python-cryptography: encryption wrappers, python-diskcache: disk backend, python-duckdb: DuckDB backend, python-elasticsearch: Elasticsearch backend, python-hvac: HashiCorp Vault backend, python-keyring: system keyring backend, python-pathvalidate: disk backend, python-pydantic: Pydantic adapters, python-pymongo: MongoDB backend, python-pytz: DuckDB backend, python-redis: Redis backend, python-rocksdict: RocksDB backend
+Compilación: git, python-build, python-installer, python-uv-build
+Pruebas: python-aiofile, python-aiohttp, python-anyio, python-asyncpg, python-cachetools, python-cryptography, python-dirty-equals, python-diskcache, python-duckdb, python-elasticsearch, python-hvac, python-inline-snapshot, python-keyring, python-pathvalidate, python-pydantic, python-pymongo, python-pytest, python-pytest-asyncio, python-pytest-dotenv, python-pytest-mock, python-pytest-timeout, python-pytest-xdist, python-pytz, python-redis, python-rocksdict, python-testcontainers
+Proporciona: —
+Estado SST: [ ]
+
+47. python-pycryptodomex
+Paquete: python-pycryptodomex
+Repositorio: extra
+Versión: 3.23.0-3
+Arquitectura: x86_64
+Descripción: A self-contained Python package of low-level cryptographic primitives
+Upstream: https://www.pycryptodome.org/
+Licencia: BSD-2-Clause
+Dependencias: python
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+48. python-pyhamcrest
+Paquete: python-pyhamcrest
+Repositorio: extra
+Versión: 2.1.0-5
+Arquitectura: any
+Descripción: Hamcrest framework for matcher objects
+Upstream: https://github.com/hamcrest/PyHamcrest
+Licencia: BSD-2-Clause
+Dependencias: python
+Opcionales: —
+Compilación: git, openssh, python-build, python-installer, python-hatchling, python-hatch-vcs
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+49. python-pytest-aiohttp
+Paquete: python-pytest-aiohttp
+Repositorio: extra
+Versión: 1.1.1-1
+Arquitectura: any
+Descripción: pytest plugin for aiohttp support
+Upstream: https://github.com/aio-libs/pytest-aiohttp
+Licencia: Apache-2.0
+Dependencias: python, python-pytest, python-aiohttp
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-setuptools-scm, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+50. python-typing_extensions
+Paquete: python-typing_extensions
+Repositorio: extra
+Versión: 4.16.0-1
+Arquitectura: any
+Descripción: Backported and Experimental Type Hints for Python 3.8+
+Upstream: https://github.com/python/typing_extensions
+Licencia: Python-2.0.1
+Dependencias: python
+Opcionales: —
+Compilación: git, python-build, python-flit-core, python-installer
+Pruebas: python-tests
+Proporciona: —
+Estado SST: [ ]
+
+51. qemu-system-xtensa
+Paquete: qemu-system-xtensa
+Repositorio: extra
+Versión: 11.1.3-1
+Arquitectura: x86_64
+Descripción: QEMU system emulator for Xtensa
+Upstream: https://www.qemu.org/
+Licencia: BSD-2-Clause, BSD-2-Clause-Patent, BSD-3-Clause, CC0-1.0, FSFAP, GPL-1.0-or-later, GPL-2.0-only, GPL-2.0-only WITH Linux-syscall-note, GPL-2.0-only WITH Linux-syscall-note OR BSD-2-Clause, GPL-2.0-only WITH Linux-syscall-note OR BSD-3-Clause, GPL-2.0-or-later, GPL-2.0-or-later OR BSD-3-Clause, GPL-2.0-or-later WITH Linux-syscall-note, ISC, LGPL-2.1-only OR BSD-3-Clause, LGPL-2.0-or-later, LGPL-2.1-or-later, LicenseRef-Public-Domain, MIT
+Dependencias: capstone, fuse3, libgcc, glibc, glib2, libgio-2.0.so=0-64, libglib-2.0.so=0-64, libgmodule-2.0.so=0-64, gnutls, keyutils, libaio, libelf, libbpf, libbpf.so=1-64, libjpeg-turbo, libjpeg.so=8-64, libpng, libsasl, libseccomp, libseccomp.so=2-64, libslirp, libslirp.so=0-64, liburing, liburing.so=2-64, libxdp, libxdp.so=1-64, lzo, ndctl, numactl, libnuma.so=1-64, pam, libpam.so=0-64, pixman, libpixman-1.so=0-64, qemu-common=11.1.3-1, rdma-core, snappy, vde2, zlib, zstd, libzstd.so=1-64, dtc, systemd-libs, libudev.so=1-64
+Opcionales: —
+Compilación: alsa-lib, brltty, bzip2, cairo, capstone, curl, dtc, fuse3, libgcc, gdk-pixbuf2, glib2, glib2-devel, gnutls, gtk3, jack, keyutils, libaio, libbpf, libcacard, libcap-ng, libcbor, libepoxy, libiscsi, libnfs, libpipewire, libpng, libpulse, libsasl, libseccomp, libslirp, libssh, liburing, libusb, libx11, libxdp, libxml2, libxkbcommon, lzo, mesa, meson, multipath-tools, ncurses, ndctl, numactl, pam, pcre2, python, python-distlib, python-setuptools, python-pip, python-sphinx, python-sphinx_rtd_theme, rdma-core, rutabaga-ffi, sdl2, sdl2_image, snappy, spice-protocol, spice, systemd, usbredir, vde2, virglrenderer, vte3, zlib, zlib-static, zstd
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+52. qpdf-docs
+Paquete: qpdf-docs
+Repositorio: extra
+Versión: 12.4.2-1
+Arquitectura: x86_64
+Descripción: QPDF: A Content-Preserving PDF Transformation System (documentation)
+Upstream: https://github.com/qpdf/qpdf
+Licencia: Apache-2.0, Artistic-2.0
+Dependencias: —
+Opcionales: —
+Compilación: libjpeg-turbo, zlib, gnutls, cmake, texlive-bin, texlive-binextra, texlive-fontsrecommended, python-sphinx, python-sphinx_rtd_theme, texlive-latexextra
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+53. qsopt-ex
+Paquete: qsopt-ex
+Repositorio: extra
+Versión: 2.5.10.3-2
+Arquitectura: x86_64
+Descripción: Exact linear programming solver
+Upstream: https://github.com/jonls/qsopt-ex
+Licencia: GPL-3.0-or-later
+Dependencias: bzip2, glibc, gmp, zlib
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+54. qt6-lottie
+Paquete: qt6-lottie
+Repositorio: extra
+Versión: 6.12.0-1
+Arquitectura: x86_64
+Descripción: A family of player software for a certain json-based file format for describing 2d vector graphics animations
+Upstream: https://www.qt.io
+Licencia: GPL-3.0-only, LGPL-3.0-only, LicenseRef-Qt-Commercial, Qt-GPL-exception-1.0
+Dependencias: glibc, libstdc++, qt6-base
+Opcionales: qt6-declarative: QML bindings
+Compilación: cmake, git, ninja, qt6-declarative, qt6-quicktimeline, qt6-svg
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+55. qt6-networkauth
+Paquete: qt6-networkauth
+Repositorio: extra
+Versión: 6.12.0-1
+Arquitectura: x86_64
+Descripción: Network authentication module
+Upstream: https://www.qt.io
+Licencia: GPL-3.0-only, LGPL-3.0-only, LicenseRef-Qt-Commercial, Qt-GPL-exception-1.0
+Dependencias: glibc, libstdc++, qt6-base
+Opcionales: —
+Compilación: cmake, git, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+56. rsnapshot
+Paquete: rsnapshot
+Repositorio: extra
+Versión: 1.5.1-1
+Arquitectura: any
+Descripción: A remote filesystem snapshot utility
+Upstream: https://www.rsnapshot.org
+Licencia: GPL-2.0-or-later
+Dependencias: openssh, perl, perl-lchown, rsync
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+57. ruby-jekyll-feed
+Paquete: ruby-jekyll-feed
+Repositorio: extra
+Versión: 0.18.0-1
+Arquitectura: any
+Descripción: A Jekyll plugin to generate an Atom feed of your Jekyll posts
+Upstream: https://github.com/jekyll/jekyll-feed
+Licencia: MIT
+Dependencias: ruby, ruby-jekyll
+Opcionales: —
+Compilación: —
+Pruebas: ruby-nokogiri, ruby-rspec, ruby-rss, ruby-typhoeus
+Proporciona: —
+Estado SST: [ ]
+
+58. ruby-net-scp
+Paquete: ruby-net-scp
+Repositorio: extra
+Versión: 4.0.0-5
+Arquitectura: any
+Descripción: A pure Ruby implementation of the SCP client protocol
+Upstream: https://github.com/net-ssh/net-scp
+Licencia: MIT
+Dependencias: ruby, ruby-net-ssh
+Opcionales: —
+Compilación: ruby-rake, ruby-bundler, ruby-rdoc
+Pruebas: ruby-minitest, ruby-mocha, ruby-test-unit
+Proporciona: —
+Estado SST: [ ]
+
+59. swaync
+Paquete: swaync
+Repositorio: extra
+Versión: 0.12.6-1
+Arquitectura: x86_64
+Descripción: A simple GTK based notification daemon for Sway
+Upstream: https://github.com/ErikReider/SwayNotificationCenter
+Licencia: GPL-3.0-only
+Dependencias: gtk4, gtk4-layer-shell, libadwaita, glib2, libgee, json-glib, libpulse, granite7
+Opcionales: gvfs: Get album art in MPRIS widget
+Compilación: vala, meson, git, scdoc, sassc, gobject-introspection, blueprint-compiler
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+60. texworks
+Paquete: texworks
+Repositorio: extra
+Versión: 0.6.11-2
+Arquitectura: x86_64
+Descripción: Unicode-based, TeX-aware editor with integrated PDF viewer
+Upstream: https://www.tug.org/texworks/
+Licencia: GPL
+Dependencias: hunspell, libsynctex, poppler-qt6, qt6-base, qt6-declarative, qt6-tools, qt6-5compat, libpoppler-qt6.so=3-64
+Opcionales: gsfonts: correctly display PDF files without embedded fonts, lua: Lua scripts support, poppler-data: correctly display certain CJK documents, python: Python scripts support, texlive-basic: typeset TeX documents
+Compilación: cmake, lua, python
+Pruebas: gsfonts, poppler-data
+Proporciona: —
+Estado SST: [ ]
+
+61. trivy
+Paquete: trivy
+Repositorio: extra
+Versión: 0.76.1-1
+Arquitectura: x86_64
+Descripción: A Simple and Comprehensive Vulnerability Scanner for Containers, Suitable for CI
+Upstream: https://github.com/aquasecurity/trivy
+Licencia: Apache-2.0
+Dependencias: glibc
+Opcionales: rpm: RHEL/CentOS based image support
+Compilación: go, btrfs-progs
+Pruebas: —
+Proporciona: trivy
+Estado SST: [ ]
+
+62. ttf-fantasque-nerd
+Paquete: ttf-fantasque-nerd
+Repositorio: extra
+Versión: 3.5.1-2
+Arquitectura: any
+Descripción: Patched font Fantasque Sans Mono from nerd fonts library
+Upstream: https://github.com/ryanoasis/nerd-fonts
+Licencia: OFL-1.1-no-RFN
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: ttf-font-nerd
+Estado SST: [ ]
+
+63. vlc-plugin-opus
+Paquete: vlc-plugin-opus
+Repositorio: extra
+Versión: 3.0.24-1
+Arquitectura: x86_64
+Descripción: Free and open source cross-platform multimedia player and framework - Opus plugin
+Upstream: https://www.videolan.org/vlc/
+Licencia: GPL-2.0-or-later, LGPL-2.1-or-later
+Dependencias: glibc, opus, libvlc, libvlccore.so=9-64
+Opcionales: —
+Compilación: a52dec, aalib, abseil-cpp, alsa-lib, aom, aribb24, aribb25, avahi, bash, cairo, dav1d, dbus, faad2, ffmpeg, flac, fluidsynth, fontconfig, freetype2, fribidi, gdk-pixbuf2, git, glib2, glibc, gnutls, gst-plugins-base-libs, gtk3, harfbuzz, hicolor-icon-theme, jack, libarchive, libass, libavc1394, libbluray, libcaca, libcddb, libdc1394, libdca, libdvbpsi, libdvdcss, libdvdnav, libdvdread, libgcc, libglvnd, libgme, libgoom2, libjpeg-turbo, libkate, libmad, libmatroska, libmicrodns, libmodplug, libmpcdec, libmpeg2, libmtp, libnfs, libnotify, libogg, libpng, libproxy, libpulse, librist, librsvg, libsamplerate, libsecret, libshout, libsoxr, libssh2, libstdc++, libtheora, libtiger, libupnp, libva, libvorbis, libvpl, libvpx, libx11, libxcb, libxinerama, libxml2, libxpm, lirc, live-media, lua51, mesa, mpg123, opus, pcsclite, projectm, protobuf, qt5-base, qt5-svg, qt5-x11extras, sdl12-compat, sdl_image, smbclient, speex, speexdsp, srt, systemd-libs, taglib, twolame, wayland, wayland-protocols, x264, x265, xcb-util-keysyms, xosd, zlib, zvbi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+64. yabridge
+Paquete: yabridge
+Repositorio: extra
+Versión: 5.1.1-10
+Arquitectura: x86_64
+Descripción: A modern and transparent way to use Windows VST2 and VST3 plugins on Linux
+Upstream: https://github.com/robbert-vdh/yabridge
+Licencia: GPL-3.0-or-later
+Dependencias: glibc, libgcc, libstdc++, libxcb, sh, wine
+Opcionales: libnotify: for notification integration, yabridgectl: for optional setup and management utility
+Compilación: asio, bitsery, clap, cmake, function2, ghc-filesystem, git, libxcb, meson, rust, tomlplusplus, wine
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+65. zathura-pdf-mupdf
+Paquete: zathura-pdf-mupdf
+Repositorio: extra
+Versión: 2026.07.18-6
+Arquitectura: x86_64
+Descripción: PDF support for Zathura (MuPDF backend) (Supports PDF, ePub, and OpenXPS)
+Upstream: https://pwmt.org/projects/zathura-pdf-mupdf/
+Licencia: Zlib
+Dependencias: cairo, gumbo-parser, jbig2dec, libjpeg-turbo, libmupdf, openjpeg2, openssl, zathura
+Opcionales: —
+Compilación: meson, ninja, git, appstream, desktop-file-utils
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]

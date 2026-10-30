@@ -1,0 +1,719 @@
+1. archlinux-keyring
+Paquete: archlinux-keyring
+Repositorio: core
+Versión: 20260909-1
+Arquitectura: any
+Descripción: Arch Linux PGP keyring
+Upstream: https://gitlab.archlinux.org/archlinux/archlinux-keyring/
+Licencia: GPL-3.0-or-later
+Dependencias: pacman
+Opcionales: —
+Compilación: git, python, sequoia-sq, pkgconf, systemd, voa
+Pruebas: python-coverage, python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+2. bird
+Paquete: bird
+Repositorio: extra
+Versión: 3.4.0-1
+Arquitectura: x86_64
+Descripción: RIP, OSPF, BGP, MPLS, BFD, Babel routing daemon
+Upstream: https://bird.network.cz/
+Licencia: GPL-2.0-or-later
+Dependencias: glibc, libgcc, libssh, ncurses, readline
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+3. blobwars-data
+Paquete: blobwars-data
+Repositorio: extra
+Versión: 2.00-4
+Arquitectura: any
+Descripción: Platform action game featuring a blob wih lot of weapons - data files
+Upstream: https://sourceforge.net/projects/blobwars
+Licencia: GPL
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+4. clamtk
+Paquete: clamtk
+Repositorio: extra
+Versión: 6.18-1
+Arquitectura: any
+Descripción: Easy to use, light-weight, on-demand virus scanner for Linux systems
+Upstream: https://gitlab.com/dave_m/clamtk/-/wikis/home
+Licencia: GPL-1.0-or-later, BSD-3-Clause
+Dependencias: clamav, cron, perl, perl-gtk3, perl-http-message, perl-json, perl-libwww, perl-locale-gettext, perl-lwp-protocol-https, perl-text-csv, python, zenity
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+5. composefs
+Paquete: composefs
+Repositorio: extra
+Versión: 1.0.8-1
+Arquitectura: x86_64
+Descripción: A file system for mounting container images
+Upstream: https://github.com/containers/composefs
+Licencia: LGPL-2.1-or-later, BSD-2-Clause OR GPL-2.0-or-later, GPL-2.0-only OR Apache-2.0, GPL-3.0-or-later
+Dependencias: gcc-libs, glibc, openssl
+Opcionales: —
+Compilación: fuse3, go-md2man, meson
+Pruebas: python
+Proporciona: —
+Estado SST: [ ]
+
+6. diffuse
+Paquete: diffuse
+Repositorio: extra
+Versión: 0.11.0-1
+Arquitectura: any
+Descripción: Graphical tool for merging and comparing text files
+Upstream: https://github.com/MightyCreak/diffuse
+Licencia: GPL
+Dependencias: python-cairo, python-gobject
+Opcionales: —
+Compilación: git, meson, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+7. firefox-developer-edition-i18n-hsb
+Paquete: firefox-developer-edition-i18n-hsb
+Repositorio: extra
+Versión: 160.0b3-1
+Arquitectura: any
+Descripción: Upper Sorbian language pack for Firefox Developer Edition
+Upstream: https://www.mozilla.org/firefox/developer
+Licencia: MPL-2.0
+Dependencias: firefox-developer-edition>=160.0b3
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+8. forgejo
+Paquete: forgejo
+Repositorio: extra
+Versión: 17.0.1-1
+Arquitectura: x86_64
+Descripción: A lightweight software forge
+Upstream: https://forgejo.org
+Licencia: GPL-3.0-or-later
+Dependencias: glibc, git, sqlite
+Opcionales: mariadb: MariaDB support, memcached: MemCached support, openssh: GIT over SSH support, pam: Authentication via PAM support, postgresql: PostgreSQL support, valkey: Redis support
+Compilación: go, nodejs, npm
+Pruebas: openssh
+Proporciona: —
+Estado SST: [ ]
+
+9. gnome-keybindings
+Paquete: gnome-keybindings
+Repositorio: extra
+Versión: 51.1-1
+Arquitectura: x86_64
+Descripción: Keybindings configuration for GNOME applications
+Upstream: https://apps.gnome.org/Settings/
+Licencia: GPL-2.0-or-later
+Dependencias: —
+Opcionales: —
+Compilación: blueprint-compiler, docbook-xsl, git, glib2-devel, meson, modemmanager
+Pruebas: python-dbusmock, python-gobject, xorg-server-xvfb
+Proporciona: —
+Estado SST: [ ]
+
+10. haskell-casa-types
+Paquete: haskell-casa-types
+Repositorio: extra
+Versión: 0.0.3-134
+Arquitectura: x86_64
+Descripción: Content Addressable Storage Archive types
+Upstream: https://github.com/commercialhaskell/casa
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs, haskell-aeson, haskell-attoparsec, haskell-base16-bytestring, haskell-hashable, haskell-path-pieces, haskell-persistent
+Opcionales: —
+Compilación: ghc, uusi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+11. haskell-hw-hspec-hedgehog
+Paquete: haskell-hw-hspec-hedgehog
+Repositorio: extra
+Versión: 0.1.1.1-298
+Arquitectura: x86_64
+Descripción: Interoperability between hspec and hedgehog
+Upstream: https://github.com/haskell-works/hw-hspec-hedgehog#readme
+Licencia: BSD
+Dependencias: ghc-libs, haskell-hunit, haskell-call-stack, haskell-hedgehog, haskell-hspec
+Opcionales: —
+Compilación: ghc, uusi, haskell-doctest, haskell-doctest-discover, haskell-hspec-discover
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+12. haskell-lucid
+Paquete: haskell-lucid
+Repositorio: extra
+Versión: 2.11.20260427-35
+Arquitectura: x86_64
+Descripción: Clear to write, read and edit DSL for HTML
+Upstream: https://github.com/chrisdone/lucid
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs, haskell-blaze-builder, haskell-hashable, haskell-mmorph
+Opcionales: —
+Compilación: ghc, haskell-bifunctors, haskell-hspec, haskell-hunit
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+13. haskell-ranged-sets
+Paquete: haskell-ranged-sets
+Repositorio: extra
+Versión: 0.5.0-139
+Arquitectura: x86_64
+Descripción: Ranged sets for Haskell
+Upstream: https://code.haskell.org/ranged-sets
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs, haskell-quickcheck
+Opcionales: —
+Compilación: ghc, haskell-hunit
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+14. haskell-setlocale
+Paquete: haskell-setlocale
+Repositorio: extra
+Versión: 1.0.0.10-8
+Arquitectura: x86_64
+Descripción: Haskell bindings to setlocale
+Upstream: https://gitlab.com/Kritzefitz/haskell-setlocale/
+Licencia: BSD
+Dependencias: ghc-libs
+Opcionales: —
+Compilación: ghc, uusi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+15. haskell-sourcemap
+Paquete: haskell-sourcemap
+Repositorio: extra
+Versión: 0.1.7-384
+Arquitectura: x86_64
+Descripción: Implementation of source maps as proposed by Google and Mozilla.
+Upstream: https://github.com/juhp/sourcemap
+Licencia: BSD
+Dependencias: ghc-libs, haskell-aeson, haskell-attoparsec, haskell-unordered-containers, haskell-utf8-string
+Opcionales: —
+Compilación: ghc
+Pruebas: nodejs, npm, nodejs-source-map
+Proporciona: —
+Estado SST: [ ]
+
+16. haskell-tasty-hspec
+Paquete: haskell-tasty-hspec
+Repositorio: extra
+Versión: 1.2.0.4-119
+Arquitectura: x86_64
+Descripción: Hspec support for the Tasty test framework
+Upstream: https://github.com/mitchellwrosen/tasty-hspec
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs, haskell-hspec, haskell-hspec-api, haskell-hspec-core, haskell-quickcheck, haskell-tasty, haskell-tasty-smallcheck, haskell-tasty-quickcheck
+Opcionales: —
+Compilación: ghc, uusi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+17. haskell-vty-crossplatform
+Paquete: haskell-vty-crossplatform
+Repositorio: extra
+Versión: 0.5.0.0-21
+Arquitectura: x86_64
+Descripción: Cross-platform support for Vty
+Upstream: https://github.com/jtdaugherty/vty-crossplatform
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs, haskell-vty, haskell-vty-unix
+Opcionales: —
+Compilación: ghc, uusi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. hyprtoolkit
+Paquete: hyprtoolkit
+Repositorio: extra
+Versión: 0.6.0-1
+Arquitectura: x86_64
+Descripción: A modern C++ Wayland-native GUI toolkit
+Upstream: https://github.com/hyprwm/hyprtoolkit
+Licencia: BSD-3-Clause
+Dependencias: libgcc, libstdc++, abseil-cpp, aquamarine, libaquamarine.so=14-64, cairo, libcairo.so=2-64, glib2, libglib-2.0.so=0-64, glibc, hyprgraphics, libhyprgraphics.so=4-64, hyprlang, libhyprlang.so=2-64, hyprutils, libhyprutils.so=13-64, iniparser, libiniparser.so=4-64, libdrm, libglvnd, libEGL.so=1-64, libOpenGL.so=0-64, libxkbcommon, libxkbcommon.so=0-64, mesa, pango, libpango-1.0.so=0-64, pixman, libpixman-1.so=0-64, wayland, libwayland-client.so=0-64
+Opcionales: —
+Compilación: cmake, hyprwayland-scanner
+Pruebas: —
+Proporciona: libhyprtoolkit.so=6-64
+Estado SST: [ ]
+
+19. iana-etc
+Paquete: iana-etc
+Repositorio: core
+Versión: 20260617-1
+Arquitectura: any
+Descripción: /etc/protocols and /etc/services provided by IANA
+Upstream: https://www.iana.org/protocols
+Licencia: custom:none
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+20. kubectl
+Paquete: kubectl
+Repositorio: extra
+Versión: 1.37.2-1
+Arquitectura: x86_64
+Descripción: A command line tool for communicating with a Kubernetes API server
+Upstream: https://kubernetes.io/
+Licencia: Apache-2.0
+Dependencias: glibc
+Opcionales: —
+Compilación: cni-plugins, conntrack-tools, ethtool, git, go, go-md2man, iptables-nft, socat, rsync
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+21. kubie
+Paquete: kubie
+Repositorio: extra
+Versión: 0.28.0-1
+Arquitectura: x86_64
+Descripción: A more powerful alternative to kubectx and kubens
+Upstream: https://github.com/sbstp/kubie
+Licencia: custom:zlib
+Dependencias: gcc-libs
+Opcionales: —
+Compilación: cargo
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+22. libomxil-bellagio
+Paquete: libomxil-bellagio
+Repositorio: extra
+Versión: 0.9.3-5
+Arquitectura: x86_64
+Descripción: An opensource implementation of the OpenMAX Integration Layer API
+Upstream: http://omxil.sourceforge.net
+Licencia: LGPL
+Dependencias: glibc
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+23. libqalculate
+Paquete: libqalculate
+Repositorio: extra
+Versión: 5.13.2-1
+Arquitectura: x86_64
+Descripción: Multi-purpose desktop calculator
+Upstream: https://qalculate.github.io/
+Licencia: GPL-2.0-only
+Dependencias: curl, icu, glibc, gmp, libgcc, libstdc++, libxml2, mpfr, readline
+Opcionales: gnuplot: for plotting support
+Compilación: doxygen, git, intltool
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+24. libzip
+Paquete: libzip
+Repositorio: extra
+Versión: 1.11.4-1
+Arquitectura: x86_64
+Descripción: C library for reading, creating, and modifying zip archives
+Upstream: https://libzip.org
+Licencia: BSD
+Dependencias: zlib, bzip2, zstd, openssl, gnutls
+Opcionales: —
+Compilación: cmake
+Pruebas: —
+Proporciona: libzip.so=5-64
+Estado SST: [ ]
+
+25. limesuite
+Paquete: limesuite
+Repositorio: extra
+Versión: 23.11.0-9
+Arquitectura: x86_64
+Descripción: Driver and GUI for LMS7002M-based SDR platforms (LimeSDR, etc.)
+Upstream: https://github.com/myriadrf/LimeSuite
+Licencia: Apache-2.0
+Dependencias: sqlite3, wxwidgets-gtk3, freeglut, libusb, soapysdr, wget, gnuplot, glew, fltk
+Opcionales: octave: Octave plugin
+Compilación: cmake, doxygen, octave
+Pruebas: —
+Proporciona: soapylms7
+Estado SST: [ ]
+
+26. lua53-mediator
+Paquete: lua53-mediator
+Repositorio: extra
+Versión: 1.1.2-8
+Arquitectura: any
+Descripción: Event handling through channels
+Upstream: https://olivinelabs.com/mediator_lua/
+Licencia: MIT
+Dependencias: lua53
+Opcionales: —
+Compilación: lua, lua51, lua52, lua53, lua54, luarocks
+Pruebas: busted
+Proporciona: —
+Estado SST: [ ]
+
+27. matrix-synapse
+Paquete: matrix-synapse
+Repositorio: extra
+Versión: 1.164.1-1
+Arquitectura: x86_64
+Descripción: Matrix reference homeserver
+Upstream: https://github.com/element-hq/synapse
+Licencia: AGPL-3.0-or-later
+Dependencias: glibc, libgcc, libwebp, python, python-attrs, python-bcrypt, python-beautifulsoup4, python-bleach, python-canonicaljson, python-idna, python-ijson, python-immutabledict, python-jinja, python-jsonschema, python-matrix-common, python-msgpack, python-netaddr, python-phonenumbers, python-pillow, python-prometheus_client, python-pyasn1, python-pyasn1-modules, python-pydantic, python-pymacaroons, python-pynacl, python-pyopenssl, python-pyparsing, python-pyrsistent, python-pysaml2, python-python-multipart, python-service-identity, python-signedjson, python-sortedcontainers, python-systemd, python-treq, python-twisted, python-typing_extensions, python-unpaddedbase64, python-yaml, systemd
+Opcionales: perl: sync_room_to_group.pl, python-psycopg2: PostgreSQL support, python-lxml: URL previewing, python-psutil: metrics, python-pyjwt: jwt, python-txredisapi: redis, python-hiredis, python-pyicu: Improve user search for international display names, python-authlib: OpenID SSO support
+Compilación: git, python-build, python-installer, python-maturin, python-poetry-core, python-wheel
+Pruebas: postgresql, python-authlib, python-hiredis, python-lxml, python-parameterized, python-pip, python-pyicu, python-pyjwt, python-txredisapi
+Proporciona: —
+Estado SST: [ ]
+
+28. perl-locale-po
+Paquete: perl-locale-po
+Repositorio: extra
+Versión: 0.27-13
+Arquitectura: any
+Descripción: Perl/CPAN Module Locale::PO: PO parser
+Upstream: https://search.cpan.org/dist/Locale-PO
+Licencia: GPL, Artistic
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+29. perl-www-mechanize
+Paquete: perl-www-mechanize
+Repositorio: extra
+Versión: 2.22-1
+Arquitectura: any
+Descripción: Automates web page form & link interaction
+Upstream: https://search.cpan.org/dist/WWW-Mechanize
+Licencia: GPL, PerlArtistic
+Dependencias: perl-libwww, perl-html-parser, perl-uri, perl-html-form, perl-html-tree
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+30. postgis
+Paquete: postgis
+Repositorio: extra
+Versión: 3.6.4-1
+Arquitectura: x86_64
+Descripción: A spatial database extender for PostgreSQL
+Upstream: https://postgis.net/
+Licencia: GPL-2.0-or-later
+Dependencias: bash, libgcc, libstdc++, gdal, geos, glibc, json-c, libxml2, pcre2, perl, postgresql, postgresql-libs, proj, protobuf-c
+Opcionales: —
+Compilación: clang, llvm
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+31. python-aiodns
+Paquete: python-aiodns
+Repositorio: extra
+Versión: 4.0.4-1
+Arquitectura: any
+Descripción: Simple DNS resolver for asyncio
+Upstream: https://github.com/saghul/aiodns
+Licencia: MIT
+Dependencias: python-pycares
+Opcionales: —
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-pytest, python-pytest-asyncio, python-uvloop
+Proporciona: —
+Estado SST: [ ]
+
+32. python-itk
+Paquete: python-itk
+Repositorio: extra
+Versión: 5.4.7-2
+Arquitectura: x86_64
+Descripción: An open-source toolkit for multidimensional image analysis - Python bindings
+Upstream: https://www.itk.org
+Licencia: Apache-2.0
+Dependencias: itk, python, python-numpy, python-xarray
+Opcionales: —
+Compilación: castxml, clang, cmake, eigen, git, lld, ninja, python, swig, fftw, intel-oneapi-mkl, dcmtk, double-conversion, expat, gdcm, hdf5, libjpeg-turbo, libpng, libtiff, zlib
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+33. python-mupdf
+Paquete: python-mupdf
+Repositorio: extra
+Versión: 1.28.5-2
+Arquitectura: x86_64
+Descripción: Library for Lightweight PDF and XPS viewer - Python bindings
+Upstream: https://mupdf.com
+Licencia: AGPL-3.0-or-later
+Dependencias: glibc, libgcc, libstdc++, libmupdf, python
+Opcionales: —
+Compilación: brotli, clang, cmark-gfm, curl, desktop-file-utils, freeglut, freetype2, git, glu, gumbo-parser, harfbuzz, jbig2dec, leptonica, libjpeg-turbo, libx11, libxext, mesa-libgl, openjpeg2, openssl, python, swig, tesseract, unzip, zint, zlib, zxing-cpp
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+34. python-oslo-config
+Paquete: python-oslo-config
+Repositorio: extra
+Versión: 10.8.0-1
+Arquitectura: any
+Descripción: parsing command line arguments and .ini style configuration files
+Upstream: https://pypi.org/project/oslo.config/
+Licencia: Apache-2.0
+Dependencias: python-netaddr, python-pbr, python-stevedore, python-oslo-i18n, python-rfc3986, python-yaml, python-requests
+Opcionales: python-sphinx: for rst-generator
+Compilación: git, python-build, python-installer, python-wheel
+Pruebas: python-testscenarios, python-stestr, python-testtools, python-oslotest, python-oslo-log, python-requests-mock, python-sphinx
+Proporciona: —
+Estado SST: [ ]
+
+35. python-pytest-enabler
+Paquete: python-pytest-enabler
+Repositorio: extra
+Versión: 3.4.0-2
+Arquitectura: any
+Descripción: Enable installed pytest plugins
+Upstream: https://github.com/jaraco/pytest-enabler
+Licencia: MIT
+Dependencias: python, python-jaraco.context, python-jaraco.functools, python-pytest, python-toml
+Opcionales: —
+Compilación: git, python-build, python-installer, python-setuptools-scm, python-wheel
+Pruebas: python-pytest-cov
+Proporciona: —
+Estado SST: [ ]
+
+36. python-zstandard
+Paquete: python-zstandard
+Repositorio: extra
+Versión: 0.25.0-3
+Arquitectura: x86_64
+Descripción: Python bindings to the Zstandard (zstd) compression library
+Upstream: https://github.com/indygreg/python-zstandard
+Licencia: BSD-3-Clause
+Dependencias: glibc, python
+Opcionales: python-cffi
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-hypothesis, python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+37. qemu-vhost-user-gpu
+Paquete: qemu-vhost-user-gpu
+Repositorio: extra
+Versión: 11.1.3-1
+Arquitectura: x86_64
+Descripción: QEMU vhost-user-gpu display device
+Upstream: https://www.qemu.org/
+Licencia: BSD-2-Clause, BSD-2-Clause-Patent, BSD-3-Clause, CC0-1.0, FSFAP, GPL-1.0-or-later, GPL-2.0-only, GPL-2.0-only WITH Linux-syscall-note, GPL-2.0-only WITH Linux-syscall-note OR BSD-2-Clause, GPL-2.0-only WITH Linux-syscall-note OR BSD-3-Clause, GPL-2.0-or-later, GPL-2.0-or-later OR BSD-3-Clause, GPL-2.0-or-later WITH Linux-syscall-note, ISC, LGPL-2.1-only OR BSD-3-Clause, LGPL-2.0-or-later, LGPL-2.1-or-later, LicenseRef-Public-Domain, MIT
+Dependencias: glib2, libgcc, libglib-2.0.so=0-64, libgmodule-2.0.so=0-64, glibc, pixman, libepoxy, libpixman-1.so=0-64, mesa, numactl, libnuma.so=1-64, qemu-common=11.1.3-1, virglrenderer
+Opcionales: —
+Compilación: alsa-lib, brltty, bzip2, cairo, capstone, curl, dtc, fuse3, libgcc, gdk-pixbuf2, glib2, glib2-devel, gnutls, gtk3, jack, keyutils, libaio, libbpf, libcacard, libcap-ng, libcbor, libepoxy, libiscsi, libnfs, libpipewire, libpng, libpulse, libsasl, libseccomp, libslirp, libssh, liburing, libusb, libx11, libxdp, libxml2, libxkbcommon, lzo, mesa, meson, multipath-tools, ncurses, ndctl, numactl, pam, pcre2, python, python-distlib, python-setuptools, python-pip, python-sphinx, python-sphinx_rtd_theme, rdma-core, rutabaga-ffi, sdl2, sdl2_image, snappy, spice-protocol, spice, systemd, usbredir, vde2, virglrenderer, vte3, zlib, zlib-static, zstd
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+38. rfc
+Paquete: rfc
+Repositorio: extra
+Versión: 20250216-1
+Arquitectura: any
+Descripción: RFCs from rfc-editor.org
+Upstream: https://www.rfc-editor.org/
+Licencia: custom:as-is
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+39. rhvoice-voice-irina
+Paquete: rhvoice-voice-irina
+Repositorio: extra
+Versión: 1.16.5-1
+Arquitectura: x86_64
+Descripción: Rhvoice irina voice for russian language
+Upstream: https://github.com/RHVoice/RHVoice
+Licencia: CC-BY-SA-4.0
+Dependencias: rhvoice-language-russian
+Opcionales: —
+Compilación: scons, libao, git, boost, utf8cpp, tclap
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+40. ruby-faraday-net_http
+Paquete: ruby-faraday-net_http
+Repositorio: extra
+Versión: 3.3.0-1
+Arquitectura: any
+Descripción: Faraday adapter for Net::HTTP
+Upstream: https://github.com/lostisland/faraday-net_http
+Licencia: MIT
+Dependencias: ruby
+Opcionales: —
+Compilación: ruby-rspec
+Pruebas: ruby-bundler, ruby-faraday, ruby-rake, ruby-webmock
+Proporciona: —
+Estado SST: [ ]
+
+41. speexdsp
+Paquete: speexdsp
+Repositorio: extra
+Versión: 1.2.1-3
+Arquitectura: x86_64
+Descripción: DSP library derived from Speex
+Upstream: https://www.speex.org/
+Licencia: BSD-3-Clause
+Dependencias: glibc
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: libspeexdsp.so=1-64
+Estado SST: [ ]
+
+42. stlink
+Paquete: stlink
+Repositorio: extra
+Versión: 1.9.0-1
+Arquitectura: x86_64
+Descripción: Open source STM32 MCU programming toolset
+Upstream: https://github.com/stlink-org/stlink
+Licencia: BSD-3-Clause
+Dependencias: glib2, glibc, gtk3, hicolor-icon-theme, libusb
+Opcionales: —
+Compilación: git, cmake, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+43. tesseract
+Paquete: tesseract
+Repositorio: extra
+Versión: 5.5.4-1
+Arquitectura: x86_64
+Descripción: An OCR program
+Upstream: https://github.com/tesseract-ocr/tesseract
+Licencia: APACHE
+Dependencias: libgcc, libgomp, libstdc++, curl, libarchive, leptonica, tessdata, tesseract-data-osd
+Opcionales: icu: for text2image, pango: for text2image, tesseract-data-afr: OCR data (afr), tesseract-data-amh: OCR data (amh), tesseract-data-ara: OCR data (ara), tesseract-data-asm: OCR data (asm), tesseract-data-aze: OCR data (aze), tesseract-data-aze_cyrl: OCR data (aze_cyrl), tesseract-data-bel: OCR data (bel), tesseract-data-ben: OCR data (ben), tesseract-data-bod: OCR data (bod), tesseract-data-bos: OCR data (bos), tesseract-data-bre: OCR data (bre), tesseract-data-bul: OCR data (bul), tesseract-data-cat: OCR data (cat), tesseract-data-ceb: OCR data (ceb), tesseract-data-ces: OCR data (ces), tesseract-data-chi_sim: OCR data (chi_sim), tesseract-data-chi_tra: OCR data (chi_tra), tesseract-data-chr: OCR data (chr), tesseract-data-cos: OCR data (cos), tesseract-data-cym: OCR data (cym), tesseract-data-dan: OCR data (dan), tesseract-data-dan_frak: OCR data (dan_frak), tesseract-data-deu: OCR data (deu), tesseract-data-deu_frak: OCR data (deu_frak), tesseract-data-div: OCR data (div), tesseract-data-dzo: OCR data (dzo), tesseract-data-ell: OCR data (ell), tesseract-data-eng: OCR data (eng), tesseract-data-enm: OCR data (enm), tesseract-data-epo: OCR data (epo), tesseract-data-equ: OCR data (equ), tesseract-data-est: OCR data (est), tesseract-data-eus: OCR data (eus), tesseract-data-fao: OCR data (fao), tesseract-data-fas: OCR data (fas), tesseract-data-fil: OCR data (fil), tesseract-data-fin: OCR data (fin), tesseract-data-fra: OCR data (fra), tesseract-data-frk: OCR data (frk), tesseract-data-frm: OCR data (frm), tesseract-data-fry: OCR data (fry), tesseract-data-gla: OCR data (gla), tesseract-data-gle: OCR data (gle), tesseract-data-glg: OCR data (glg), tesseract-data-grc: OCR data (grc), tesseract-data-guj: OCR data (guj), tesseract-data-hat: OCR data (hat), tesseract-data-heb: OCR data (heb), tesseract-data-hin: OCR data (hin), tesseract-data-hrv: OCR data (hrv), tesseract-data-hun: OCR data (hun), tesseract-data-hye: OCR data (hye), tesseract-data-iku: OCR data (iku), tesseract-data-ind: OCR data (ind), tesseract-data-isl: OCR data (isl), tesseract-data-ita: OCR data (ita), tesseract-data-ita_old: OCR data (ita_old), tesseract-data-jav: OCR data (jav), tesseract-data-jpn: OCR data (jpn), tesseract-data-jpn_vert: OCR data (jpn_vert), tesseract-data-kan: OCR data (kan), tesseract-data-kat: OCR data (kat), tesseract-data-kat_old: OCR data (kat_old), tesseract-data-kaz: OCR data (kaz), tesseract-data-khm: OCR data (khm), tesseract-data-kir: OCR data (kir), tesseract-data-kmr: OCR data (kmr), tesseract-data-kor: OCR data (kor), tesseract-data-kor_vert: OCR data (kor_vert), tesseract-data-lao: OCR data (lao), tesseract-data-lat: OCR data (lat), tesseract-data-lav: OCR data (lav), tesseract-data-lit: OCR data (lit), tesseract-data-ltz: OCR data (ltz), tesseract-data-mal: OCR data (mal), tesseract-data-mar: OCR data (mar), tesseract-data-mkd: OCR data (mkd), tesseract-data-mlt: OCR data (mlt), tesseract-data-mon: OCR data (mon), tesseract-data-mri: OCR data (mri), tesseract-data-msa: OCR data (msa), tesseract-data-mya: OCR data (mya), tesseract-data-nep: OCR data (nep), tesseract-data-nld: OCR data (nld), tesseract-data-nor: OCR data (nor), tesseract-data-oci: OCR data (oci), tesseract-data-ori: OCR data (ori), tesseract-data-pan: OCR data (pan), tesseract-data-pol: OCR data (pol), tesseract-data-por: OCR data (por), tesseract-data-pus: OCR data (pus), tesseract-data-que: OCR data (que), tesseract-data-ron: OCR data (ron), tesseract-data-rus: OCR data (rus), tesseract-data-san: OCR data (san), tesseract-data-sin: OCR data (sin), tesseract-data-slk: OCR data (slk), tesseract-data-slk_frak: OCR data (slk_frak), tesseract-data-slv: OCR data (slv), tesseract-data-snd: OCR data (snd), tesseract-data-spa: OCR data (spa), tesseract-data-spa_old: OCR data (spa_old), tesseract-data-sqi: OCR data (sqi), tesseract-data-srp: OCR data (srp), tesseract-data-srp_latn: OCR data (srp_latn), tesseract-data-sun: OCR data (sun), tesseract-data-swa: OCR data (swa), tesseract-data-swe: OCR data (swe), tesseract-data-syr: OCR data (syr), tesseract-data-tam: OCR data (tam), tesseract-data-tat: OCR data (tat), tesseract-data-tel: OCR data (tel), tesseract-data-tgk: OCR data (tgk), tesseract-data-tgl: OCR data (tgl), tesseract-data-tha: OCR data (tha), tesseract-data-tir: OCR data (tir), tesseract-data-ton: OCR data (ton), tesseract-data-tur: OCR data (tur), tesseract-data-uig: OCR data (uig), tesseract-data-ukr: OCR data (ukr), tesseract-data-urd: OCR data (urd), tesseract-data-uzb: OCR data (uzb), tesseract-data-uzb_cyrl: OCR data (uzb_cyrl), tesseract-data-vie: OCR data (vie), tesseract-data-yid: OCR data (yid), tesseract-data-yor: OCR data (yor)
+Compilación: icu, pango, asciidoc
+Pruebas: —
+Proporciona: libtesseract.so=5-64
+Estado SST: [ ]
+
+44. tesseract-data-kat_old
+Paquete: tesseract-data-kat_old
+Repositorio: extra
+Versión: 2:4.1.0-5
+Arquitectura: any
+Descripción: Tesseract OCR data (kat_old)
+Upstream: https://github.com/tesseract-ocr/tessdata
+Licencia: Apache
+Dependencias: tesseract
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: tessdata
+Estado SST: [ ]
+
+45. trojan
+Paquete: trojan
+Repositorio: extra
+Versión: 1.16.0-18
+Arquitectura: x86_64
+Descripción: An unidentifiable mechanism that helps you bypass GFW
+Upstream: https://github.com/trojan-gfw/trojan
+Licencia: GPL3
+Dependencias: boost-libs, openssl, mariadb-libs
+Opcionales: ca-certificates: server certificate verification, mariadb: advanced user management
+Compilación: cmake, boost, openssl, mariadb-libs
+Pruebas: openssl, python, curl, netcat
+Proporciona: —
+Estado SST: [ ]
+
+46. uwsgi-plugin-pypy
+Paquete: uwsgi-plugin-pypy
+Repositorio: extra
+Versión: 2.0.31-4
+Arquitectura: x86_64
+Descripción: A full stack for building hosting services (PyPy plugin)
+Upstream: https://uwsgi-docs.readthedocs.io/en/latest/
+Licencia: LicenseRef-GPL-2.0-or-later-with-linking-exception
+Dependencias: glibc, pypy, uwsgi
+Opcionales: —
+Compilación: jansson, libcap, libxcrypt, libxml2, lua51, mono, openssl, pam, pcre2, perl, php-embed, php-legacy-embed, pypy, python, python-gevent, python-greenlet, ruby, systemd, util-linux, zlib
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+47. vaporizer2-clap
+Paquete: vaporizer2-clap
+Repositorio: extra
+Versión: 3.5.0-2
+Arquitectura: x86_64
+Descripción: A hybrid wavetable additive/subtractive synthesizer/sampler workstation - CLAP plugin
+Upstream: https://github.com/VASTDynamics/Vaporizer2
+Licencia: GPL-3.0-only
+Dependencias: glibc, libgcc, libstdc++, fftw, libglvnd, freetype2, vaporizer2-common, clap-host
+Opcionales: —
+Compilación: glibc, libgcc, libstdc++, fftw, libglvnd, freetype2, git, cmake, jack, libx11, alsa-lib, libxrandr, libxinerama, libxcursor
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+48. yelp-xsl
+Paquete: yelp-xsl
+Repositorio: extra
+Versión: 49.0-1
+Arquitectura: any
+Descripción: Document transformations from Yelp
+Upstream: https://gitlab.gnome.org/GNOME/yelp-xsl
+Licencia: BSD-3-Clause, GPL-2.0-or-later, LGPL-2.1-or-later
+Dependencias: —
+Opcionales: —
+Compilación: git, itstool, libxslt, meson
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]

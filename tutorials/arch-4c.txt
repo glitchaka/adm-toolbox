@@ -1,0 +1,854 @@
+1. bazelisk
+Paquete: bazelisk
+Repositorio: extra
+Versión: 1.30.0-1
+Arquitectura: x86_64
+Descripción: A user-friendly launcher for Bazel.
+Upstream: https://github.com/bazelbuild/bazelisk
+Licencia: Apache-2.0
+Dependencias: glibc
+Opcionales: —
+Compilación: go, git
+Pruebas: —
+Proporciona: bazel
+Estado SST: [ ]
+
+2. bchoppr
+Paquete: bchoppr
+Repositorio: extra
+Versión: 1.12.8-1
+Arquitectura: x86_64
+Descripción: An audio stream chopping LV2 plugin
+Upstream: https://github.com/sjaehn/BChoppr
+Licencia: GPL-3.0-or-later
+Dependencias: cairo, glibc, fontconfig, libgcc, libstdc++, libx11, lv2-host
+Opcionales: —
+Compilación: cpio, git, libsndfile, lv2
+Pruebas: lv2lint
+Proporciona: —
+Estado SST: [ ]
+
+3. compiler-rt21
+Paquete: compiler-rt21
+Repositorio: extra
+Versión: 21.1.8-1
+Arquitectura: x86_64
+Descripción: Compiler runtime libraries for clang 21
+Upstream: https://compiler-rt.llvm.org/
+Licencia: Apache-2.0 WITH LLVM-exception
+Dependencias: gcc-libs
+Opcionales: —
+Compilación: llvm21, cmake, ninja, python, lib32-gcc-libs
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+4. cyrus-sasl-sql
+Paquete: cyrus-sasl-sql
+Repositorio: extra
+Versión: 2.1.28-4
+Arquitectura: x86_64
+Descripción: SQL auxprop module for Cyrus SASL
+Upstream: https://www.cyrusimap.org/sasl/
+Licencia: BSD-3-Clause-Attribution
+Dependencias: glibc, libsasl=2.1.28, mariadb-libs, libmariadb.so=3-64, postgresql-libs, libpq.so=5-64, sqlite
+Opcionales: —
+Compilación: gdbm, glibc, git, krb5, libldap, libsasl=2.1.28, libxcrypt, mariadb-libs, openssl, pam, postgresql-libs, sqlite
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+5. eog-plugins
+Paquete: eog-plugins
+Repositorio: extra
+Versión: 44.1-3
+Arquitectura: x86_64
+Descripción: Plugins for Eye of Gnome
+Upstream: https://wiki.gnome.org/Apps/EyeOfGnome/Plugins
+Licencia: GPL-2.0-or-later
+Dependencias: eog, python-gobject
+Opcionales: —
+Compilación: git, gobject-introspection, meson
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+6. gnome-tour
+Paquete: gnome-tour
+Repositorio: extra
+Versión: 50.0-1
+Arquitectura: x86_64
+Descripción: Guided tour and greeter for GNOME
+Upstream: https://apps.gnome.org/Tour/
+Licencia: GPL-3.0-or-later
+Dependencias: glib2, glibc, gtk4, hicolor-icon-theme, libadwaita, libgcc
+Opcionales: —
+Compilación: appstream, git, meson, rust
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+7. go
+Paquete: go
+Repositorio: extra
+Versión: 2:1.27.3-1
+Arquitectura: x86_64
+Descripción: Core compiler tools for the Go programming language
+Upstream: https://go.dev/
+Licencia: BSD-3-Clause
+Dependencias: —
+Opcionales: —
+Compilación: git, go
+Pruebas: —
+Proporciona: go-pie
+Estado SST: [ ]
+
+8. haskell-tasty-hedgehog
+Paquete: haskell-tasty-hedgehog
+Repositorio: extra
+Versión: 1.4.0.2-451
+Arquitectura: x86_64
+Descripción: Integration for tasty and hedgehog
+Upstream: https://github.com/qfpl/tasty-hedgehog
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs, haskell-hedgehog, haskell-tagged, haskell-tasty
+Opcionales: —
+Compilación: ghc, uusi
+Pruebas: haskell-tasty-expected-failure
+Proporciona: —
+Estado SST: [ ]
+
+9. hexer-hobu
+Paquete: hexer-hobu
+Repositorio: extra
+Versión: 1.4.0-17
+Arquitectura: x86_64
+Descripción: LAS and OGR hexagonal density and boundary surface generation
+Upstream: https://github.com/hobu/hexer
+Licencia: LGPL-2.1-only
+Dependencias: gdal
+Opcionales: —
+Compilación: cmake
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+10. hunspell-en_au
+Paquete: hunspell-en_au
+Repositorio: extra
+Versión: 2026.02.25-1
+Arquitectura: any
+Descripción: AU English hunspell dictionaries
+Upstream: http://wordlist.aspell.net/dicts/
+Licencia: LGPL-2.1-or-later, LGPL-2.1-only, BSD-3-Clause-Modification
+Dependencias: —
+Opcionales: hunspell: the spell checking libraries and apps
+Compilación: qt6-webengine
+Pruebas: —
+Proporciona: hunspell-dictionary, hunspell-en_AU
+Estado SST: [ ]
+
+11. hunspell-fr-comprehensive
+Paquete: hunspell-fr-comprehensive
+Repositorio: extra
+Versión: 7.7-2
+Arquitectura: any
+Descripción: French Hunspell dictionary (comprehensive variant)
+Upstream: https://grammalecte.net/
+Licencia: MPL-2.0
+Dependencias: —
+Opcionales: hunspell: the spell checking libraries and apps
+Compilación: qt6-webengine
+Pruebas: —
+Proporciona: hunspell-fr, hunspell-dictionary
+Estado SST: [ ]
+
+12. innernet
+Paquete: innernet
+Repositorio: extra
+Versión: 2.0.0-1
+Arquitectura: x86_64
+Descripción: A private network system that uses WireGuard under the hood
+Upstream: https://github.com/tonarino/innernet
+Licencia: MIT
+Dependencias: sqlite
+Opcionales: —
+Compilación: rust, git, clang, llvm
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+13. inputplumber
+Paquete: inputplumber
+Repositorio: extra
+Versión: 0.83.1-1
+Arquitectura: x86_64
+Descripción: Open source input router and remapper daemon for Linux
+Upstream: https://github.com/ShadowBlip/InputPlumber
+Licencia: GPL-3.0-only
+Dependencias: dbus, libgcc, glibc, libevdev, libiio, systemd-libs
+Opcionales: —
+Compilación: clang, cmake, git, make, rust
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+14. iproute2
+Paquete: iproute2
+Repositorio: core
+Versión: 7.3.0-1
+Arquitectura: x86_64
+Descripción: IP Routing Utilities
+Upstream: https://git.kernel.org/pub/scm/network/iproute2/iproute2.git
+Licencia: GPL-2.0-or-later
+Dependencias: glibc, libxtables.so=12-64, libcap, libcap.so=2-64, libelf, libbpf, libbpf.so=1-64
+Opcionales: db: userspace arp daemon, linux-atm: ATM support, python: for routel
+Compilación: git, db, linux-atm, iptables
+Pruebas: —
+Proporciona: iproute
+Estado SST: [ ]
+
+15. keystone
+Paquete: keystone
+Repositorio: extra
+Versión: 0.9.2-9
+Arquitectura: x86_64
+Descripción: Lightweight multi-platform, multi-architecture assembler framework
+Upstream: https://www.keystone-engine.org/
+Licencia: GPL-2.0-only
+Dependencias: libgcc, libstdc++
+Opcionales: —
+Compilación: cmake, ninja, libgcc, libstdc++, python, python-build, python-installer, python-setuptools
+Pruebas: —
+Proporciona: libkeystone.so=0-64
+Estado SST: [ ]
+
+16. kiriki
+Paquete: kiriki
+Repositorio: extra
+Versión: 26.08.2-1
+Arquitectura: x86_64
+Descripción: An addictive and fun dice game
+Upstream: https://apps.kde.org/kiriki/
+Licencia: GPL-2.0-or-later, LGPL-2.0-or-later
+Dependencias: glibc, kconfig, kconfigwidgets, kcoreaddons, kcrash, kdbusaddons, ki18n, kiconthemes, kwidgetsaddons, kxmlgui, libkdegames, libstdc++, qt6-base
+Opcionales: —
+Compilación: extra-cmake-modules, kdoctools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+17. kxmlgui
+Paquete: kxmlgui
+Repositorio: extra
+Versión: 6.31.0-1
+Arquitectura: x86_64
+Descripción: User configurable main windows
+Upstream: https://develop.kde.org/products/frameworks/
+Licencia: LGPL-2.0-only, LGPL-3.0-only
+Dependencias: libstdc++, glibc, kconfig, kconfigwidgets, kcoreaddons, kglobalaccel, kguiaddons, ki18n, kiconthemes, kitemviews, kwidgetsaddons, qt6-base
+Opcionales: pyside6: Python bindings
+Compilación: doxygen, extra-cmake-modules, pyside6, python-build, python-setuptools, qt6-tools, shiboken6-generator
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. lattice
+Paquete: lattice
+Repositorio: extra
+Versión: 0.9.3-1
+Arquitectura: x86_64
+Descripción: Editor-agnostic language server for the Crystal programming language
+Upstream: https://codeberg.org/DaZhi-the-Revelator/lattice
+Licencia: GPL-3.0-or-later
+Dependencias: openssl, glibc, gc, pcre2, libgcc, libyaml, zlib
+Opcionales: —
+Compilación: crystal, shards, git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+19. lib32-freetype2
+Paquete: lib32-freetype2
+Repositorio: multilib
+Versión: 2.15.0-1
+Arquitectura: x86_64
+Descripción: Font rasterization library (32-bit)
+Upstream: https://www.freetype.org/
+Licencia: FTL OR GPL-2.0-or-later
+Dependencias: freetype2, lib32-brotli, lib32-bzip2, lib32-glibc, lib32-libpng, lib32-zlib
+Opcionales: lib32-harfbuzz: Improved autohinting
+Compilación: lib32-harfbuzz, meson
+Pruebas: —
+Proporciona: libfreetype.so=6-32
+Estado SST: [ ]
+
+20. liblc3
+Paquete: liblc3
+Repositorio: extra
+Versión: 1.1.3-2
+Arquitectura: x86_64
+Descripción: Low Complexity Communication Codec library and tools
+Upstream: https://github.com/google/liblc3
+Licencia: Apache-2.0
+Dependencias: glibc
+Opcionales: python: Python bindings
+Compilación: git, meson, python
+Pruebas: —
+Proporciona: liblc3.so=1-64
+Estado SST: [ ]
+
+21. linux-firmware-whence
+Paquete: linux-firmware-whence
+Repositorio: core
+Versión: 20260916-1
+Arquitectura: any
+Descripción: Firmware files for Linux - WHENCE file (vendor licenses)
+Upstream: https://gitlab.com/kernel-firmware/linux-firmware
+Licencia: LicenseRef-WHENCE
+Dependencias: —
+Opcionales: —
+Compilación: git, parallel, python, rdfind
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+22. lua51-cassowary
+Paquete: lua51-cassowary
+Repositorio: extra
+Versión: 2.3.2-3
+Arquitectura: any
+Descripción: The cassowary constraint solver
+Upstream: https://github.com/sile-typesetter/cassowary.lua
+Licencia: MIT
+Dependencias: lua51, lua51-penlight
+Opcionales: —
+Compilación: lua, lua51, lua52, lua53, lua54, luarocks
+Pruebas: busted
+Proporciona: —
+Estado SST: [ ]
+
+23. mpdscribble
+Paquete: mpdscribble
+Repositorio: extra
+Versión: 0.26-1
+Arquitectura: x86_64
+Descripción: MPD client which submits track info to {Libre,Last}.fm
+Upstream: https://www.musicpd.org/clients/mpdscribble/
+Licencia: GPL-2.0-only
+Dependencias: curl, fmt, libmpdclient
+Opcionales: —
+Compilación: boost, git, systemd, meson, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+24. multipath-tools
+Paquete: multipath-tools
+Repositorio: extra
+Versión: 0.15.1-1
+Arquitectura: x86_64
+Descripción: Multipath tools for Linux (including kpartx)
+Upstream: https://github.com/opensvc/multipath-tools
+Licencia: GPL-2.0-or-later, GPL-3.0-or-later, LGPL-2.0-or-later, LGPL-2.1-or-later
+Dependencias: glibc, device-mapper, libdevmapper.so=1.02-64, json-c, libjson-c.so=5-64, libaio, libaio.so=1-64, libgcc, libgcc_s.so=1-64, liburcu, systemd-libs, libsystemd.so=0-64, libudev.so=1-64, util-linux-libs, libmount.so=1-64
+Opcionales: —
+Compilación: git, systemd
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+25. openvkl
+Paquete: openvkl
+Repositorio: extra
+Versión: 2.0.2-1
+Arquitectura: x86_64
+Descripción: Intel® Open Volume Kernel Library
+Upstream: https://www.openvkl.org/
+Licencia: Apache-2.0
+Dependencias: embree, gcc-libs, glibc, onetbb, openvdb, rkcommon
+Opcionales: —
+Compilación: boost, cmake, ispc
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+26. perl-test-requiresinternet
+Paquete: perl-test-requiresinternet
+Repositorio: extra
+Versión: 0.05-13
+Arquitectura: any
+Descripción: Easily test network connectivity
+Upstream: https://search.mcpan.org/dist/Test-RequiresInternet
+Licencia: PerlArtistic, GPL
+Dependencias: perl
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+27. phoc
+Paquete: phoc
+Repositorio: extra
+Versión: 0.57.0-2
+Arquitectura: x86_64
+Descripción: Display compositor designed for phones
+Upstream: https://gitlab.gnome.org/World/Phosh/phoc
+Licencia: GPL-3.0-or-later
+Dependencias: cairo, dconf, libgcc, glib2, glibc, gnome-desktop, gsettings-desktop-schemas, hicolor-icon-theme, libgmobile, libinput, libxcb, libxkbcommon, mutter, pango, pixman, systemd-libs, wayland, wlroots0.20, xorg-xwayland
+Opcionales: —
+Compilación: git, glib2-devel, meson, python-docutils, wayland-protocols
+Pruebas: xorg-server-xvfb
+Proporciona: —
+Estado SST: [ ]
+
+28. python-aioquic
+Paquete: python-aioquic
+Repositorio: extra
+Versión: 1.6.1-1
+Arquitectura: x86_64
+Descripción: QUIC and HTTP/3 implementation in Python
+Upstream: https://github.com/aiortc/aioquic
+Licencia: BSD-3-Clause
+Dependencias: glibc, openssl, python, python-certifi, python-cryptography, python-pylsqpack, python-pyopenssl, python-service-identity
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+29. python-django-compressor
+Paquete: python-django-compressor
+Repositorio: extra
+Versión: 4.6-5
+Arquitectura: any
+Descripción: Compresses linked and inline javascript or CSS into a single cached file
+Upstream: https://github.com/django-compressor/django-compressor
+Licencia: MIT
+Dependencias: python, python-django, python-django-appconf, python-rcssmin, python-rjsmin
+Opcionales: python-beautifulsoup4: for compressor.parser.BeautifulSoupParser and compressor.parser.LxmlParser, python-brotli: for compressor.storage.BrotliCompressorFileStorage, python-calmjs.parse: for compressor.filters.jsmin.CalmjsFilter, python-csscompressor: for compressor.filters.cssmin.CSSCompressorFilter, python-django-sekizai: for including template code into main template, python-html5lib: for compressor.parser.Html5LibParser, python-jinja: for jinja2 templating support, python-lxml: for compressor.parser.LxmlParser
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-beautifulsoup4, python-brotli, python-calmjs.parse, python-csscompressor, python-django-sekizai, python-html5lib, python-jinja, python-lxml
+Proporciona: —
+Estado SST: [ ]
+
+30. python-logfire
+Paquete: python-logfire
+Repositorio: extra
+Versión: 5.4.0-3
+Arquitectura: any
+Descripción: Pydantic Logfire command-line interface
+Upstream: https://github.com/pydantic/logfire
+Licencia: MIT
+Dependencias: python, python-logfire-sdk
+Opcionales: —
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-aiohttp, python-aiosqlite, python-anthropic, python-anyio, python-asyncpg, python-attrs, python-beartype, python-boto3, python-botocore, python-cloudpickle, python-dirty-equals, python-django, python-elasticsearch, python-fastapi, python-flask, python-genai-prices, python-httpx, python-httpx2, python-inline-snapshot, python-langchain, python-langchain-openai, python-langgraph, python-loguru, python-mcp, python-numpy, python-openai, python-opentelemetry-instrumentation-aiohttp-client, python-opentelemetry-instrumentation-aiohttp-server, python-opentelemetry-instrumentation-asgi, python-opentelemetry-instrumentation-asyncpg, python-opentelemetry-instrumentation-aws-lambda, python-opentelemetry-instrumentation-django, python-opentelemetry-instrumentation-fastapi, python-opentelemetry-instrumentation-flask, python-opentelemetry-instrumentation-httpx, python-opentelemetry-instrumentation-psycopg, python-opentelemetry-instrumentation-psycopg2, python-opentelemetry-instrumentation-pymongo, python-opentelemetry-instrumentation-requests, python-opentelemetry-instrumentation-sqlalchemy, python-opentelemetry-instrumentation-sqlite3, python-opentelemetry-instrumentation-starlette, python-opentelemetry-instrumentation-system-metrics, python-opentelemetry-instrumentation-wsgi, python-packaging, python-pandas, python-psutil, python-psycopg, python-psycopg2, python-pyarrow, python-pydantic, python-pydantic-handlebars, python-pymongo, python-pymysql, python-pytest, python-pytest-asyncio, python-pytest-django, python-pytest-examples, python-pytest-recording, python-pytest-timeout, python-pytest-xdist, python-requests-mock, python-sqlalchemy, python-sqlmodel, python-starlette, python-structlog, python-wrapt, ruff, uv, uvicorn
+Proporciona: —
+Estado SST: [ ]
+
+31. python-markdown2
+Paquete: python-markdown2
+Repositorio: extra
+Versión: 2.5.5-1
+Arquitectura: any
+Descripción: A fast and complete implementation of Markdown in Python
+Upstream: https://github.com/trentm/python-markdown2
+Licencia: MIT
+Dependencias: python, python-pygments
+Opcionales: python-latex2mathml: latex support, python-wavedrom: wavedrom support
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-latex2mathml, python-wavedrom
+Proporciona: —
+Estado SST: [ ]
+
+32. python-opentelemetry-instrumentation-aiohttp-client
+Paquete: python-opentelemetry-instrumentation-aiohttp-client
+Repositorio: extra
+Versión: 0.66b2-1
+Arquitectura: any
+Descripción: OpenTelemetry instrumentation for aiohttp clients
+Upstream: https://github.com/open-telemetry/opentelemetry-python-contrib
+Licencia: Apache-2.0
+Dependencias: python, python-aiohttp, python-opentelemetry-api, python-opentelemetry-instrumentation, python-opentelemetry-semantic-conventions, python-opentelemetry-util-http, python-wrapt
+Opcionales: —
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aiosqlite, python-asgiref, python-asyncpg, python-aws-xray-sdk, python-boto3, python-botocore, python-click, python-django, python-docker, python-fakeredis, python-falcon, python-fastapi, python-flask, python-gevent, python-google-auth, python-grpcio, python-http-server-mock, python-httpx, python-httpx2, python-jinja, python-mocket, python-moto, python-mysql-connector, python-mysqlclient, python-opentelemetry-api, python-opentelemetry-exporter-otlp-proto-grpc, python-opentelemetry-exporter-otlp-proto-http, python-opentelemetry-sdk, python-opentelemetry-semantic-conventions, python-opentelemetry-test-utils, python-packaging, python-pika, python-protobuf, python-psutil, python-psycopg, python-psycopg2, python-pymongo, python-pymysql, python-pytest, python-pytest-aiohttp, python-pytest-asyncio, python-pytest-benchmark, python-pytest-timeout, python-pytest-vcr, python-redis, python-requests, python-respx, python-rich, python-sqlalchemy, python-starlette, python-structlog, python-syrupy, python-tornado, python-typing_extensions, python-urllib3, python-wrapt, python-yaml
+Proporciona: —
+Estado SST: [ ]
+
+33. python-pretend
+Paquete: python-pretend
+Repositorio: extra
+Versión: 1.0.9-14
+Arquitectura: any
+Descripción: A library for stubbing in Python
+Upstream: https://github.com/alex/pretend
+Licencia: BSD-3-Clause
+Dependencias: python
+Opcionales: —
+Compilación: python-setuptools, python-build, python-installer, python-wheel
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+34. python-py3c
+Paquete: python-py3c
+Repositorio: extra
+Versión: 1.4-6
+Arquitectura: any
+Descripción: A Python 2/3 compatibility layer for C extensions
+Upstream: https://github.com/encukou/py3c
+Licencia: MIT
+Dependencias: python
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+35. python-pytorch-opt
+Paquete: python-pytorch-opt
+Repositorio: extra
+Versión: 2.15.0-1
+Arquitectura: x86_64
+Descripción: Tensors and Dynamic neural networks in Python with strong GPU acceleration (with AVX2 CPU optimizations)
+Upstream: https://pytorch.org
+Licencia: BSD-3-Clause-Modification
+Dependencias: abseil-cpp, cpuinfo, eigen, gflags, glibc, google-glog, intel-oneapi-mkl, libgcc, libgomp, libstdc++, libuv, numactl, openmp, openmpi, protobuf, pybind11, python, python-filelock, python-fsspec, python-jinja, python-networkx, python-numpy, python-scikit-build-core, python-sympy, python-typing_extensions, python-yaml, qt6-base, vulkan-icd-loader
+Opcionales: python-onnxscript: for the ONNX exporter
+Compilación: amdsmi, cmake, cuda, cudnn, doxygen, git, hipblaslt, miopen-hip, nccl, ninja, onednn, pkgconfig, python-aotriton, python-build, python-installer, python-setuptools, python-triton, python-yaml, rocm-hip-sdk, rocm-toolchain, rocprofiler, roctracer, procps-ng, oneccl, onedpl, level-zero-headers, level-zero-loader, intel-oneapi-common, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-pti, intel-compute-runtime, shaderc, vulkan-headers
+Pruebas: —
+Proporciona: python-pytorch=2.15.0
+Estado SST: [ ]
+
+36. python-rjsmin
+Paquete: python-rjsmin
+Repositorio: extra
+Versión: 1.3.0-1
+Arquitectura: x86_64
+Descripción: Fast javascript minifier for Python
+Upstream: https://github.com/ndparker/rjsmin
+Licencia: Apache-2.0
+Dependencias: glibc, python
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+37. python-ruamel.yaml.clib
+Paquete: python-ruamel.yaml.clib
+Repositorio: extra
+Versión: 0.2.15-2
+Arquitectura: x86_64
+Descripción: C version of reader, parser and emitter for ruamel.yaml derived from libyaml
+Upstream: https://sourceforge.net/projects/ruamel-yaml-clib/
+Licencia: MIT
+Dependencias: python
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+38. python-tox-current-env
+Paquete: python-tox-current-env
+Repositorio: extra
+Versión: 0.0.16-2
+Arquitectura: any
+Descripción: tox plugin to run tests in current Python environment
+Upstream: https://github.com/fedora-python/tox-current-env
+Licencia: MIT
+Dependencias: python, python-tox
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+39. qaseprite
+Paquete: qaseprite
+Repositorio: extra
+Versión: 1.0.3-1
+Arquitectura: x86_64
+Descripción: A Qt image format plugin for loading Aseprite files
+Upstream: https://github.com/mapeditor/qaseprite
+Licencia: MIT
+Dependencias: glibc, qt6-base, zlib, pixman
+Opcionales: —
+Compilación: cmake, ninja, libxcursor, xorg-xinput
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+40. qqwing
+Paquete: qqwing
+Repositorio: extra
+Versión: 1.3.4-8
+Arquitectura: x86_64
+Descripción: Sudoku generating and solving software
+Upstream: https://qqwing.com/
+Licencia: GPL-2.0-or-later
+Dependencias: glibc, libgcc, libstdc++
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+41. qrcodegencpp-cmake
+Paquete: qrcodegencpp-cmake
+Repositorio: extra
+Versión: 1.8.0-4
+Arquitectura: x86_64
+Descripción: High-quality C++ QR Code generator library with CMake and pkgconfig
+Upstream: https://github.com/nayuki/QR-Code-generator
+Licencia: MIT
+Dependencias: glibc, gcc-libs
+Opcionales: —
+Compilación: cmake
+Pruebas: —
+Proporciona: qrcodegencpp
+Estado SST: [ ]
+
+42. quassel-core
+Paquete: quassel-core
+Repositorio: extra
+Versión: 0.14.0-4
+Arquitectura: x86_64
+Descripción: Next-generation distributed IRC client - core only
+Upstream: https://quassel-irc.org/
+Licencia: GPL
+Dependencias: icu, qca, libldap
+Opcionales: postgresql: PostgreSQL database support
+Compilación: qt5-base, qt5-tools, qca-qt5, qt5-multimedia, knotifyconfig5, sonnet5, libldap, cmake, extra-cmake-modules, python, hicolor-icon-theme, boost
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+43. repgrep
+Paquete: repgrep
+Repositorio: extra
+Versión: 0.17.1-1
+Arquitectura: x86_64
+Descripción: An interactive command line replacer for ripgrep
+Upstream: https://github.com/acheronfail/repgrep
+Licencia: MIT, Apache, Unlicense
+Dependencias: libgcc, ripgrep
+Opcionales: —
+Compilación: cargo, asciidoctor
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+44. rocblas
+Paquete: rocblas
+Repositorio: extra
+Versión: 7.2.4-3
+Arquitectura: x86_64
+Descripción: Next generation BLAS implementation for ROCm platform
+Upstream: https://rocm.docs.amd.com/projects/rocBLAS/en/latest/index.html
+Licencia: MIT
+Dependencias: cblas, glibc, hip-runtime-amd, libgcc, openmp, rocm-core, roctracer
+Opcionales: python-yaml: for rocblas-bench and rocblas-gemm-tune, gtest: for rocblas-bench and rocblas-gemm-tune, rocm-smi-lib: for rocblas-bench and rocblas-gemm-tune
+Compilación: cmake, ninja, gcc-fortran, git, msgpack-cxx, perl-file-which, python, python-joblib, python-msgpack, python-pyaml, python-tensile, python-virtualenv, python-wheel, rocm-cmake, rocm-toolchain, rocm-llvm, rocm-smi-lib, gtest
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+45. ruby-rspec-mocks
+Paquete: ruby-rspec-mocks
+Repositorio: extra
+Versión: 3.13.7-1
+Arquitectura: any
+Descripción: RSpecs 'test double' framework, with support for stubbing and mocking
+Upstream: https://github.com/rspec/rspec
+Licencia: MIT
+Dependencias: ruby, ruby-diff-lcs, ruby-ffi, ruby-rspec-support
+Opcionales: —
+Compilación: git, ruby-rdoc
+Pruebas: ruby-bundler, ruby-childprocess, ruby-cucumber, ruby-drb, ruby-minitest, ruby-mutex_m, ruby-rake, ruby-rspec, ruby-rspec-core, ruby-test-unit, ruby-thread_order
+Proporciona: —
+Estado SST: [ ]
+
+46. screen
+Paquete: screen
+Repositorio: extra
+Versión: 5.0.2-2
+Arquitectura: x86_64
+Descripción: Full-screen window manager that multiplexes a physical terminal
+Upstream: https://www.gnu.org/software/screen/
+Licencia: GPL-3.0-or-later
+Dependencias: libncursesw.so=6-64, libpam.so=0-64, libutempter
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+47. slicer-udev
+Paquete: slicer-udev
+Repositorio: extra
+Versión: 2.9.6-5
+Arquitectura: x86_64
+Descripción: udev rules for Slic3r-like software
+Upstream: https://github.com/prusa3d/PrusaSlicer
+Licencia: AGPL-3.0-only
+Dependencias: —
+Opcionales: —
+Compilación: cmake, systemd, glu, ninja, git, python, boost, catch2, cereal, cgal, libigl, nlohmann-json, glad
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+48. soundfont-fluid
+Paquete: soundfont-fluid
+Repositorio: extra
+Versión: 3.1-5
+Arquitectura: any
+Descripción: FluidR3 soundfont
+Upstream: https://tracker.debian.org/pkg/fluid-soundfont
+Licencia: custom:MIT
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+49. speech-dispatcher
+Paquete: speech-dispatcher
+Repositorio: extra
+Versión: 0.12.1-3
+Arquitectura: x86_64
+Descripción: High-level device independent layer for speech synthesis interface
+Upstream: http://www.freebsoft.org/speechd
+Licencia: GPL2, FDL
+Dependencias: libspeechd=0.12.1-3, python-pyxdg, dotconf, libpulse, libao
+Opcionales: festival: Speech output using Festival, espeak-ng: Speech output using ESpeak-ng, pulseaudio: PulseAudio support, pipewire: Pipewire support
+Compilación: glib2, intltool, espeak-ng, libtool, python-pyxdg, dotconf, libpulse, libpipewire, libao
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+50. srrdb-terminal-client
+Paquete: srrdb-terminal-client
+Repositorio: extra
+Versión: 1.3.0-1
+Arquitectura: x86_64
+Descripción: A terminal client to access srrdb.com
+Upstream: https://github.com/hashworks/srrdb-Terminal-Client
+Licencia: GPL-3.0-or-later
+Dependencias: glibc
+Opcionales: —
+Compilación: go, git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+51. stochas-vst3
+Paquete: stochas-vst3
+Repositorio: extra
+Versión: 1.3.13-3
+Arquitectura: x86_64
+Descripción: A probabilistic polyrhythmic sequencer - VST3 plugin
+Upstream: https://surge-synth-team.org/stochas
+Licencia: GPL-3.0-only
+Dependencias: freetype2, libfreetype.so=6-64, glibc, libgcc, libgcc_s.so=1-64, libjpeg-turbo, libjpeg.so=8-64, libpng, libpng16.so=16-64, libstdc++, libstdc++.so=6-64, ttf-liberation, vst3-host, zlib, libz.so=1-64
+Opcionales: —
+Compilación: alsa-lib, cmake, flac, freetype2, gendesk, git, glibc, jack, juce, libgcc, libjpeg-turbo, libogg, libpng, libstdc++, libvorbis, libx11, libxcursor, libxinerama, libxrandr, ttf-liberation, zlib
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+52. texlive-latexextra
+Paquete: texlive-latexextra
+Repositorio: extra
+Versión: 2026.1-1
+Arquitectura: any
+Descripción: TeX Live - LaTeX additional packages
+Upstream: https://tug.org/texlive/
+Licencia: GPL
+Dependencias: texlive-bin, texlive-latexrecommended, texlive-pictures
+Opcionales: java-runtime: for pdfannotextractor, python-pygments: for pygmentex
+Compilación: subversion
+Pruebas: —
+Proporciona: texlive-2up, texlive-a0poster, texlive-a4wide, texlive-a5comb, texlive-abraces, texlive-abspos, texlive-abstract, texlive-accessibility, texlive-accsupp, texlive-achemso, texlive-acro, texlive-acronym, texlive-acroterm, texlive-actuarialangle, texlive-actuarialsymbol, texlive-addfont, texlive-addlines, texlive-adjmulticol, texlive-adjustbox, texlive-adrconv, texlive-advdate, texlive-affilauthor, texlive-afperpack, texlive-akktex, texlive-akletter, texlive-alchemist, texlive-alertmessage, texlive-alnumsec, texlive-alphalph, texlive-alterqcm, texlive-altfont, texlive-altsubsup, texlive-amsaddr, texlive-anima, texlive-animate, texlive-anonchap, texlive-answers, texlive-anyfontsize, texlive-appendix, texlive-appendixnumberbeamer, texlive-apptools, texlive-arabicfront, texlive-arcs, texlive-argumentation, texlive-arraycols, texlive-arrayjobx, texlive-arraysort, texlive-arydshln, texlive-asciilist, texlive-askinclude, texlive-assignment, texlive-assoccnt, texlive-association-matrix, texlive-atenddvi, texlive-atendofenv, texlive-attachfile, texlive-aurl, texlive-authoraftertitle, texlive-authorarchive, texlive-authorindex, texlive-autofancyhdr, texlive-autonum, texlive-autopdf, texlive-autopuncitems, texlive-avremu, texlive-awesomebox, texlive-axessibility, texlive-background, texlive-bankstatement, texlive-bashful, texlive-basicarith, texlive-bchart, texlive-beamer-reveal, texlive-beamer-rl, texlive-beamer-theme-albi, texlive-beamer-varbox, texlive-beamer2thesis, texlive-beamerappendixnote, texlive-beameraudience, texlive-beamerauxtheme, texlive-beamercolorthemeowl, texlive-beamerdarkthemes, texlive-beamerposter, texlive-beamersubframe, texlive-beamertheme-arguelles, texlive-beamertheme-bilkent-econ, texlive-beamertheme-cleaneasy, texlive-beamertheme-csh, texlive-beamertheme-cuerna, texlive-beamertheme-detlevcm, texlive-beamertheme-durham, texlive-beamertheme-epyt, texlive-beamertheme-focus, texlive-beamertheme-gotham, texlive-beamertheme-light, texlive-beamertheme-metropolis, texlive-beamertheme-mirage, texlive-beamertheme-npbt, texlive-beamertheme-phnompenh, texlive-beamertheme-pure-minimalistic, texlive-beamertheme-rainbow, texlive-beamertheme-saintpetersburg, texlive-beamertheme-simpledarkblue, texlive-beamertheme-simpleplus, texlive-beamertheme-spectrum, texlive-beamertheme-tcolorbox, texlive-beamertheme-trigon, texlive-beamertheme-upenn-bc, texlive-beamerthemeamurmaple, texlive-beamerthemecelestia, texlive-beamerthemeconcrete, texlive-beamerthemejltree, texlive-beamerthemelalic, texlive-beamerthemenirma, texlive-beamerthemenord, texlive-beamertools, texlive-bearwear, texlive-beaulivre, texlive-beautybook, texlive-beautynote, texlive-beton, texlive-bewerbung, texlive-bez123, texlive-bhcexam, texlive-bibletext, texlive-bigfoot, texlive-bigints, texlive-bilingualpages, texlive-biochemistry-colors, texlive-bithesis, texlive-bizcard, texlive-blindtext, texlive-blkarray, texlive-block, texlive-blowup, texlive-bnumexpr, texlive-boites, texlive-bold-extra, texlive-book-of-common-prayer, texlive-bookcover, texlive-bookest, texlive-booklet, texlive-bookshelf, texlive-boolexpr, texlive-bophook, texlive-boxedminipage, texlive-boxhandler, texlive-bracketkey, texlive-braket, texlive-breakurl, texlive-bubblesort, texlive-bullcntr, texlive-bxcalc, texlive-bxdpx-beamer, texlive-bxdvidriver, texlive-bxenclose, texlive-bxnewfont, texlive-bxpapersize, texlive-bxpdfver, texlive-bxtexlogo, texlive-calcage, texlive-calctab, texlive-calculator, texlive-calculatoritems, texlive-calrsfs, texlive-cals, texlive-calxxxx-yyyy, texlive-cancel, texlive-canoniclayout, texlive-capt-of, texlive-captcont, texlive-captdef, texlive-carbohydrates, texlive-cases, texlive-casyl, texlive-catchfile, texlive-catchfilebetweentags, texlive-catechis, texlive-catoptions, texlive-catppuccinpalette, texlive-cbcoptic, texlive-ccaption, texlive-cclicenses, texlive-cd, texlive-cd-cover, texlive-cdcmd, texlive-cdpbundl, texlive-cellprops, texlive-cellspace, texlive-censor, texlive-centeredline, texlive-centerlastline, texlive-changebar, texlive-changelayout, texlive-changelog, texlive-changepage, texlive-changes, texlive-chappg, texlive-chapterfolder, texlive-cheatsheet, texlive-checkend, texlive-chet, texlive-chextras, texlive-childdoc, texlive-chkfloat, texlive-chletter, texlive-chngcntr, texlive-chronology, texlive-chronos, texlive-circ, texlive-circledsteps, texlive-circledtext, texlive-cistercian, texlive-classics, texlive-classpack, texlive-clefval, texlive-cleveref, texlive-cleveref-forward, texlive-cleveref-usedon, texlive-clicks, texlive-clipboard, texlive-clistmap, texlive-clock, texlive-clrdblpg, texlive-clrstrip, texlive-cmdstring, texlive-cmdtrack, texlive-cmsd, texlive-cnltx, texlive-cntformats, texlive-cntperchap, texlive-codebox, texlive-codedescribe, texlive-codedoc, texlive-codehigh, texlive-codepage, texlive-codesection, texlive-collcell, texlive-collectbox, texlive-colophon, texlive-color-edits, texlive-colorblind, texlive-colordoc, texlive-colorframed, texlive-colorinfo, texlive-coloring, texlive-colorist, texlive-colorspace, texlive-colortab, texlive-colorwav, texlive-colorweb, texlive-colourchange, texlive-combelow, texlive-combine, texlive-comma, texlive-commado, texlive-commalists-tools, texlive-commedit, texlive-comment, texlive-commonunicode, texlive-competences, texlive-concepts, texlive-concprog, texlive-conditext, texlive-constants, texlive-continue, texlive-contour, texlive-contracard, texlive-conv-xkv, texlive-cooking, texlive-cooking-units, texlive-cool, texlive-coolfn, texlive-coollist, texlive-coolstr, texlive-coolthms, texlive-cooltooltips, texlive-coop-writing, texlive-coordsys, texlive-copyedit, texlive-copyrightbox, texlive-coseoul, texlive-count1to, texlive-counterz, texlive-counttexruns, texlive-courseoutline, texlive-coursepaper, texlive-coverpage, texlive-cprotect, texlive-cprotectinside, texlive-crbox, texlive-create-theorem, texlive-creationboites, texlive-crefthe, texlive-crossreference, texlive-crossreftools, texlive-crumbs, texlive-csquotes, texlive-css-colors, texlive-csvmerge, texlive-csvsimple, texlive-cuisine, texlive-currency, texlive-currfile, texlive-curriculum-vitae, texlive-currvita, texlive-customenvs, texlive-cutwin, texlive-cv, texlive-cv4tw, texlive-cweb-latex, texlive-cyber, texlive-cybercic, texlive-darkmode, texlive-dashbox, texlive-dashrule, texlive-dashrulex, texlive-dashundergaps, texlive-dataref, texlive-datatool, texlive-datatool-english, texlive-datatool-regions, texlive-datax, texlive-dateiliste, texlive-datenumber, texlive-datestamp, texlive-datetime, texlive-datetime2, texlive-datetime2-bahasai, texlive-datetime2-basque, texlive-datetime2-breton, texlive-datetime2-bulgarian, texlive-datetime2-catalan, texlive-datetime2-croatian, texlive-datetime2-czech, texlive-datetime2-danish, texlive-datetime2-dutch, texlive-datetime2-en-fulltext, texlive-datetime2-english, texlive-datetime2-esperanto, texlive-datetime2-estonian, texlive-datetime2-finnish, texlive-datetime2-french, texlive-datetime2-galician, texlive-datetime2-german, texlive-datetime2-greek, texlive-datetime2-hebrew, texlive-datetime2-icelandic, texlive-datetime2-irish, texlive-datetime2-it-fulltext, texlive-datetime2-italian, texlive-datetime2-latin, texlive-datetime2-lsorbian, texlive-datetime2-magyar, texlive-datetime2-norsk, texlive-datetime2-polish, texlive-datetime2-portuges, texlive-datetime2-romanian, texlive-datetime2-russian, texlive-datetime2-samin, texlive-datetime2-scottish, texlive-datetime2-serbian, texlive-datetime2-slovak, texlive-datetime2-slovene, texlive-datetime2-spanish, texlive-datetime2-swedish, texlive-datetime2-turkish, texlive-datetime2-ukrainian, texlive-datetime2-usorbian, texlive-datetime2-welsh, texlive-dblfloatfix, texlive-dbshow, texlive-debate, texlive-decimal, texlive-decimalcomma, texlive-decorule, texlive-defoldfonts, texlive-delimtxt, texlive-democodetools, texlive-denisbdoc, texlive-diabetes-logbook, texlive-diagbox, texlive-diagnose, texlive-dialogl, texlive-dichokey, texlive-didactic, texlive-didec, texlive-dimnum, texlive-dinbrief, texlive-directory, texlive-dirtytalk, texlive-dlfltxb, texlive-dnaseq, texlive-doclicense, texlive-docmfp, texlive-docmute, texlive-docshots, texlive-doctools, texlive-documentation, texlive-docutils, texlive-doi, texlive-doibanner, texlive-dotarrow, texlive-dotlessi, texlive-dotseqn, texlive-download, texlive-dox, texlive-dpfloat, texlive-dprogress, texlive-drac, texlive-draftcopy, texlive-draftfigure, texlive-draftwatermark, texlive-dtk, texlive-dtxdescribe, texlive-dtxgallery, texlive-ducksay, texlive-duckuments, texlive-dvdcoll, texlive-dynamicnumber, texlive-dynblocks, texlive-ean13isbn, texlive-easy, texlive-easy-todo, texlive-easybook, texlive-easyfig, texlive-easyfloats, texlive-easyformat, texlive-easylist, texlive-easyreview, texlive-ebezier, texlive-ecclesiastic, texlive-econlipsum, texlive-ecv, texlive-ed, texlive-edichokey, texlive-edmargin, texlive-eemeir, texlive-efbox, texlive-egplot, texlive-ehhline, texlive-einfart, texlive-elegantbook, texlive-elegantnote, texlive-elegantpaper, texlive-elements, texlive-ellipsis, texlive-elmath, texlive-elocalloc, texlive-elpres, texlive-elzcards, texlive-emarks, texlive-embedall, texlive-embedfile, texlive-embrac, texlive-emo, texlive-emotion, texlive-emptypage, texlive-emulateapj, texlive-endfloat, texlive-endheads, texlive-endnotes, texlive-endnotes-hy, texlive-engpron, texlive-engrec, texlive-enotez, texlive-ensps-colorscheme, texlive-enumext, texlive-enumitem, texlive-enumitem-zref, texlive-enumsub, texlive-envbig, texlive-envelope-letter, texlive-enverb, texlive-environ, texlive-envlab, texlive-epcqrcode, texlive-epigraph, texlive-epigraph-keys, texlive-epiolmec, texlive-eq-pin2corr, texlive-eqell, texlive-eqlist, texlive-eqnalign, texlive-eqname, texlive-eqparbox, texlive-errata, texlive-erw-l3, texlive-esami, texlive-esdiff, texlive-esieecv, texlive-esindex, texlive-esint, texlive-esint-type1, texlive-essaykit, texlive-etaremune, texlive-etextools, texlive-etl, texlive-etoc, texlive-eukdate, texlive-eulerpx, texlive-euromoney, texlive-europasscv, texlive-europecv, texlive-everyhook, texlive-everypage, texlive-exam, texlive-exam-lite, texlive-exam-n, texlive-exam-randomizechoices, texlive-examdesign, texlive-example, texlive-examplep, texlive-examz, texlive-exceltex, texlive-excludeonly, texlive-exercise, texlive-exercisebank, texlive-exercisepoints, texlive-exercises, texlive-exercisesheets, texlive-exesheet, texlive-exframe, texlive-exp-testopt, texlive-expdlist, texlive-export, texlive-exsheets, texlive-exsol, texlive-extract, texlive-ezedits, texlive-facsimile, texlive-factura, texlive-fail-fast, texlive-familytree, texlive-fancyhandout, texlive-fancylabel, texlive-fancynum, texlive-fancypar, texlive-fancyqr, texlive-fancyslides, texlive-fancytabs, texlive-fancytooltips, texlive-fbox, texlive-fcolumn, texlive-fetchcls, texlive-fewerfloatpages, texlive-ffcode, texlive-ffslides, texlive-fgruler, texlive-fifo-stack, texlive-figsize, texlive-figureversions, texlive-filecontents, texlive-filecontentsdef, texlive-filedate, texlive-fileinfo, texlive-filemod, texlive-fillpages, texlive-fillwith, texlive-fink, texlive-finstrut, texlive-fistrum, texlive-fithesis, texlive-fixcmex, texlive-fixfoot, texlive-fixme, texlive-fixmetodonotes, texlive-fixtounicode, texlive-fjodor, texlive-flabels, texlive-flacards, texlive-flagderiv, texlive-flashcards, texlive-flashmovie, texlive-flexipage, texlive-flipbook, texlive-flippdf, texlive-floatbytocbasic, texlive-floatflt, texlive-floatrow, texlive-floatrowbytocbasic, texlive-flowfram, texlive-fmp, texlive-fmtcount, texlive-fn2end, texlive-fnbreak, texlive-fncychap, texlive-fncylab, texlive-fnpara, texlive-fnpct, texlive-fnumprint, texlive-foilhtml, texlive-foliono, texlive-fontaxes, texlive-fontscale, texlive-fontsetup, texlive-fontsize, texlive-fonttable, texlive-footmisc, texlive-footmisx, texlive-footnotebackref, texlive-footnoterange, texlive-footnpag, texlive-forarray, texlive-foreign, texlive-forloop, texlive-formlett, texlive-forms16be, texlive-formular, texlive-fragments, texlive-frame, texlive-framed, texlive-framedsyntax, texlive-frankenstein, texlive-frege, texlive-froufrou, texlive-ftcap, texlive-ftnxtra, texlive-fullblck, texlive-fullminipage, texlive-fullwidth, texlive-functional, texlive-fundus-calligra, texlive-fundus-cyr, texlive-fundus-sueterlin, texlive-futharksymb, texlive-fvextra, texlive-fwlw, texlive-g-brief, texlive-gatherenum, texlive-gauss, texlive-gcard, texlive-gcite, texlive-gender, texlive-genealogy-profiles, texlive-genmpage, texlive-gensymb, texlive-getfiledate, texlive-getitems, texlive-gindex, texlive-ginpenc, texlive-gitfile-info, texlive-gitinfo, texlive-gitinfo2, texlive-gitlog, texlive-gitstatus, texlive-gitver, texlive-globalvals, texlive-gloss, texlive-glossaries, texlive-glossaries-danish, texlive-glossaries-dutch, texlive-glossaries-english, texlive-glossaries-estonian, texlive-glossaries-extra, texlive-glossaries-finnish, texlive-glossaries-french, texlive-glossaries-german, texlive-glossaries-irish, texlive-glossaries-italian, texlive-glossaries-magyar, texlive-glossaries-norsk, texlive-glossaries-nynorsk, texlive-glossaries-polish, texlive-glossaries-portuges, texlive-glossaries-serbian, texlive-glossaries-slovene, texlive-glossaries-spanish, texlive-glossaries-ukrainian, texlive-gmdoc, texlive-gmdoc-enhance, texlive-gmiflink, texlive-gmutils, texlive-gmverb, texlive-grabbox, texlive-gradient-text, texlive-grading-scheme, texlive-graphbox, texlive-graphicscache, texlive-graphicx-psmin, texlive-graphicxbox, texlive-graphpaper, texlive-gratzer-color-scheme, texlive-grayhints, texlive-grfpaste, texlive-grid, texlive-grid-system, texlive-gridpapers, texlive-gridset, texlive-gridslides, texlive-gs1, texlive-guitlogo, texlive-ha-prosper, texlive-hackthefootline, texlive-halloweenmath, texlive-handin, texlive-handout, texlive-handoutwithnotes, texlive-hang, texlive-hanging, texlive-hardwrap, texlive-harnon-cv, texlive-harpoon, texlive-hc, texlive-he-she, texlive-hebdomon, texlive-hep-acronym, texlive-hep-float, texlive-hep-math, texlive-hep-text, texlive-hep-title, texlive-hereapplies, texlive-hhtensor, texlive-hideanswer, texlive-highlightlatex, texlive-highlightx, texlive-histogr, texlive-hitec, texlive-hitreport, texlive-hletter, texlive-hobsub, texlive-homework, texlive-hpsdiss, texlive-href-ul, texlive-hrefhide, texlive-huawei, texlive-hvextern, texlive-hvindex, texlive-hvlogos, texlive-hvpygmentex, texlive-hvqrurl, texlive-hwemoji, texlive-hypdestopt, texlive-hypdoc, texlive-hypdvips, texlive-hyper, texlive-hyperbar, texlive-hypernat, texlive-hyperxmp, texlive-hyphenat, texlive-identkey, texlive-idxcmds, texlive-idxlayout, texlive-iexec, texlive-ifallfalse, texlive-iffont, texlive-ifmslide, texlive-ifmtarg, texlive-ifnextok, texlive-ifoddpage, texlive-ifthenx, texlive-iitem, texlive-image-gallery, texlive-imakeidx, texlive-import, texlive-incgraph, texlive-indextools, texlive-indextra, texlive-inline-images, texlive-inlinedef, texlive-inlinegraphicx, texlive-inlinelabel, texlive-inputenx, texlive-inputtrc, texlive-interactiveworkbook, texlive-interfaces, texlive-intopdf, texlive-inversepath, texlive-invoice, texlive-invoice-class, texlive-invoice2, texlive-ipsum, texlive-iso, texlive-iso10303, texlive-isodate, texlive-isodoc, texlive-isonums, texlive-isopt, texlive-isorot, texlive-isosigns, texlive-isotope, texlive-issuulinks, texlive-iwonamath, texlive-jlabels, texlive-jmsdelim, texlive-jobname-suffix, texlive-joinbox, texlive-jslectureplanner, texlive-jsonparse, texlive-jumplines, texlive-jvlisting, texlive-kalendarium, texlive-kantlipsum, texlive-kerntest, texlive-keycommand, texlive-keyfloat, texlive-keyindex, texlive-keyparse, texlive-keyreader, texlive-keystroke, texlive-keyval2e, texlive-keyvaltable, texlive-kix, texlive-knowledge, texlive-koma-moderncvclassic, texlive-koma-script-sfs, texlive-komacv, texlive-komacv-rg, texlive-korigamik, texlive-ktbox, texlive-ktv-texdata, texlive-l3backend-dev, texlive-l3build, texlive-l3kernel-dev, texlive-labbook, texlive-labels, texlive-labels4easylist, texlive-labelschanged, texlive-lambdax, texlive-lastbib, texlive-lastpackage, texlive-lastpage, texlive-latex-amsmath-dev, texlive-latex-base-dev, texlive-latex-bin-dev, texlive-latex-context-ppchtex, texlive-latex-firstaid-dev, texlive-latex-graphics-dev, texlive-latex-lab-dev, texlive-latex-tagging-status, texlive-latex-tools-dev, texlive-latex-uni8, texlive-latex2pydata, texlive-latexcolors, texlive-latexdemo, texlive-latexgit, texlive-layouts, texlive-lazylist, texlive-lccaps, texlive-lcd, texlive-lcg, texlive-leading, texlive-leaflet, texlive-lebhart, texlive-lecturenotes, texlive-lectures, texlive-lectureslides, texlive-leftidx, texlive-leftindex, texlive-leipzig, texlive-lengthconvert, texlive-leporello, texlive-lettre, texlive-lettrine, texlive-lewis, texlive-lhelp, texlive-libgreek, texlive-limap, texlive-linegoal, texlive-linop, texlive-lipsum, texlive-lisp-on-tex, texlive-listing, texlive-listingsutf8, texlive-listlbls, texlive-listliketab, texlive-listofsymbols, texlive-listparskip, texlive-litetable, texlive-lkproof, texlive-lmake, texlive-locality, texlive-logbox, texlive-logical-markup-utils, texlive-logoetalab, texlive-logpap, texlive-longfbox, texlive-longfigure, texlive-longnamefilelist, texlive-longtwocolumn, texlive-loops, texlive-lsc, texlive-lscapeenhanced, texlive-lstaddons, texlive-lstfiracode, texlive-lt3graph, texlive-lt3rawobjects, texlive-ltablex, texlive-ltabptch, texlive-ltxdockit, texlive-ltxguidex, texlive-ltxkeys, texlive-ltxnew, texlive-ltxtools, texlive-lua-check-hyphen, texlive-lua-physical, texlive-luatodonotes, texlive-macrolist, texlive-macroswap, texlive-magaz, texlive-magicnum, texlive-magicwatermark, texlive-mailing, texlive-mailmerge, texlive-makebarcode, texlive-makebase, texlive-makebox, texlive-makecell, texlive-makecirc, texlive-makecmds, texlive-makecookbook, texlive-makedtx, texlive-makeglos, texlive-makegobbler, texlive-makelabels, texlive-makerobust, texlive-mandi, texlive-manfnt, texlive-manuscript, texlive-manyind, texlive-marginfit, texlive-marginfix, texlive-marginnote, texlive-markdown, texlive-mathalpha, texlive-mathastext, texlive-mathexam, texlive-mathfam256, texlive-mathfont, texlive-mathgreeks, texlive-maybemath, texlive-mcaption, texlive-mceinleger, texlive-mcexam, texlive-mcite, texlive-mciteplus, texlive-mdframed, texlive-media4svg, texlive-media9, texlive-medstarbeamer, texlive-meetingmins, texlive-memexsupp, texlive-memoize-ext, texlive-memory, texlive-mensa-tex, texlive-menu, texlive-menucard, texlive-menukeys, texlive-metacapture, texlive-metalogox, texlive-metanorma, texlive-metastr, texlive-method, texlive-metre, texlive-mfirstuc, texlive-mftinc, texlive-mi-solns, texlive-midpage, texlive-milestonetimeline, texlive-mindflow, texlive-minibox, texlive-minidocument, texlive-minifp, texlive-minimalist, texlive-minipage-marginpar, texlive-minitoc, texlive-minorrevision, texlive-minted, texlive-minted-code, texlive-minutes, texlive-mla-paper, texlive-mleftright, texlive-mlist, texlive-mmap, texlive-mnotes, texlive-moderncv, texlive-modernposter, texlive-modernruler, texlive-moderntimeline, texlive-modref, texlive-modroman, texlive-modular, texlive-moloch, texlive-monofill, texlive-moodle, texlive-moreenum, texlive-morefloats, texlive-morehype, texlive-moresize, texlive-moreverb, texlive-morewrites, texlive-movement-arrows, texlive-movie15, texlive-mparhack, texlive-mpostinl, texlive-msc, texlive-msg, texlive-mslapa, texlive-mtgreek, texlive-multenum, texlive-multiaudience, texlive-multibbl, texlive-multicap, texlive-multicolrule, texlive-multidef, texlive-multienv, texlive-multiexpand, texlive-multifootnote, texlive-multilang, texlive-multinotes, texlive-multiple-choice, texlive-multirow, texlive-multitoc, texlive-mversion, texlive-mwe, texlive-mycv, texlive-mylatex, texlive-mylatexformat, texlive-nag, texlive-nameauth, texlive-namespc, texlive-ncclatex, texlive-ncctools, texlive-needspace, texlive-neoschool, texlive-nestquot, texlive-newcommand, texlive-newenviron, texlive-newfile, texlive-newlfm, texlive-newspaper, texlive-newunicodechar, texlive-newvbtm, texlive-newverbs, texlive-nextpage, texlive-nfssext-cfr, texlive-nicefilelist, texlive-niceframe, texlive-nicetext, texlive-nidanfloat, texlive-ninecolors, texlive-nlctdoc, texlive-noconflict, texlive-nodepthtext, texlive-noindentafter, texlive-noitcrul, texlive-nolbreaks, texlive-nomencl, texlive-nomentbl, texlive-non-decimal-units, texlive-nonfloat, texlive-nonumonpart, texlive-nopageno, texlive-normalcolor, texlive-notebeamer, texlive-notes, texlive-notespages, texlive-notestex, texlive-notoccite, texlive-novabeamer-theme, texlive-nowidow, texlive-nox, texlive-ntheorem, texlive-numberedblock, texlive-numname, texlive-numprint, texlive-numspell, texlive-ocg-p, texlive-ocgx, texlive-ocgx2, texlive-ocr-latex, texlive-octavo, texlive-oldstyle, texlive-onepgnote, texlive-onlyamsmath, texlive-opcit, texlive-opencolor, texlive-optidef, texlive-optional, texlive-options, texlive-orcidlink, texlive-orientation, texlive-outline, texlive-outliner, texlive-outlines, texlive-outlining, texlive-overlays, texlive-overpic, texlive-packdoc, texlive-padcount, texlive-pagecolor, texlive-pagecont, texlive-pagegrid, texlive-pagelayout, texlive-pagenote, texlive-pagerange, texlive-pageslts, texlive-palette, texlive-panda, texlive-pangram, texlive-paper, texlive-papercdcase, texlive-papermas, texlive-papertex, texlive-paracol, texlive-parades, texlive-paralist, texlive-paramcalc, texlive-paresse, texlive-parnotes, texlive-parsa, texlive-parselines, texlive-pas-cours, texlive-pas-cv, texlive-pas-tableur, texlive-passopt, texlive-patch, texlive-patchcmd, texlive-pauldoc, texlive-pawpict, texlive-pax, texlive-pbalance, texlive-pbox, texlive-pbsheet, texlive-pdf14, texlive-pdfannotations, texlive-pdfcol, texlive-pdfcolmk, texlive-pdfcomment, texlive-pdfcprot, texlive-pdfmarginpar, texlive-pdfoverlay, texlive-pdfpagediff, texlive-pdfpc, texlive-pdfpc-movie, texlive-pdfprivacy, texlive-pdfrender, texlive-pdfreview, texlive-pdfscreen, texlive-pdfslide, texlive-pdfsync, texlive-pdfwin, texlive-pdfx, texlive-pecha, texlive-pegmatch, texlive-perltex, texlive-permute, texlive-petiteannonce, texlive-pgfmath-xfp, texlive-phfcc, texlive-phfextendedabstract, texlive-phffullpagefigure, texlive-phfnote, texlive-phfparen, texlive-phfqit, texlive-phfquotetext, texlive-phfsvnwatermark, texlive-phfthm, texlive-philex, texlive-phonenumbers, texlive-photo, texlive-photobook, texlive-picture, texlive-piff, texlive-pkginfograb, texlive-pkgloader, texlive-placeins, texlive-plantslabels, texlive-plates, texlive-plweb, texlive-pmboxdraw, texlive-polynom, texlive-polynomial, texlive-polytable, texlive-postcards, texlive-poster-mac, texlive-postnotes, texlive-powerdot, texlive-ppr-prv, texlive-ppt-slides, texlive-practicalreports, texlive-precattl, texlive-prelim2e, texlive-preprint, texlive-pressrelease, texlive-prettyref, texlive-prettytok, texlive-preview, texlive-printlen, texlive-probsoln, texlive-profmaquette, texlive-program, texlive-progress, texlive-progressbar, texlive-projlib, texlive-pronunciation, texlive-proofread, texlive-properties, texlive-prosper, texlive-protex, texlive-protocol, texlive-psfragx, texlive-pstool, texlive-pstring, texlive-pxgreeks, texlive-pygmentex, texlive-pynotebook, texlive-python, texlive-pythonimmediate, texlive-q-and-a, texlive-qcm, texlive-qstest, texlive-qsymbols, texlive-quicktype, texlive-quiz2socrative, texlive-quotchap, texlive-quoting, texlive-quotmark, texlive-rainbowbrackets, texlive-ran_toks, texlive-randexam, texlive-randintlist, texlive-randtext, texlive-rccol, texlive-rcs-multi, texlive-rcsinfo, texlive-readablecv, texlive-readarray, texlive-realboxes, texlive-realscripts, texlive-recipe, texlive-recipebook, texlive-recipecard, texlive-rectopma, texlive-refcheck, texlive-refenums, texlive-reflectgraphics, texlive-refman, texlive-refstyle, texlive-regcount, texlive-regexpatch, texlive-register, texlive-regstats, texlive-relenc, texlive-relsize, texlive-repeatindex, texlive-repltext, texlive-rescansync, texlive-resmes, texlive-responsive, texlive-returntogrid, texlive-rgltxdoc, texlive-rjlparshap, texlive-rlepsf, texlive-rmpage, texlive-robust-externalize, texlive-robustcommand, texlive-robustindex, texlive-romanbar, texlive-romanbarpagenumber, texlive-romanneg, texlive-romannum, texlive-rorlink, texlive-rotfloat, texlive-rotpages, texlive-roundbox, texlive-rterface, texlive-rtkinenc, texlive-rulerbox, texlive-rulercompass, texlive-runcode, texlive-rvwrite, texlive-sanitize-umlaut, texlive-sauerj, texlive-saveenv, texlive-savefnmark, texlive-savesym, texlive-savetrees, texlive-scale, texlive-scalebar, texlive-scalerel, texlive-scaletextbullet, texlive-scanpages, texlive-schedule, texlive-schooldocs, texlive-scontents, texlive-scrambledenvs, texlive-scrhack, texlive-scrlayer-fancyhdr, texlive-scrlttr2copy, texlive-scrwfile, texlive-sdaps, texlive-sdrt, texlive-secdot, texlive-secnum, texlive-secretx, texlive-sectionbox, texlive-sectionbreak, texlive-sectsty, texlive-seealso, texlive-selectp, texlive-selinput, texlive-semantex, texlive-semantic, texlive-semantic-markup, texlive-semesterplanner, texlive-semioneside, texlive-semproc, texlive-semtex, texlive-sepfootnotes, texlive-seqsplit, texlive-sesstime, texlive-setspaceenhanced, texlive-sf298, texlive-sffms, texlive-sfmath, texlive-shadethm, texlive-shadow, texlive-shadowtext, texlive-shapepar, texlive-shdoc, texlive-shipunov, texlive-shorttoc, texlive-show2e, texlive-showcharinbox, texlive-showdim, texlive-showexpl, texlive-showlabels, texlive-sidecap, texlive-sidenotes, texlive-sidenotesplus, texlive-silence, texlive-sillypage, texlive-sim-os-menus, texlive-simplecd, texlive-simplecv, texlive-simpleinvoice, texlive-simplivre, texlive-sitem, texlive-skb, texlive-skdoc, texlive-skeldoc, texlive-skeycommand, texlive-skeyval, texlive-skills, texlive-skrapport, texlive-slantsc, texlive-slixte, texlive-smalltableof, texlive-smart-eqn, texlive-smartref, texlive-smartunits, texlive-snapshot, texlive-snaptodo, texlive-snotez, texlive-soulpos, texlive-spacingtricks, texlive-spark-otf, texlive-sparklines, texlive-spelatex, texlive-sphack, texlive-splitindex, texlive-spot, texlive-spotcolor, texlive-spreadtab, texlive-spverbatim, texlive-srbook-mem, texlive-srcltx, texlive-sseq, texlive-sslides, texlive-stack, texlive-stackengine, texlive-standalone, texlive-standardsectioning, texlive-starray, texlive-stdclsdv, texlive-stdpage, texlive-stealcaps, texlive-stex, texlive-stocksize, texlive-storebox, texlive-storecmd, texlive-stringstrings, texlive-sttools, texlive-stubs, texlive-studenthandouts, texlive-styledcmd, texlive-subdepth, texlive-subdocs, texlive-subeqn, texlive-subeqnarray, texlive-subfigmat, texlive-subfigure, texlive-subfiles, texlive-subfloat, texlive-substr, texlive-supertabular, texlive-suppose, texlive-svg, texlive-svgcolor, texlive-svn, texlive-svn-multi, texlive-svn-prov, texlive-svninfo, texlive-swfigure, texlive-switch, texlive-swungdash, texlive-syntax, texlive-synthslant, texlive-syntrace, texlive-synttree, texlive-tabbing, texlive-tabfigures, texlive-tableaux, texlive-tablefootnote, texlive-tableof, texlive-tablericons, texlive-tablists, texlive-tabls, texlive-tablvar, texlive-tabstackengine, texlive-tabto-ltx, texlive-tabu, texlive-tabular2, texlive-tabularborder, texlive-tabularcalc, texlive-tabularew, texlive-tabularray, texlive-tabulary, texlive-tagging, texlive-tagpair, texlive-tagpdf, texlive-talk, texlive-tamefloats, texlive-tangocolors, texlive-tasks, texlive-tblr-extras, texlive-tcldoc, texlive-tcolorbox, texlive-tdclock, texlive-technics, texlive-ted, texlive-telprint, texlive-templatetools, texlive-termcal, texlive-terminalcode, texlive-termlist, texlive-termsim, texlive-testhyphens, texlive-testidx, texlive-tex-label, texlive-tex-locale, texlive-texlogos, texlive-texmate, texlive-texments, texlive-texpower, texlive-texshade, texlive-texsurgery, texlive-textcsc, texlive-textfit, texlive-textmerg, texlive-textpos, texlive-textualicomma, texlive-texvc, texlive-theoremref, texlive-thinsp, texlive-threadcol, texlive-threeparttable, texlive-threeparttablex, texlive-thumb, texlive-thumbs, texlive-thumby, texlive-ticket, texlive-timeop, texlive-tipauni, texlive-titlecaps, texlive-titlefoot, texlive-titlepic, texlive-titleref, texlive-titlesec, texlive-titling, texlive-to-be-determined, texlive-tocbibind, texlive-tocdata, texlive-tocloft, texlive-tocvsec2, texlive-todo, texlive-todonotes, texlive-tokcycle, texlive-tokenizer, texlive-tokglobalstack, texlive-tokgroupmark, texlive-toolbox, texlive-topfloat, texlive-topiclongtable, texlive-totalcount, texlive-totcount, texlive-totpages, texlive-traffic-light-protocol, texlive-tramlines, texlive-translations, texlive-transparent, texlive-treesvr, texlive-trfsigns, texlive-trimspaces, texlive-trivfloat, texlive-trsym, texlive-truncate, texlive-tucv, texlive-turnthepage, texlive-tutodoc, texlive-twoinone, texlive-twoup, texlive-txgreeks, texlive-type1cm, texlive-typed-checklist, texlive-typeface, texlive-typoaid, texlive-typog, texlive-typogrid, texlive-uassign, texlive-ucs, texlive-uebungsblatt, texlive-ullrcorners, texlive-umoline, texlive-underlin, texlive-underoverlap, texlive-undolabl, texlive-uni-titlepage, texlive-unicode-math-input, texlive-unicodefonttable, texlive-unifront, texlive-unisc, texlive-unitconv, texlive-units, texlive-unravel, texlive-updatemarks, texlive-upmethodology, texlive-upquote, texlive-uri, texlive-useclass, texlive-ushort, texlive-uspace, texlive-utf8add, texlive-uwmslide, texlive-variablelm, texlive-varindex, texlive-varsfromjobname, texlive-varwidth, texlive-vcell, texlive-vdmlisting, texlive-verbasef, texlive-verbatimbox, texlive-verbatimcopy, texlive-verbdef, texlive-verbments, texlive-verifiche, texlive-verifycommand, texlive-version, texlive-versions, texlive-versonotes, texlive-vertbars, texlive-vgrid, texlive-vhistory, texlive-vmargin, texlive-volumes, texlive-vpe, texlive-vruler, texlive-vscodeicons, texlive-vtable, texlive-vwcol, texlive-wallcalendar, texlive-wallpaper, texlive-warning, texlive-warpcol, texlive-was, texlive-webquiz, texlive-whatsnote, texlive-widetable, texlive-widows-and-orphans, texlive-williams, texlive-willowtreebook, texlive-withargs, texlive-wordcount, texlive-wordlike, texlive-worksheet, texlive-wrapfig, texlive-wrapfig2, texlive-wrapstuff, texlive-writeongrid, texlive-wtref, texlive-xargs, texlive-xassoccnt, texlive-xbmks, texlive-xcntperchap, texlive-xcolor-material, texlive-xcolor-solarized, texlive-xcomment, texlive-xcookybooky, texlive-xcpdftips, texlive-xdoc, texlive-xellipsis, texlive-xfakebold, texlive-xfor, texlive-xhfill, texlive-xifthen, texlive-ximera, texlive-xint, texlive-xint-regression, texlive-xkcdcolors, texlive-xkeymask, texlive-xltabular, texlive-xmeaning, texlive-xmpincl, texlive-xnewcommand, texlive-xoptarg, texlive-xpatch, texlive-xpeek, texlive-xpeekahead, texlive-xprintlen, texlive-xpunctuate, texlive-xreview, texlive-xsavebox, texlive-xsim, texlive-xsipa, texlive-xstacks, texlive-xstix2, texlive-xstring, texlive-xtab, texlive-xtufte, texlive-xurl, texlive-xwatermark, texlive-xytree, texlive-yafoot, texlive-yagusylo, texlive-yaletter, texlive-ycbook, texlive-ydoc, texlive-yplan, texlive-zebra-goodies, texlive-zed-csp, texlive-zennote, texlive-ziffer, texlive-zref, texlive-zref-check, texlive-zref-clever, texlive-zref-vario, texlive-zugferd, texlive-zwgetfdate, texlive-zwpagelayout
+Estado SST: [ ]
+
+53. translate-shell
+Paquete: translate-shell
+Repositorio: extra
+Versión: 0.9.7.1-2
+Arquitectura: any
+Descripción: A command-line interface and interactive shell for Google Translate
+Upstream: https://www.soimort.org/translate-shell/
+Licencia: Unlicense
+Dependencias: bash, gawk
+Opcionales: aspell: spell checking, curl: openSSL support, emacs: Emacs interface, espeak-ng: Text-to-Speech functionality, fribidi: display right-to-left languages, hunspell: spell checking, less: terminal paging, mpg123: Text-to-Speech functionality, mplayer: Text-to-Speech functionality, mpv: Text-to-Speech functionality, rlwrap: readline-style editing and history in the interactive mode
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+54. unifdef
+Paquete: unifdef
+Repositorio: extra
+Versión: 2.12-4
+Arquitectura: x86_64
+Descripción: Remove #ifdef'ed lines
+Upstream: https://dotat.at/prog/unifdef/
+Licencia: GPL
+Dependencias: —
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+55. virglrenderer
+Paquete: virglrenderer
+Repositorio: extra
+Versión: 1.3.0-2
+Arquitectura: x86_64
+Descripción: A virtual 3D GPU library, that allows the guest operating system to use the host GPU to accelerate 3D rendering
+Upstream: https://virgil3d.github.io/
+Licencia: MIT
+Dependencias: glibc, libdrm, libepoxy, libgcc, libsysprof-capture, libva, libx11, mesa
+Opcionales: —
+Compilación: check, git, meson, ninja, python, python-yaml, vulkan-headers
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+56. vlc-plugin-live555
+Paquete: vlc-plugin-live555
+Repositorio: extra
+Versión: 3.0.24-1
+Arquitectura: x86_64
+Descripción: Free and open source cross-platform multimedia player and framework - live555 RTP/RSTP client plugin
+Upstream: https://www.videolan.org/vlc/
+Licencia: GPL-2.0-or-later, LGPL-2.1-or-later
+Dependencias: glibc, libgcc, libstdc++, libvlc, libvlccore.so=9-64, live-media, vlc-plugins-base
+Opcionales: —
+Compilación: a52dec, aalib, abseil-cpp, alsa-lib, aom, aribb24, aribb25, avahi, bash, cairo, dav1d, dbus, faad2, ffmpeg, flac, fluidsynth, fontconfig, freetype2, fribidi, gdk-pixbuf2, git, glib2, glibc, gnutls, gst-plugins-base-libs, gtk3, harfbuzz, hicolor-icon-theme, jack, libarchive, libass, libavc1394, libbluray, libcaca, libcddb, libdc1394, libdca, libdvbpsi, libdvdcss, libdvdnav, libdvdread, libgcc, libglvnd, libgme, libgoom2, libjpeg-turbo, libkate, libmad, libmatroska, libmicrodns, libmodplug, libmpcdec, libmpeg2, libmtp, libnfs, libnotify, libogg, libpng, libproxy, libpulse, librist, librsvg, libsamplerate, libsecret, libshout, libsoxr, libssh2, libstdc++, libtheora, libtiger, libupnp, libva, libvorbis, libvpl, libvpx, libx11, libxcb, libxinerama, libxml2, libxpm, lirc, live-media, lua51, mesa, mpg123, opus, pcsclite, projectm, protobuf, qt5-base, qt5-svg, qt5-x11extras, sdl12-compat, sdl_image, smbclient, speex, speexdsp, srt, systemd-libs, taglib, twolame, wayland, wayland-protocols, x264, x265, xcb-util-keysyms, xosd, zlib, zvbi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+57. wasmtime
+Paquete: wasmtime
+Repositorio: extra
+Versión: 50.0.1-1
+Arquitectura: x86_64
+Descripción: Standalone JIT-style runtime for WebAssembly, using Cranelift
+Upstream: https://github.com/bytecodealliance/wasmtime
+Licencia: Apache-2.0
+Dependencias: glibc, libgcc
+Opcionales: —
+Compilación: cargo, cmake, git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]

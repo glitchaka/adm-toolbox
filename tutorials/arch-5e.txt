@@ -1,0 +1,764 @@
+1. cargo-ndk
+Paquete: cargo-ndk
+Repositorio: extra
+Versión: 4.1.2-2
+Arquitectura: x86_64
+Descripción: Compile Rust projects against the Android NDK without hassle
+Upstream: https://github.com/bbqsrc/cargo-ndk
+Licencia: MIT, Apache-2.0
+Dependencias: glibc, libgcc, rustup
+Opcionales: —
+Compilación: cargo
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+2. clucene
+Paquete: clucene
+Repositorio: extra
+Versión: 2.3.3.4-17
+Arquitectura: x86_64
+Descripción: C++ port of the high-performance text search engine Lucene
+Upstream: http://clucene.sourceforge.net/
+Licencia: Apache-2.0, LGPL-2.0-or-later
+Dependencias: libstdc++, libgcc, zlib, glibc
+Opcionales: —
+Compilación: cmake, boost
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+3. dragonfly-reverb
+Paquete: dragonfly-reverb
+Repositorio: extra
+Versión: 3.2.10-5
+Arquitectura: x86_64
+Descripción: A concert hall reverb and a room reverb
+Upstream: https://michaelwillis.github.io/dragonfly-reverb/
+Licencia: GPL-3.0-or-later
+Dependencias: dragonfly-reverb-clap=3.2.10-5, dragonfly-reverb-lv2=3.2.10-5, dragonfly-reverb-standalone=3.2.10-5, dragonfly-reverb-vst=3.2.10-5, dragonfly-reverb-vst3=3.2.10-5
+Opcionales: —
+Compilación: freeverb3, glibc, gendesk, jack, libgcc, libglvnd, libsamplerate, libstdc++, libx11, libxext, lv2
+Pruebas: lv2lint
+Proporciona: —
+Estado SST: [ ]
+
+4. environment-modules
+Paquete: environment-modules
+Repositorio: extra
+Versión: 5.7.0-3
+Arquitectura: x86_64
+Descripción: Provides for an easy dynamic modification of a user's environment via modulefile.
+Upstream: https://envmodules.io/
+Licencia: GPL-2.0-or-later
+Dependencias: bash, glibc, inetutils, lsb-release, tcl>=8.5, procps-ng, util-linux, vi
+Opcionales: python: Support for environment modules in Python., cmake: Support for environment modules in CMake., xorg-xrdb: x-resource command in modulefiles
+Compilación: less, nagelfar, python-sphinx
+Pruebas: dejagnu, bash, fish, zsh, dash, ksh, tcsh, ruby, cmake, python, perl, r, xorg-xrdb
+Proporciona: —
+Estado SST: [ ]
+
+5. erfa
+Paquete: erfa
+Repositorio: extra
+Versión: 2.0.1-2
+Arquitectura: x86_64
+Descripción: Essential Routines for Fundamental Astronomy
+Upstream: https://github.com/liberfa/erfa
+Licencia: BSD
+Dependencias: glibc
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+6. gimp-help-lt
+Paquete: gimp-help-lt
+Repositorio: extra
+Versión: 3.2.0-2
+Arquitectura: any
+Descripción: Lithuanian help files for Gimp
+Upstream: https://docs.gimp.org/
+Licencia: GFDL-1.2-or-later
+Dependencias: —
+Opcionales: —
+Compilación: python, docbook-xsl
+Pruebas: —
+Proporciona: gimp-help=3.2.0-2
+Estado SST: [ ]
+
+7. gimp-help-pt_br
+Paquete: gimp-help-pt_br
+Repositorio: extra
+Versión: 3.2.0-2
+Arquitectura: any
+Descripción: Brazilian Portuguese help files for Gimp
+Upstream: https://docs.gimp.org/
+Licencia: GFDL-1.2-or-later
+Dependencias: —
+Opcionales: —
+Compilación: python, docbook-xsl
+Pruebas: —
+Proporciona: gimp-help=3.2.0-2
+Estado SST: [ ]
+
+8. glibmm-docs
+Paquete: glibmm-docs
+Repositorio: extra
+Versión: 2.66.10-1
+Arquitectura: x86_64
+Descripción: C++ bindings for GLib (documentation)
+Upstream: https://www.gtkmm.org/
+Licencia: LGPL-2.1-or-later
+Dependencias: —
+Opcionales: —
+Compilación: clang, git, libsigc++-docs, meson, mm-common, perl-xml-parser
+Pruebas: glib-networking
+Proporciona: —
+Estado SST: [ ]
+
+9. gnome-maps
+Paquete: gnome-maps
+Repositorio: extra
+Versión: 51.2-1
+Arquitectura: x86_64
+Descripción: Find places around the world
+Upstream: https://apps.gnome.org/Maps
+Licencia: GPL-2.0-or-later
+Dependencias: cairo, dconf, geoclue, geocode-glib-2, gjs, glib2, glibc, gtk4, hicolor-icon-theme, json-glib, libadwaita, libgcc, libgweather-4, libportal, librest, librsvg, libshumate, libxml2, pango, sqlite
+Opcionales: —
+Compilación: blueprint-compiler, git, gobject-introspection, meson, yelp-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+10. gsettings-desktop-schemas
+Paquete: gsettings-desktop-schemas
+Repositorio: extra
+Versión: 51.0-1
+Arquitectura: any
+Descripción: GSettings schemas for GNOME desktop components
+Upstream: https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas
+Licencia: LGPL-2.1-or-later
+Dependencias: gsettings-system-schemas=51.0-1, adwaita-fonts, dconf
+Opcionales: —
+Compilación: adwaita-fonts, dconf, git, glib2-devel, gobject-introspection, meson
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+11. gst-plugin-dav1d
+Paquete: gst-plugin-dav1d
+Repositorio: extra
+Versión: 0.15.4-1
+Arquitectura: x86_64
+Descripción: Multimedia graph framework - dav1d plugin
+Upstream: https://gstreamer.freedesktop.org/
+Licencia: MIT OR Apache-2.0
+Dependencias: glib2, glibc, gstreamer, libgcc, dav1d, gst-plugins-base-libs
+Opcionales: —
+Compilación: cairo, cargo-c, clang, cmake, csound, dav1d, fontconfig, freetype2, git, graphene, gst-plugins-bad, gst-plugins-bad-libs, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gtk4, libsodium, libstdc++, nasm, openssl, pango, rust, vulkan-headers, vulkan-icd-loader
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+12. haskell-double-conversion
+Paquete: haskell-double-conversion
+Repositorio: extra
+Versión: 2.0.5.0-174
+Arquitectura: x86_64
+Descripción: Fast conversion between single and double precision floating point and text
+Upstream: https://github.com/haskell/double-conversion
+Licencia: MIT
+Dependencias: ghc-libs, double-conversion
+Opcionales: —
+Compilación: ghc, haskell-hunit, haskell-test-framework, haskell-test-framework-hunit, haskell-test-framework-quickcheck2
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+13. haskell-foundation
+Paquete: haskell-foundation
+Repositorio: extra
+Versión: 0.0.30-190
+Arquitectura: x86_64
+Descripción: Alternative prelude with batteries and no dependencies
+Upstream: https://github.com/haskell-foundation/foundation
+Licencia: BSD
+Dependencias: ghc-libs, haskell-basement
+Opcionales: —
+Compilación: ghc, uusi, haskell-doctest
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+14. haskell-these
+Paquete: haskell-these
+Repositorio: extra
+Versión: 1.2.1-392
+Arquitectura: x86_64
+Descripción: An either-or-both data type
+Upstream: https://github.com/haskellari/these
+Licencia: BSD-3-Clause
+Dependencias: ghc-libs, haskell-assoc, haskell-hashable
+Opcionales: —
+Compilación: ghc, uusi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+15. haskell-typed-process
+Paquete: haskell-typed-process
+Repositorio: extra
+Versión: 0.2.13.0-335
+Arquitectura: x86_64
+Descripción: Run external processes, with strong typing of streams
+Upstream: https://github.com/fpco/typed-process
+Licencia: MIT
+Dependencias: ghc-libs, haskell-async, haskell-unliftio-core
+Opcionales: —
+Compilación: ghc
+Pruebas: haskell-base64-bytestring, haskell-hspec, haskell-hspec-discover, haskell-temporary
+Proporciona: —
+Estado SST: [ ]
+
+16. hwdata
+Paquete: hwdata
+Repositorio: core
+Versión: 0.412-1
+Arquitectura: any
+Descripción: hardware identification databases
+Upstream: https://github.com/vcrhonek/hwdata
+Licencia: GPL-2.0-or-later
+Dependencias: —
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+17. iputils
+Paquete: iputils
+Repositorio: core
+Versión: 20250605-1
+Arquitectura: x86_64
+Descripción: Network monitoring tools, including ping
+Upstream: https://github.com/iputils/iputils
+Licencia: BSD-3-Clause, GPL-2.0-or-later
+Dependencias: libcap, libidn2
+Opcionales: —
+Compilación: docbook-xsl, git, iproute, meson, perl-sgmls, systemd
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. jdupes
+Paquete: jdupes
+Repositorio: extra
+Versión: 1.31.2-1
+Arquitectura: x86_64
+Descripción: A program for identifying duplicate files residing within specified directories
+Upstream: https://www.jdupes.com
+Licencia: MIT
+Dependencias: glibc, libjodycode>=4, xxhash
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+19. jetring
+Paquete: jetring
+Repositorio: extra
+Versión: 0.32-1
+Arquitectura: any
+Descripción: gpg keyring maintenance using changesets
+Upstream: https://packages.debian.org/sid/jetring
+Licencia: GPL-2.0-or-later
+Dependencias: gnupg, perl
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+20. ktouch
+Paquete: ktouch
+Repositorio: extra
+Versión: 26.08.2-1
+Arquitectura: x86_64
+Descripción: Touch Typing Tutor
+Upstream: https://apps.kde.org/ktouch/
+Licencia: GPL-2.0-or-later, LGPL-2.0-or-later
+Dependencias: glibc, kcmutils, kcolorscheme, kcompletion, kconfig, kconfigwidgets, kcoreaddons, ki18n, kirigami, kitemviews, kqtquickcharts, ktextwidgets, kwidgetsaddons, kxmlgui, libstdc++, libx11, libxcb, libxml2, qt6-5compat, qt6-base, qt6-declarative
+Opcionales: —
+Compilación: extra-cmake-modules, kdoctools, libxkbfile
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+21. libreoffice-fresh-dgo
+Paquete: libreoffice-fresh-dgo
+Repositorio: extra
+Versión: 26.8.1-1
+Arquitectura: any
+Descripción: Dogri language pack for LibreOffice Fresh
+Upstream: https://www.documentfoundation.org
+Licencia: LGPL-3.0-or-later
+Dependencias: libreoffice-fresh
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: libreoffice-dgo, libreoffice-fresh-i18n=26.8.1-1
+Estado SST: [ ]
+
+22. libreoffice-still-be
+Paquete: libreoffice-still-be
+Repositorio: extra
+Versión: 26.2.6-1
+Arquitectura: any
+Descripción: Belarusian language pack for LibreOffice still
+Upstream: https://www.documentfoundation.org
+Licencia: LGPL-3.0-or-later
+Dependencias: libreoffice-still
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: libreoffice-be, libreoffice-still-i18n=26.2.6-1
+Estado SST: [ ]
+
+23. libreoffice-still-mr
+Paquete: libreoffice-still-mr
+Repositorio: extra
+Versión: 26.2.6-1
+Arquitectura: any
+Descripción: Marathi language pack for LibreOffice still
+Upstream: https://www.documentfoundation.org
+Licencia: LGPL-3.0-or-later
+Dependencias: libreoffice-still
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: libreoffice-mr, libreoffice-still-i18n=26.2.6-1
+Estado SST: [ ]
+
+24. libreoffice-still-ss
+Paquete: libreoffice-still-ss
+Repositorio: extra
+Versión: 26.2.6-1
+Arquitectura: any
+Descripción: Swati language pack for LibreOffice still
+Upstream: https://www.documentfoundation.org
+Licencia: LGPL-3.0-or-later
+Dependencias: libreoffice-still
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: libreoffice-ss, libreoffice-still-i18n=26.2.6-1
+Estado SST: [ ]
+
+25. mdbook-linkcheck
+Paquete: mdbook-linkcheck
+Repositorio: extra
+Versión: 0.7.7-2
+Arquitectura: x86_64
+Descripción: A mdbook backend which will check all links in a document are valid
+Upstream: https://github.com/Michael-F-Bryan/mdbook-linkcheck
+Licencia: MIT
+Dependencias: mdbook
+Opcionales: —
+Compilación: git, rust
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+26. mimalloc
+Paquete: mimalloc
+Repositorio: extra
+Versión: 3.5.4-1
+Arquitectura: x86_64
+Descripción: General-purpose allocator with excellent performance characteristics
+Upstream: https://github.com/microsoft/mimalloc
+Licencia: MIT
+Dependencias: glibc
+Opcionales: —
+Compilación: git, cmake, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+27. mkinitcpio-systemd-tool
+Paquete: mkinitcpio-systemd-tool
+Repositorio: extra
+Versión: 40-1
+Arquitectura: any
+Descripción: Provisioning tool for systemd in initramfs (systemd-tool)
+Upstream: https://github.com/random-archer/mkinitcpio-systemd-tool
+Licencia: Apache-2.0
+Dependencias: bash, mkinitcpio, systemd
+Opcionales: busybox: for initrd-tinysshd.service, cryptsetup: for initrd-cryptsetup.service, dropbear: for initrd-dropbear.service, mc: for initrd-debug-progs.service, nftables: for initrd-nftables.service, tinyssh: for initrd-tinysshd.service
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+28. mmc-utils
+Paquete: mmc-utils
+Repositorio: extra
+Versión: 1.0-1
+Arquitectura: x86_64
+Descripción: Userspace tools for MMC/SD devices
+Upstream: https://mmc-utils.readthedocs.io
+Licencia: GPL-2.0-only
+Dependencias: glibc
+Opcionales: —
+Compilación: git, sparse
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+29. onednn
+Paquete: onednn
+Repositorio: extra
+Versión: 3.11.3-1
+Arquitectura: x86_64
+Descripción: oneAPI Deep Neural Network Library (oneDNN)
+Upstream: https://github.com/oneapi-src/oneDNN
+Licencia: Apache-2.0
+Dependencias: gcc-libs, glibc
+Opcionales: —
+Compilación: cmake, ninja
+Pruebas: —
+Proporciona: intel-dnnl, mkl-dnn
+Estado SST: [ ]
+
+30. pacman-contrib
+Paquete: pacman-contrib
+Repositorio: extra
+Versión: 1.13.1-1
+Arquitectura: x86_64
+Descripción: Contributed scripts and tools for pacman systems
+Upstream: https://gitlab.archlinux.org/pacman/pacman-contrib
+Licencia: GPL-2.0-or-later
+Dependencias: pacman
+Opcionales: diffutils: for pacdiff, fakeroot: for checkupdates, findutils: for pacdiff --find, mlocate: for pacdiff --locate, plocate: faster mlocate alternative, perl: for pacsearch, sudo: privilege elevation for several scripts, vim: default diff program for pacdiff, neovim: default diff program for pacdiff if EDITOR=nvim
+Compilación: asciidoc, git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+31. perl-cgi-formbuilder
+Paquete: perl-cgi-formbuilder
+Repositorio: extra
+Versión: 3.20-3
+Arquitectura: any
+Descripción: Easily generate and process stateful forms
+Upstream: https://metacpan.org/release/CGI-FormBuilder
+Licencia: PerlArtistic
+Dependencias: perl
+Opcionales: —
+Compilación: perl-html-template, perl-text-template, perl-template-toolkit, perl-cgi-session
+Pruebas: perl-cgi
+Proporciona: —
+Estado SST: [ ]
+
+32. perl-dbd-sqlite
+Paquete: perl-dbd-sqlite
+Repositorio: extra
+Versión: 1.78-2
+Arquitectura: x86_64
+Descripción: Self-contained RDBMS in a DBI driver
+Upstream: https://search.cpan.org/dist/DBD-SQLite
+Licencia: GPL, PerlArtistic
+Dependencias: perl-dbi, sqlite
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+33. plasma-desktop
+Paquete: plasma-desktop
+Repositorio: extra
+Versión: 6.8.2-1
+Arquitectura: x86_64
+Descripción: KDE Plasma Desktop
+Upstream: https://kde.org/plasma-desktop/
+Licencia: LGPL-2.0-or-later
+Dependencias: attica, baloo, emoji-font, glibc, kbookmarks, kcmutils, kcodecs, kcompletion, kconfig, kconfigwidgets, kcoreaddons, kcrash, kdbusaddons, kdeclarative, kglobalaccel, kguiaddons, ki18n, kiconthemes, kio, kirigami, kirigami-addons, kitemmodels, kjobwidgets, kmenuedit, knewstuff, knotifications, knotifyconfig, kpackage, kpipewire, krunner, kscreenlocker, kservice, ksvg, kwidgetsaddons, kwindowsystem, kxmlgui, libcanberra, libksysguard, libstdc++, libwacom, libx11, libxcb, libxkbcommon, libxkbfile, libplasma, plasma-activities, plasma-activities-stats, plasma-workspace, plasma5support, polkit-kde-agent, powerdevil, qt6-5compat, qt6-base, qt6-declarative, sdl2, solid, sonnet, systemd-libs, systemsettings, wayland, xcb-util-keysyms, xdg-user-dirs
+Opcionales: bluedevil: Bluetooth applet, glib2: kimpanel IBUS support, ibus: kimpanel IBUS support, kaccounts-integration: OpenDesktop integration plugin, kscreen: screen management, libaccounts-qt: OpenDesktop integration plugin, packagekit-qt6: to install new krunner plugins, plasma-nm: Network manager applet, plasma-pa: Audio volume applet, scim: kimpanel SCIM support
+Compilación: extra-cmake-modules, intltool, kaccounts-integration, kdoctools, libibus, packagekit-qt6, scim, wayland-protocols
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+34. png2svg
+Paquete: png2svg
+Repositorio: extra
+Versión: 1.7.1-1
+Arquitectura: x86_64
+Descripción: Convert small PNG images to SVG Tiny 1.2
+Upstream: https://github.com/xyproto/png2svg
+Licencia: BSD-3-Clause
+Dependencias: —
+Opcionales: —
+Compilación: git, go
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+35. probe-rs
+Paquete: probe-rs
+Repositorio: extra
+Versión: 0.32.0-1
+Arquitectura: x86_64
+Descripción: A collection of on chip debugging tools to communicate with microchips.
+Upstream: https://probe.rs
+Licencia: Apache-2.0, MIT
+Dependencias: libgcc, systemd-libs
+Opcionales: —
+Compilación: cargo, cargo-auditable, cmake
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+36. python-cupy-rocm-gfx10
+Paquete: python-cupy-rocm-gfx10
+Repositorio: extra
+Versión: 14.2.0-1
+Arquitectura: x86_64
+Descripción: NumPy/SciPy-compatible array library for GPU-accelerated computing with Python (ROCm gfx10 targets)
+Upstream: https://github.com/cupy/cupy
+Licencia: MIT
+Dependencias: glibc, libgcc, libstdc++, hip-runtime-amd, hipblas, hipfft, hiprand, hipsparse, rccl, rocblas, rocsolver, roctracer, python, python-fastrlock, python-numpy
+Opcionales: python-scipy: for copying sparse matrices from GPU to CPU, python-optuna: for using using Automatic Kernel Parameters Optimizations (cupyx.optimizing)
+Compilación: git, cython, python-build, python-installer, python-wheel, python-setuptools, python-fastrlock, python-numpy, cuda, cutensor, nccl, python-cuda-pathfinder, hip-runtime-amd, hipblas, hipcub, hipfft, hiprand, hipsparse, rccl, rocfft, rocprim, rocrand, rocsolver, rocsparse, rocthrust, roctracer, rocm-toolchain
+Pruebas: —
+Proporciona: python-cupy
+Estado SST: [ ]
+
+37. python-hyperqueue
+Paquete: python-hyperqueue
+Repositorio: extra
+Versión: 0.26.2-1
+Arquitectura: x86_64
+Descripción: Scheduler for sub-node tasks for HPC systems with batch scheduling - Python bindings
+Upstream: https://github.com/It4innovations/hyperqueue/
+Licencia: MIT
+Dependencias: glibc, hyperqueue, libgcc, python, python-cloudpickle, python-tqdm
+Opcionales: python-pydot: task graph visualization
+Compilación: cargo, maturin, python-installer, python-cloudpickle, python-tqdm, python-pydot
+Pruebas: python-pytest, python-pytest-xdist, python-iso8601, python-schema, python-maturin, python-psutil, python-requests, python-aiohttp, python-inline-snapshot, python-typing_extensions, python-ruff
+Proporciona: —
+Estado SST: [ ]
+
+38. python-hypothesmith
+Paquete: python-hypothesmith
+Repositorio: extra
+Versión: 0.3.3-3
+Arquitectura: any
+Descripción: Hypothesis strategies for generating Python programs, something like CSmith
+Upstream: https://github.com/Zac-HD/hypothesmith
+Licencia: MPL
+Dependencias: python-hypothesis, python-lark-parser, python-libcst
+Opcionales: —
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-black, python-parso, python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+39. python-numba-cuda
+Paquete: python-numba-cuda
+Repositorio: extra
+Versión: 0.30.4-2
+Arquitectura: x86_64
+Descripción: The CUDA target for Numba
+Upstream: https://github.com/NVIDIA/numba-cuda
+Licencia: BSD-2-Clause
+Dependencias: glibc, libgcc, libstdc++, python, python-cuda-bindings, python-cuda-core, python-cuda-pathfinder, python-llvmlite, python-numba, python-numpy, python-packaging, python-yaml
+Opcionales: python-colorama: colors in error messages, python-pygments: syntax highlighting in code dumps
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+40. python-xcffib
+Paquete: python-xcffib
+Repositorio: extra
+Versión: 1.7.1-1
+Arquitectura: any
+Descripción: xcffib is the XCB binding for python
+Upstream: https://pypi.python.org/pypi/xcffib
+Licencia: Apache-2.0
+Dependencias: python-cffi, libxcb
+Opcionales: —
+Compilación: git, python-build, python-installer, python-wheel, python-setuptools, haskell-xcffib
+Pruebas: python-pytest, xorg-server-xvfb, xorg-xeyes
+Proporciona: —
+Estado SST: [ ]
+
+41. ruby-net-smtp
+Paquete: ruby-net-smtp
+Repositorio: extra
+Versión: 0.5.1-1
+Arquitectura: any
+Descripción: Simple Mail Transfer Protocol client library for Ruby
+Upstream: https://github.com/ruby/net-smtp
+Licencia: RUBY, BSD-2-CLAUSE
+Dependencias: ruby
+Opcionales: —
+Compilación: git, ruby-rdoc
+Pruebas: ruby-bundler, ruby-rake, ruby-test-unit
+Proporciona: —
+Estado SST: [ ]
+
+42. ruby-oedipus_lex
+Paquete: ruby-oedipus_lex
+Repositorio: extra
+Versión: 2.6.3-1
+Arquitectura: any
+Descripción: This is not your father’s lexer
+Upstream: https://github.com/seattlerb/oedipus_lex
+Licencia: MIT
+Dependencias: ruby, ruby-erb
+Opcionales: —
+Compilación: ruby-hoe, ruby-minitest, ruby-rake
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+43. signal-desktop
+Paquete: signal-desktop
+Repositorio: extra
+Versión: 8.33.0-1
+Arquitectura: x86_64
+Descripción: Signal Private Messenger for Linux
+Upstream: https://signal.org
+Licencia: AGPL-3.0-only
+Dependencias: alsa-lib, libasound.so=2-64, at-spi2-core, libatk-bridge-2.0.so=0-64, cairo, libcairo.so=2-64, dbus, libdbus-1.so=3-64, expat, libexpat.so=1-64, glib2, libgio-2.0.so=0-64, glibc, gtk3, hicolor-icon-theme, libcups, libdrm, libgcc, libnotify, libpulse, libstdc++, libstdc++.so=6-64, libx11, libxcb, libxcomposite, libxdamage, libxext, libxfixes, libxkbcommon, libxkbcommon.so=0-64, libxrandr, mesa, nspr, nss, pango, libpango-1.0.so=0-64, systemd-libs, libudev.so=1-64
+Opcionales: xdg-desktop-portal: Screensharing with Wayland
+Compilación: git, git-lfs, libxcrypt-compat, node-gyp, nodejs-lts-krypton, npm, pnpm, python
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+44. strawberry
+Paquete: strawberry
+Repositorio: extra
+Versión: 1.2.31-1
+Arquitectura: x86_64
+Descripción: A music player aimed at audio enthusiasts and music collectors
+Upstream: https://www.strawberrymusicplayer.org/
+Licencia: GPL-3.0-or-later
+Dependencias: alsa-lib, chromaprint, fftw, gdk-pixbuf2, glib2, glibc, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gstreamer, icu, kdsingleapplication, libcdio, libebur128, libgcc, libgpod, libmtp, libpulse, libsecret, libstdc++, libx11, openssl, qt6-base, sqlite, taglib, uchardet, udisks2
+Opcionales: gst-libav: additional codecs, gst-plugins-bad: additional codecs, gst-plugins-ugly: additional codecs
+Compilación: boost, cmake, git, qt6-tools, rapidjson, sparsehash
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+45. tensorboard
+Paquete: tensorboard
+Repositorio: extra
+Versión: 2.21.0-1
+Arquitectura: x86_64
+Descripción: TensorFlow's Visualization Toolkit
+Upstream: https://github.com/tensorflow/tensorboard
+Licencia: Apache-2.0
+Dependencias: python, python-werkzeug, python-numpy, python-bleach, python-markdown, python-protobuf, python-grpcio, python-packaging, python-setuptools, absl-py
+Opcionales: python-tensorflow: advanced features for TensorBoard
+Compilación: bazel, tree, rust, python-build, python-installer, python-wheel, git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+46. vim-syntastic
+Paquete: vim-syntastic
+Repositorio: extra
+Versión: 3.10.0-4
+Arquitectura: any
+Descripción: Automatic syntax checking for Vim
+Upstream: https://github.com/vim-syntastic/syntastic
+Licencia: custom:WTFPL
+Dependencias: vim-plugin-runtime
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+47. vlc-gui-skins2
+Paquete: vlc-gui-skins2
+Repositorio: extra
+Versión: 3.0.24-1
+Arquitectura: x86_64
+Descripción: Free and open source cross-platform multimedia player and framework - Skins2 GUI
+Upstream: https://www.videolan.org/vlc/
+Licencia: GPL-2.0-or-later, LGPL-2.1-or-later
+Dependencias: bash, freetype2, fribidi, glibc, libgcc, libstdc++, libvlc, libvlccore.so=9-64, libx11, libxext, libxinerama, libxpm, vlc-cli=3.0.24, vlc-gui-qt=3.0.24
+Opcionales: —
+Compilación: a52dec, aalib, abseil-cpp, alsa-lib, aom, aribb24, aribb25, avahi, bash, cairo, dav1d, dbus, faad2, ffmpeg, flac, fluidsynth, fontconfig, freetype2, fribidi, gdk-pixbuf2, git, glib2, glibc, gnutls, gst-plugins-base-libs, gtk3, harfbuzz, hicolor-icon-theme, jack, libarchive, libass, libavc1394, libbluray, libcaca, libcddb, libdc1394, libdca, libdvbpsi, libdvdcss, libdvdnav, libdvdread, libgcc, libglvnd, libgme, libgoom2, libjpeg-turbo, libkate, libmad, libmatroska, libmicrodns, libmodplug, libmpcdec, libmpeg2, libmtp, libnfs, libnotify, libogg, libpng, libproxy, libpulse, librist, librsvg, libsamplerate, libsecret, libshout, libsoxr, libssh2, libstdc++, libtheora, libtiger, libupnp, libva, libvorbis, libvpl, libvpx, libx11, libxcb, libxinerama, libxml2, libxpm, lirc, live-media, lua51, mesa, mpg123, opus, pcsclite, projectm, protobuf, qt5-base, qt5-svg, qt5-x11extras, sdl12-compat, sdl_image, smbclient, speex, speexdsp, srt, systemd-libs, taglib, twolame, wayland, wayland-protocols, x264, x265, xcb-util-keysyms, xosd, zlib, zvbi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+48. vlc-plugin-dbus
+Paquete: vlc-plugin-dbus
+Repositorio: extra
+Versión: 3.0.24-1
+Arquitectura: x86_64
+Descripción: Free and open source cross-platform multimedia player and framework - Dbus plugin
+Upstream: https://www.videolan.org/vlc/
+Licencia: GPL-2.0-or-later, LGPL-2.1-or-later
+Dependencias: dbus, glibc, libvlc, libvlccore.so=9-64
+Opcionales: —
+Compilación: a52dec, aalib, abseil-cpp, alsa-lib, aom, aribb24, aribb25, avahi, bash, cairo, dav1d, dbus, faad2, ffmpeg, flac, fluidsynth, fontconfig, freetype2, fribidi, gdk-pixbuf2, git, glib2, glibc, gnutls, gst-plugins-base-libs, gtk3, harfbuzz, hicolor-icon-theme, jack, libarchive, libass, libavc1394, libbluray, libcaca, libcddb, libdc1394, libdca, libdvbpsi, libdvdcss, libdvdnav, libdvdread, libgcc, libglvnd, libgme, libgoom2, libjpeg-turbo, libkate, libmad, libmatroska, libmicrodns, libmodplug, libmpcdec, libmpeg2, libmtp, libnfs, libnotify, libogg, libpng, libproxy, libpulse, librist, librsvg, libsamplerate, libsecret, libshout, libsoxr, libssh2, libstdc++, libtheora, libtiger, libupnp, libva, libvorbis, libvpl, libvpx, libx11, libxcb, libxinerama, libxml2, libxpm, lirc, live-media, lua51, mesa, mpg123, opus, pcsclite, projectm, protobuf, qt5-base, qt5-svg, qt5-x11extras, sdl12-compat, sdl_image, smbclient, speex, speexdsp, srt, systemd-libs, taglib, twolame, wayland, wayland-protocols, x264, x265, xcb-util-keysyms, xosd, zlib, zvbi
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+49. vulkan-dzn
+Paquete: vulkan-dzn
+Repositorio: extra
+Versión: 1:26.2.6-1
+Arquitectura: x86_64
+Descripción: Open-source Vulkan driver for D3D12
+Upstream: https://www.mesa3d.org/
+Licencia: MIT AND BSD-3-Clause AND SGI-B-2.0
+Dependencias: expat, glibc, libdisplay-info, libdrm, libgcc, libstdc++, libx11, libxcb, libxshmfence, spirv-tools, systemd-libs, vulkan-icd-loader, vulkan-mesa-implicit-layers, wayland, xcb-util-keysyms, zlib, zstd
+Opcionales: vulkan-mesa-layers: additional vulkan layers
+Compilación: clang, directx-headers, expat, glibc, libdisplay-info, libdrm, libelf, libgcc, libglvnd, libpng, libstdc++, libva, libx11, libxcb, libxext, libxml2, libxrandr, libxshmfence, libxxf86vm, llvm, llvm-libs, lm_sensors, rust, spirv-llvm-translator, spirv-tools, systemd-libs, vulkan-icd-loader, wayland, xcb-util-keysyms, zlib, zstd, cbindgen, clang, cmake, elfutils, glslang, libclc, meson, python-mako, python-packaging, python-ply, python-pycparser, python-yaml, rust-bindgen, wayland-protocols, xorgproto, valgrind, python-sphinx, python-sphinx-hawkmoth
+Pruebas: —
+Proporciona: vulkan-driver
+Estado SST: [ ]
+
+50. xf86-video-sisusb
+Paquete: xf86-video-sisusb
+Repositorio: extra
+Versión: 0.9.7-6
+Arquitectura: x86_64
+Descripción: X.org SiS USB video driver
+Upstream: https://xorg.freedesktop.org/
+Licencia: BSD-3-Clause
+Dependencias: glibc
+Opcionales: —
+Compilación: xorg-server-devel, X-ABI-VIDEODRV_VERSION=25.2
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+51. yamdi
+Paquete: yamdi
+Repositorio: extra
+Versión: 1.9-5
+Arquitectura: x86_64
+Descripción: A metadata injector for FLV files
+Upstream: http://yamdi.sourceforge.net/
+Licencia: custom:BSD
+Dependencias: glibc
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
