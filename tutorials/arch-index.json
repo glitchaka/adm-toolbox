@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "areas": [
+    {
+      "id": "arch",
+      "name": "Arch / Portabilidad",
+      "summary": "Candidatos para revisar y aprobar su port a SST."
+    }
+  ],
+  "entries": [
+    {
+      "name": "ripgrep",
+      "aliases": ["rg"],
+      "area": "arch",
+      "summary": "Búsqueda de texto recursiva.",
+      "manual": {
+        "file": "arch-ripgrep",
+        "extension": "txt",
+        "section": "whole"
+      }
+    },
+    {
+      "name": "htop",
+      "aliases": [],
+      "area": "arch",
+      "summary": "Visor interactivo de procesos.",
+      "manual": {
+        "file": "arch-htop",
+        "extension": "txt",
+        "section": "whole"
+      }
+    },
+    {
+      "name": "tcpdump",
+      "aliases": [],
+      "area": "arch",
+      "summary": "Analizador de paquetes de red.",
+      "manual": {
+        "file": "arch-tcpdump",
+        "extension": "txt",
+        "section": "whole"
+      }
+    }
+  ]
+}
