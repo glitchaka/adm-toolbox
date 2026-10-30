@@ -1,0 +1,38 @@
+name: Refresh Arch catalog for SST guide
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 8 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/generate-arch-guide.py'
+      - '.github/workflows/refresh-arch-guide.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Arch package catalog
+        run: python3 scripts/generate-arch-guide.py
+
+      - name: Commit generated catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tutorials/guide-index.json tutorials/arch-*.txt
+          git add -u tutorials/arch-index.json tutorials/arch-ripgrep.txt tutorials/arch-htop.txt tutorials/arch-tcpdump.txt || true
+          if git diff --cached --quiet; then
+            echo 'Arch catalog already current.'
+            exit 0
+          fi
+          git commit -m 'Refresh live Arch package catalog'
+          git push
