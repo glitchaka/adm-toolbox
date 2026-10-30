@@ -1,0 +1,36 @@
+name: Dispatch SST blue request
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release/sst-blue-request.json'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dispatch public SST publisher
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(jq -r '.version' .release/sst-blue-request.json)
+          DOWNLOAD_URL=$(jq -r '.download_url' .release/sst-blue-request.json)
+          ARCHIVE_SHA256=$(jq -r '.archive_sha256' .release/sst-blue-request.json)
+          ARCHIVE_SIZE=$(jq -r '.archive_size|tostring' .release/sst-blue-request.json)
+          test -n "$VERSION"
+          test -n "$DOWNLOAD_URL"
+          test -n "$ARCHIVE_SHA256"
+          test -n "$ARCHIVE_SIZE"
+          gh workflow run publish-sst-blue.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f version="$VERSION" \
+            -f download_url="$DOWNLOAD_URL" \
+            -f archive_sha256="$ARCHIVE_SHA256" \
+            -f archive_size="$ARCHIVE_SIZE"
