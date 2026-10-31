@@ -511,12 +511,12 @@ Estado SST: [ ]
 35. libolm
 Paquete: libolm
 Repositorio: extra
-Versión: 3.2.16-6
+Versión: 3.2.16-7
 Arquitectura: x86_64
 Descripción: Implementation of the Olm and Megolm cryptographic ratchets
 Upstream: https://gitlab.matrix.org/matrix-org/olm
-Licencia: APACHE
-Dependencias: gcc-libs
+Licencia: Apache-2.0
+Dependencias: glibc, libstdc++
 Opcionales: —
 Compilación: cmake, python, python-build, python-cffi, python-installer, python-setuptools, python-wheel
 Pruebas: python-aspectlib, python-pytest, python-pytest-benchmark

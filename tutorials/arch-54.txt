@@ -16,12 +16,12 @@ Estado SST: [ ]
 2. efl
 Paquete: efl
 Repositorio: extra
-Versión: 1.28.1-4
+Versión: 1.29.0-1
 Arquitectura: x86_64
 Descripción: Enlightenment Foundation Libraries
 Upstream: https://www.enlightenment.org
 Licencia: BSD, LGPL2.1, GPL2, MIT, custom
-Dependencias: curl, dbus, fontconfig, freetype2, fribidi, giflib, glib2, gstreamer, gst-plugins-base-libs, harfbuzz, hicolor-icon-theme, libglvnd, libinput, libjpeg-turbo, libpng, libpulse, libsndfile, libtiff, libunwind, libwebp, libx11, libxcb, libxcomposite, libxcursor, libxdamage, libxext, libxfixes, libxi, libxinerama, libxkbcommon, libxkbcommon-x11, libxrandr, libxrender, libxss, libxtst, lua52, mailcap, mesa, openjpeg2, openssl, shared-mime-info, systemd-libs, ttf-font, util-linux-libs, wayland, zlib
+Dependencias: curl, dbus, fontconfig, freetype2, fribidi, giflib, glib2, gstreamer, gst-plugins-base-libs, harfbuzz, hicolor-icon-theme, libglvnd, libinput, libjpeg-turbo, libpng, libpulse, libpipewire, libsndfile, libtiff, libunwind, libwebp, libx11, libxcb, libxcomposite, libxcursor, libxdamage, libxext, libxfixes, libxi, libxinerama, libxkbcommon, libxkbcommon-x11, libxrandr, libxrender, libxss, libxtst, libxpresent, lua52, mailcap, mesa, openjpeg2, openssl, shared-mime-info, systemd-libs, ttf-font, util-linux-libs, wayland, zlib, libjxl, libheif, libavif
 Opcionales: gst-plugins-base: Video and thumbnail codecs, gst-plugins-good: Video and thumbnail codecs, gst-plugins-bad: Video and thumbnail codecs, gst-plugins-ugly: Video and thumbnail codecs, gst-libav: Video and thumbnails with ffmpeg/libav, libraw: RAW image loader, libreoffice: Office document loader, librsvg: SVG loader, libspectre: PostScript loader, poppler: PDF loader, scim: IM module for SCIM
 Compilación: doxygen, libraw, librsvg, libspectre, meson, ninja, poppler, python, scim, texlive-basic, texlive-fontutils, wayland-protocols
 Pruebas: —
@@ -451,12 +451,12 @@ Estado SST: [ ]
 31. nitrokey app
 Paquete: nitrokey-app
 Repositorio: extra
-Versión: 1.4.2-2
+Versión: 1.4.2-3
 Arquitectura: x86_64
 Descripción: Nitrokey management application
 Upstream: https://www.nitrokey.com
-Licencia: GPL3
-Dependencias: qt5-base, qt5-svg, hicolor-icon-theme, libnitrokey, libnitrokey.so=3-64
+Licencia: GPL-3.0-or-later
+Dependencias: glibc, libstdc++, libgcc, qt5-base, qt5-svg, hicolor-icon-theme, libnitrokey, libnitrokey.so=3-64
 Opcionales: —
 Compilación: cmake, qt5-tools, bash-completion, cppcodec
 Pruebas: —

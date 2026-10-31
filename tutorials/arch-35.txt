@@ -1,7 +1,7 @@
 1. aom docs
 Paquete: aom-docs
 Repositorio: extra
-Versión: 3.15.2-1
+Versión: 3.15.3-1
 Arquitectura: x86_64
 Descripción: Alliance for Open Media video codec (documentation)
 Upstream: https://aomedia.org/
@@ -556,7 +556,7 @@ Estado SST: [ ]
 38. python generic
 Paquete: python-generic
 Repositorio: extra
-Versión: 1.1.7-1
+Versión: 1.1.8-1
 Arquitectura: any
 Descripción: Generic programming library for Python
 Upstream: https://github.com/gaphor/generic
@@ -601,15 +601,15 @@ Estado SST: [ ]
 41. python symengine
 Paquete: python-symengine
 Repositorio: extra
-Versión: 0.14.1-4
+Versión: 0.15.0-1
 Arquitectura: x86_64
 Descripción: Python wrappers for SymEngine
 Upstream: https://github.com/symengine/symengine.py
 Licencia: MIT
-Dependencias: glibc, gmp, gperftools, libgcc, libmpc, libstdc++, mpfr, python, symengine
+Dependencias: flint, glibc, gmp, libgcc, libmpc, libstdc++, mpfr, python, symengine
 Opcionales: —
-Compilación: boost, cereal, cmake, cython, git, llvm, python-build, python-installer, python-setuptools
-Pruebas: —
+Compilación: boost, cereal, cmake, cython, git, llvm, python-build, python-cython-cmake, python-installer, python-scikit-build-core, python-setuptools-scm
+Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 

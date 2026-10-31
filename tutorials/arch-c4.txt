@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. ppp
 Paquete: ppp
 Repositorio: core
-Versión: 2.5.4-1
+Versión: 2.5.4-2
 Arquitectura: x86_64
 Descripción: A daemon which implements the Point-to-Point Protocol for dial-up networking
 Upstream: https://www.samba.org/ppp/
@@ -534,7 +534,7 @@ Licencia: GPL-2.0-or-later, BSD-3-Clause
 Dependencias: glibc, libpcap, libxcrypt, openssl
 Opcionales: —
 Compilación: git
-Pruebas: —
+Pruebas: iproute2, iputils, kmod, procps-ng, python, util-linux
 Proporciona: —
 Estado SST: [ ]
 

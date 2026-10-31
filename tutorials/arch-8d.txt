@@ -421,12 +421,12 @@ Estado SST: [ ]
 29. opencode desktop
 Paquete: opencode-desktop
 Repositorio: extra
-Versión: 2.2.4-1
+Versión: 2.2.5-1
 Arquitectura: x86_64
 Descripción: The open source coding agent (desktop app)
 Upstream: https://github.com/anomalyco/opencode
 Licencia: MIT
-Dependencias: electron44, gcc-libs, glibc, opencode=2.2.4, sh
+Dependencias: electron44, gcc-libs, glibc, opencode=2.2.5, sh
 Opcionales: —
 Compilación: bun, electron44, git, nodejs
 Pruebas: —
@@ -523,7 +523,22 @@ Pruebas: python-pytest, python-pytest-benchmark, python-numpy, python-scipy
 Proporciona: —
 Estado SST: [ ]
 
-36. python fire
+36. python cython cmake
+Paquete: python-cython-cmake
+Repositorio: extra
+Versión: 0.3.0-1
+Arquitectura: any
+Descripción: CMake helpers for building Cython modules
+Upstream: https://github.com/scikit-build/cython-cmake
+Licencia: Apache-2.0
+Dependencias: python
+Opcionales: —
+Compilación: git, python-build, python-hatch-vcs, python-hatchling, python-installer
+Pruebas: cython, python-pytest, python-scikit-build-core
+Proporciona: —
+Estado SST: [ ]
+
+37. python fire
 Paquete: python-fire
 Repositorio: extra
 Versión: 0.7.1-2
@@ -538,7 +553,7 @@ Pruebas: python-hypothesis, python-levenshtein, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-37. python immutabledict
+38. python immutabledict
 Paquete: python-immutabledict
 Repositorio: extra
 Versión: 4.3.1-1
@@ -553,7 +568,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-38. python interpreters pep 734
+39. python interpreters pep 734
 Paquete: python-interpreters-pep-734
 Repositorio: extra
 Versión: 0.5.0-2
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. python opentelemetry instrumentation
+40. python opentelemetry instrumentation
 Paquete: python-opentelemetry-instrumentation
 Repositorio: extra
 Versión: 0.66b2-1
@@ -583,7 +598,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-40. python textual
+41. python textual
 Paquete: python-textual
 Repositorio: extra
 Versión: 8.2.8-2
@@ -598,7 +613,7 @@ Pruebas: python-pytest-asyncio, python-time-machine, python-pytest-xdist, python
 Proporciona: —
 Estado SST: [ ]
 
-41. ripasso
+42. ripasso
 Paquete: ripasso
 Repositorio: extra
 Versión: 0.7.0-5
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. rofi
+43. rofi
 Paquete: rofi
 Repositorio: extra
 Versión: 2.0.0-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: rofi-wayland
 Estado SST: [ ]
 
-43. ruby benchmark ips
+44. ruby benchmark ips
 Paquete: ruby-benchmark-ips
 Repositorio: extra
 Versión: 2.15.1-1
@@ -643,7 +658,7 @@ Pruebas: ruby-bundler, ruby-minitest
 Proporciona: —
 Estado SST: [ ]
 
-44. ruby observer
+45. ruby observer
 Paquete: ruby-observer
 Repositorio: extra
 Versión: 0.1.2-3
@@ -658,7 +673,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-45. ruby tilt
+46. ruby tilt
 Paquete: ruby-tilt
 Repositorio: extra
 Versión: 2.8.0-1
@@ -673,7 +688,7 @@ Pruebas: asciidoctor, ruby-builder, ruby-csv, ruby-erb, ruby-erubi, ruby-haml, r
 Proporciona: —
 Estado SST: [ ]
 
-46. sparsehash
+47. sparsehash
 Paquete: sparsehash
 Repositorio: extra
 Versión: 2.0.4-3
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. stalwart
+48. stalwart
 Paquete: stalwart
 Repositorio: extra
 Versión: 1.0.0-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. tempo
+49. tempo
 Paquete: tempo
 Repositorio: extra
 Versión: 3.1.1-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. thunderbird i18n nn no
+50. thunderbird i18n nn no
 Paquete: thunderbird-i18n-nn-no
 Repositorio: extra
 Versión: 158.0.1-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. vlc plugin dbus screensaver
+51. vlc plugin dbus screensaver
 Paquete: vlc-plugin-dbus-screensaver
 Repositorio: extra
 Versión: 3.0.24-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. vlc plugin srt
+52. vlc plugin srt
 Paquete: vlc-plugin-srt
 Repositorio: extra
 Versión: 3.0.24-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. wireplumber
+53. wireplumber
 Paquete: wireplumber
 Repositorio: extra
 Versión: 0.5.18-1
@@ -778,7 +793,7 @@ Pruebas: pipewire-audio
 Proporciona: pipewire-session-manager
 Estado SST: [ ]
 
-53. xdg desktop portal wlr
+54. xdg desktop portal wlr
 Paquete: xdg-desktop-portal-wlr
 Repositorio: extra
 Versión: 0.8.4-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: xdg-desktop-portal-impl
 Estado SST: [ ]
 
-54. xfce4 netload plugin
+55. xfce4 netload plugin
 Paquete: xfce4-netload-plugin
 Repositorio: extra
 Versión: 1.5.0-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. xmlstarlet
+56. xmlstarlet
 Paquete: xmlstarlet
 Repositorio: extra
 Versión: 1.7.0-1

@@ -1,7 +1,7 @@
 1. bob
 Paquete: bob
 Repositorio: extra
-Versión: 4.1.7-1
+Versión: 4.3.0-1
 Arquitectura: x86_64
 Descripción: A version manager for neovim
 Upstream: https://github.com/MordechaiHadad/bob
@@ -106,13 +106,13 @@ Estado SST: [ ]
 8. enlightenment
 Paquete: enlightenment
 Repositorio: extra
-Versión: 0.27.1-1
+Versión: 0.28.0-2
 Arquitectura: x86_64
 Descripción: Enlightenment window manager
 Upstream: http://www.enlightenment.org
 Licencia: BSD
-Dependencias: alsa-lib, bc, bluez-libs, efl, hicolor-icon-theme, libexif, librsvg, libpulse, libxkbcommon, pam, pulse-native-provider, ttf-font, udisks2, util-linux-libs, wayland, xorg-server-xwayland
-Opcionales: bluez: Bluetooth control module, connman: network connection manager module, fprintd: fingerprint password settings, geoclue: geolocation module, packagekit: package manager integration module
+Dependencias: alsa-lib, bc, bluez-libs, efl, hicolor-icon-theme, libexif, librsvg, libpulse, libxkbcommon, pam, pulse-native-provider, ttf-font, udisks2, util-linux-libs, wayland, xorg-server-xwayland, libpipewire
+Opcionales: bluez: Bluetooth control module, connman: network connection manager module, networkmanager: network connection manager module, fprintd: fingerprint password settings, geoclue: geolocation module, packagekit: package manager integration module
 Compilación: meson, ninja, wayland-protocols
 Pruebas: —
 Proporciona: —

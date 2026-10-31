@@ -601,15 +601,15 @@ Estado SST: [ ]
 41. python watchdog
 Paquete: python-watchdog
 Repositorio: extra
-Versión: 6.0.0-2
+Versión: 7.0.0-1
 Arquitectura: any
 Descripción: Python API and shell utilities to monitor file system events
 Upstream: https://github.com/gorakhargosh/watchdog
-Licencia: Apache-2.0
+Licencia: Apache-2.0, PSF-2.0
 Dependencias: python
 Opcionales: python-yaml: for watchmedo
-Compilación: python-build, python-installer, python-setuptools, python-wheel
-Pruebas: python-pytest, python-pytest-timeout
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-flaky, python-pytest, python-pytest-timeout, python-yaml
 Proporciona: —
 Estado SST: [ ]
 
