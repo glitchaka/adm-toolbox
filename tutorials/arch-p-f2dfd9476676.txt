@@ -1,0 +1,14 @@
+1. openmp
+Paquete: openmp
+Repositorio: extra
+Versión: 23.1.4-1
+Arquitectura: x86_64
+Descripción: LLVM OpenMP Runtime Library
+Upstream: https://llvm.org/
+Licencia: Apache-2.0 WITH LLVM-exception
+Dependencias: llvm-libs, libelf, libffi, glibc, libstdc++, libgcc
+Opcionales: offload: offloading to GPUs
+Compilación: cmake, ninja, zlib, zstd, curl, libffi, libedit, libxml2, python, xz, ncurses, swig, libelf, python-setuptools, python-psutil, python-sphinx, python-myst-parser, python-build, python-installer, python-wheel, spirv-llvm-translator, wasi-libc, wasm-component-ld, lib32-gcc-libs
+Pruebas: llvm-libs
+Proporciona: —
+Estado SST: [ ]
