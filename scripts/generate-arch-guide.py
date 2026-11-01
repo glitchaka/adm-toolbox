@@ -92,6 +92,18 @@ def main():
     guide["areas"] = [area for area in guide.get("areas", []) if area.get("id") != "arch"]
     guide["entries"] = [entry for entry in guide.get("entries", []) if entry.get("area") != "arch"]
 
+    # Guide .8 keeps one global lookup for names and aliases. An Arch package
+    # must never shadow an SST command/alias or duplicate an existing name.
+    reserved = set()
+    for entry in guide.get("entries", []):
+        name = str(entry.get("name", "")).strip().lower()
+        if name:
+            reserved.add(name)
+        for alias in entry.get("aliases", []):
+            alias = str(alias).strip().lower()
+            if alias:
+                reserved.add(alias)
+
     packages = []
     for repo in REPOS:
         packages.extend(fetch_repo(repo))
@@ -111,6 +123,7 @@ def main():
     shard_lines = {}
     shard_counts = {}
     entries = []
+    collisions = []
     for package in packages:
         name = package["name"]
         topic = topic_for(name)
@@ -118,8 +131,6 @@ def main():
         number = shard_counts.get(shard, 0) + 1
         shard_counts[shard] = number
         body = [
-            # The heading uses the same normalized tokens that guide .8 searches.
-            # The real package name remains on the next line for display.
             f"{number}. {topic}",
             f"Paquete: {name}",
             f"Repositorio: {package['repo']}",
@@ -137,8 +148,10 @@ def main():
             "",
         ]
         shard_lines.setdefault(shard, []).extend(body)
-        entries.append({
-            "name": name,
+
+        display_name = name
+        item = {
+            "name": display_name,
             "area": "arch",
             "summary": package["version"],
             "manual": {
@@ -146,7 +159,16 @@ def main():
                 "section": "unix",
                 "topic": topic,
             },
-        })
+        }
+        if name.lower() in reserved:
+            display_name = f"{name} [Arch]"
+            item["name"] = display_name
+            item["aliases"] = [f"arch {name}"]
+            # Extra field is ignored by SST but lets QA preserve the real package
+            # name without deriving it from the display disambiguation.
+            item["package"] = name
+            collisions.append(name)
+        entries.append(item)
 
     guide["entries"].extend(entries)
 
@@ -169,7 +191,12 @@ def main():
         if path.exists():
             path.unlink()
 
-    print(f"generated {len(packages)} Arch packages; index={size} bytes; shards={len(shard_lines)}")
+    print(
+        f"generated {len(packages)} Arch packages; index={size} bytes; "
+        f"shards={len(shard_lines)}; collisions={len(collisions)}"
+    )
+    if collisions:
+        print("disambiguated: " + ", ".join(collisions))
 
 
 if __name__ == "__main__":
