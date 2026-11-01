@@ -241,14 +241,14 @@ Estado SST: [ ]
 17. juce
 Paquete: juce
 Repositorio: extra
-Versión: 7.0.12-1
+Versión: 7.0.12-2
 Arquitectura: x86_64
 Descripción: Cross-platform C++ framework
 Upstream: https://github.com/juce-framework/juce/
 Licencia: Apache-2.0, BSD-3-Clause, GPL-3.0-only, ISC, LicenseRef-Public-Domain, MIT, Zlib
-Dependencias: freetype2, libfreetype.so=6-64, gcc-libs, glibc, hicolor-icon-theme, libpng, libjpeg-turbo, libjpeg.so=8-64, ttf-font, zlib
+Dependencias: freetype2, libfreetype.so=6-64, libgcc, libstdc++, glibc, hicolor-icon-theme, libpng, libjpeg-turbo, libjpeg.so=8-64, ttf-font, zlib
 Opcionales: python: for building LV2 plugins
-Compilación: alsa-lib, cmake, freetype2, doxygen, flac, gendesk, graphviz, gtk3, jack, ladspa, libjpeg-turbo, libpng, libvorbis, python, webkit2gtk, zlib
+Compilación: alsa-lib, cmake, freetype2, doxygen, flac, gendesk, graphviz, gtk3, jack, ladspa, libjpeg-turbo, libpng, libvorbis, python, webkit2gtk-4.1, zlib
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

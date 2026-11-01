@@ -76,12 +76,12 @@ Estado SST: [ ]
 6. dsniff
 Paquete: dsniff
 Repositorio: extra
-Versión: 2.4b1-33
+Versión: 2.4b1-34
 Arquitectura: x86_64
 Descripción: Collection of tools for network auditing and penetration testing
 Upstream: https://www.monkey.org/~dugsong/dsniff/
 Licencia: BSD
-Dependencias: glibc, libpcap, openssl, libxmu, glib2, libnet, libnids, libtirpc
+Dependencias: db5.3, glibc, libpcap, openssl, libxmu, glib2, libnet, libnids, libtirpc
 Opcionales: —
 Compilación: rpcsvc-proto
 Pruebas: —
@@ -436,12 +436,12 @@ Estado SST: [ ]
 30. netstat nat
 Paquete: netstat-nat
 Repositorio: extra
-Versión: 1.4.10-5
+Versión: 1.4.10-6
 Arquitectura: x86_64
 Descripción: Small program written in C displaying NAT connections, managed by netfilter.
 Upstream: https://tweegy.nl/projects/netstat-nat/
-Licencia: GPL
-Dependencias: iptables
+Licencia: GPL-2.0-or-later
+Dependencias: glibc, iptables
 Opcionales: —
 Compilación: —
 Pruebas: —
