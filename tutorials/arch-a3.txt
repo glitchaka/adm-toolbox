@@ -226,12 +226,12 @@ Estado SST: [ ]
 16. kudu
 Paquete: kudu
 Repositorio: extra
-Versión: 0.4.1-2
+Versión: 0.5.0-1
 Arquitectura: x86_64
 Descripción: TUI for creating and managing virtual machines on Linux
 Upstream: https://github.com/pythops/kudu
 Licencia: GPL-3.0-or-later
-Dependencias: gcc-libs, glibc, libisoburn, passt, qemu-system-x86
+Dependencias: gcc-libs, glibc, libisoburn, passt, qemu-img, qemu-system-x86
 Opcionales: qemu-system-aarch64: AArch64 virtual machine support, qemu-system-riscv: RISC-V virtual machine support, xz: extracting compressed VM images, including FreeBSD images, qemu-ui-egl-headless: headless EGL/OpenGL display support, qemu-ui-gtk: GTK display support, qemu-ui-opengl: OpenGL display support, qemu-ui-sdl: SDL display support, qemu-hw-display-qxl: QXL display device support, qemu-hw-display-virtio-gpu: virtio GPU display device support
 Compilación: cargo
 Pruebas: —
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. python simpleitk
 Paquete: python-simpleitk
 Repositorio: extra
-Versión: 2.5.6-1
+Versión: 2.5.7-1
 Arquitectura: x86_64
 Descripción: A simplified layer built on top of ITK - Python bindings
 Upstream: https://github.com/SimpleITK/SimpleITK

@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. dotnet sdk 8 0
 Paquete: dotnet-sdk-8.0
 Repositorio: extra
-Versión: 8.0.32.sdk132-1
+Versión: 8.0.33.sdk133-1
 Arquitectura: x86_64
 Descripción: The .NET Core SDK
 Upstream: https://dotnet.microsoft.com
@@ -586,15 +586,15 @@ Estado SST: [ ]
 40. python nodeenv
 Paquete: python-nodeenv
 Repositorio: extra
-Versión: 1.11.1-1
+Versión: 1.12.0-1
 Arquitectura: any
 Descripción: Node.js virtual environment builder
 Upstream: https://github.com/ekalinin/nodeenv
 Licencia: BSD-3-Clause
 Dependencias: python-setuptools, make
-Opcionales: nodejs: for --node=system and --prefer-system, python-certifi: certificate bundle for --with-certifi
+Opcionales: nodejs: for --node=system and --prefer-system, python-certifi: certificate bundle for --with-certifi, python-shtab: shell completion scripts via --print-completion
 Compilación: git, python-build, python-installer, python-wheel, python-setuptools-scm
-Pruebas: dash, fish, nodejs, python-pytest, python-coverage, zsh
+Pruebas: dash, fish, nodejs, python-pytest, python-coverage, python-shtab, zsh
 Proporciona: —
 Estado SST: [ ]
 

@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. dotnet runtime 8 0
 Paquete: dotnet-runtime-8.0
 Repositorio: extra
-Versión: 8.0.32.sdk132-1
+Versión: 8.0.33.sdk133-1
 Arquitectura: x86_64
 Descripción: The .NET Core runtime
 Upstream: https://dotnet.microsoft.com
@@ -736,12 +736,12 @@ Estado SST: [ ]
 50. xkbsel
 Paquete: xkbsel
 Repositorio: extra
-Versión: 0.13-11
+Versión: 0.13-12
 Arquitectura: x86_64
 Descripción: framework for defining, selecting and indicating XKB keyboard mappings
 Upstream: https://www.meduna.org/sw_xkbsel_en.html
-Licencia: GPL
-Dependencias: gdbm, libxaw
+Licencia: GPL-2.0-only
+Dependencias: gdbm, glibc, libx11, libxaw, libxt, libgdbm_compat.so=4-64
 Opcionales: —
 Compilación: patch, xkeyboard-config
 Pruebas: —
