@@ -6,6 +6,7 @@ import pathlib
 import re
 import tarfile
 import urllib.request
+from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TUTORIALS = ROOT / "tutorials"
@@ -13,6 +14,7 @@ GUIDE = TUTORIALS / "guide-index.json"
 MIRROR = "https://geo.mirror.pkgbuild.com"
 REPOS = ("core", "extra", "multilib")
 MAX_INDEX = 2 * 1024 * 1024
+MAX_MANUAL = 512 * 1024
 
 
 def fields(text: str):
@@ -41,8 +43,17 @@ def topic_for(name: str):
     return " ".join(re.findall(r"[A-Za-z0-9]+", name)) or name
 
 
+def topic_tokens(topic: str):
+    return topic.lower().split()
+
+
 def shard_for(name: str):
     return hashlib.sha256(name.encode("utf-8")).hexdigest()[:2]
+
+
+def dedicated_file(name: str):
+    digest = hashlib.sha256(name.encode("utf-8")).hexdigest()[:12]
+    return f"arch-p-{digest}"
 
 
 def fetch_repo(repo: str):
@@ -85,6 +96,28 @@ def format_list(label, values):
     return f"{label}: " + ", ".join(values)
 
 
+def build_body(package, number):
+    name = package["name"]
+    topic = package["topic"]
+    return [
+        f"{number}. {topic}",
+        f"Paquete: {name}",
+        f"Repositorio: {package['repo']}",
+        f"Versión: {package['version']}",
+        f"Arquitectura: {package['arch']}",
+        f"Descripción: {package['desc'] or '—'}",
+        f"Upstream: {package['url'] or '—'}",
+        format_list("Licencia", package["licenses"]),
+        format_list("Dependencias", package["depends"]),
+        format_list("Opcionales", package["optdepends"]),
+        format_list("Compilación", package["makedepends"]),
+        format_list("Pruebas", package["checkdepends"]),
+        format_list("Proporciona", package["provides"]),
+        "Estado SST: [ ]",
+        "",
+    ]
+
+
 def main():
     with GUIDE.open("r", encoding="utf-8") as fh:
         guide = json.load(fh)
@@ -92,8 +125,6 @@ def main():
     guide["areas"] = [area for area in guide.get("areas", []) if area.get("id") != "arch"]
     guide["entries"] = [entry for entry in guide.get("entries", []) if entry.get("area") != "arch"]
 
-    # Guide .8 keeps one global lookup for names and aliases. An Arch package
-    # must never shadow an SST command/alias or duplicate an existing name.
     reserved = set()
     for entry in guide.get("entries", []):
         name = str(entry.get("name", "")).strip().lower()
@@ -114,58 +145,62 @@ def main():
         selected.setdefault(package["name"], package)
     packages = sorted(selected.values(), key=lambda p: p["name"].lower())
 
+    for package in packages:
+        package["topic"] = topic_for(package["name"])
+        package["base_shard"] = shard_for(package["name"])
+
+    # SST .8's extractor matches a section when every requested topic token is
+    # present in the heading, so a short package can accidentally resolve to an
+    # earlier longer package in the same shard. Detect exactly that condition
+    # and isolate only the ambiguous package in its own tiny manual file.
+    groups = defaultdict(list)
+    for package in packages:
+        groups[package["base_shard"]].append(package)
+
+    isolated = set()
+    for shard_packages in groups.values():
+        earlier = []
+        for package in shard_packages:
+            wanted = set(topic_tokens(package["topic"]))
+            for prior in earlier:
+                prior_tokens = set(topic_tokens(prior["topic"]))
+                if wanted.issubset(prior_tokens):
+                    isolated.add(package["name"])
+                    break
+            earlier.append(package)
+
     guide["areas"].append({
         "id": "arch",
         "name": "Arch / Portabilidad",
         "summary": f"Catálogo oficial Arch para revisión ({len(packages)} paquetes).",
     })
 
-    shard_lines = {}
-    shard_counts = {}
+    file_packages = defaultdict(list)
+    for package in packages:
+        if package["name"] in isolated:
+            manual_file = dedicated_file(package["name"])
+        else:
+            manual_file = f"arch-{package['base_shard']}"
+        package["manual_file"] = manual_file
+        file_packages[manual_file].append(package)
+
     entries = []
     collisions = []
     for package in packages:
         name = package["name"]
-        topic = topic_for(name)
-        shard = shard_for(name)
-        number = shard_counts.get(shard, 0) + 1
-        shard_counts[shard] = number
-        body = [
-            f"{number}. {topic}",
-            f"Paquete: {name}",
-            f"Repositorio: {package['repo']}",
-            f"Versión: {package['version']}",
-            f"Arquitectura: {package['arch']}",
-            f"Descripción: {package['desc'] or '—'}",
-            f"Upstream: {package['url'] or '—'}",
-            format_list("Licencia", package["licenses"]),
-            format_list("Dependencias", package["depends"]),
-            format_list("Opcionales", package["optdepends"]),
-            format_list("Compilación", package["makedepends"]),
-            format_list("Pruebas", package["checkdepends"]),
-            format_list("Proporciona", package["provides"]),
-            "Estado SST: [ ]",
-            "",
-        ]
-        shard_lines.setdefault(shard, []).extend(body)
-
-        display_name = name
         item = {
-            "name": display_name,
+            "name": name,
             "area": "arch",
             "summary": package["version"],
             "manual": {
-                "file": f"arch-{shard}",
+                "file": package["manual_file"],
                 "section": "unix",
-                "topic": topic,
+                "topic": package["topic"],
             },
         }
         if name.lower() in reserved:
-            display_name = f"{name} [Arch]"
-            item["name"] = display_name
+            item["name"] = f"{name} [Arch]"
             item["aliases"] = [f"arch {name}"]
-            # Extra field is ignored by SST but lets QA preserve the real package
-            # name without deriving it from the display disambiguation.
             item["package"] = name
             collisions.append(name)
         entries.append(item)
@@ -176,15 +211,28 @@ def main():
     size = len(encoded.encode("utf-8"))
     if size > MAX_INDEX:
         raise SystemExit(f"guide-index.json would be {size} bytes (> {MAX_INDEX})")
+
+    # Build all manuals in memory and validate every size BEFORE mutating the
+    # live guide or deleting the previous shards. A generation failure therefore
+    # cannot partially publish a broken catalog.
+    rendered = {}
+    for manual_file, members in file_packages.items():
+        lines = []
+        for number, package in enumerate(members, 1):
+            lines.extend(build_body(package, number))
+        text = "\n".join(lines).rstrip() + "\n"
+        if len(text.encode("utf-8")) > MAX_MANUAL:
+            raise SystemExit(f"{manual_file}.txt exceeds SST manual limit")
+        rendered[manual_file] = text
+
     GUIDE.write_text(encoded, encoding="utf-8")
 
     for old in TUTORIALS.glob("arch-[0-9a-f][0-9a-f].txt"):
         old.unlink()
-    for shard, lines in shard_lines.items():
-        path = TUTORIALS / f"arch-{shard}.txt"
-        path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
-        if path.stat().st_size > 512 * 1024:
-            raise SystemExit(f"{path.name} exceeds SST manual limit")
+    for old in TUTORIALS.glob("arch-p-*.txt"):
+        old.unlink()
+    for manual_file, text in rendered.items():
+        (TUTORIALS / f"{manual_file}.txt").write_text(text, encoding="utf-8")
 
     for obsolete in ("arch-index.json", "arch-ripgrep.txt", "arch-htop.txt", "arch-tcpdump.txt"):
         path = TUTORIALS / obsolete
@@ -193,10 +241,12 @@ def main():
 
     print(
         f"generated {len(packages)} Arch packages; index={size} bytes; "
-        f"shards={len(shard_lines)}; collisions={len(collisions)}"
+        f"manuals={len(rendered)}; isolated={len(isolated)}; collisions={len(collisions)}"
     )
+    if isolated:
+        print("isolated ambiguous topics: " + ", ".join(sorted(isolated)))
     if collisions:
-        print("disambiguated: " + ", ".join(collisions))
+        print("disambiguated SST lookup collisions: " + ", ".join(collisions))
 
 
 if __name__ == "__main__":
