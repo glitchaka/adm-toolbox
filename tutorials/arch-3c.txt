@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. libvirt
 Paquete: libvirt
 Repositorio: extra
-Versión: 1:12.8.0-1
+Versión: 1:12.9.0-1
 Arquitectura: x86_64
 Descripción: API for controlling virtualization engines (openvz,kvm,qemu,virtualbox,xen,etc)
 Upstream: https://libvirt.org/
@@ -250,7 +250,7 @@ Dependencias: acl, audit, bash, curl, device-mapper, fuse3, libgcc, glib2, glibc
 Opcionales: dmidecode: DMI system info support, dnsmasq: required for default NAT/DHCP for guests, gettext: required for libvirt-guests.service, iptables-nft: required for default NAT networking, libvirt-python: for virt-qemu-qmp-proxy and virt-qemu-sev-validate commands, libvirt-storage-gluster: Gluster storage backend, libvirt-storage-iscsi-direct: iSCSI-direct storage backend, lvm2: Logical Volume Manager support, openbsd-netcat: for remote management over ssh, open-iscsi: iSCSI support via iscsiadm, python-cryptography: for virt-qemu-sev-validate command, python-lxml: for virt-qemu-sev-validate command, qemu-base: QEMU/KVM support, qemu-desktop: QEMU/KVM desktop support, qemu-emulators-full: Support of additional QEMU architectures, radvd: IPv6 RAD support, swtpm: TPM emulator support
 Compilación: bash-completion, git, glusterfs, libiscsi, libxslt, meson, python-docutils, systemd
 Pruebas: —
-Proporciona: libvirt=12.8.0, libvirt.so=0-64, libvirt-admin.so=0-64, libvirt-lxc.so=0-64, libvirt-qemu.so=0-64
+Proporciona: libvirt=12.9.0, libvirt.so=0-64, libvirt-admin.so=0-64, libvirt-lxc.so=0-64, libvirt-qemu.so=0-64
 Estado SST: [ ]
 
 18. lua54 luarepl

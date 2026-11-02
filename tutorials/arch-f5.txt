@@ -46,14 +46,14 @@ Estado SST: [ ]
 4. capnet assist
 Paquete: capnet-assist
 Repositorio: extra
-Versión: 8.0.2-1
+Versión: 9.0.0-1
 Arquitectura: x86_64
 Descripción: Captive Portal Assistant
 Upstream: https://github.com/elementary/capnet-assist
-Licencia: GPL3
-Dependencias: gcr-4, glib2, gtk4, libadwaita-1.so=0-64, libgranite-7.so=7-64, networkmanager, webkitgtk-6.0
+Licencia: GPL-3.0-or-later
+Dependencias: dconf, gcr-4, glib2, glibc, gtk4, hicolor-icon-theme, libadwaita-1.so=0-64, libgranite-7.so=7-64, networkmanager, webkitgtk-6.0
 Opcionales: —
-Compilación: git, intltool, meson, vala
+Compilación: git, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -646,7 +646,7 @@ Estado SST: [ ]
 44. python anyio
 Paquete: python-anyio
 Repositorio: extra
-Versión: 4.15.1-2
+Versión: 4.16.0-1
 Arquitectura: any
 Descripción: High level compatibility layer for multiple asynchronous event loop implementations
 Upstream: https://github.com/agronholm/anyio

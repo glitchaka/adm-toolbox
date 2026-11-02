@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. hyprpolkitagent
 Paquete: hyprpolkitagent
 Repositorio: extra
-Versión: 0.2.0-1
+Versión: 0.2.0-3
 Arquitectura: x86_64
 Descripción: Simple polkit authentication agent for Hyprland, written in QT/QML
 Upstream: https://github.com/hyprwm/hyprpolkitagent
@@ -508,7 +508,22 @@ Pruebas: python-markdown, python-pygments
 Proporciona: —
 Estado SST: [ ]
 
-35. python gitlabber
+35. python croniter
+Paquete: python-croniter
+Repositorio: extra
+Versión: 6.2.4-1
+Arquitectura: any
+Descripción: A Python module to provide iteration for datetime object.
+Upstream: https://github.com/pallets-eco/croniter
+Licencia: MIT
+Dependencias: python, python-dateutil
+Opcionales: —
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-pytest, python-pytz
+Proporciona: —
+Estado SST: [ ]
+
+36. python gitlabber
 Paquete: python-gitlabber
 Repositorio: extra
 Versión: 2.1.2-1
@@ -523,7 +538,7 @@ Pruebas: python-pytest-integration
 Proporciona: —
 Estado SST: [ ]
 
-36. python itemloaders
+37. python itemloaders
 Paquete: python-itemloaders
 Repositorio: extra
 Versión: 1.5.0-1
@@ -538,7 +553,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-37. python jsonref
+38. python jsonref
 Paquete: python-jsonref
 Repositorio: extra
 Versión: 1.1.0-1
@@ -553,7 +568,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-38. python mcp
+39. python mcp
 Paquete: python-mcp
 Repositorio: extra
 Versión: 2.3.0-2
@@ -568,7 +583,7 @@ Pruebas: python-blockbuster, python-coverage, python-dirty-equals, python-griffe
 Proporciona: —
 Estado SST: [ ]
 
-39. python opentelemetry instrumentation grpc
+40. python opentelemetry instrumentation grpc
 Paquete: python-opentelemetry-instrumentation-grpc
 Repositorio: extra
 Versión: 0.66b2-1
@@ -583,7 +598,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-40. python prompt toolkit
+41. python prompt toolkit
 Paquete: python-prompt_toolkit
 Repositorio: extra
 Versión: 3.0.53-1
@@ -598,7 +613,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-41. qbittorrent
+42. qbittorrent
 Paquete: qbittorrent
 Repositorio: extra
 Versión: 5.3.0-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. radeontop
+43. radeontop
 Paquete: radeontop
 Repositorio: extra
 Versión: 1.4-3
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. reproducible faketools gzip
+44. reproducible faketools gzip
 Paquete: reproducible-faketools-gzip
 Repositorio: extra
 Versión: 0.5.5-3
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. rhvoice voice talgat
+45. rhvoice voice talgat
 Paquete: rhvoice-voice-talgat
 Repositorio: extra
 Versión: 1.16.5-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. rkward
+46. rkward
 Paquete: rkward
 Repositorio: extra
 Versión: 0.8.3-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby faraday patron
+47. ruby faraday patron
 Paquete: ruby-faraday-patron
 Repositorio: extra
 Versión: 2.0.2-1
@@ -688,7 +703,7 @@ Pruebas: ruby-bundler, ruby-faraday, ruby-rake, ruby-rspec, ruby-webmock
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby typhoeus
+48. ruby typhoeus
 Paquete: ruby-typhoeus
 Repositorio: extra
 Versión: 1.6.0-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. sagemath giac
+49. sagemath giac
 Paquete: sagemath-giac
 Repositorio: extra
 Versión: 0.1.4-3
@@ -718,7 +733,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-49. sdl gfx
+50. sdl gfx
 Paquete: sdl_gfx
 Repositorio: extra
 Versión: 2.0.27-2
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. serpl
+51. serpl
 Paquete: serpl
 Repositorio: extra
 Versión: 0.3.11-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. sh4lt
+52. sh4lt
 Paquete: sh4lt
 Repositorio: extra
 Versión: 0.3.4-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. speex
+53. speex
 Paquete: speex
 Repositorio: extra
 Versión: 1.2.1-3
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: libspeex.so=1-64
 Estado SST: [ ]
 
-53. ttf cousine nerd
+54. ttf cousine nerd
 Paquete: ttf-cousine-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-54. xboard
+55. xboard
 Paquete: xboard
 Repositorio: extra
 Versión: 4.9.1-4
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. xdg desktop portal
+56. xdg desktop portal
 Paquete: xdg-desktop-portal
 Repositorio: extra
 Versión: 1.22.1-2
@@ -823,7 +838,7 @@ Pruebas: python-pytest-xdist
 Proporciona: —
 Estado SST: [ ]
 
-56. xorg util macros
+57. xorg util macros
 Paquete: xorg-util-macros
 Repositorio: extra
 Versión: 1.20.2-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. zsh autocomplete
+58. zsh autocomplete
 Paquete: zsh-autocomplete
 Repositorio: extra
 Versión: 26.08.04-1

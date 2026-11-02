@@ -76,13 +76,13 @@ Estado SST: [ ]
 6. dns lexicon
 Paquete: dns-lexicon
 Repositorio: extra
-Versión: 3.25.2-2
+Versión: 3.26.0-1
 Arquitectura: any
 Descripción: Manipulate DNS records on various DNS providers in a standardized/agnostic way
 Upstream: https://github.com/dns-lexicon/dns-lexicon
 Licencia: MIT
-Dependencias: python-beautifulsoup4, python-cryptography, python-yaml, python-requests, python-requests-unixsocket, python-tldextract, python-importlib-metadata, python-pyotp, python-dnspython
-Opcionales: python-boto3: for Route53 support, python-localzone: for localzone support, python-softlayer: for SoftLayer support, python-zeep: for Gransy support
+Dependencias: python-beautifulsoup4, python-cryptography, python-yaml, python-requests, python-requests-unixsocket, python-tldextract, python-pyotp, python-dnspython
+Opcionales: python-boto3: for Route53 support, python-localzone: for localzone support, python-softlayer: for SoftLayer support, python-zeep: for Gransy SOAP support
 Compilación: git, python-build, python-installer, python-hatchling
 Pruebas: python-pytest, python-vcrpy, python-boto3, python-localzone, python-softlayer, python-zeep, bind
 Proporciona: —

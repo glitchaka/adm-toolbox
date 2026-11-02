@@ -61,12 +61,12 @@ Estado SST: [ ]
 5. contractor
 Paquete: contractor
 Repositorio: extra
-Versión: 0.3.5-3
+Versión: 0.3.5-4
 Arquitectura: x86_64
 Descripción: A desktop-wide extension service
 Upstream: https://github.com/elementary/contractor
-Licencia: GPL3
-Dependencias: glib2, libgee
+Licencia: GPL-3.0-or-later
+Dependencias: glib2, glibc, libgee
 Opcionales: —
 Compilación: git, meson, vala
 Pruebas: —
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. gambas3 gb qt5
 Paquete: gambas3-gb-qt5
 Repositorio: extra
-Versión: 3.22.2-1
+Versión: 3.22.2-2
 Arquitectura: x86_64
 Descripción: Qt5 toolkit component
 Upstream: http://gambas.sourceforge.net/
@@ -175,13 +175,13 @@ Dependencias: gambas3-gb-image, qt5-base, qt5-svg, qt5-x11extras
 Opcionales: —
 Compilación: intltool, postgresql, libffi, bzip2, glib2, v4l-utils, zlib, mesa, glew, xdg-utils, imlib2, gdk-pixbuf2, gtk3, webkit2gtk-4.1, postgresql-libs, mariadb-libs, unixodbc, mongo-c-driver, sqlite, librsvg, curl, poppler-glib, sdl2, sdl2_mixer, sdl2_image, sdl2_ttf, libxtst, pcre2, qt5-x11extras, qt5-svg, qt6-webengine, qt6-svg, libxcursor, libsm, dbus, libxml2, libxslt, gsl, gst-plugins-base-libs, alure, ncurses, gmime3, libxcrypt
 Pruebas: —
-Proporciona: gambas3-gui
+Proporciona: gambas3-gui, gambas3-gb-qt5-ext
 Estado SST: [ ]
 
 13. gambas3 runtime
 Paquete: gambas3-runtime
 Repositorio: extra
-Versión: 3.22.2-1
+Versión: 3.22.2-2
 Arquitectura: x86_64
 Descripción: Runtime environment
 Upstream: http://gambas.sourceforge.net/

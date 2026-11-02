@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. cryptol
 Paquete: cryptol
 Repositorio: extra
-Versión: 3.3.0-185
+Versión: 3.3.0-187
 Arquitectura: x86_64
 Descripción: The Language of Cryptography
 Upstream: https://tools.galois.com/cryptol
@@ -181,12 +181,12 @@ Estado SST: [ ]
 13. errands
 Paquete: errands
 Repositorio: extra
-Versión: 51.0.1-1
+Versión: 51.0.2-1
 Arquitectura: x86_64
 Descripción: Todo application for those who prefer simplicity
 Upstream: https://apps.gnome.org/List/
 Licencia: MIT
-Dependencias: cairo, evolution-data-server, glib2, glibc, gtk4, gtksourceview5, hicolor-icon-theme, json-glib, libadwaita, libgcc, libical, libportal, libsecret, libsoup3
+Dependencias: cairo, evolution-data-server, glib2, glibc, gtk4, gtksourceview5, hicolor-icon-theme, json-glib, libadwaita, libgcc, libgoa, libical, libportal, libsecret, libsoup3
 Opcionales: —
 Compilación: blueprint-compiler, git, libportal-gtk4
 Pruebas: —
@@ -211,12 +211,12 @@ Estado SST: [ ]
 15. granite
 Paquete: granite
 Repositorio: extra
-Versión: 1:6.2.0-1
+Versión: 1:6.2.0-2
 Arquitectura: x86_64
-Descripción: Library that extends Gtk+
+Descripción: Library that extends GTK
 Upstream: https://github.com/elementary/granite
-Licencia: LGPL3
-Dependencias: cairo, gdk-pixbuf2, glib2, gtk3, libgee, pango
+Licencia: LGPL-3.0-or-later
+Dependencias: cairo, gdk-pixbuf2, glib2, glibc, gtk3, hicolor-icon-theme, libgee, pango
 Opcionales: —
 Compilación: git, gobject-introspection, meson, vala
 Pruebas: —

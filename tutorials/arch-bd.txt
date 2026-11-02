@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell pandoc server
 Paquete: haskell-pandoc-server
 Repositorio: extra
-Versión: 0.1.4.1-47
+Versión: 0.1.4.2-3
 Arquitectura: x86_64
 Descripción: Pandoc document conversion as an HTTP servant-server
 Upstream: https://pandoc.org
@@ -466,12 +466,12 @@ Estado SST: [ ]
 32. libvirt storage gluster
 Paquete: libvirt-storage-gluster
 Repositorio: extra
-Versión: 1:12.8.0-1
+Versión: 1:12.9.0-1
 Arquitectura: x86_64
 Descripción: Libvirt Gluster storage backend
 Upstream: https://libvirt.org/
 Licencia: LGPL-2.1-or-later, GPL-3.0-or-later
-Dependencias: libvirt=12.8.0, libgcc, glib2, glibc, glusterfs
+Dependencias: libvirt=12.9.0, libgcc, glib2, glibc, glusterfs
 Opcionales: —
 Compilación: bash-completion, git, glusterfs, libiscsi, libxslt, meson, python-docutils, systemd
 Pruebas: —
@@ -736,14 +736,14 @@ Estado SST: [ ]
 50. python openai
 Paquete: python-openai
 Repositorio: extra
-Versión: 2.53.0-1
+Versión: 2.54.0-1
 Arquitectura: any
 Descripción: Python client library for the OpenAI API
 Upstream: https://github.com/openai/openai-python
-Licencia: MIT
+Licencia: Apache-2.0
 Dependencias: python, python-anyio, python-distro, python-h2, python-httpx, python-jiter, python-pydantic, python-pydantic-core, python-sniffio, python-tqdm, python-typing_extensions
 Opcionales: python-httpx-aiohttp: Use aiohttp as HTTP backend, python-httpx2: Use HTTPX2 as HTTP backend, python-numpy: Datalib support, python-pandas: Datalib support, python-websockets: Realtime support, python-botocore: AWS Bedrock OpenAI-compatible API support
-Compilación: python-build, python-hatch-fancy-pypi-readme, python-hatchling, python-installer, python-wheel
+Compilación: git, python-build, python-hatch-fancy-pypi-readme, python-hatchling, python-installer, python-wheel
 Pruebas: nodejs-lts-jod, npm, procps-ng, python-dirty-equals, python-httpx-aiohttp, python-httpx2, python-inline-snapshot, python-nest-asyncio, python-pytest, python-pytest-asyncio, python-pytest-xdist, python-respx, python-rich, python-botocore, python-jsonschema
 Proporciona: —
 Estado SST: [ ]

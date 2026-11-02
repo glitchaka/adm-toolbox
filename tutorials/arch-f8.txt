@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. gambas3 gb complex
 Paquete: gambas3-gb-complex
 Repositorio: extra
-Versión: 3.22.2-1
+Versión: 3.22.2-2
 Arquitectura: x86_64
 Descripción: Complex numbers component
 Upstream: http://gambas.sourceforge.net/
@@ -241,14 +241,14 @@ Estado SST: [ ]
 17. granite7
 Paquete: granite7
 Repositorio: extra
-Versión: 7.8.1-1
+Versión: 7.8.1-2
 Arquitectura: x86_64
-Descripción: Library that extends Gtk+
+Descripción: Library that extends GTK
 Upstream: https://github.com/elementary/granite
-Licencia: LGPL3
-Dependencias: cairo, gdk-pixbuf2, glib2, gtk4, libgee, pango
-Opcionales: —
-Compilación: cmake, git, gobject-introspection, libshumate, meson, sassc, vala
+Licencia: LGPL-3.0-or-later
+Dependencias: glib2, glibc, gtk4, hicolor-icon-theme, libgee, pango
+Opcionales: libshumate: for granite-7-demo
+Compilación: git, gobject-introspection, libshumate, meson, sassc, vala
 Pruebas: —
 Proporciona: libgranite-7.so=7-64
 Estado SST: [ ]
@@ -736,7 +736,7 @@ Estado SST: [ ]
 50. python pycrdt websocket
 Paquete: python-pycrdt-websocket
 Repositorio: extra
-Versión: 0.16.5-1
+Versión: 0.16.6-1
 Arquitectura: any
 Descripción: CRDTs based on Yrs
 Upstream: https://github.com/y-crdt/pycrdt-websocket

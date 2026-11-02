@@ -181,12 +181,12 @@ Estado SST: [ ]
 13. hyprland
 Paquete: hyprland
 Repositorio: extra
-Versión: 0.57.0-1
+Versión: 0.57.0-3
 Arquitectura: x86_64
 Descripción: a highly customizable dynamic tiling Wayland compositor
 Upstream: https://github.com/hyprwm/Hyprland
 Licencia: BSD-3-Clause
-Dependencias: cairo, aquamarine, libgcc, libstdc++, glibc, glib2, glslang, hyprcursor, hyprgraphics, hyprland-guiutils, hyprlang, hyprutils, hyprwire, lcms2, libcanberra, libdrm, libei, libglvnd, libinput, libx11, libxcb, libxcomposite, libxcursor, libxfixes, libxkbcommon, libxrender, lua, mesa, muparser, opengl-driver, pango, pixman, re2, sdbus-cpp, tomlplusplus, util-linux-libs, wayland, wayland-protocols, xcb-proto, xcb-util, xcb-util-errors, xcb-util-image, xcb-util-keysyms, xcb-util-renderutil, xcb-util-wm, xorg-xwayland, libEGL.so=1-64, libGLESv2.so=2-64, libaquamarine.so=14-64, libcanberra.so=0-64, libeis.so=1-64, libgio-2.0.so=0-64, libgobject-2.0.so=0-64, libhyprcursor.so=0-64, libhyprgraphics.so=4-64, libhyprlang.so, libhyprutils.so=13-64, libhyprwire.so=3-64, liblcms2.so=2-64, libpango-1.0.so=0-64, libpangocairo-1.0.so=0-64, libpixman-1.so=0-64, libre2.so=11-64, libreadline.so=8-64, libsdbus-c++.so=2-64, libtomlplusplus.so, libuuid.so=1-64, libwayland-server.so=0-64, libxkbcommon.so=0-64
+Dependencias: cairo, aquamarine, libgcc, libstdc++, glibc, glib2, glslang, hyprcursor, hyprgraphics, hyprland-guiutils, hyprlang, hyprutils, hyprwire, lcms2, libcanberra, libdrm, libei, libglvnd, libinput, libx11, libxcb, libxcomposite, libxcursor, libxfixes, libxkbcommon, libxrender, lua, mesa, muparser, opengl-driver, pango, pixman, re2, sdbus-cpp, tomlplusplus, util-linux-libs, wayland, wayland-protocols, xcb-proto, xcb-util, xcb-util-errors, xcb-util-image, xcb-util-keysyms, xcb-util-renderutil, xcb-util-wm, xorg-xwayland, libEGL.so=1-64, libGLESv2.so=2-64, libaquamarine.so=15-64, libcanberra.so=0-64, libeis.so=1-64, libgio-2.0.so=0-64, libgobject-2.0.so=0-64, libhyprcursor.so=0-64, libhyprgraphics.so=5-64, libhyprlang.so, libhyprutils.so=13-64, libhyprwire.so=3-64, liblcms2.so=2-64, libpango-1.0.so=0-64, libpangocairo-1.0.so=0-64, libpixman-1.so=0-64, libre2.so=11-64, libreadline.so=8-64, libsdbus-c++.so=2-64, libtomlplusplus.so, libuuid.so=1-64, libwayland-server.so=0-64, libxkbcommon.so=0-64
 Opcionales: hyprpm: build and install plugins, hyprshutdown: clean logout and shutdown helper, xdg-desktop-portal-hyprland: xdg-desktop-portal backend for hyprland
 Compilación: cmake, glaze, hyprland-protocols, hyprwayland-scanner, meson, ninja, xorgproto
 Pruebas: —
@@ -886,9 +886,9 @@ Estado SST: [ ]
 60. throttled
 Paquete: throttled
 Repositorio: extra
-Versión: 0.12.2-1
+Versión: 0.13-1
 Arquitectura: any
-Descripción: Workaround for Intel throttling issues in Linux.
+Descripción: Linux daemon for Intel CPU power limits and firmware-induced throttling
 Upstream: https://github.com/erpalma/throttled
 Licencia: MIT
 Dependencias: python-dbus-fast

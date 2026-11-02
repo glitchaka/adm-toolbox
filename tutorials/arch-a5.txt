@@ -466,14 +466,14 @@ Estado SST: [ ]
 32. pinyin data
 Paquete: pinyin-data
 Repositorio: extra
-Versión: 0.15.0-1
+Versión: 0.16.0-1
 Arquitectura: any
 Descripción: Pinyin Data for Hanzi
 Upstream: https://github.com/mozillazg/pinyin-data
 Licencia: MIT
 Dependencias: —
 Opcionales: —
-Compilación: —
+Compilación: git
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -496,15 +496,15 @@ Estado SST: [ ]
 34. python anthropic
 Paquete: python-anthropic
 Repositorio: extra
-Versión: 2.3.0-1
+Versión: 2.3.0-2
 Arquitectura: any
 Descripción: Python client library for the Anthropic API
 Upstream: https://github.com/anthropics/anthropic-sdk-python
 Licencia: Apache-2.0, MIT, BSD-3-Clause
 Dependencias: python, python-anyio, python-docstring-parser, python-httpx2, python-jiter, python-opentelemetry-api, python-pydantic, python-sniffio, python-typing_extensions
-Opcionales: python-aiohttp: aiohttp HTTP backend, python-boto3: AWS Bedrock support, python-google-auth: Google Cloud and Vertex AI support, python-mcp: MCP tool integration, python-requests: Google Cloud and Vertex AI support
+Opcionales: python-aiohttp: aiohttp HTTP backend, python-boto3: AWS Bedrock support, python-google-auth: Google Cloud and Vertex AI support, python-mcp: MCP tool integration, python-requests: Google Cloud and Vertex AI support, python-standardwebhooks: webhook signature verification
 Compilación: git, python-build, python-hatch-fancy-pypi-readme, python-hatchling, python-installer
-Pruebas: curl, lsof, nodejs, npm, python-aiohttp, python-boto3, python-dirty-equals, python-google-auth, python-http-snapshot, python-inline-snapshot, python-mcp, python-opentelemetry-sdk, python-pytest, python-pytest-asyncio, python-pytest-xdist, python-requests, python-respx, python-rich, ruff
+Pruebas: curl, lsof, nodejs, npm, python-aiohttp, python-boto3, python-dirty-equals, python-google-auth, python-http-snapshot, python-inline-snapshot, python-mcp, python-opentelemetry-sdk, python-pytest, python-pytest-asyncio, python-pytest-xdist, python-requests, python-respx, python-rich, python-standardwebhooks, ruff
 Proporciona: —
 Estado SST: [ ]
 
