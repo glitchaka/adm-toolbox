@@ -286,14 +286,14 @@ Estado SST: [ ]
 20. indicator china weather
 Paquete: indicator-china-weather
 Repositorio: extra
-Versión: 3.0.4-2
+Versión: 3.1.2-2
 Arquitectura: x86_64
 Descripción: Indicator that displays China weather information
 Upstream: https://github.com/UbuntuKylin/indicator-china-weather
-Licencia: GPL
-Dependencias: geoip, qt5-base
+Licencia: BSD-3-Clause, GPL-3.0-only
+Dependencias: geoip, gsettings-qt5, kwindowsystem5, libx11, qt5-base, qt5-svg, qt5-x11extras
 Opcionales: —
-Compilación: qt5-tools
+Compilación: git, qt5-tools
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. sqlfluff
 Paquete: sqlfluff
 Repositorio: extra
-Versión: 4.4.0-1
+Versión: 4.5.0-1
 Arquitectura: x86_64
 Descripción: A dialect-flexible and configurable SQL linter
 Upstream: https://github.com/sqlfluff/sqlfluff

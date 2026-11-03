@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. libnm
 Paquete: libnm
 Repositorio: extra
-Versión: 1.58.1-2
+Versión: 1.58.1-3
 Arquitectura: x86_64
 Descripción: NetworkManager client library
 Upstream: https://networkmanager.dev/
@@ -421,12 +421,12 @@ Estado SST: [ ]
 29. pantheon shortcut overlay
 Paquete: pantheon-shortcut-overlay
 Repositorio: extra
-Versión: 8.1.0-1
+Versión: 8.1.0-2
 Arquitectura: x86_64
-Descripción: A native, OS-wide shortcut overlay
+Descripción: A native, OS-wide shortcut overlay for Pantheon
 Upstream: https://github.com/elementary/shortcut-overlay
 Licencia: GPL-3.0-only
-Dependencias: glib2, libgee, libgranite-7.so=7-64, pantheon-wayland
+Dependencias: gala, glib2, glibc, gnome-settings-daemon, gsettings-desktop-schemas, gtk4, libgee, libgranite-7.so=7-64, pantheon-wayland
 Opcionales: —
 Compilación: git, meson, vala
 Pruebas: —

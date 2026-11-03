@@ -238,7 +238,22 @@ Pruebas: —
 Proporciona: lib32-vulkan-driver
 Estado SST: [ ]
 
-17. libmfx
+17. libkysdk system
+Paquete: libkysdk-system
+Repositorio: extra
+Versión: 3.0.1.4-1
+Arquitectura: x86_64
+Descripción: Kylin SDK system libraries and services
+Upstream: https://gitee.com/openkylin/libkysdk-system
+Licencia: LGPL-3.0-or-later, LGPL-2.1-only OR LGPL-3.0-only, LGPL-2.1-only WITH Qt-LGPL-exception-1.1 OR LGPL-3.0-only WITH Qt-LGPL-exception-1.1, MIT
+Dependencias: alsa-lib, bluez-libs, cjson, curl, dbus, dbus-glib, file, glib2, glibc, gtk3, hwinfo, imagemagick, json-c, kmod, libarchive, libcups, libgcc, libkysdk-base, libnl, libnm, libsoup3, libstdc++, libusb, libx11, libxrandr, libzip, lm_sensors, logrotate, lz4, opencv, openssl, parted, pciutils, polkit, python, python-dbus, python-gobject, python-requests, qt6-base, qt6-webchannel, qt6-websockets, sqlite, systemd, systemd-libs, util-linux-libs, xz, zlib, zstd
+Opcionales: dmidecode: chassis manufacturer and asset information, iptables: firewall rule queries, libkscreen: Wayland display resolution queries, smartmontools: disk SMART information and temperatures
+Compilación: cmake, git, libexif, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. libmfx
 Paquete: libmfx
 Repositorio: extra
 Versión: 23.2.2-6
@@ -253,7 +268,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-18. libreoffice fresh lo
+19. libreoffice fresh lo
 Paquete: libreoffice-fresh-lo
 Repositorio: extra
 Versión: 26.8.1-1
@@ -268,7 +283,7 @@ Pruebas: —
 Proporciona: libreoffice-lo, libreoffice-fresh-i18n=26.8.1-1
 Estado SST: [ ]
 
-19. libspecbleach
+20. libspecbleach
 Paquete: libspecbleach
 Repositorio: extra
 Versión: 0.3.1-1
@@ -283,7 +298,7 @@ Pruebas: —
 Proporciona: libspecbleach.so=0-64
 Estado SST: [ ]
 
-20. mnxdom
+21. mnxdom
 Paquete: mnxdom
 Repositorio: extra
 Versión: 3.0.1-1
@@ -298,7 +313,7 @@ Pruebas: gtest
 Proporciona: libmnxdom.so=libmnxdom.so-64
 Estado SST: [ ]
 
-21. mullvad vpn daemon
+22. mullvad vpn daemon
 Paquete: mullvad-vpn-daemon
 Repositorio: extra
 Versión: 2026.5-1
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. normaliz
+23. normaliz
 Paquete: normaliz
 Repositorio: extra
 Versión: 3.11.1-4
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. opensearch anomaly detection plugin
+24. opensearch anomaly detection plugin
 Paquete: opensearch-anomaly-detection-plugin
 Repositorio: extra
 Versión: 3.9.0.0-1
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. pantheon videos
+25. pantheon videos
 Paquete: pantheon-videos
 Repositorio: extra
 Versión: 9.0.0-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. perl devel symdump
+26. perl devel symdump
 Paquete: perl-devel-symdump
 Repositorio: extra
 Versión: 2.18-6
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. perl html parser
+27. perl html parser
 Paquete: perl-html-parser
 Repositorio: extra
 Versión: 3.86-2
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. posix software development
+28. posix software development
 Paquete: posix-software-development
 Repositorio: extra
 Versión: 2017-6
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. poxml
+29. poxml
 Paquete: poxml
 Repositorio: extra
 Versión: 26.08.2-1
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. projectm sdl
+30. projectm sdl
 Paquete: projectm-sdl
 Repositorio: extra
 Versión: 3.1.12-5
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. python cccl
+31. python cccl
 Paquete: python-cccl
 Repositorio: extra
 Versión: 1.3.0-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. python niche elf
+32. python niche elf
 Paquete: python-niche-elf
 Repositorio: extra
 Versión: 0.3.7-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. python outcome
+33. python outcome
 Paquete: python-outcome
 Repositorio: extra
 Versión: 1.3.0.post0-7
@@ -478,7 +493,7 @@ Pruebas: python-pytest, python-pytest-asyncio
 Proporciona: —
 Estado SST: [ ]
 
-33. python pytest integration
+34. python pytest integration
 Paquete: python-pytest-integration
 Repositorio: extra
 Versión: 0.2.3-5
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. python scrypt
+35. python scrypt
 Paquete: python-scrypt
 Repositorio: extra
 Versión: 0.9.4-2
@@ -508,7 +523,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-35. python setuptools
+36. python setuptools
 Paquete: python-setuptools
 Repositorio: extra
 Versión: 1:84.2.1-1
@@ -523,7 +538,7 @@ Pruebas: python-build, python-ini2toml, python-jaraco.envs, python-jaraco.path, 
 Proporciona: python-distribute
 Estado SST: [ ]
 
-36. quiche
+37. quiche
 Paquete: quiche
 Repositorio: extra
 Versión: 0.29.3-1
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. ruby http form data
+38. ruby http form data
 Paquete: ruby-http-form_data
 Repositorio: extra
 Versión: 3.0.1-2
@@ -553,7 +568,7 @@ Pruebas: ruby-minitest
 Proporciona: —
 Estado SST: [ ]
 
-38. ruby syslog
+39. ruby syslog
 Paquete: ruby-syslog
 Repositorio: extra
 Versión: 0.4.0-2
@@ -568,7 +583,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-rake-compiler, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-39. rust aarch64 musl
+40. rust aarch64 musl
 Paquete: rust-aarch64-musl
 Repositorio: extra
 Versión: 1:1.99.1-1
@@ -583,7 +598,7 @@ Pruebas: gdb, procps-ng
 Proporciona: —
 Estado SST: [ ]
 
-40. sagemath doc
+41. sagemath doc
 Paquete: sagemath-doc
 Repositorio: extra
 Versión: 10.10-1
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. sqlcipher
+42. sqlcipher
 Paquete: sqlcipher
 Repositorio: extra
 Versión: 4.18.0-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. stalonetray
+43. stalonetray
 Paquete: stalonetray
 Repositorio: extra
 Versión: 1.5.0-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. sundials
+44. sundials
 Paquete: sundials
 Repositorio: extra
 Versión: 7.9.0-1
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. toolbox
+45. toolbox
 Paquete: toolbox
 Repositorio: extra
 Versión: 0.3-2
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. tre
+46. tre
 Paquete: tre
 Repositorio: extra
 Versión: 0.9.0-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. trippy
+47. trippy
 Paquete: trippy
 Repositorio: extra
 Versión: 0.13.0-2
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. ttf agave nerd
+48. ttf agave nerd
 Paquete: ttf-agave-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-48. ttf jetbrains mono nerd
+49. ttf jetbrains mono nerd
 Paquete: ttf-jetbrains-mono-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-49. ttf roboto mono
+50. ttf roboto mono
 Paquete: ttf-roboto-mono
 Repositorio: extra
 Versión: 3.001-1
@@ -733,10 +748,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. vis
+51. vis
 Paquete: vis
 Repositorio: extra
-Versión: 0.9.r501.g254329d9-1
+Versión: 0.9.r531.gd89b6c27-1
 Arquitectura: x86_64
 Descripción: modern, legacy free, simple yet efficient vim-like editor
 Upstream: https://github.com/martanne/vis#vis-a-vim-like-text-editor
@@ -748,7 +763,7 @@ Pruebas: vim, lua-lpeg
 Proporciona: —
 Estado SST: [ ]
 
-51. vlc plugin inflate
+52. vlc plugin inflate
 Paquete: vlc-plugin-inflate
 Repositorio: extra
 Versión: 3.0.24-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. xorg fonts encodings
+53. xorg fonts encodings
 Paquete: xorg-fonts-encodings
 Repositorio: extra
 Versión: 1.1.0-2
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. zam plugins lv2
+54. zam plugins lv2
 Paquete: zam-plugins-lv2
 Repositorio: extra
 Versión: 4.5-1

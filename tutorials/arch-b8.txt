@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. fast float
 Paquete: fast_float
 Repositorio: extra
-Versión: 8.3.2-1
+Versión: 8.3.3-1
 Arquitectura: any
 Descripción: Fast and exact implementation of the C++ from_chars functions for float and double types
 Upstream: https://github.com/fastfloat/fast_float
@@ -511,12 +511,12 @@ Estado SST: [ ]
 35. networkmanager pptp
 Paquete: networkmanager-pptp
 Repositorio: extra
-Versión: 1.2.12-9
+Versión: 1.2.12-10
 Arquitectura: x86_64
 Descripción: NetworkManager VPN plugin for PPTP (with GUI)
 Upstream: https://networkmanager.dev/docs/vpn/
 Licencia: GPL-2.0-or-later
-Dependencias: libgcc, glib2, glibc, gtk3, libnm, libnma, libsecret, networkmanager-vpn-plugin-pptp=1.2.12-9
+Dependencias: glib2, glibc, gtk3, libgcc, libnm, libnma, libsecret, networkmanager-vpn-plugin-pptp=1.2.12-10
 Opcionales: libnma-gtk4: GUI support (GTK 4)
 Compilación: git, glib2-devel, libnma-gtk4, ppp, pptpclient, python
 Pruebas: —

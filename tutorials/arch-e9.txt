@@ -106,12 +106,12 @@ Estado SST: [ ]
 8. firefox developer edition i18n si
 Paquete: firefox-developer-edition-i18n-si
 Repositorio: extra
-Versión: 160.0b3-1
+Versión: 160.0b4-1
 Arquitectura: any
 Descripción: Sinhala language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b3
+Dependencias: firefox-developer-edition>=160.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -343,7 +343,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. libbs2b
+24. kylin wayland compositor
+Paquete: kylin-wayland-compositor
+Repositorio: extra
+Versión: 1.3.2-1
+Arquitectura: x86_64
+Descripción: Wayland compositor and control tools for UKUI
+Upstream: https://gitee.com/openkylin/kylin-wayland-compositor
+Licencia: MIT, CC0-1.0, GPL-3.0-or-later, HPND-sell-variant, LGPL-2.1-or-later, MIT-CMU
+Dependencias: cairo, glib2, glibc, json-c, libdisplay-info, libdrm, libei, libepoxy, libglvnd, libinput, libjpeg-turbo, libpng, librsvg, libunwind, libxcb, libxkbcommon, mesa, openssl, pango, pixman, systemd-libs, wayland, wlroots0.20, libkywc
+Opcionales: ukui-session-manager: UKUI session for the display manager entry, xdg-desktop-portal-wlcom: desktop portal integration, xorg-xwayland: X11 application support
+Compilación: git, hwdata, meson, scdoc, vulkan-headers, wayland-protocols
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+25. libbs2b
 Paquete: libbs2b
 Repositorio: extra
 Versión: 3.1.0-11
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: libbs2b.so=0-64
 Estado SST: [ ]
 
-25. libdovi
+26. libdovi
 Paquete: libdovi
 Repositorio: extra
 Versión: 3.4.0-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: libdovi.so=3-64
 Estado SST: [ ]
 
-26. linux lts
+27. linux lts
 Paquete: linux-lts
 Repositorio: core
 Versión: 6.18.60-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: KSMBD-MODULE, NTSYNC-MODULE, VIRTUALBOX-GUEST-MODULES, WIREGUARD-MODULE
 Estado SST: [ ]
 
-27. linuxdoc tools
+28. linuxdoc tools
 Paquete: linuxdoc-tools
 Repositorio: extra
 Versión: 0.9.86-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. mg
+29. mg
 Paquete: mg
 Repositorio: extra
 Versión: 20260719-1
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. msgpack cxx
+30. msgpack cxx
 Paquete: msgpack-cxx
 Repositorio: extra
 Versión: 8.0.0-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. nlohmann json
+31. nlohmann json
 Paquete: nlohmann-json
 Repositorio: extra
 Versión: 3.12.0-2
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. nodm
+32. nodm
 Paquete: nodm
 Repositorio: extra
 Versión: 0.13-4
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. nwg menu
+33. nwg menu
 Paquete: nwg-menu
 Repositorio: extra
 Versión: 0.1.9-3
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. obconf qt
+34. obconf qt
 Paquete: obconf-qt
 Repositorio: extra
 Versión: 0.16.6-1
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. ocrfeeder
+35. ocrfeeder
 Paquete: ocrfeeder
 Repositorio: extra
 Versión: 0.8.5-11
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. oo7
+36. oo7
 Paquete: oo7
 Repositorio: extra
 Versión: 0.6.0-5
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: org.freedesktop.secrets
 Estado SST: [ ]
 
-36. openmotif
+37. openmotif
 Paquete: openmotif
 Repositorio: extra
 Versión: 2.3.8-4
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. pdfjs
+38. pdfjs
 Paquete: pdfjs
 Repositorio: extra
 Versión: 6.4.299-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. perl try tiny
+39. perl try tiny
 Paquete: perl-try-tiny
 Repositorio: extra
 Versión: 0.32-4
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. pipewire roc
+40. pipewire roc
 Paquete: pipewire-roc
 Repositorio: extra
 Versión: 1:1.6.10-1
@@ -583,7 +598,7 @@ Pruebas: desktop-file-utils, openal
 Proporciona: —
 Estado SST: [ ]
 
-40. python aioitertools
+41. python aioitertools
 Paquete: python-aioitertools
 Repositorio: extra
 Versión: 0.13.0-2
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. python augeas
+42. python augeas
 Paquete: python-augeas
 Repositorio: extra
 Versión: 1.2.0-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python cvxopt
+43. python cvxopt
 Paquete: python-cvxopt
 Repositorio: extra
 Versión: 1.3.3-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. python flake8 black
+44. python flake8 black
 Paquete: python-flake8-black
 Repositorio: extra
 Versión: 4.0.0-2
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python potr
+45. python potr
 Paquete: python-potr
 Repositorio: extra
 Versión: 1.0.2-11
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. python pymad
+46. python pymad
 Paquete: python-pymad
 Repositorio: extra
 Versión: 0.11.3-4
@@ -673,7 +688,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-46. python sphinxcontrib htmlhelp
+47. python sphinxcontrib htmlhelp
 Paquete: python-sphinxcontrib-htmlhelp
 Repositorio: extra
 Versión: 2.1.0-5
@@ -688,7 +703,7 @@ Pruebas: python-html5lib, python-pytest, python-sphinx
 Proporciona: —
 Estado SST: [ ]
 
-47. python zipstream ng
+48. python zipstream ng
 Paquete: python-zipstream-ng
 Repositorio: extra
 Versión: 1.9.3-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: python-zipstream=1.9.3
 Estado SST: [ ]
 
-48. pyupgrade
+49. pyupgrade
 Paquete: pyupgrade
 Repositorio: extra
 Versión: 3.22.0-1
@@ -718,7 +733,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-49. qemu system s390x firmware
+50. qemu system s390x firmware
 Paquete: qemu-system-s390x-firmware
 Repositorio: extra
 Versión: 11.1.3-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. qt5 script
+51. qt5 script
 Paquete: qt5-script
 Repositorio: extra
 Versión: 5.15.19-4
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. quassel common
+52. quassel common
 Paquete: quassel-common
 Repositorio: extra
 Versión: 0.14.0-4
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. rasqal
+53. rasqal
 Paquete: rasqal
 Repositorio: extra
 Versión: 1:0.9.33-9
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: librasqal.so=3-64
 Estado SST: [ ]
 
-53. rhvoice voice victoria
+54. rhvoice voice victoria
 Paquete: rhvoice-voice-victoria
 Repositorio: extra
 Versión: 1.16.5-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. riscv64 elf newlib
+55. riscv64 elf newlib
 Paquete: riscv64-elf-newlib
 Repositorio: extra
 Versión: 4.6.0.20260123-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. river classic
+56. river classic
 Paquete: river-classic
 Repositorio: extra
 Versión: 0.3.17-2
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: wayland-compositor
 Estado SST: [ ]
 
-56. ruby climate control
+57. ruby climate control
 Paquete: ruby-climate_control
 Repositorio: extra
 Versión: 1.2.0-5
@@ -838,7 +853,7 @@ Pruebas: ruby-bundler
 Proporciona: —
 Estado SST: [ ]
 
-57. ruby websocket driver
+58. ruby websocket driver
 Paquete: ruby-websocket-driver
 Repositorio: extra
 Versión: 0.8.2-1
@@ -853,7 +868,7 @@ Pruebas: ruby-bundler, ruby-eventmachine, ruby-permessage_deflate, ruby-rake, ru
 Proporciona: —
 Estado SST: [ ]
 
-58. setbfree common
+59. setbfree common
 Paquete: setbfree-common
 Repositorio: extra
 Versión: 0.8.17-1
@@ -868,7 +883,7 @@ Pruebas: lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-59. shiboken6
+60. shiboken6
 Paquete: shiboken6
 Repositorio: extra
 Versión: 6.12.0-3
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. texlive doc
+61. texlive doc
 Paquete: texlive-doc
 Repositorio: extra
 Versión: 2026.1-1
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. tinygo
+62. tinygo
 Paquete: tinygo
 Repositorio: extra
 Versión: 0.43.0-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. ttf lato
+63. ttf lato
 Paquete: ttf-lato
 Repositorio: extra
 Versión: 2.015-5
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. vulture
+64. vulture
 Paquete: vulture
 Repositorio: extra
 Versión: 2.16-1
@@ -943,7 +958,7 @@ Pruebas: python-pytest, python-pint, python-pytest-cov
 Proporciona: —
 Estado SST: [ ]
 
-64. warzone2100
+65. warzone2100
 Paquete: warzone2100
 Repositorio: extra
 Versión: 4.7.0-10
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. xournalpp
+66. xournalpp
 Paquete: xournalpp
 Repositorio: extra
 Versión: 1.3.8-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. zabbix agent
+67. zabbix agent
 Paquete: zabbix-agent
 Repositorio: extra
 Versión: 7.4.16-1

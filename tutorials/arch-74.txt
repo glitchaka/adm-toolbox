@@ -106,12 +106,12 @@ Estado SST: [ ]
 8. firefox developer edition i18n sc
 Paquete: firefox-developer-edition-i18n-sc
 Repositorio: extra
-Versión: 160.0b3-1
+Versión: 160.0b4-1
 Arquitectura: any
 Descripción: Sardinian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b3
+Dependencias: firefox-developer-edition>=160.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -688,7 +688,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. virtualbox ext vnc
+47. ukui quick
+Paquete: ukui-quick
+Repositorio: extra
+Versión: 4.22.0.1-1
+Arquitectura: x86_64
+Descripción: Qt Quick framework and components for UKUI
+Upstream: https://gitee.com/openkylin/ukui-quick
+Licencia: GPL-3.0-or-later, GPL-2.0-or-later, LGPL-2.0-or-later, LGPL-2.1-only OR LGPL-3.0-only, LGPL-3.0-or-later, MIT, MulanPSL-2.0
+Dependencias: glibc, gsettings-qt6, kwayland, kwindowsystem, libgcc, libglvnd, libkywc, libqtxdg, libstdc++, libx11, libxcb, qt6-5compat, qt6-base, qt6-declarative, qt6-wayland, wayland
+Opcionales: qt6-ukui-platformtheme: UKUI Qt style and theme settings
+Compilación: clang, cmake, extra-cmake-modules, git, libdrm, libpipewire, ninja, plasma-wayland-protocols, qt6-shadertools, qt6-tools, wayland-protocols
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+48. virtualbox ext vnc
 Paquete: virtualbox-ext-vnc
 Repositorio: extra
 Versión: 7.2.22-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. vulkan freedreno
+49. vulkan freedreno
 Paquete: vulkan-freedreno
 Repositorio: extra
 Versión: 1:26.2.6-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: vulkan-driver
 Estado SST: [ ]
 
-49. vulkan virtio
+50. vulkan virtio
 Paquete: vulkan-virtio
 Repositorio: extra
 Versión: 1:26.2.6-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: vulkan-driver
 Estado SST: [ ]
 
-50. wingpanel indicator sound
+51. wingpanel indicator sound
 Paquete: wingpanel-indicator-sound
 Repositorio: extra
 Versión: 8.0.3-2
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. x42 plugins
+52. x42 plugins
 Paquete: x42-plugins
 Repositorio: extra
 Versión: 20260908-1

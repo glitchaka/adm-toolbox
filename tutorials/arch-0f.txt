@@ -421,14 +421,14 @@ Estado SST: [ ]
 29. pantheon sideload
 Paquete: pantheon-sideload
 Repositorio: extra
-Versión: 6.3.1-1
+Versión: 6.3.1-2
 Arquitectura: x86_64
 Descripción: Sideload Flatpaks on elementary OS
 Upstream: https://github.com/elementary/sideload
-Licencia: GPL3
-Dependencias: flatpak, gtk4, libgranite-7.so=7-64, libxml2
+Licencia: GPL-3.0-or-later
+Dependencias: dconf, flatpak, glib2, glibc, gtk4, hicolor-icon-theme, libgee, libgranite-7.so=7-64, libxml2
 Opcionales: —
-Compilación: git, intltool, meson, vala
+Compilación: git, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

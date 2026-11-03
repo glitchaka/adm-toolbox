@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. errands
 Paquete: errands
 Repositorio: extra
-Versión: 51.0.2-1
+Versión: 51.0.3-1
 Arquitectura: x86_64
 Descripción: Todo application for those who prefer simplicity
 Upstream: https://apps.gnome.org/List/
@@ -211,12 +211,12 @@ Estado SST: [ ]
 15. granite
 Paquete: granite
 Repositorio: extra
-Versión: 1:6.2.0-2
+Versión: 1:6.2.0-3
 Arquitectura: x86_64
 Descripción: Library that extends GTK
 Upstream: https://github.com/elementary/granite
 Licencia: LGPL-3.0-or-later
-Dependencias: cairo, gdk-pixbuf2, glib2, glibc, gtk3, hicolor-icon-theme, libgee, pango
+Dependencias: cairo, gdk-pixbuf2, glib2, glibc, gsettings-desktop-schemas, gtk3, hicolor-icon-theme, libgee, pango
 Opcionales: —
 Compilación: git, gobject-introspection, meson, vala
 Pruebas: —
@@ -361,13 +361,13 @@ Estado SST: [ ]
 25. libkysdk base
 Paquete: libkysdk-base
 Repositorio: extra
-Versión: 3.0.1.0-2
+Versión: 3.0.1.1-1
 Arquitectura: x86_64
 Descripción: Kylin SDK basic library
 Upstream: https://gitee.com/openkylin/libkysdk-base
-Licencia: LGPL-3.0-or-later
-Dependencias: dbus, glibc, gtk3, libgcc, libstdc++, glib2, openssl, qt5-base, sqlite, systemd-libs, yaml-cpp
-Opcionales: —
+Licencia: Apache-2.0, LGPL-3.0-or-later, MIT
+Dependencias: dbus, glibc, gtk3, libgcc, libstdc++, glib2, openssl, python, python-dbus, python-gobject, python-watchdog, python-yaml, qt6-base, sqlite, systemd-libs, yaml-cpp
+Opcionales: tk: graphical configuration editor
 Compilación: git, cmake, ninja
 Pruebas: —
 Proporciona: —

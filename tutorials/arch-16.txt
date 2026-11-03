@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. firefox developer edition i18n de
 Paquete: firefox-developer-edition-i18n-de
 Repositorio: extra
-Versión: 160.0b3-1
+Versión: 160.0b4-1
 Arquitectura: any
 Descripción: German language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b3
+Dependencias: firefox-developer-edition>=160.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -478,7 +478,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. libreoffice still mk
+33. libkysdk applications
+Paquete: libkysdk-applications
+Repositorio: extra
+Versión: 3.0.1.2-1
+Arquitectura: x86_64
+Descripción: Kylin SDK application libraries and Qt widgets
+Upstream: https://gitee.com/openkylin/libkysdk-applications
+Licencia: BSD-3-Clause, GPL-3.0-or-later, LGPL-2.1-or-later, LGPL-3.0-or-later, MIT, MulanPSL-2.0
+Dependencias: glibc, gsettings-qt6, kiconthemes, kwayland, kwindowsystem, libgcc, libkysdk-base, libstdc++, libx11, libxcb, openssl, qt6-base, qt6-svg, systemd-libs, wayland, waylandpp
+Opcionales: —
+Compilación: git, qt6-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+34. libreoffice still mk
 Paquete: libreoffice-still-mk
 Repositorio: extra
 Versión: 26.2.6-1
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: libreoffice-mk, libreoffice-still-i18n=26.2.6-1
 Estado SST: [ ]
 
-34. libreoffice still sdk
+35. libreoffice still sdk
 Paquete: libreoffice-still-sdk
 Repositorio: extra
 Versión: 26.2.6-3
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: libreoffice-sdk
 Estado SST: [ ]
 
-35. libretro yabause
+36. libretro yabause
 Paquete: libretro-yabause
 Repositorio: extra
 Versión: 20260530.083400.g8926b0c6c347-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. lightdm
+37. lightdm
 Paquete: lightdm
 Repositorio: extra
 Versión: 1:1.33.1-1
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. limonp
+38. limonp
 Paquete: limonp
 Repositorio: extra
 Versión: 1.0.2-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. linux firmware amd
+39. linux firmware amd
 Paquete: linux-firmware-amd
 Repositorio: core
 Versión: 20261019-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. linux rt lts headers
+40. linux rt lts headers
 Paquete: linux-rt-lts-headers
 Repositorio: extra
 Versión: 6.18.60.rt9.arch1-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: LINUX-HEADERS
 Estado SST: [ ]
 
-40. llvm22
+41. llvm22
 Paquete: llvm22
 Repositorio: extra
 Versión: 22.1.8-2
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. lua51 fifo
+42. lua51 fifo
 Paquete: lua51-fifo
 Repositorio: extra
 Versión: 0.2-3
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. man pages uk
+43. man pages uk
 Paquete: man-pages-uk
 Repositorio: extra
 Versión: 4.31.0-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. meek
+44. meek
 Paquete: meek
 Repositorio: extra
 Versión: 0.38.0-3
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. mxml
+45. mxml
 Paquete: mxml
 Repositorio: extra
 Versión: 3.3.1-2
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: libmxml.so=1-64
 Estado SST: [ ]
 
-45. n2n
+46. n2n
 Paquete: n2n
 Repositorio: extra
 Versión: 3.1.1-5
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. nanobind
+47. nanobind
 Paquete: nanobind
 Repositorio: extra
 Versión: 3.1.0-1
@@ -688,7 +703,7 @@ Pruebas: python-pytest, python-pytorch, python-scipy, python-tensorflow, python-
 Proporciona: —
 Estado SST: [ ]
 
-47. ncmpcpp
+48. ncmpcpp
 Paquete: ncmpcpp
 Repositorio: extra
 Versión: 0.10.1-9
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. nebula
+49. nebula
 Paquete: nebula
 Repositorio: extra
 Versión: 1.12.0-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. offroad
+50. offroad
 Paquete: offroad
 Repositorio: extra
 Versión: 0.5-4
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. openfortivpn
+51. openfortivpn
 Paquete: openfortivpn
 Repositorio: extra
 Versión: 1.24.1-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. pcmanfm
+52. pcmanfm
 Paquete: pcmanfm
 Repositorio: extra
 Versión: 1.4.0-2
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. perl common sense
+53. perl common sense
 Paquete: perl-common-sense
 Repositorio: extra
 Versión: 3.75-12
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. perl time human
+54. perl time human
 Paquete: perl-time-human
 Repositorio: extra
 Versión: 1.03-18
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. pfetch rs
+55. pfetch rs
 Paquete: pfetch-rs
 Repositorio: extra
 Versión: 3.1.1-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: pfetch
 Estado SST: [ ]
 
-55. prrte
+56. prrte
 Paquete: prrte
 Repositorio: extra
 Versión: 3.0.14-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: libprrte.so=3-64
 Estado SST: [ ]
 
-56. python lsp jsonrpc
+57. python lsp jsonrpc
 Paquete: python-lsp-jsonrpc
 Repositorio: extra
 Versión: 1.1.2-6
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. python manhole
+58. python manhole
 Paquete: python-manhole
 Repositorio: extra
 Versión: 1.8.1-1
@@ -853,7 +868,7 @@ Pruebas: python-virtualenv, python-pytest, python-process-tests, python-requests
 Proporciona: —
 Estado SST: [ ]
 
-58. python opentelemetry instrumentation asyncio
+59. python opentelemetry instrumentation asyncio
 Paquete: python-opentelemetry-instrumentation-asyncio
 Repositorio: extra
 Versión: 0.66b2-1
@@ -868,7 +883,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-59. python pkgconfig
+60. python pkgconfig
 Paquete: python-pkgconfig
 Repositorio: extra
 Versión: 1.6.0-1
@@ -883,22 +898,22 @@ Pruebas: python-pytest, python-setuptools
 Proporciona: —
 Estado SST: [ ]
 
-60. python platformdirs
+61. python platformdirs
 Paquete: python-platformdirs
 Repositorio: extra
-Versión: 4.13.5-1
+Versión: 4.14.3-1
 Arquitectura: any
 Descripción: A library to determine platform-specific system directories
 Upstream: https://github.com/tox-dev/platformdirs
 Licencia: MIT
 Dependencias: python
 Opcionales: —
-Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs
+Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs, python-hatch-fancy-pypi-readme
 Pruebas: python-pytest, python-pytest-mock, python-appdirs
 Proporciona: —
 Estado SST: [ ]
 
-61. python ukpostcodeparser
+62. python ukpostcodeparser
 Paquete: python-ukpostcodeparser
 Repositorio: extra
 Versión: 1.1.2-15
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. recastnavigation
+63. recastnavigation
 Paquete: recastnavigation
 Repositorio: extra
 Versión: 1.6.0-3
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. ruby super diff
+64. ruby super diff
 Paquete: ruby-super_diff
 Repositorio: extra
 Versión: 0.19.0-1
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. signstar download key certificates
+65. signstar download key certificates
 Paquete: signstar-download-key-certificates
 Repositorio: extra
 Versión: 0.2.0-1
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. snapshot
+66. snapshot
 Paquete: snapshot
 Repositorio: extra
 Versión: 51.0-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. soapysdr
+67. soapysdr
 Paquete: soapysdr
 Repositorio: extra
 Versión: 0.8.1-7
@@ -988,7 +1003,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-67. squashfuse
+68. squashfuse
 Paquete: squashfuse
 Repositorio: extra
 Versión: 0.6.5-1
@@ -1003,7 +1018,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-68. tesseract data ind
+69. tesseract data ind
 Paquete: tesseract-data-ind
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -1018,7 +1033,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-69. tomcat native
+70. tomcat native
 Paquete: tomcat-native
 Repositorio: extra
 Versión: 2.0.17-1
@@ -1033,7 +1048,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-70. tomcat9
+71. tomcat9
 Paquete: tomcat9
 Repositorio: extra
 Versión: 9.0.123-1
@@ -1048,7 +1063,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-71. treedec
+72. treedec
 Paquete: treedec
 Repositorio: extra
 Versión: 0.9.3-1
@@ -1063,7 +1078,7 @@ Pruebas: —
 Proporciona: tdlib
 Estado SST: [ ]
 
-72. ttf nerd fonts symbols mono
+73. ttf nerd fonts symbols mono
 Paquete: ttf-nerd-fonts-symbols-mono
 Repositorio: extra
 Versión: 3.5.1-1
@@ -1078,7 +1093,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-73. vals
+74. vals
 Paquete: vals
 Repositorio: extra
 Versión: 0.43.2-1
@@ -1093,7 +1108,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-74. vim auto pairs
+75. vim auto pairs
 Paquete: vim-auto-pairs
 Repositorio: extra
 Versión: 2.0.0-2
@@ -1108,7 +1123,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-75. vlc plugin udev
+76. vlc plugin udev
 Paquete: vlc-plugin-udev
 Repositorio: extra
 Versión: 3.0.24-1
@@ -1123,7 +1138,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-76. wcm
+77. wcm
 Paquete: wcm
 Repositorio: extra
 Versión: 0.11.0-1
@@ -1138,7 +1153,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-77. wireproxy
+78. wireproxy
 Paquete: wireproxy
 Repositorio: extra
 Versión: 1.1.3-1
@@ -1153,7 +1168,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-78. zram generator
+79. zram generator
 Paquete: zram-generator
 Repositorio: extra
 Versión: 1.2.1-1
@@ -1168,7 +1183,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-79. zsh lovers
+80. zsh lovers
 Paquete: zsh-lovers
 Repositorio: extra
 Versión: 0.11.0-1

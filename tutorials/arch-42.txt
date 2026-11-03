@@ -391,14 +391,14 @@ Estado SST: [ ]
 27. languagetool
 Paquete: languagetool
 Repositorio: extra
-Versión: 6.6-2
+Versión: 6.7-1
 Arquitectura: any
 Descripción: An open source language checker
 Upstream: https://www.languagetool.org
 Licencia: LGPL-2.1-or-later
-Dependencias: java-runtime-headless
+Dependencias: java-runtime-headless>=17
 Opcionales: java-runtime: needed for the GUI version, libxtst: needed for the GUI version, gtk3: GTK style for the GUI
-Compilación: unzip
+Compilación: git, java-environment=17, maven
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. lego
 Paquete: lego
 Repositorio: extra
-Versión: 5.5.2-1
+Versión: 5.6.0-1
 Arquitectura: x86_64
 Descripción: Lets Encrypt client and ACME library
 Upstream: https://go-acme.github.io/lego

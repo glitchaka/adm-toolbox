@@ -46,15 +46,15 @@ Estado SST: [ ]
 4. clamui
 Paquete: clamui
 Repositorio: extra
-Versión: 0.4.1-1
-Arquitectura: any
+Versión: 0.5.1-1
+Arquitectura: x86_64
 Descripción: Modern GUI for ClamAV antivirus
 Upstream: https://clamui.com/
 Licencia: MIT
-Dependencias: clamav, gdk-pixbuf2, glib2, gtk4, hicolor-icon-theme, libadwaita, libdbusmenu-glib, pango, python, python-cairo, python-certifi, python-gobject, python-keyring, python-matplotlib, python-pillow, python-psutil, python-requests
+Dependencias: cairo, clamav, dbus, gdk-pixbuf2, glib2, glibc, gtk3, hicolor-icon-theme, libgcc, libsoup3, sqlite, wayland, webkit2gtk-4.1
 Opcionales: —
-Compilación: git, python-build, python-hatchling, python-installer, python-wheel
-Pruebas: python-hypothesis, python-pytest, xorg-server-xvfb
+Compilación: bun, git, rust
+Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. gitlab shell
 Paquete: gitlab-shell
 Repositorio: extra
-Versión: 3:14.60.0-1
+Versión: 3:14.61.0-1
 Arquitectura: x86_64
 Descripción: Git management software
 Upstream: https://gitlab.com/gitlab-org/gitlab-shell/
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. kicad
 Paquete: kicad
 Repositorio: extra
-Versión: 10.0.7-2
+Versión: 10.0.8-1
 Arquitectura: x86_64
 Descripción: Electronic schematic and printed circuit board (PCB) design tools
 Upstream: http://kicad.org/
@@ -391,7 +391,7 @@ Estado SST: [ ]
 27. nomad driver podman
 Paquete: nomad-driver-podman
 Repositorio: extra
-Versión: 0.6.5-1
+Versión: 0.6.6-1
 Arquitectura: x86_64
 Descripción: A nomad taskdriver for podman containers
 Upstream: https://github.com/hashicorp/nomad-driver-podman

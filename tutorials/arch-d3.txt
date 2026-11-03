@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. lsp plugins standalone
 Paquete: lsp-plugins-standalone
 Repositorio: extra
-Versión: 1.2.35-1
+Versión: 1.2.37-1
 Arquitectura: x86_64
 Descripción: Collection of open-source plugins - JACK standalone
 Upstream: https://lsp-plug.in
@@ -361,14 +361,14 @@ Estado SST: [ ]
 25. pantheon settings daemon
 Paquete: pantheon-settings-daemon
 Repositorio: extra
-Versión: 8.5.0-1
+Versión: 8.5.0-3
 Arquitectura: x86_64
-Descripción: Default settings for Pantheon
-Upstream: https://github.com/elementary/settings-daemon.git
+Descripción: Manage settings and background tasks for Pantheon
+Upstream: https://github.com/elementary/settings-daemon
 Licencia: GPL-3.0-only
-Dependencias: accountsservice, dbus, fwupd, gdk-pixbuf2, geoclue, glib2, glibc, granite, gtk3, libgexiv2, libpackagekit-glib2.so=18-64
+Dependencias: accountsservice, dconf, fwupd, gdk-pixbuf2, geoclue, glib2, glibc, gnome-settings-daemon, gsettings-desktop-schemas, gtk3, libgexiv2, libpackagekit-glib2.so=18-64
 Opcionales: —
-Compilación: cmake, git, meson, vala
+Compilación: git, granite, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

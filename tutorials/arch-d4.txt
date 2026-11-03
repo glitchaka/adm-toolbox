@@ -106,12 +106,12 @@ Estado SST: [ ]
 8. firefox developer edition i18n uk
 Paquete: firefox-developer-edition-i18n-uk
 Repositorio: extra
-Versión: 160.0b3-1
+Versión: 160.0b4-1
 Arquitectura: any
 Descripción: Ukrainian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b3
+Dependencias: firefox-developer-edition>=160.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. incus tools
 Paquete: incus-tools
 Repositorio: extra
-Versión: 7.5.1-1
+Versión: 7.6.0-1
 Arquitectura: x86_64
 Descripción: Powerful system container and virtual machine manager
 Upstream: https://linuxcontainers.org/incus/
@@ -898,7 +898,22 @@ Pruebas: python-pygls, python-ruff-api, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-61. webrtc audio processing
+61. ukui file metadata
+Paquete: ukui-file-metadata
+Repositorio: extra
+Versión: 4.24.0.2-1
+Arquitectura: x86_64
+Descripción: File metadata, text, and thumbnail extraction library for UKUI
+Upstream: https://gitee.com/openkylin/ukui-file-metadata
+Licencia: GPL-3.0-or-later, LGPL-2.1-or-later, LGPL-2.1-only OR LGPL-3.0-only
+Dependencias: ffmpeg, glibc, leptonica, libgcc, libstdc++, minizip, poppler-qt6, qt6-base, qt6-imageformats, qt6-svg, shared-mime-info, taglib, tesseract, tesseract-data-chi_sim, uchardet, zlib
+Opcionales: —
+Compilación: cmake, git, ninja, qt6-tools
+Pruebas: —
+Proporciona: libukui-file-metadata.so=1-64
+Estado SST: [ ]
+
+62. webrtc audio processing
 Paquete: webrtc-audio-processing
 Repositorio: extra
 Versión: 2.1-9
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: libwebrtc-audio-processing-2.so=1-64
 Estado SST: [ ]
 
-62. zita rev1
+63. zita rev1
 Paquete: zita-rev1
 Repositorio: extra
 Versión: 0.2.2-5

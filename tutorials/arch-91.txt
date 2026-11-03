@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. firefox developer edition i18n kk
 Paquete: firefox-developer-edition-i18n-kk
 Repositorio: extra
-Versión: 160.0b3-1
+Versión: 160.0b4-1
 Arquitectura: any
 Descripción: Kazakh language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b3
+Dependencias: firefox-developer-edition>=160.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. mpv
 Paquete: mpv
 Repositorio: extra
-Versión: 1:0.41.0-6
+Versión: 1:0.41.0-7
 Arquitectura: x86_64
 Descripción: a free, open source, and cross-platform media player
 Upstream: https://mpv.io/
@@ -436,14 +436,14 @@ Estado SST: [ ]
 30. pantheon tasks
 Paquete: pantheon-tasks
 Repositorio: extra
-Versión: 6.3.3-5
+Versión: 6.3.3-6
 Arquitectura: x86_64
 Descripción: The Pantheon tasks
 Upstream: https://github.com/elementary/tasks
 Licencia: GPL-3.0-or-later
-Dependencias: geoclue, geocode-glib-2, glib2, gtk4, libadwaita-1.so=0-64, libecal-2.0.so=3-64, libedataserver-1.2.so=28-64, libgranite-7.so=7-64, libical, libportal-gtk4, libshumate-1.0.so=1-64
+Dependencias: dconf, geoclue, geocode-glib-2, glib2, glibc, gtk4, hicolor-icon-theme, json-glib, libadwaita-1.so=0-64, libecal-2.0.so=3-64, libedataserver-1.2.so=28-64, libgee, libgranite-7.so=7-64, libical, libportal, libportal-gtk4, libshumate-1.0.so=1-64
 Opcionales: —
-Compilación: cmake, git, intltool, meson, vala
+Compilación: git, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

@@ -241,12 +241,12 @@ Estado SST: [ ]
 17. granite7
 Paquete: granite7
 Repositorio: extra
-Versión: 7.8.1-2
+Versión: 7.8.1-3
 Arquitectura: x86_64
 Descripción: Library that extends GTK
 Upstream: https://github.com/elementary/granite
 Licencia: LGPL-3.0-or-later
-Dependencias: glib2, glibc, gtk4, hicolor-icon-theme, libgee, pango
+Dependencias: glib2, glibc, gsettings-desktop-schemas, gtk4, hicolor-icon-theme, libgee, pango
 Opcionales: libshumate: for granite-7-demo
 Compilación: git, gobject-introspection, libshumate, meson, sassc, vala
 Pruebas: —
@@ -1048,7 +1048,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-71. xorg mkfontscale
+71. xdg desktop portal wlcom
+Paquete: xdg-desktop-portal-wlcom
+Repositorio: extra
+Versión: 1.3.2-1
+Arquitectura: x86_64
+Descripción: xdg-desktop-portal backend for the Kylin Wayland compositor
+Upstream: https://gitee.com/openkylin/kylin-wayland-compositor
+Licencia: MIT
+Dependencias: glibc, libkywc, systemd-libs, wayland, xdg-desktop-portal
+Opcionales: —
+Compilación: git, hwdata, meson, scdoc, vulkan-headers, wayland-protocols
+Pruebas: —
+Proporciona: xdg-desktop-portal-impl
+Estado SST: [ ]
+
+72. xorg mkfontscale
 Paquete: xorg-mkfontscale
 Repositorio: extra
 Versión: 1.2.4-2

@@ -451,14 +451,14 @@ Estado SST: [ ]
 31. lib32 vkd3d
 Paquete: lib32-vkd3d
 Repositorio: multilib
-Versión: 1.19-1
+Versión: 2.0-1
 Arquitectura: x86_64
 Descripción: Direct3D 12 to Vulkan translation library By WineHQ
 Upstream: https://wiki.winehq.org/Vkd3d
-Licencia: LGPL
-Dependencias: lib32-vulkan-icd-loader, perl-json
+Licencia: LGPL-2.1-or-later
+Dependencias: lib32-vulkan-icd-loader
 Opcionales: —
-Compilación: spirv-headers, vulkan-headers, lib32-xcb-util-keysyms, lib32-ncurses, xorgproto
+Compilación: git, perl-json, spirv-headers, vulkan-headers, wine, lib32-xcb-util-keysyms, lib32-ncurses, xorgproto
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
