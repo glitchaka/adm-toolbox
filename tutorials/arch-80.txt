@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. jre11 openjdk
 Paquete: jre11-openjdk
 Repositorio: extra
-Versión: 11.0.32.1.u1-1
+Versión: 11.0.33.u10-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 11 full runtime environment
 Upstream: https://openjdk.java.net/
@@ -145,7 +145,7 @@ Dependencias: java-runtime-common>=3, ca-certificates-utils, freetype2, glibc, h
 Opcionales: alsa-lib: for basic sound support, gtk3: for the Gtk+ 3 look and feel - desktop usage
 Compilación: java-environment=11, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libjpeg-turbo, libnet, libpng, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: java-runtime=11, java-runtime-openjdk=11, jre11-openjdk=11.0.32.1.u1-1, java-runtime-headless=11, java-runtime-headless-openjdk=11, jre11-openjdk-headless=11.0.32.1.u1-1
+Proporciona: java-runtime=11, java-runtime-openjdk=11, jre11-openjdk=11.0.33.u10-1, java-runtime-headless=11, java-runtime-headless-openjdk=11, jre11-openjdk-headless=11.0.33.u10-1
 Estado SST: [ ]
 
 11. k3b
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. openjdk8 doc
 Paquete: openjdk8-doc
 Repositorio: extra
-Versión: 8.504.u01-1
+Versión: 8.512.u09-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 8 documentation
 Upstream: https://openjdk.java.net/
@@ -541,12 +541,12 @@ Estado SST: [ ]
 37. switchboard plug sharing
 Paquete: switchboard-plug-sharing
 Repositorio: extra
-Versión: 8.0.3-1
+Versión: 8.0.3-3
 Arquitectura: x86_64
 Descripción: Switchboard Sharing Plug
 Upstream: https://github.com/elementary/switchboard-plug-sharing
 Licencia: GPL-3.0-only
-Dependencias: glib2, glibc, gnome-user-share, gtk4, libgee, libgranite-7.so=7-64, libswitchboard-3.so=0-64
+Dependencias: glib2, glibc, gnome-settings-daemon, gtk4, libadwaita, libgee, libgranite-7.so=7-64, libswitchboard-3.so=0-64, pantheon-bluetooth-daemon, rygel
 Opcionales: —
 Compilación: git, meson, vala
 Pruebas: —

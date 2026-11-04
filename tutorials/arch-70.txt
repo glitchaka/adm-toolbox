@@ -226,16 +226,16 @@ Estado SST: [ ]
 16. firefox i18n en ca
 Paquete: firefox-i18n-en-ca
 Repositorio: extra
-Versión: 159.0-1
+Versión: 159.0.1-1
 Arquitectura: any
 Descripción: English (Canadian) language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=159.0
+Dependencias: firefox>=159.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=159.0-1
+Proporciona: firefox-i18n=159.0.1-1
 Estado SST: [ ]
 
 17. flashrom
@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. libreoffice still el
 Paquete: libreoffice-still-el
 Repositorio: extra
-Versión: 26.2.6-1
+Versión: 26.2.7-1
 Arquitectura: any
 Descripción: Greek language pack for LibreOffice still
 Upstream: https://www.documentfoundation.org
@@ -430,7 +430,7 @@ Dependencias: libreoffice-still
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-el, libreoffice-still-i18n=26.2.6-1
+Proporciona: libreoffice-el, libreoffice-still-i18n=26.2.7-1
 Estado SST: [ ]
 
 30. libretro beetle supergrafx
@@ -946,12 +946,12 @@ Estado SST: [ ]
 64. switchboard plug keyboard
 Paquete: switchboard-plug-keyboard
 Repositorio: extra
-Versión: 8.1.1-1
+Versión: 8.1.1-2
 Arquitectura: x86_64
 Descripción: Switchboard Keyboard Plug
 Upstream: https://github.com/elementary/switchboard-plug-keyboard
 Licencia: GPL-2.0-only
-Dependencias: dconf, glib2, glibc, gtk4, libibus, libadwaita-1.so=0-64, libgee, libgranite-7.so=7-64, libswitchboard-3.so=0-64, libxml2
+Dependencias: dconf, gala, glib2, glibc, gtk4, ibus, libibus, libadwaita-1.so=0-64, libgee, libgranite-7.so=7-64, libswitchboard-3.so=0-64, libxml2, pantheon-settings-daemon
 Opcionales: —
 Compilación: git, meson, vala
 Pruebas: —
@@ -1081,7 +1081,7 @@ Estado SST: [ ]
 73. zigbee2mqtt
 Paquete: zigbee2mqtt
 Repositorio: extra
-Versión: 2.14.2-1
+Versión: 2.14.3-1
 Arquitectura: x86_64
 Descripción: A Zigbee to MQTT bridge
 Upstream: https://www.zigbee2mqtt.io

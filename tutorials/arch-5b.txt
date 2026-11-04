@@ -676,12 +676,12 @@ Estado SST: [ ]
 46. switchboard plug desktop
 Paquete: switchboard-plug-desktop
 Repositorio: extra
-Versión: 8.3.0-1
+Versión: 8.3.0-2
 Arquitectura: x86_64
 Descripción: Switchboard Desktop Plug
 Upstream: https://github.com/elementary/switchboard-plug-pantheon-shell
 Licencia: GPL-3.0-only
-Dependencias: gdk-pixbuf2, glib2, glibc, gtk4, libgee, libgexiv2, libgranite-7.so=7-64, libswitchboard-3.so=0-64, pango
+Dependencias: gdk-pixbuf2, gala, glib2, glibc, gtk4, libgee, libgexiv2, libgranite-7.so=7-64, libswitchboard-3.so=0-64, pango, pantheon-settings-daemon, wingpanel
 Opcionales: —
 Compilación: git, meson, ninja, vala
 Pruebas: —

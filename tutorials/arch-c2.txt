@@ -181,16 +181,16 @@ Estado SST: [ ]
 13. firefox i18n kk
 Paquete: firefox-i18n-kk
 Repositorio: extra
-Versión: 159.0-1
+Versión: 159.0.1-1
 Arquitectura: any
 Descripción: Kazakh language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=159.0
+Dependencias: firefox>=159.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=159.0-1
+Proporciona: firefox-i18n=159.0.1-1
 Estado SST: [ ]
 
 14. gambas3 gb eval highlight
@@ -433,7 +433,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. lib32 pixman
+30. kylin process manager
+Paquete: kylin-process-manager
+Repositorio: extra
+Versión: 4.10.0.1-1
+Arquitectura: x86_64
+Descripción: Application and process resource management for UKUI
+Upstream: https://gitee.com/openkylin/kylin-process-manager
+Licencia: GPL-3.0-or-later, LGPL-2.1-or-later, MulanPSL-2.0
+Dependencias: bash, glib2, glibc, gsettings-qt6, jsoncpp, kconfig, kio, kwindowsystem, libcgroup, libgcc, libkysdk-system, libstdc++, libx11, libxext, pacman, procps-ng, qt6-base, systemd, systemd-libs, wayland
+Opcionales: upower: battery energy and discharge monitoring
+Compilación: cmake, git, ninja, qt6-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+31. lib32 pixman
 Paquete: lib32-pixman
 Repositorio: multilib
 Versión: 0.46.4-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. libmodbus
+32. libmodbus
 Paquete: libmodbus
 Repositorio: extra
 Versión: 3.2.0-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. libntfs 3g
+33. libntfs 3g
 Paquete: libntfs-3g
 Repositorio: extra
 Versión: 2026.9.28-1
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. libretro mgba
+34. libretro mgba
 Paquete: libretro-mgba
 Repositorio: extra
 Versión: 20260917.021300.g7a12d6d4b9ac-1
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. libtlsrpt
+35. libtlsrpt
 Paquete: libtlsrpt
 Repositorio: extra
 Versión: 0.5.1-1
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: libtlsrpt.so=0-64
 Estado SST: [ ]
 
-35. libwebp utils
+36. libwebp utils
 Paquete: libwebp-utils
 Repositorio: extra
 Versión: 1.6.0-2
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. mailman3 hyperkitty
+37. mailman3 hyperkitty
 Paquete: mailman3-hyperkitty
 Repositorio: extra
 Versión: 1.2.1-6
@@ -538,7 +553,7 @@ Pruebas: python-nose2
 Proporciona: —
 Estado SST: [ ]
 
-37. mapnik
+38. mapnik
 Paquete: mapnik
 Repositorio: extra
 Versión: 4.3.2-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. md4c
+39. md4c
 Paquete: md4c
 Repositorio: extra
 Versión: 0.6.0-2
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. nageru
+40. nageru
 Paquete: nageru
 Repositorio: extra
 Versión: 2.3.2-10
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. nginx mod naxsi
+41. nginx mod naxsi
 Paquete: nginx-mod-naxsi
 Repositorio: extra
 Versión: 1.7-17
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. notmuch vim
+42. notmuch vim
 Paquete: notmuch-vim
 Repositorio: extra
 Versión: 0.40-2
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. ocaml stdlib shims
+43. ocaml stdlib shims
 Paquete: ocaml-stdlib-shims
 Repositorio: extra
 Versión: 0.3.0-14
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. ot keys clap
+44. ot keys clap
 Paquete: ot-keys-clap
 Repositorio: extra
 Versión: 1.0.1-2
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. otf cormorant
+45. otf cormorant
 Paquete: otf-cormorant
 Repositorio: extra
 Versión: 3.609-3
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. passim
+46. passim
 Paquete: passim
 Repositorio: extra
 Versión: 0.1.12-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: libpassim.so=1-64
 Estado SST: [ ]
 
-46. perl datetime format ical
+47. perl datetime format ical
 Paquete: perl-datetime-format-ical
 Repositorio: extra
 Versión: 0.09-16
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. plumber
+48. plumber
 Paquete: plumber
 Repositorio: extra
 Versión: 2.9.0-2
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. python cheroot
+49. python cheroot
 Paquete: python-cheroot
 Repositorio: extra
 Versión: 11.1.2-2
@@ -718,7 +733,7 @@ Pruebas: python-chardet, python-colorama, python-jaraco.context, python-portend,
 Proporciona: —
 Estado SST: [ ]
 
-49. python cmarkgfm
+50. python cmarkgfm
 Paquete: python-cmarkgfm
 Repositorio: extra
 Versión: 2025.10.22-2
@@ -733,7 +748,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-50. python django crispy forms
+51. python django crispy forms
 Paquete: python-django-crispy-forms
 Repositorio: extra
 Versión: 2.7-1
@@ -748,7 +763,7 @@ Pruebas: python-crispy-bootstrap3, python-crispy-bootstrap4, python-crispy-boots
 Proporciona: —
 Estado SST: [ ]
 
-51. python expandvars
+52. python expandvars
 Paquete: python-expandvars
 Repositorio: extra
 Versión: 1.1.2-2
@@ -763,7 +778,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-52. python libforensic1394
+53. python libforensic1394
 Paquete: python-libforensic1394
 Repositorio: extra
 Versión: 0.2-14
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. python ply
+54. python ply
 Paquete: python-ply
 Repositorio: extra
 Versión: 3.11-17
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. python swiftclient
+55. python swiftclient
 Paquete: python-swiftclient
 Repositorio: extra
 Versión: 4.11.0-1
@@ -808,7 +823,7 @@ Pruebas: python-keystoneauth1, python-stestr, python-openstacksdk, python-keysto
 Proporciona: —
 Estado SST: [ ]
 
-55. python ukkonen
+56. python ukkonen
 Paquete: python-ukkonen
 Repositorio: extra
 Versión: 1.1.0-1
@@ -823,7 +838,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-56. python yaml
+57. python yaml
 Paquete: python-yaml
 Repositorio: extra
 Versión: 6.0.3-2
@@ -838,7 +853,7 @@ Pruebas: python-pytest
 Proporciona: python-pyyaml
 Estado SST: [ ]
 
-57. qpwgraph
+58. qpwgraph
 Paquete: qpwgraph
 Repositorio: extra
 Versión: 1.0.4-1
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. ruby eventmachine
+59. ruby eventmachine
 Paquete: ruby-eventmachine
 Repositorio: extra
 Versión: 1.2.7-10
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. ruby rspec core
+60. ruby rspec core
 Paquete: ruby-rspec-core
 Repositorio: extra
 Versión: 3.13.6-1
@@ -883,7 +898,7 @@ Pruebas: ruby-bigdecimal, ruby-bundler, ruby-childprocess, ruby-coderay, ruby-di
 Proporciona: —
 Estado SST: [ ]
 
-60. sg 323 vst3
+61. sg 323 vst3
 Paquete: sg-323-vst3
 Repositorio: extra
 Versión: 1.2.0-1
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. spotifyd
+62. spotifyd
 Paquete: spotifyd
 Repositorio: extra
 Versión: 0.4.2-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. stalwart proxy
+63. stalwart proxy
 Paquete: stalwart-proxy
 Repositorio: extra
 Versión: 1.0.5-1
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. syslog ng python
+64. syslog ng python
 Paquete: syslog-ng-python
 Repositorio: extra
 Versión: 4.12.0-3
@@ -943,7 +958,7 @@ Pruebas: criterion, python-pytest, python-pytest-mock, qpdf
 Proporciona: —
 Estado SST: [ ]
 
-64. tuxmanager
+65. tuxmanager
 Paquete: tuxmanager
 Repositorio: extra
 Versión: 1.0.8-1
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. txt2tags
+66. txt2tags
 Paquete: txt2tags
 Repositorio: extra
 Versión: 3.9-5
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. wolf shaper
+67. wolf shaper
 Paquete: wolf-shaper
 Repositorio: extra
 Versión: 1.0.2-3

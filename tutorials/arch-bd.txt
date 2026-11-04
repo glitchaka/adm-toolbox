@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. libreoffice fresh ml
 Paquete: libreoffice-fresh-ml
 Repositorio: extra
-Versión: 26.8.1-1
+Versión: 26.8.2-1
 Arquitectura: any
 Descripción: Malayalam language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -430,7 +430,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-ml, libreoffice-fresh-i18n=26.8.1-1
+Proporciona: libreoffice-ml, libreoffice-fresh-i18n=26.8.2-1
 Estado SST: [ ]
 
 30. libteam docs
@@ -736,15 +736,15 @@ Estado SST: [ ]
 50. python openai
 Paquete: python-openai
 Repositorio: extra
-Versión: 2.54.0-1
+Versión: 3.0.0-1
 Arquitectura: any
 Descripción: Python client library for the OpenAI API
 Upstream: https://github.com/openai/openai-python
-Licencia: Apache-2.0
-Dependencias: python, python-anyio, python-distro, python-h2, python-httpx, python-jiter, python-pydantic, python-pydantic-core, python-sniffio, python-tqdm, python-typing_extensions
-Opcionales: python-httpx-aiohttp: Use aiohttp as HTTP backend, python-httpx2: Use HTTPX2 as HTTP backend, python-numpy: Datalib support, python-pandas: Datalib support, python-websockets: Realtime support, python-botocore: AWS Bedrock OpenAI-compatible API support
+Licencia: Apache-2.0, BSD-3-Clause
+Dependencias: python, python-anyio, python-distro, python-h2, python-httpx2, python-jiter, python-pydantic, python-pydantic-core, python-sniffio, python-tqdm, python-typing_extensions
+Opcionales: python-aiohttp: Use aiohttp as HTTP backend, python-httpx: Compatibility with legacy custom HTTP clients, python-numpy: Datalib support, python-pandas: Datalib support, python-websockets: Realtime support, python-botocore: AWS Bedrock OpenAI-compatible API support
 Compilación: git, python-build, python-hatch-fancy-pypi-readme, python-hatchling, python-installer, python-wheel
-Pruebas: nodejs-lts-jod, npm, procps-ng, python-dirty-equals, python-httpx-aiohttp, python-httpx2, python-inline-snapshot, python-nest-asyncio, python-pytest, python-pytest-asyncio, python-pytest-xdist, python-respx, python-rich, python-botocore, python-jsonschema
+Pruebas: nodejs-lts-krypton, npm, procps-ng, python-dirty-equals, python-aiohttp, python-inline-snapshot, python-nest-asyncio, python-pytest, python-pytest-asyncio, python-pytest-xdist, python-rich, python-botocore, python-jsonschema
 Proporciona: —
 Estado SST: [ ]
 
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. python python discovery
 Paquete: python-python-discovery
 Repositorio: extra
-Versión: 1.9.2-1
+Versión: 1.9.3-1
 Arquitectura: any
 Descripción: Python interpreter discovery
 Upstream: https://python-discovery.readthedocs.io

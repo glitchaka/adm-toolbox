@@ -826,7 +826,7 @@ Estado SST: [ ]
 56. python opentelemetry exporter otlp common
 Paquete: python-opentelemetry-exporter-otlp-common
 Repositorio: extra
-Versión: 1.45.1-3
+Versión: 1.45.2-1
 Arquitectura: any
 Descripción: OpenTelemetry OTLP HTTP export utilities
 Upstream: https://github.com/open-telemetry/opentelemetry-python
@@ -961,14 +961,14 @@ Estado SST: [ ]
 65. switchboard plug network
 Paquete: switchboard-plug-network
 Repositorio: extra
-Versión: 8.2.0-1
+Versión: 8.2.0-2
 Arquitectura: x86_64
 Descripción: Switchboard Network Plug
 Upstream: https://github.com/elementary/switchboard-plug-network
 Licencia: GPL-3.0-only
-Dependencias: glib2, glibc, gtk4, libadwaita-1.so=0-64, libgee, libgranite-7.so=7-64, libnm, libnma-gtk4, libswitchboard-3.so=0-64, networkmanager, polkit
+Dependencias: glib2, glibc, gtk4, libadwaita-1.so=0-64, libgee, libgranite-7.so=7-64, libnm, libnma-gtk4, libswitchboard-3.so=0-64, networkmanager, nm-connection-editor, polkit
 Opcionales: —
-Compilación: cmake, git, gobject-introspection, meson, vala
+Compilación: git, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

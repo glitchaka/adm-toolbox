@@ -151,16 +151,16 @@ Estado SST: [ ]
 11. firefox i18n ko
 Paquete: firefox-i18n-ko
 Repositorio: extra
-Versión: 159.0-1
+Versión: 159.0.1-1
 Arquitectura: any
 Descripción: Korean language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=159.0
+Dependencias: firefox>=159.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=159.0-1
+Proporciona: firefox-i18n=159.0.1-1
 Estado SST: [ ]
 
 12. flip link
@@ -373,7 +373,22 @@ Pruebas: —
 Proporciona: gmmlib
 Estado SST: [ ]
 
-26. libpoly
+26. kylin virtual keyboard
+Paquete: kylin-virtual-keyboard
+Repositorio: extra
+Versión: 4.20.1.0-1
+Arquitectura: x86_64
+Descripción: On-screen keyboard for UKUI using Fcitx 5
+Upstream: https://gitee.com/openkylin/kylin-virtual-keyboard
+Licencia: GPL-3.0-or-later, BSD-3-Clause
+Dependencias: bash, fcitx5, fmt, glibc, gsettings-qt6, kwindowsystem, libgcc, libstdc++, qt6-5compat, qt6-base, qt6-declarative, qt6-svg, spdlog
+Opcionales: xorg-xwayland: run the keyboard under Wayland
+Compilación: cmake, git, ninja, qt6-tools
+Pruebas: dbus, glib2, xorg-server-xvfb
+Proporciona: —
+Estado SST: [ ]
+
+27. libpoly
 Paquete: libpoly
 Repositorio: extra
 Versión: 0.2.1-4
@@ -388,10 +403,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. libreoffice fresh kmr latn
+28. libreoffice fresh kmr latn
 Paquete: libreoffice-fresh-kmr-latn
 Repositorio: extra
-Versión: 26.8.1-1
+Versión: 26.8.2-1
 Arquitectura: any
 Descripción: Kurdish language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -400,13 +415,13 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-kmr-Latn, libreoffice-fresh-i18n=26.8.1-1
+Proporciona: libreoffice-kmr-Latn, libreoffice-fresh-i18n=26.8.2-1
 Estado SST: [ ]
 
-28. libreoffice fresh rw
+29. libreoffice fresh rw
 Paquete: libreoffice-fresh-rw
 Repositorio: extra
-Versión: 26.8.1-1
+Versión: 26.8.2-1
 Arquitectura: any
 Descripción: Kinyarwanda language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -415,13 +430,13 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-rw, libreoffice-fresh-i18n=26.8.1-1
+Proporciona: libreoffice-rw, libreoffice-fresh-i18n=26.8.2-1
 Estado SST: [ ]
 
-29. libreoffice still sr latn
+30. libreoffice still sr latn
 Paquete: libreoffice-still-sr-latn
 Repositorio: extra
-Versión: 26.2.6-1
+Versión: 26.2.7-1
 Arquitectura: any
 Descripción: Serbian (Latin) language pack for LibreOffice still
 Upstream: https://www.documentfoundation.org
@@ -430,10 +445,10 @@ Dependencias: libreoffice-still
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-sr-Latn, libreoffice-still-i18n=26.2.6-1
+Proporciona: libreoffice-sr-Latn, libreoffice-still-i18n=26.2.7-1
 Estado SST: [ ]
 
-30. lld20
+31. lld20
 Paquete: lld20
 Repositorio: extra
 Versión: 20.1.8-1
@@ -448,7 +463,7 @@ Pruebas: llvm
 Proporciona: —
 Estado SST: [ ]
 
-31. mythes es
+32. mythes es
 Paquete: mythes-es
 Repositorio: extra
 Versión: 1:2.9-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. onnxruntime cuda
+33. onnxruntime cuda
 Paquete: onnxruntime-cuda
 Repositorio: extra
 Versión: 1.29.0-3
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: onnxruntime=1.29.0
 Estado SST: [ ]
 
-33. openboard
+34. openboard
 Paquete: openboard
 Repositorio: extra
 Versión: 1.7.7-6
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. percona toolkit
+35. percona toolkit
 Paquete: percona-toolkit
 Repositorio: extra
 Versión: 3.7.1_4-1
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. perl cgi fast
+36. perl cgi fast
 Paquete: perl-cgi-fast
 Repositorio: extra
 Versión: 2.17-3
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. perl convert tnef
+37. perl convert tnef
 Paquete: perl-convert-tnef
 Repositorio: extra
 Versión: 0.18-15
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. perl data optlist
+38. perl data optlist
 Paquete: perl-data-optlist
 Repositorio: extra
 Versión: 0.115-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. perl params classify
+39. perl params classify
 Paquete: perl-params-classify
 Repositorio: extra
 Versión: 0.015-11
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. perl patchreader
+40. perl patchreader
 Paquete: perl-patchreader
 Repositorio: extra
 Versión: 0.9.6-6
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. php apache
+41. php apache
 Paquete: php-apache
 Repositorio: extra
 Versión: 8.5.12-3
@@ -598,7 +613,7 @@ Pruebas: procps-ng
 Proporciona: php-apache-interpreter=8.5
 Estado SST: [ ]
 
-41. python blockbuster
+42. python blockbuster
 Paquete: python-blockbuster
 Repositorio: extra
 Versión: 1.5.28-1
@@ -613,7 +628,7 @@ Pruebas: python-pytest, python-pytest-asyncio, python-pytest-benchmark, python-r
 Proporciona: —
 Estado SST: [ ]
 
-42. python doit
+43. python doit
 Paquete: python-doit
 Repositorio: extra
 Versión: 0.37.0-1
@@ -628,7 +643,7 @@ Pruebas: python-doit-py, python-pyflakes, python-pytest, python-toml
 Proporciona: —
 Estado SST: [ ]
 
-43. python emoji
+44. python emoji
 Paquete: python-emoji
 Repositorio: extra
 Versión: 2.16.0-1
@@ -643,7 +658,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-44. python euclid3
+45. python euclid3
 Paquete: python-euclid3
 Repositorio: extra
 Versión: 0.01-11
@@ -658,10 +673,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. python lap
+46. python lap
 Paquete: python-lap
 Repositorio: extra
-Versión: 1:0.5.13-1
+Versión: 1:0.5.14-1
 Arquitectura: x86_64
 Descripción: Linear Assignment Problem solver using Jonker-Volgenant algorithm (LAPJV/LAPMOD)
 Upstream: https://github.com/gatagat/lap
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. python pybcj
+47. python pybcj
 Paquete: python-pybcj
 Repositorio: extra
 Versión: 1.0.8-1
@@ -688,7 +703,7 @@ Pruebas: python-pytest, python-hypothesis
 Proporciona: —
 Estado SST: [ ]
 
-47. python rpy2
+48. python rpy2
 Paquete: python-rpy2
 Repositorio: extra
 Versión: 3.6.9-1
@@ -703,7 +718,7 @@ Pruebas: ipython, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-48. python voluptuous serialize
+49. python voluptuous serialize
 Paquete: python-voluptuous-serialize
 Repositorio: extra
 Versión: 2.7.0-3
@@ -718,7 +733,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-49. reptyr
+50. reptyr
 Paquete: reptyr
 Repositorio: extra
 Versión: 0.10.0-2
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. retroarch assets ozone
+51. retroarch assets ozone
 Paquete: retroarch-assets-ozone
 Repositorio: extra
 Versión: 1:20261001.174016.gd9f969054dc7-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. river
+52. river
 Paquete: river
 Repositorio: extra
 Versión: 0.5.0-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. roboden
+53. roboden
 Paquete: roboden
 Repositorio: extra
 Versión: 20240426.210725-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. ruby iconv
+54. ruby iconv
 Paquete: ruby-iconv
 Repositorio: extra
 Versión: 1.1.1-1
@@ -793,7 +808,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-54. sed
+55. sed
 Paquete: sed
 Repositorio: core
 Versión: 4.10-2
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. setconf
+56. setconf
 Paquete: setconf
 Repositorio: extra
 Versión: 0.7.7-4
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. smbclient
+57. smbclient
 Paquete: smbclient
 Repositorio: extra
 Versión: 2:4.25.1-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. sqlite tcl
+58. sqlite tcl
 Paquete: sqlite-tcl
 Repositorio: core
 Versión: 3.54.1-1
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: sqlite3-tcl=3.54.1
 Estado SST: [ ]
 
-58. texlive latexrecommended
+59. texlive latexrecommended
 Paquete: texlive-latexrecommended
 Repositorio: extra
 Versión: 2026.1-1
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: texlive-anysize, texlive-attachfile2, texlive-beamer, texlive-booktabs, texlive-breqn, texlive-caption, texlive-cite, texlive-cmap, texlive-crop, texlive-ctable, texlive-eso-pic, texlive-euenc, texlive-euler, texlive-everysel, texlive-everyshi, texlive-extsizes, texlive-fancybox, texlive-fancyref, texlive-fancyvrb, texlive-filehook, texlive-float, texlive-fontspec, texlive-footnotehyper, texlive-fp, texlive-grffile, texlive-hologo, texlive-index, texlive-infwarerr, texlive-jknapltx, texlive-koma-script, texlive-l3experimental, texlive-latexbug, texlive-lineno, texlive-listings, texlive-ltx-talk, texlive-lua-unicode-math, texlive-lwarp, texlive-mathspec, texlive-mathtools, texlive-mdwtools, texlive-memoir, texlive-metalogo, texlive-microtype, texlive-newfloat, texlive-ntgclass, texlive-parskip, texlive-pdfcolfoot, texlive-pdflscape, texlive-pdfmanagement-testphase, texlive-pdfpages, texlive-polyglossia, texlive-psfrag, texlive-ragged2e, texlive-rcs, texlive-sansmath, texlive-section, texlive-seminar, texlive-sepnum, texlive-setspace, texlive-subfig, texlive-textcase, texlive-thumbpdf, texlive-translator, texlive-typehtml, texlive-ucharcat, texlive-underscore, texlive-unicode-math, texlive-xcolor, texlive-xfrac, texlive-xkeyval, texlive-xltxtra, texlive-xunicode
 Estado SST: [ ]
 
-59. ttf monofur
+60. ttf monofur
 Paquete: ttf-monofur
 Repositorio: extra
 Versión: 1.0-8
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. vlc plugin avahi
+61. vlc plugin avahi
 Paquete: vlc-plugin-avahi
 Repositorio: extra
 Versión: 3.0.24-1
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. xf86 input libinput
+62. xf86 input libinput
 Paquete: xf86-input-libinput
 Repositorio: extra
 Versión: 1.5.0-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. xiccd
+63. xiccd
 Paquete: xiccd
 Repositorio: extra
 Versión: 0.4.1-2
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. yder
+64. yder
 Paquete: yder
 Repositorio: extra
 Versión: 1.4.20-2
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: libyder.so=1.4-64
 Estado SST: [ ]
 
-64. zita lrx
+65. zita lrx
 Paquete: zita-lrx
 Repositorio: extra
 Versión: 0.1.2-5
