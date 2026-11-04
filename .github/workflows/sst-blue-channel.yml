@@ -1,0 +1,94 @@
+name: Synchronize SST blue auto-update channel
+
+# The SST source repository is public. Keep the installed blue-channel manifest
+# in this repository synchronized without a cross-repository personal token.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sst-blue-channel.yml'
+      - '.release/sst-blue-channel.trigger'
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sst-blue-channel
+  cancel-in-progress: false
+
+jobs:
+  activate-channel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify source release and promote newer blue manifest
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $path = 'updates/blue/sst-update.json'
+          $source = 'https://api.github.com/repos/glitchaka/sst-blueversion/releases?per_page=100'
+          $headers = @{ 'User-Agent' = 'SST-blue-channel-sync'; 'Accept' = 'application/vnd.github+json' }
+          $releases = @(Invoke-RestMethod -Uri $source -Headers $headers)
+          $blue = @(
+            $releases | Where-Object {
+              -not $_.draft -and $_.tag_name -match '^v\d+\.\d+\.\d+-blue\.\d+$'
+            } | Sort-Object {
+              [version](($_.tag_name -replace '^v', '') -replace '-blue\.', '.')
+            } -Descending
+          )
+          if ($blue.Count -eq 0) { throw 'No hay releases SST blue publicadas.' }
+          $release = $blue[0]
+          $manifestAsset = @($release.assets | Where-Object { $_.name -eq 'sst-update.json' })[0]
+          $exeAsset = @($release.assets | Where-Object { $_.name -eq 'sst.exe' })[0]
+          if (-not $manifestAsset -or -not $exeAsset) {
+            throw "La release $($release.tag_name) carece del manifiesto o ejecutable."
+          }
+          $tmpManifest = Join-Path $env:RUNNER_TEMP 'sst-update.json'
+          $tmpExe = Join-Path $env:RUNNER_TEMP 'sst.exe'
+          Invoke-WebRequest -Uri $manifestAsset.browser_download_url -OutFile $tmpManifest
+          $raw = Get-Content -LiteralPath $tmpManifest -Raw
+          $next = $raw | ConvertFrom-Json
+          $nextVersion = $release.tag_name.Substring(1)
+          if ($next.version -ne $nextVersion -or $next.channel -ne 'blue' -or $next.schema -ne 1) {
+            throw "El manifiesto no coincide con la release $nextVersion."
+          }
+          $expectedPrefix = "https://github.com/glitchaka/sst-blueversion/releases/download/$($release.tag_name)/"
+          if (-not $next.asset_url.StartsWith($expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "La URL del ejecutable no pertenece a la release fuente."
+          }
+          if ($next.asset_url -ne $exeAsset.browser_download_url) {
+            throw 'El manifiesto no apunta al ejecutable anunciado en la release.'
+          }
+          $previous = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+          $published = [version](($previous.version -replace '-blue\.', '.'))
+          $candidate = [version](($next.version -replace '-blue\.', '.'))
+          if ($candidate -lt $published) { throw 'Se rechazó una regresión del canal.' }
+          if ($candidate -eq $published) {
+            if ($previous.sha256 -ne $next.sha256) {
+              throw 'El mismo número de versión no puede cambiar de hash.'
+            }
+            Write-Host "Canal $($next.version) ya actualizado."
+            exit 0
+          }
+          Invoke-WebRequest -Uri $next.asset_url -OutFile $tmpExe
+          $actualSha = (Get-FileHash -LiteralPath $tmpExe -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualSha -ne $next.sha256.ToLowerInvariant()) {
+            throw "Hash de release distinto: $actualSha"
+          }
+          if ((Get-Item -LiteralPath $tmpExe).Length -ne [int64]$next.size) {
+            throw 'Tamaño de release distinto del manifiesto.'
+          }
+          [System.IO.File]::WriteAllText(
+            (Join-Path $PWD $path),
+            $raw,
+            (New-Object System.Text.UTF8Encoding($false))
+          )
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- $path
+          git commit -m "updates(blue): activate verified SST $nextVersion"
+          git push origin HEAD:main
