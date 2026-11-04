@@ -42,6 +42,13 @@ jobs:
           )
           if ($blue.Count -eq 0) { Write-Host 'No hay release blue disponible todavía.'; exit 0 }
           $release = $blue[0]
+          # blue.9 was built before the final minimize/restore geometry fix.
+          # Never activate that intermediate release for installed blue.8 users.
+          $sourceVersion = [version](($release.tag_name.Substring(1) -replace '-blue\.', '.'))
+          if ($sourceVersion -lt [version]'0.1.9.10') {
+            Write-Host 'Se omite la release intermedia; el canal espera blue.10 o posterior.'
+            exit 0
+          }
           $manifestAsset = @($release.assets | Where-Object { $_.name -eq 'sst-update.json' })[0]
           $exeAsset = @($release.assets | Where-Object { $_.name -eq 'sst.exe' })[0]
           if (-not $manifestAsset -or -not $exeAsset) {
