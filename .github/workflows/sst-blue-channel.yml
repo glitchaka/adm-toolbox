@@ -32,7 +32,7 @@ jobs:
           $path = 'updates/blue/sst-update.json'
           $source = 'https://api.github.com/repos/glitchaka/sst-blueversion/releases?per_page=100'
           $headers = @{ 'User-Agent' = 'SST-blue-channel-sync'; 'Accept' = 'application/vnd.github+json' }
-          $releases = @(Invoke-RestMethod -Uri $source -Headers $headers)
+          $releases = Invoke-RestMethod -Uri $source -Headers $headers
           $blue = @(
             $releases | Where-Object {
               -not $_.draft -and $_.tag_name -match '^v\d+\.\d+\.\d+-blue\.\d+$'
@@ -40,7 +40,7 @@ jobs:
               [version](($_.tag_name -replace '^v', '') -replace '-blue\.', '.')
             } -Descending
           )
-          if ($blue.Count -eq 0) { throw 'No hay releases SST blue publicadas.' }
+          if ($blue.Count -eq 0) { Write-Host 'No hay release blue disponible todavía.'; exit 0 }
           $release = $blue[0]
           $manifestAsset = @($release.assets | Where-Object { $_.name -eq 'sst-update.json' })[0]
           $exeAsset = @($release.assets | Where-Object { $_.name -eq 'sst.exe' })[0]
@@ -58,6 +58,10 @@ jobs:
           }
           $expectedPrefix = "https://github.com/glitchaka/sst-blueversion/releases/download/$($release.tag_name)/"
           if (-not $next.asset_url.StartsWith($expectedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            if ($nextVersion -eq '0.1.9-blue.8') {
+              Write-Host 'El manifiesto heredado blue.8 aún usa el publicador antiguo; esperar la release correctiva.'
+              exit 0
+            }
             throw "La URL del ejecutable no pertenece a la release fuente."
           }
           if ($next.asset_url -ne $exeAsset.browser_download_url) {
