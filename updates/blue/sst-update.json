@@ -1,15 +1,26 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.5",
+  "version": "0.1.9-blue.10",
   "channel": "blue",
-  "published_at": "2026-10-28T01:33:23.068959Z",
-  "asset_url": "sst.exe",
-  "sha256": "d7c6c991e60da491b17adaddb92ce466590284f378b30e6a72b6cf8a14033cc9",
-  "size": 51525632,
-  "previous_version": "0.1.8-blue.4",
+  "published_at": "2026-11-04T15:37:53.8112678+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.10/sst.exe",
+  "sha256": "6a3de95dbc68fc9772a94fceeead5681b66058299de4a4c51fe4062b33123e3b",
+  "size": 54546432,
   "changes": [
-    "La configuración de apariencia incorpora SST_FONT_COLOR='#DFE8EF' para cambiar el color base del texto de la terminal y aplicarlo con config reload, sin alterar los colores ANSI explícitos de comandos, avisos o neofetch.",
-    "El logo ANSI de neofetch restaura el azul eléctrico original en los bloques de iluminación del logotipo SST, manteniendo intactos el cuerpo gris y las sombras azules oscuras.",
-    "Mantiene los fixes ya incorporados en 0.1.8-blue.4, incluido el diagnóstico moderno de Microsoft 365 Click-to-Run y el updater automático."
-  ]
+    "Evita que la sesión Nwash/PTY cambie a 2×2 al minimizar, conservando la geometría y el contenido durante la restauración.",
+    "Reaplica el fondo nativo DWM y el redondeo real de Windows al volver de minimizado; obliga al terminal a repintarse.",
+    "Incorpora las correcciones de shell black-box que pasaron 197/197 pruebas en Windows.",
+    "Migra ZIP a 9.x, mantiene DEFLATE y elimina dependencias heredadas con vulnerabilidades RustSec detectadas.",
+    "Exige tests Rust, black-box/estrés, consumo GUI, auditoría RustSec y verificación del empaquetado SFX antes de publicar.",
+    "Publica el binario verificado en la release fuente y activa el canal blue mediante la sincronización del manifiesto público.",
+    "Conserva el sistema de soporte TI, triage diferido, sensores, Guide y descubrimiento automático por baliza desactivado."
+  ],
+  "setup": {
+    "name": "SST-Setup-0.1.9-blue.10.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.10/SST-Setup-0.1.9-blue.10.exe",
+    "sha256": "37639cd383aa2f4fb34f439e17c8524f667839758d618858b86a30d958fedbcf",
+    "size": 55110779,
+    "single_use": true,
+    "package_id": "7e3f6a0a663979156a6146ea6807d97a"
+  }
 }
