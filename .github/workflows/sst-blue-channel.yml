@@ -93,6 +93,25 @@ jobs:
           if ((Get-Item -LiteralPath $tmpExe).Length -ne [int64]$next.size) {
             throw 'Tamaño de release distinto del manifiesto.'
           }
+          # blue.18 and newer use a separate verified updater executable.
+          # Validate that artifact before any new channel pointer is written.
+          if ($candidate -ge [version]'0.1.9.18') {
+            $updaterAsset = @($release.assets | Where-Object { $_.name -eq 'sst-updater.exe' })[0]
+            if (-not $updaterAsset -or -not $next.updater_asset_url -or
+                -not $next.updater_sha256 -or -not $next.updater_size) {
+              throw 'La release requiere un actualizador independiente con URL, SHA y tamaño.'
+            }
+            if ($next.updater_asset_url -ne $updaterAsset.browser_download_url) {
+              throw 'El actualizador del manifiesto no coincide con el publicado.'
+            }
+            $updaterFile = Join-Path $env:RUNNER_TEMP 'sst-updater.exe'
+            Invoke-WebRequest -Uri $next.updater_asset_url -OutFile $updaterFile
+            $updaterActual = (Get-FileHash -LiteralPath $updaterFile -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($updaterActual -ne ([string]$next.updater_sha256).ToLowerInvariant() -or
+                (Get-Item -LiteralPath $updaterFile).Length -ne [int64]$next.updater_size) {
+              throw 'Falló la integridad del actualizador independiente.'
+            }
+          }
           [System.IO.File]::WriteAllText(
             (Join-Path $PWD $path),
             $raw,
