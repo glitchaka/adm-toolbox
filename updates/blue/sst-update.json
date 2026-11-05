@@ -1,29 +1,28 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.23",
+  "version": "0.1.9-blue.24",
   "channel": "blue",
-  "published_at": "2026-11-05T17:37:01.3385708+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.23/sst.exe",
-  "sha256": "a5f76b9a595e96ad2420652856a00a5209611bacb98cbd54201b7e6eea3992ba",
-  "size": 54588416,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.23/sst-updater.exe",
-  "updater_sha256": "d1f375afc80a73579262f4a8554d4cf33cdbd1fe4e270f42e1bbe545228c2f99",
+  "published_at": "2026-11-05T19:12:52.3799109+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.24/sst.exe",
+  "sha256": "9f050d4277a33fb6ac11666cb98489e0cbcf13b32924ac578b5b9ea1284f80df",
+  "size": 54591488,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.24/sst-updater.exe",
+  "updater_sha256": "cd298d5aebff95c8eeabfb4eb454dde4ba90f5676883d02dc702369a02e1a06b",
   "updater_size": 422400,
   "changes": [
-    "blue.19: preservar tour.sh y examples al arrancar; SST nunca sobreescribe scripts personalizados.",
-    "blue.20: corregir el menú de tour.sh; eliminar dependencia de sst-tour-select.",
-    "blue.21: diagnóstico IP/MAC mediante net interfaces y la API nativa de Windows.",
-    "blue.22: consultar procesos por RAM con sys processes --sort ram --top 8 e impresoras con sys printers.",
-    "blue.23: indicador de sesión elevada visible en la barra SST: ADMIN, SYSTEM o TRUSTED según el token real de Windows.",
-    "El indicador no confunde el token filtrado con administrador elevado; se comprueba mediante pruebas de regresión.",
-    "El autoupdater independiente y las pruebas Nwash continúan incluidos desde blue.18."
+    "La isla superior de SST identifica siempre el token de la sesión: USUARIO, LIMITADO, ADMIN, SYSTEM o TRUSTED.",
+    "USUARIO y LIMITADO aparecen en un indicador neutro; sólo ADMIN, SYSTEM y TRUSTED se destacan como sesiones elevadas.",
+    "El título nativo de la ventana y del selector de tareas también identifica el nivel del token.",
+    "El indicador permanece visible en ventanas estrechas, sin superponerse con las métricas de CPU/RAM.",
+    "El nivel se obtiene del token real del proceso, no del parámetro usado para lanzar la ventana.",
+    "El disparador de publicación admite todas las próximas versiones blue en vez de quedar fijado a blue.23."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.23.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.23/SST-Setup-0.1.9-blue.23.exe",
-    "sha256": "fae67e02aa2f98494e70e7d56f289fd71cd503980d08829e91b3e4e43bbd5e4c",
-    "size": 55575190,
+    "name": "SST-Setup-0.1.9-blue.24.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.24/SST-Setup-0.1.9-blue.24.exe",
+    "sha256": "6d604d237949ecf2c8763bb840742c1aa89b14c4722f476bf44ca3f9941ea1c0",
+    "size": 55578262,
     "single_use": true,
-    "package_id": "6ce44a2df75a807d56ff2f34611e3ba4"
+    "package_id": "c14b95256baaae20494217b5b51cb9bf"
   }
 }
