@@ -1,1 +1,1 @@
-Activate verified SST blue channel from source release v0.1.9-blue.17; verify release manifest, SHA-256, exact size and publish channel pointer.
+Promote verified SST v0.1.9-blue.18 with independent sst-updater.exe and Nwash input fixes. Check both public binaries against SHA-256 and size before changing the channel.
