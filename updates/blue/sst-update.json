@@ -1,23 +1,23 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.15",
+  "version": "0.1.9-blue.17",
   "channel": "blue",
-  "published_at": "2026-11-04T22:40:17.8534415+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.15/sst.exe",
-  "sha256": "6b383304c8788c5bd28ef9b6e161c079651e98687e618aab1249cc76a8ff969a",
-  "size": 54556160,
+  "published_at": "2026-11-05T14:13:44.6786408+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.17/sst.exe",
+  "sha256": "4c5fc163101874b1090fbc6ba396a0b8ab0a08ad23ea7615c709979b23ca7aeb",
+  "size": 54558720,
   "changes": [
-    "blue.12: diferencia entre el salto de línea y el separador `;` para aceptar expresiones `[[ ... ]]` multilínea.",
-    "blue.13: conserva como un único operando las expresiones regulares ERE de `[[ valor =~ patron ]]` (paréntesis, cuantificadores, alternancias).",
-    "blue.14: acepta opciones cortas agrupadas y argumentos adjuntos en `read`, por ejemplo `read -rsn1 opcion` y `read -p\"Nombre: \" nombre`.",
-    "blue.15: soporta clases de caracteres POSIX en los patrones condicionales, como `[[:space:]]` y `[[:digit:]]`."
+    "Cuando el actualizador antiguo relanza el ejecutable instalado con SST_INTERNAL_APPLY_UPDATE=1, SST reconoce que ya es el binario destino, no el helper temporal.",
+    "Limpia los parámetros heredados del helper antes de iniciar la interfaz, evitando que intente abrir sst.exe.new después del reemplazo.",
+    "Mantiene la orden de limpieza del helper y no altera la sustitución atómica del ejecutable ni el resto de Nwash.",
+    "Incluye prueba de regresión sobre la identidad del ejecutable instalado y conserva la limpieza de variables del relanzamiento corregida en blue.16."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.15.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.15/SST-Setup-0.1.9-blue.15.exe",
-    "sha256": "d01328f10205aa1937857d496198754c03867080faa8d789b85878d14c80e371",
-    "size": 55120507,
+    "name": "SST-Setup-0.1.9-blue.17.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.17/SST-Setup-0.1.9-blue.17.exe",
+    "sha256": "430da122ffbdd3e934dec5351432877b6ffa48b4341fd27dea75b4e6b7773736",
+    "size": 55123067,
     "single_use": true,
-    "package_id": "ace7e79f6b4c04d6379f88f8117f0ea7"
+    "package_id": "37d07a80f7bda33ae7d604bdfec4628d"
   }
 }
