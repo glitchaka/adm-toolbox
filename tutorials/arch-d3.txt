@@ -301,12 +301,12 @@ Estado SST: [ ]
 21. nethogs
 Paquete: nethogs
 Repositorio: extra
-Versión: 0.8.8-2
+Versión: 0.9.0-1
 Arquitectura: x86_64
 Descripción: A net top tool which displays traffic used per process instead of per IP or interface
 Upstream: https://github.com/raboof/nethogs
-Licencia: GPL
-Dependencias: libpcap, ncurses, gcc-libs
+Licencia: GPL-2.0-or-later
+Dependencias: glibc, libpcap, ncurses, libgcc, libstdc++
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -361,14 +361,14 @@ Estado SST: [ ]
 25. pantheon settings daemon
 Paquete: pantheon-settings-daemon
 Repositorio: extra
-Versión: 8.5.0-3
+Versión: 8.5.0-4
 Arquitectura: x86_64
 Descripción: Manage settings and background tasks for Pantheon
 Upstream: https://github.com/elementary/settings-daemon
 Licencia: GPL-3.0-only
-Dependencias: accountsservice, dconf, fwupd, gdk-pixbuf2, geoclue, glib2, glibc, gnome-settings-daemon, gsettings-desktop-schemas, gtk3, libgexiv2, libpackagekit-glib2.so=18-64
+Dependencias: accountsservice, dconf, fwupd, gdk-pixbuf2, geoclue, glib2, glibc, gnome-settings-daemon, gsettings-desktop-schemas, gtk4, libgexiv2, libpackagekit-glib2.so=18-64
 Opcionales: —
-Compilación: git, granite, meson, vala
+Compilación: git, granite7, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

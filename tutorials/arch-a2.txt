@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. firefox developer edition i18n hr
 Paquete: firefox-developer-edition-i18n-hr
 Repositorio: extra
-Versión: 160.0b4-1
+Versión: 160.0b5-1
 Arquitectura: any
 Descripción: Croatian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b4
+Dependencias: firefox-developer-edition>=160.0b5
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -136,12 +136,12 @@ Estado SST: [ ]
 10. firefox developer edition i18n mr
 Paquete: firefox-developer-edition-i18n-mr
 Repositorio: extra
-Versión: 160.0b4-1
+Versión: 160.0b5-1
 Arquitectura: any
 Descripción: Marathi language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b4
+Dependencias: firefox-developer-edition>=160.0b5
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -883,7 +883,22 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit, ruby-test-unit-ruby-core
 Proporciona: —
 Estado SST: [ ]
 
-60. ruby notiffany
+60. ruby minitest memory
+Paquete: ruby-minitest-memory
+Repositorio: extra
+Versión: 1.1.1-1
+Arquitectura: any
+Descripción: Memory allocation assertions for Minitest
+Upstream: https://github.com/sferik/minitest-memory
+Licencia: MIT
+Dependencias: ruby, ruby-minitest, ruby-minitest-strict
+Opcionales: —
+Compilación: git, ruby-rdoc
+Pruebas: ruby-simplecov
+Proporciona: —
+Estado SST: [ ]
+
+61. ruby notiffany
 Paquete: ruby-notiffany
 Repositorio: extra
 Versión: 0.1.3-6
@@ -898,7 +913,7 @@ Pruebas: ruby-rake, ruby-rspec, tmux
 Proporciona: —
 Estado SST: [ ]
 
-61. s nail
+62. s nail
 Paquete: s-nail
 Repositorio: core
 Versión: 14.9.25-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: mailx, mailx-heirloom, heirloom-mailx
 Estado SST: [ ]
 
-62. sl
+63. sl
 Paquete: sl
 Repositorio: extra
 Versión: 5.05-6
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. tela circle icon theme nord
+64. tela circle icon theme nord
 Paquete: tela-circle-icon-theme-nord
 Repositorio: extra
 Versión: 2026_07_07-1
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: tela-circle-icon-theme
 Estado SST: [ ]
 
-64. thunderbird i18n hsb
+65. thunderbird i18n hsb
 Paquete: thunderbird-i18n-hsb
 Repositorio: extra
 Versión: 158.0.1-1
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. uncrustify
+66. uncrustify
 Paquete: uncrustify
 Repositorio: extra
 Versión: 0.83.0-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. uwsgi plugin lua51
+67. uwsgi plugin lua51
 Paquete: uwsgi-plugin-lua51
 Repositorio: extra
 Versión: 2.0.31-4
@@ -988,7 +1003,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-67. vaporizer2 standalone
+68. vaporizer2 standalone
 Paquete: vaporizer2-standalone
 Repositorio: extra
 Versión: 3.5.0-2
@@ -1003,7 +1018,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-68. wayfire
+69. wayfire
 Paquete: wayfire
 Repositorio: extra
 Versión: 0.11.0-1
@@ -1018,7 +1033,7 @@ Pruebas: xorg-xwayland
 Proporciona: —
 Estado SST: [ ]
 
-69. wvdial
+70. wvdial
 Paquete: wvdial
 Repositorio: extra
 Versión: 1.61-10
@@ -1033,7 +1048,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-70. xdg desktop portal cosmic
+71. xdg desktop portal cosmic
 Paquete: xdg-desktop-portal-cosmic
 Repositorio: extra
 Versión: 1:1.11.0-1
@@ -1048,7 +1063,7 @@ Pruebas: —
 Proporciona: xdg-desktop-portal-impl
 Estado SST: [ ]
 
-71. ytfzf
+72. ytfzf
 Paquete: ytfzf
 Repositorio: extra
 Versión: 2.6.2-2
@@ -1063,7 +1078,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-72. zsh
+73. zsh
 Paquete: zsh
 Repositorio: extra
 Versión: 5.9.2-1

@@ -796,15 +796,15 @@ Estado SST: [ ]
 54. ruby http
 Paquete: ruby-http
 Repositorio: extra
-Versión: 5.3.1-1
+Versión: 6.0.0-1
 Arquitectura: any
 Descripción: A fast Ruby HTTP client with a chainable API, streaming support, and timeouts
 Upstream: https://github.com/httprb/http
 Licencia: MIT
-Dependencias: ruby, ruby-addressable, ruby-http-cookie, ruby-http-form_data, ruby-llhttp-ffi
-Opcionales: —
+Dependencias: ruby, ruby-http-cookie, ruby-llhttp
+Opcionales: ruby-addressable: non-ASCII URL and internationalized hostname support
 Compilación: git, ruby-rdoc
-Pruebas: ruby-certificate_authority, ruby-rake, ruby-rspec, ruby-rspec-its, ruby-rspec-memory, ruby-simplecov, ruby-webrick
+Pruebas: ruby-addressable, ruby-minitest, ruby-minitest-memory, ruby-minitest-mock, ruby-minitest-strict, ruby-simplecov
 Proporciona: —
 Estado SST: [ ]
 

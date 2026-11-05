@@ -238,7 +238,22 @@ Pruebas: —
 Proporciona: kiwix-lib
 Estado SST: [ ]
 
-17. libpd
+17. libkysdk coreai speech
+Paquete: libkysdk-coreai-speech
+Repositorio: extra
+Versión: 1.1.0.1-1
+Arquitectura: x86_64
+Descripción: Kylin CoreAI speech, vision and embedding client libraries
+Upstream: https://gitee.com/openkylin/libkysdk-coreai-speech
+Licencia: GPL-3.0-or-later
+Dependencias: glib2, glibc, jsoncpp, kysdk-ai-common, libgcc, libstdc++, openssl
+Opcionales: —
+Compilación: cmake, git, glib2-devel, libkylin-ai-system-private, ninja, nlohmann-json
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. libpd
 Paquete: libpd
 Repositorio: extra
 Versión: 0.16.1-1
@@ -253,7 +268,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-18. libportal
+19. libportal
 Paquete: libportal
 Repositorio: extra
 Versión: 0.11.0-1
@@ -268,7 +283,7 @@ Pruebas: python-dbusmock, python-pytest, xorg-server-xvfb
 Proporciona: libportal.so=1-64
 Estado SST: [ ]
 
-19. libreoffice still brx
+20. libreoffice still brx
 Paquete: libreoffice-still-brx
 Repositorio: extra
 Versión: 26.2.7-1
@@ -283,7 +298,7 @@ Pruebas: —
 Proporciona: libreoffice-brx, libreoffice-still-i18n=26.2.7-1
 Estado SST: [ ]
 
-20. libreoffice still eu
+21. libreoffice still eu
 Paquete: libreoffice-still-eu
 Repositorio: extra
 Versión: 26.2.7-1
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: libreoffice-eu, libreoffice-still-i18n=26.2.7-1
 Estado SST: [ ]
 
-21. lsw
+22. lsw
 Paquete: lsw
 Repositorio: extra
 Versión: 0.3-7
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. mate icon theme faenza
+23. mate icon theme faenza
 Paquete: mate-icon-theme-faenza
 Repositorio: extra
 Versión: 1.20.0-5
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. maui nota
+24. maui nota
 Paquete: maui-nota
 Repositorio: extra
 Versión: 4.0.2-2
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. msmtp mta
+25. msmtp mta
 Paquete: msmtp-mta
 Repositorio: extra
 Versión: 1.8.34-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: smtp-forwarder
 Estado SST: [ ]
 
-25. multilib devel
+26. multilib devel
 Paquete: multilib-devel
 Repositorio: multilib
 Versión: 1-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. nemo
+27. nemo
 Paquete: nemo
 Repositorio: extra
 Versión: 6.6.4-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. nginx mainline
+28. nginx mainline
 Paquete: nginx-mainline
 Repositorio: extra
 Versión: 1.31.8-1
@@ -403,7 +418,7 @@ Pruebas: coreutils, ffmpeg, memcached, perl, perl-cache-memcached, perl-cryptx, 
 Proporciona: nginx
 Estado SST: [ ]
 
-28. nsight systems
+29. nsight systems
 Paquete: nsight-systems
 Repositorio: extra
 Versión: 2026.3.2.476-1
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. ob xf lv2
+30. ob xf lv2
 Paquete: ob-xf-lv2
 Repositorio: extra
 Versión: 1.0.3-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. opensearch ingest attachment plugin
+31. opensearch ingest attachment plugin
 Paquete: opensearch-ingest-attachment-plugin
 Repositorio: extra
 Versión: 3.9.0-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. pan
+32. pan
 Paquete: pan
 Repositorio: extra
 Versión: 0.165-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. papilo
+33. papilo
 Paquete: papilo
 Repositorio: extra
 Versión: 3.0.2-1
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. perl config grammar
+34. perl config grammar
 Paquete: perl-config-grammar
 Repositorio: extra
 Versión: 1.13-6
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. proxmark3
+35. proxmark3
 Paquete: proxmark3
 Repositorio: extra
 Versión: 4.20142-2
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. pyflow
+36. pyflow
 Paquete: pyflow
 Repositorio: extra
 Versión: 0.3.1-3
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. python b2sdk
+37. python b2sdk
 Paquete: python-b2sdk
 Repositorio: extra
 Versión: 2.13.1-1
@@ -538,7 +553,7 @@ Pruebas: python-pytest, python-pytest-mock, python-pytest-lazy-fixtures, python-
 Proporciona: —
 Estado SST: [ ]
 
-37. python datrie
+38. python datrie
 Paquete: python-datrie
 Repositorio: extra
 Versión: 0.8.3-1
@@ -553,7 +568,7 @@ Pruebas: python-pytest, python-hypothesis
 Proporciona: —
 Estado SST: [ ]
 
-38. python prefab ui
+39. python prefab ui
 Paquete: python-prefab-ui
 Repositorio: extra
 Versión: 0.21.1-1
@@ -568,22 +583,22 @@ Pruebas: deno, python-jsonschema, python-pytest, python-pytest-asyncio, python-p
 Proporciona: —
 Estado SST: [ ]
 
-39. python zc lockfile
+40. python zc lockfile
 Paquete: python-zc.lockfile
 Repositorio: extra
-Versión: 4.0-2
+Versión: 4.1-1
 Arquitectura: any
 Descripción: Zope testing frameworks
 Upstream: https://github.com/zopefoundation/zc.lockfile
 Licencia: ZPL-2.1
 Dependencias: python
 Opcionales: —
-Compilación: python-build, python-installer, python-wheel
+Compilación: python-build, python-installer, python-wheel, python-setuptools
 Pruebas: python-zope-testing, python-zope-testrunner
 Proporciona: —
 Estado SST: [ ]
 
-40. qt6 svg
+41. qt6 svg
 Paquete: qt6-svg
 Repositorio: extra
 Versión: 6.12.0-1
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. ruby concurrent
+42. ruby concurrent
 Paquete: ruby-concurrent
 Repositorio: extra
 Versión: 1.3.8-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. ruby dbm
+43. ruby dbm
 Paquete: ruby-dbm
 Repositorio: extra
 Versión: 1.1.0-2
@@ -628,7 +643,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-rake-compiler, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-43. ruby minitest proveit
+44. ruby minitest proveit
 Paquete: ruby-minitest-proveit
 Repositorio: extra
 Versión: 1.0.1-1
@@ -643,7 +658,7 @@ Pruebas: ruby-minitest
 Proporciona: —
 Estado SST: [ ]
 
-44. ruby puma
+45. ruby puma
 Paquete: ruby-puma
 Repositorio: extra
 Versión: 7.1.0-1
@@ -658,7 +673,7 @@ Pruebas: ruby-bundler, ruby-concurrent, ruby-minitest, ruby-minitest-proveit, ru
 Proporciona: —
 Estado SST: [ ]
 
-45. rubygems
+46. rubygems
 Paquete: rubygems
 Repositorio: extra
 Versión: 3.6.9-1
@@ -673,7 +688,7 @@ Pruebas: cmake, git, ruby-rake, ruby-test-unit, ruby-webrick
 Proporciona: ruby-rubygems
 Estado SST: [ ]
 
-46. servo
+47. servo
 Paquete: servo
 Repositorio: extra
 Versión: 0.7.0-3
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. slang
+48. slang
 Paquete: slang
 Repositorio: extra
 Versión: 2.3.3-4
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. sugar activity imageviewer
+49. sugar activity imageviewer
 Paquete: sugar-activity-imageviewer
 Repositorio: extra
 Versión: 1:65-5
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. tesseract data hun
+50. tesseract data hun
 Paquete: tesseract-data-hun
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-50. unuran
+51. unuran
 Paquete: unuran
 Repositorio: extra
 Versión: 1.12.0-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. vit
+52. vit
 Paquete: vit
 Repositorio: extra
 Versión: 2.3.4-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. wasm tools
+53. wasm tools
 Paquete: wasm-tools
 Repositorio: extra
 Versión: 1.261.0-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. xfce4 windowck plugin
+54. xfce4 windowck plugin
 Paquete: xfce4-windowck-plugin
 Repositorio: extra
 Versión: 1:0.6.1-1
