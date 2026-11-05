@@ -1,23 +1,28 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.17",
+  "version": "0.1.9-blue.18",
   "channel": "blue",
-  "published_at": "2026-11-05T14:13:44.6786408+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.17/sst.exe",
-  "sha256": "4c5fc163101874b1090fbc6ba396a0b8ab0a08ad23ea7615c709979b23ca7aeb",
-  "size": 54558720,
+  "published_at": "2026-11-05T14:56:06.8644913+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.18/sst.exe",
+  "sha256": "a8439fcb154996be23c2dc5bb95f371abeba07a2a6c90bcbbe1fc0e63c57a6df",
+  "size": 54561792,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.18/sst-updater.exe",
+  "updater_sha256": "cdfd583c0b711ce0cc92cc52c959ce90f0ca8c50a53ff8ce65e074ec99b23c39",
+  "updater_size": 422400,
   "changes": [
-    "Cuando el actualizador antiguo relanza el ejecutable instalado con SST_INTERNAL_APPLY_UPDATE=1, SST reconoce que ya es el binario destino, no el helper temporal.",
-    "Limpia los parámetros heredados del helper antes de iniciar la interfaz, evitando que intente abrir sst.exe.new después del reemplazo.",
-    "Mantiene la orden de limpieza del helper y no altera la sustitución atómica del ejecutable ni el resto de Nwash.",
-    "Incluye prueba de regresión sobre la identidad del ejecutable instalado y conserva la limpieza de variables del relanzamiento corregida en blue.16."
+    "Nwash corrige la lectura de tuberías de Windows en la sustitución de procesos; 109 y 233 se interpretan como fin de entrada cuando corresponde.",
+    "Nwash conserva los datos y la posición del flujo para bucles `while IFS= read -r`, evitando repetir líneas, interrumpir el menú o quedarse bloqueado.",
+    "Prueba real en Windows para `done < <(printf ...)` y prueba del menú interactivo que vuelve a aceptar opciones después de mostrar información.",
+    "Introduce `sst-updater.exe`, ejecutable independiente del proceso `sst.exe`, con espera del cierre, sustitución atómica, validación SHA-256 y copia de seguridad.",
+    "El canal blue publica URL, hash SHA-256 y tamaño del actualizador independiente, además del ejecutable de SST.",
+    "Incluye el actualizador externo tanto en la distribución portable como en el instalador, con prueba de sustitución, error inyectado y restauración."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.17.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.17/SST-Setup-0.1.9-blue.17.exe",
-    "sha256": "430da122ffbdd3e934dec5351432877b6ffa48b4341fd27dea75b4e6b7773736",
-    "size": 55123067,
+    "name": "SST-Setup-0.1.9-blue.18.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.18/SST-Setup-0.1.9-blue.18.exe",
+    "sha256": "0bcad5810cd9c16de42928614767ad295c7bdfb6f31438131624fc68a41e307f",
+    "size": 55548566,
     "single_use": true,
-    "package_id": "37d07a80f7bda33ae7d604bdfec4628d"
+    "package_id": "98d6a6572d03eaee30c2b4c96fdac028"
   }
 }
