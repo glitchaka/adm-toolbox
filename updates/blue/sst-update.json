@@ -1,26 +1,23 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.10",
+  "version": "0.1.9-blue.15",
   "channel": "blue",
-  "published_at": "2026-11-04T15:37:53.8112678+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.10/sst.exe",
-  "sha256": "6a3de95dbc68fc9772a94fceeead5681b66058299de4a4c51fe4062b33123e3b",
-  "size": 54546432,
+  "published_at": "2026-11-04T22:40:17.8534415+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.15/sst.exe",
+  "sha256": "6b383304c8788c5bd28ef9b6e161c079651e98687e618aab1249cc76a8ff969a",
+  "size": 54556160,
   "changes": [
-    "Evita que la sesión Nwash/PTY cambie a 2×2 al minimizar, conservando la geometría y el contenido durante la restauración.",
-    "Reaplica el fondo nativo DWM y el redondeo real de Windows al volver de minimizado; obliga al terminal a repintarse.",
-    "Incorpora las correcciones de shell black-box que pasaron 197/197 pruebas en Windows.",
-    "Migra ZIP a 9.x, mantiene DEFLATE y elimina dependencias heredadas con vulnerabilidades RustSec detectadas.",
-    "Exige tests Rust, black-box/estrés, consumo GUI, auditoría RustSec y verificación del empaquetado SFX antes de publicar.",
-    "Publica el binario verificado en la release fuente y activa el canal blue mediante la sincronización del manifiesto público.",
-    "Conserva el sistema de soporte TI, triage diferido, sensores, Guide y descubrimiento automático por baliza desactivado."
+    "blue.12: diferencia entre el salto de línea y el separador `;` para aceptar expresiones `[[ ... ]]` multilínea.",
+    "blue.13: conserva como un único operando las expresiones regulares ERE de `[[ valor =~ patron ]]` (paréntesis, cuantificadores, alternancias).",
+    "blue.14: acepta opciones cortas agrupadas y argumentos adjuntos en `read`, por ejemplo `read -rsn1 opcion` y `read -p\"Nombre: \" nombre`.",
+    "blue.15: soporta clases de caracteres POSIX en los patrones condicionales, como `[[:space:]]` y `[[:digit:]]`."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.10.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.10/SST-Setup-0.1.9-blue.10.exe",
-    "sha256": "37639cd383aa2f4fb34f439e17c8524f667839758d618858b86a30d958fedbcf",
-    "size": 55110779,
+    "name": "SST-Setup-0.1.9-blue.15.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.15/SST-Setup-0.1.9-blue.15.exe",
+    "sha256": "d01328f10205aa1937857d496198754c03867080faa8d789b85878d14c80e371",
+    "size": 55120507,
     "single_use": true,
-    "package_id": "7e3f6a0a663979156a6146ea6807d97a"
+    "package_id": "ace7e79f6b4c04d6379f88f8117f0ea7"
   }
 }
