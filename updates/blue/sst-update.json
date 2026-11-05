@@ -1,28 +1,29 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.18",
+  "version": "0.1.9-blue.23",
   "channel": "blue",
-  "published_at": "2026-11-05T14:56:06.8644913+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.18/sst.exe",
-  "sha256": "a8439fcb154996be23c2dc5bb95f371abeba07a2a6c90bcbbe1fc0e63c57a6df",
-  "size": 54561792,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.18/sst-updater.exe",
-  "updater_sha256": "cdfd583c0b711ce0cc92cc52c959ce90f0ca8c50a53ff8ce65e074ec99b23c39",
+  "published_at": "2026-11-05T17:37:01.3385708+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.23/sst.exe",
+  "sha256": "a5f76b9a595e96ad2420652856a00a5209611bacb98cbd54201b7e6eea3992ba",
+  "size": 54588416,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.23/sst-updater.exe",
+  "updater_sha256": "d1f375afc80a73579262f4a8554d4cf33cdbd1fe4e270f42e1bbe545228c2f99",
   "updater_size": 422400,
   "changes": [
-    "Nwash corrige la lectura de tuberías de Windows en la sustitución de procesos; 109 y 233 se interpretan como fin de entrada cuando corresponde.",
-    "Nwash conserva los datos y la posición del flujo para bucles `while IFS= read -r`, evitando repetir líneas, interrumpir el menú o quedarse bloqueado.",
-    "Prueba real en Windows para `done < <(printf ...)` y prueba del menú interactivo que vuelve a aceptar opciones después de mostrar información.",
-    "Introduce `sst-updater.exe`, ejecutable independiente del proceso `sst.exe`, con espera del cierre, sustitución atómica, validación SHA-256 y copia de seguridad.",
-    "El canal blue publica URL, hash SHA-256 y tamaño del actualizador independiente, además del ejecutable de SST.",
-    "Incluye el actualizador externo tanto en la distribución portable como en el instalador, con prueba de sustitución, error inyectado y restauración."
+    "blue.19: preservar tour.sh y examples al arrancar; SST nunca sobreescribe scripts personalizados.",
+    "blue.20: corregir el menú de tour.sh; eliminar dependencia de sst-tour-select.",
+    "blue.21: diagnóstico IP/MAC mediante net interfaces y la API nativa de Windows.",
+    "blue.22: consultar procesos por RAM con sys processes --sort ram --top 8 e impresoras con sys printers.",
+    "blue.23: indicador de sesión elevada visible en la barra SST: ADMIN, SYSTEM o TRUSTED según el token real de Windows.",
+    "El indicador no confunde el token filtrado con administrador elevado; se comprueba mediante pruebas de regresión.",
+    "El autoupdater independiente y las pruebas Nwash continúan incluidos desde blue.18."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.18.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.18/SST-Setup-0.1.9-blue.18.exe",
-    "sha256": "0bcad5810cd9c16de42928614767ad295c7bdfb6f31438131624fc68a41e307f",
-    "size": 55548566,
+    "name": "SST-Setup-0.1.9-blue.23.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.23/SST-Setup-0.1.9-blue.23.exe",
+    "sha256": "fae67e02aa2f98494e70e7d56f289fd71cd503980d08829e91b3e4e43bbd5e4c",
+    "size": 55575190,
     "single_use": true,
-    "package_id": "98d6a6572d03eaee30c2b4c96fdac028"
+    "package_id": "6ce44a2df75a807d56ff2f34611e3ba4"
   }
 }
