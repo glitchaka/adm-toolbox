@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. jxrlib
 Paquete: jxrlib
 Repositorio: extra
-Versión: 1.4.4-3
+Versión: 1.4.5-1
 Arquitectura: x86_64
 Descripción: Open source implementation of jpegxr
 Upstream: https://github.com/mircomir/jxrlib
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. kpat
 Paquete: kpat
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Offers a selection of solitaire card games
 Upstream: https://apps.kde.org/kpat/
@@ -658,7 +658,22 @@ Pruebas: hunspell, hunspell-en_us, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-45. python roman
+45. python qh3
+Paquete: python-qh3
+Repositorio: extra
+Versión: 2.1.0-1
+Arquitectura: x86_64
+Descripción: QUIC and HTTP/3 implementation
+Upstream: https://github.com/jawah/qh3
+Licencia: BSD-3-Clause
+Dependencias: glibc, libgcc, python
+Opcionales: —
+Compilación: cargo, clang, cmake, git, python-build, python-installer, python-maturin
+Pruebas: python-brotli, python-cryptography, python-dnspython, python-pyarrow, python-pytest, python-pytest-asyncio, python-pytest-mock
+Proporciona: —
+Estado SST: [ ]
+
+46. python roman
 Paquete: python-roman
 Repositorio: extra
 Versión: 5.2-2
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. python sphinxcontrib mermaid
+47. python sphinxcontrib mermaid
 Paquete: python-sphinxcontrib-mermaid
 Repositorio: extra
 Versión: 2.1.1-1
@@ -688,7 +703,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-47. qt6 tasktree
+48. qt6 tasktree
 Paquete: qt6-tasktree
 Repositorio: extra
 Versión: 6.12.0-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. tesseract data est
+49. tesseract data est
 Paquete: tesseract-data-est
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-49. ultramaster kr106 lv2
+50. ultramaster kr106 lv2
 Paquete: ultramaster-kr106-lv2
 Repositorio: extra
 Versión: 2.5.13-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. vulkan profiles
+51. vulkan profiles
 Paquete: vulkan-profiles
 Repositorio: extra
 Versión: 1.4.363.0-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. yubico c client
+52. yubico c client
 Paquete: yubico-c-client
 Repositorio: extra
 Versión: 2.15-7

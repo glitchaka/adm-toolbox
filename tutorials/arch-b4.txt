@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. kcalutils
 Paquete: kcalutils
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: The KDE calendar utility library
 Upstream: https://kontact.kde.org
@@ -538,7 +538,22 @@ Pruebas: ghostscript, python-pytest-datafiles, python-wand
 Proporciona: —
 Estado SST: [ ]
 
-37. python opentelemetry instrumentation aws lambda
+37. python niquests
+Paquete: python-niquests
+Repositorio: extra
+Versión: 3.21.2-1
+Arquitectura: any
+Descripción: HTTP client with synchronous and asynchronous APIs
+Upstream: https://github.com/jawah/niquests
+Licencia: Apache-2.0, MIT
+Dependencias: python, python-charset-normalizer, python-urllib3-future, python-wassima
+Opcionales: python-orjson: faster JSON decoding
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-aiofiles, python-brotli, python-coverage, python-cryptography, python-fastapi, python-flask, python-pytest, python-pytest-asyncio, python-pytest-httpbin, python-python-socks, python-trustme, python-websockets, python-wsproto
+Proporciona: —
+Estado SST: [ ]
+
+38. python opentelemetry instrumentation aws lambda
 Paquete: python-opentelemetry-instrumentation-aws-lambda
 Repositorio: extra
 Versión: 0.66b2-1
@@ -553,7 +568,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-38. python pandas datareader
+39. python pandas datareader
 Paquete: python-pandas-datareader
 Repositorio: extra
 Versión: 0.11.1-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. python pyasn1 modules
+40. python pyasn1 modules
 Paquete: python-pyasn1-modules
 Repositorio: extra
 Versión: 0.4.2-2
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python starlette
+41. python starlette
 Paquete: python-starlette
 Repositorio: extra
 Versión: 1.10.0-1
@@ -598,7 +613,7 @@ Pruebas: python-aiosqlite, python-blockbuster, python-httpx, python-opentelemetr
 Proporciona: —
 Estado SST: [ ]
 
-41. python xmlsec
+42. python xmlsec
 Paquete: python-xmlsec
 Repositorio: extra
 Versión: 1.3.18-1
@@ -613,7 +628,7 @@ Pruebas: python-hypothesis, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-42. qemu system riscv firmware
+43. qemu system riscv firmware
 Paquete: qemu-system-riscv-firmware
 Repositorio: extra
 Versión: 11.1.3-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. qemu ui curses
+44. qemu ui curses
 Paquete: qemu-ui-curses
 Repositorio: extra
 Versión: 11.1.3-1
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. ruby crack
+45. ruby crack
 Paquete: ruby-crack
 Repositorio: extra
 Versión: 1.0.0-5
@@ -658,7 +673,7 @@ Pruebas: ruby-bundler, ruby-minitest, ruby-rake
 Proporciona: —
 Estado SST: [ ]
 
-45. ruby language server protocol
+46. ruby language server protocol
 Paquete: ruby-language_server-protocol
 Repositorio: extra
 Versión: 3.17.0.6-1
@@ -673,7 +688,7 @@ Pruebas: ruby-activesupport, ruby-benchmark-ips, ruby-bundler, ruby-m, ruby-mini
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby mini portile2
+47. ruby mini portile2
 Paquete: ruby-mini_portile2
 Repositorio: extra
 Versión: 2.8.9-1
@@ -688,7 +703,7 @@ Pruebas: cmake, ruby-bundler, ruby-minitar, ruby-minitest, ruby-minitest-hooks, 
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby minitest reporters
+48. ruby minitest reporters
 Paquete: ruby-minitest-reporters
 Repositorio: extra
 Versión: 1.8.0-2
@@ -703,7 +718,7 @@ Pruebas: ruby-bundler, ruby-maruku, ruby-minitest-mock, ruby-rake
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby syntax
+49. ruby syntax
 Paquete: ruby-syntax
 Repositorio: extra
 Versión: 1.2.2-5
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. scotch metis
+50. scotch metis
 Paquete: scotch-metis
 Repositorio: extra
 Versión: 7.0.17-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. socat
+51. socat
 Paquete: socat
 Repositorio: extra
 Versión: 1.8.1.3-1
@@ -748,7 +763,7 @@ Pruebas: bash, net-tools, procps-ng
 Proporciona: —
 Estado SST: [ ]
 
-51. termshark
+52. termshark
 Paquete: termshark
 Repositorio: extra
 Versión: 2.4.0-2
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. tesseract data syr
+53. tesseract data syr
 Paquete: tesseract-data-syr
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-53. texlive context
+54. texlive context
 Paquete: texlive-context
 Repositorio: extra
 Versión: 2026.1-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: texlive-context-animation, texlive-context-calendar-examples, texlive-context-chat, texlive-context-collating-marks, texlive-context-cyrillicnumbers, texlive-context-filter, texlive-context-gnuplot, texlive-context-handlecsv, texlive-context-legacy, texlive-context-letter, texlive-context-mathsets, texlive-context-notes-zh-cn, texlive-context-pocketdiary, texlive-context-simpleslides, texlive-context-squares, texlive-context-sudoku, texlive-context-transliterator, texlive-context-typescripts, texlive-context-vim, texlive-context-visualcounter, texlive-jmn, texlive-luajittex
 Estado SST: [ ]
 
-54. texlive pstricks
+55. texlive pstricks
 Paquete: texlive-pstricks
 Repositorio: extra
 Versión: 2026.1-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: texlive-auto-pst-pdf, texlive-bclogo, texlive-dsptricks, texlive-luapstricks, texlive-makeplot, texlive-pdftricks, texlive-pdftricks2, texlive-pedigree-perl, texlive-psbao, texlive-pst-2dplot, texlive-pst-3d, texlive-pst-3dplot, texlive-pst-abspos, texlive-pst-am, texlive-pst-antiprism, texlive-pst-arrow, texlive-pst-asr, texlive-pst-bar, texlive-pst-barcode, texlive-pst-bezier, texlive-pst-blur, texlive-pst-bspline, texlive-pst-calculate, texlive-pst-calendar, texlive-pst-cie, texlive-pst-circ, texlive-pst-coil, texlive-pst-contourplot, texlive-pst-cox, texlive-pst-dart, texlive-pst-dbicons, texlive-pst-diffraction, texlive-pst-electricfield, texlive-pst-eps, texlive-pst-eucl, texlive-pst-exa, texlive-pst-feyn, texlive-pst-fill, texlive-pst-fit, texlive-pst-flags, texlive-pst-fourbarlinkage, texlive-pst-fr3d, texlive-pst-fractal, texlive-pst-fun, texlive-pst-func, texlive-pst-gantt, texlive-pst-gears, texlive-pst-geo, texlive-pst-geometrictools, texlive-pst-gr3d, texlive-pst-grad, texlive-pst-graphicx, texlive-pst-hsb, texlive-pst-infixplot, texlive-pst-intersect, texlive-pst-jtree, texlive-pst-kepler, texlive-pst-knot, texlive-pst-labo, texlive-pst-layout, texlive-pst-lens, texlive-pst-light3d, texlive-pst-lsystem, texlive-pst-magneticfield, texlive-pst-marble, texlive-pst-massspring, texlive-pst-math, texlive-pst-mirror, texlive-pst-moire, texlive-pst-node, texlive-pst-nutation, texlive-pst-ob3d, texlive-pst-ode, texlive-pst-optexp, texlive-pst-optic, texlive-pst-osci, texlive-pst-ovl, texlive-pst-pad, texlive-pst-pdf, texlive-pst-pdgr, texlive-pst-perspective, texlive-pst-platon, texlive-pst-plot, texlive-pst-poker, texlive-pst-poly, texlive-pst-pulley, texlive-pst-qtree, texlive-pst-rputover, texlive-pst-rubans, texlive-pst-shell, texlive-pst-sigsys, texlive-pst-slpe, texlive-pst-solarsystem, texlive-pst-solides3d, texlive-pst-soroban, texlive-pst-spectra, texlive-pst-sphericaltrochoid, texlive-pst-spinner, texlive-pst-stru, texlive-pst-support, texlive-pst-text, texlive-pst-thick, texlive-pst-tools, texlive-pst-tree, texlive-pst-turtle, texlive-pst-tvz, texlive-pst-uml, texlive-pst-vectorian, texlive-pst-vehicle, texlive-pst-venn, texlive-pst-vowel, texlive-pst2pdf, texlive-pstricks-add, texlive-pstricks_calcnotes, texlive-uml, texlive-vaucanson-g, texlive-vocaltract
 Estado SST: [ ]
 
-55. threejs sage
+56. threejs sage
 Paquete: threejs-sage
 Repositorio: extra
 Versión: 1:r124-4
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: three.js
 Estado SST: [ ]
 
-56. ttf sazanami
+57. ttf sazanami
 Paquete: ttf-sazanami
 Repositorio: extra
 Versión: 20040629-11
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. umurmur
+58. umurmur
 Paquete: umurmur
 Repositorio: extra
 Versión: 0.5.1-1
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. zabbix proxy
+59. zabbix proxy
 Paquete: zabbix-proxy
 Repositorio: extra
 Versión: 7.4.16-1
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. zita dpl1
+60. zita dpl1
 Paquete: zita-dpl1
 Repositorio: extra
 Versión: 0.3.3-6

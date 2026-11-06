@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. deepin util dfm
 Paquete: deepin-util-dfm
 Repositorio: extra
-Versión: 1:1.3.35-1
+Versión: 1:1.3.36-1
 Arquitectura: x86_64
 Descripción: Utilities of deepin file manager
 Upstream: https://github.com/linuxdeepin/util-dfm
@@ -391,7 +391,7 @@ Estado SST: [ ]
 27. okular
 Paquete: okular
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Document Viewer
 Upstream: https://apps.kde.org/okular/
@@ -643,7 +643,22 @@ Pruebas: python-pytest, python-twisted, python-tests
 Proporciona: —
 Estado SST: [ ]
 
-44. qmltermwidget
+44. python wassima
+Paquete: python-wassima
+Repositorio: extra
+Versión: 2.1.5-1
+Arquitectura: any
+Descripción: Access operating system root certificates
+Upstream: https://github.com/jawah/wassima
+Licencia: MIT, CDLA-Permissive-2.0
+Dependencias: ca-certificates, python
+Opcionales: —
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-pytest, python-urllib3-future
+Proporciona: —
+Estado SST: [ ]
+
+45. qmltermwidget
 Paquete: qmltermwidget
 Repositorio: extra
 Versión: 2.0.0.git1-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. svelte language server
+46. svelte language server
 Paquete: svelte-language-server
 Repositorio: extra
 Versión: 0.18.4-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. teal
+47. teal
 Paquete: teal
 Repositorio: extra
 Versión: 0.24.8-4
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: tl
 Estado SST: [ ]
 
-47. tesseract data tam
+48. tesseract data tam
 Paquete: tesseract-data-tam
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-48. thunderbird i18n br
+49. thunderbird i18n br
 Paquete: thunderbird-i18n-br
 Repositorio: extra
 Versión: 158.0.1-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. traceroute
+50. traceroute
 Paquete: traceroute
 Repositorio: extra
 Versión: 2.1.6-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. upload symbols
+51. upload symbols
 Paquete: upload-symbols
 Repositorio: extra
 Versión: 0.3.1-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. vlc plugin gme
+52. vlc plugin gme
 Paquete: vlc-plugin-gme
 Repositorio: extra
 Versión: 3.0.24-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. wolf shaper lv2
+53. wolf shaper lv2
 Paquete: wolf-shaper-lv2
 Repositorio: extra
 Versión: 1.0.2-3
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. xdg desktop portal xapp
+54. xdg desktop portal xapp
 Paquete: xdg-desktop-portal-xapp
 Repositorio: extra
 Versión: 1.1.3-2
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: xdg-desktop-portal-impl
 Estado SST: [ ]
 
-54. zaproxy
+55. zaproxy
 Paquete: zaproxy
 Repositorio: extra
 Versión: 2.17.0-4

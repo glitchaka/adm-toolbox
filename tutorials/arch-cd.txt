@@ -901,15 +901,15 @@ Estado SST: [ ]
 61. python google genai
 Paquete: python-google-genai
 Repositorio: extra
-Versión: 2.34.0-1
+Versión: 3.0.0-1
 Arquitectura: any
 Descripción: Google Gen AI Python SDK
 Upstream: https://github.com/googleapis/python-genai
 Licencia: Apache-2.0
-Dependencias: python, python-anyio, python-distro, python-google-auth, python-httpx, python-pydantic, python-requests, python-sniffio, python-tenacity, python-typing_extensions, python-websockets
-Opcionales: python-aiohttp: asynchronous HTTP transport, python-httpx2: alternative HTTP transport, python-mcp: automatic function calling with MCP tools, python-pillow: image inputs, python-protobuf: local token counting, python-pyopenssl: asynchronous mutual TLS authentication, python-pytorch: Gemma 4 local token counting, python-sentencepiece: local token counting, python-torchvision: Gemma 4 local token counting, python-transformers: Gemma 4 local token counting
+Dependencias: python, python-anyio, python-distro, python-google-auth, python-httpx2, python-pydantic, python-requests, python-sniffio, python-tenacity, python-typing_extensions, python-websockets
+Opcionales: python-aiohttp: asynchronous HTTP transport, python-httpx: alternative HTTP transport, python-mcp: automatic function calling with MCP tools, python-pillow: image inputs, python-protobuf: local token counting, python-pyopenssl: asynchronous mutual TLS authentication, python-pytorch: Gemma 4 local token counting, python-sentencepiece: local token counting, python-torchvision: Gemma 4 local token counting, python-transformers: Gemma 4 local token counting
 Compilación: git, python-build, python-installer, python-packaging, python-pkginfo, python-setuptools, python-wheel, twine
-Pruebas: python-aiohttp, python-httpx2, python-mcp, python-pillow, python-protobuf, python-pyopenssl, python-pytest, python-pytest-asyncio, python-sentencepiece
+Pruebas: python-aiohttp, python-httpx, python-mcp, python-pillow, python-protobuf, python-pyopenssl, python-pytest, python-pytest-asyncio, python-sentencepiece
 Proporciona: —
 Estado SST: [ ]
 
@@ -1033,7 +1033,22 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-70. qt6 examples
+70. python zyte common items
+Paquete: python-zyte-common-items
+Repositorio: extra
+Versión: 0.31.0-1
+Arquitectura: any
+Descripción: Item definitions for the Zyte API schema
+Upstream: https://github.com/zytedata/zyte-common-items
+Licencia: BSD-3-Clause
+Dependencias: python, python-attrs, python-clear-html, python-itemadapter, python-jinja, python-price-parser, python-web-poet, python-zyte-parsers
+Opcionales: scrapy: Scrapy item adapters and pipelines
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-packaging, python-pytest, python-pytest-asyncio, python-pytest-mypy-testing, scrapy
+Proporciona: —
+Estado SST: [ ]
+
+71. qt6 examples
 Paquete: qt6-examples
 Repositorio: extra
 Versión: 6.12.0-1
@@ -1048,7 +1063,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-71. qt6 httpserver
+72. qt6 httpserver
 Paquete: qt6-httpserver
 Repositorio: extra
 Versión: 6.12.0-1
@@ -1063,7 +1078,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-72. qt6 sensors
+73. qt6 sensors
 Paquete: qt6-sensors
 Repositorio: extra
 Versión: 6.12.0-1
@@ -1078,7 +1093,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-73. rhvoice language spanish
+74. rhvoice language spanish
 Paquete: rhvoice-language-spanish
 Repositorio: extra
 Versión: 1.16.5-1
@@ -1093,7 +1108,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-74. ruby abbrev
+75. ruby abbrev
 Paquete: ruby-abbrev
 Repositorio: extra
 Versión: 0.1.2-1
@@ -1108,7 +1123,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-75. ruby deep merge
+76. ruby deep merge
 Paquete: ruby-deep_merge
 Repositorio: extra
 Versión: 1.2.2-5
@@ -1123,7 +1138,7 @@ Pruebas: ruby-rake, ruby-minitest, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-76. systembus notify
+77. systembus notify
 Paquete: systembus-notify
 Repositorio: extra
 Versión: 1.1-4
@@ -1138,7 +1153,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-77. tesseract data ron
+78. tesseract data ron
 Paquete: tesseract-data-ron
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -1153,7 +1168,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-78. vim spell sw
+79. vim spell sw
 Paquete: vim-spell-sw
 Repositorio: extra
 Versión: 20220628-2
@@ -1168,7 +1183,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-79. vlc plugin fluidsynth
+80. vlc plugin fluidsynth
 Paquete: vlc-plugin-fluidsynth
 Repositorio: extra
 Versión: 3.0.24-1
@@ -1183,7 +1198,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-80. wxsqlite3
+81. wxsqlite3
 Paquete: wxsqlite3
 Repositorio: extra
 Versión: 4.12.7-1
@@ -1198,7 +1213,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-81. xfce4 xkb plugin
+82. xfce4 xkb plugin
 Paquete: xfce4-xkb-plugin
 Repositorio: extra
 Versión: 0.9.0-1

@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. deepin image viewer
 Paquete: deepin-image-viewer
 Repositorio: extra
-Versión: 6.0.39-1
+Versión: 6.0.40-1
 Arquitectura: x86_64
 Descripción: An image viewing tool with fashion interface and smooth performance
 Upstream: https://github.com/linuxdeepin/deepin-image-viewer
@@ -868,7 +868,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. rtmpdump
+59. python url matcher
+Paquete: python-url-matcher
+Repositorio: extra
+Versión: 0.6.0-1
+Arquitectura: any
+Descripción: URL matching rules to connect URLs with resources
+Upstream: https://github.com/zytedata/url-matcher
+Licencia: BSD-3-Clause
+Dependencias: python, python-tldextract
+Opcionales: —
+Compilación: git, python-build, python-installer, python-setuptools
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+60. rtmpdump
 Paquete: rtmpdump
 Repositorio: extra
 Versión: 1:2.6-2
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: librtmp.so=1-64
 Estado SST: [ ]
 
-60. serd
+61. serd
 Paquete: serd
 Repositorio: extra
 Versión: 0.32.10-1
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: libserd-0.so=0-64
 Estado SST: [ ]
 
-61. serd docs
+62. serd docs
 Paquete: serd-docs
 Repositorio: extra
 Versión: 0.32.10-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. setbfree standalone
+63. setbfree standalone
 Paquete: setbfree-standalone
 Repositorio: extra
 Versión: 0.8.17-1
@@ -928,7 +943,7 @@ Pruebas: lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-63. sfizz vst3
+64. sfizz vst3
 Paquete: sfizz-vst3
 Repositorio: extra
 Versión: 1.2.3-19
@@ -943,7 +958,7 @@ Pruebas: catch2-v2, lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-64. simdutf
+65. simdutf
 Paquete: simdutf
 Repositorio: extra
 Versión: 9.2.2-1
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: libsimdutf.so=36-64
 Estado SST: [ ]
 
-65. synthv1 common
+66. synthv1 common
 Paquete: synthv1-common
 Repositorio: extra
 Versión: 1.5.0-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. tesseract data tat
+67. tesseract data tat
 Paquete: tesseract-data-tat
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -988,7 +1003,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-67. transmission cli
+68. transmission cli
 Paquete: transmission-cli
 Repositorio: extra
 Versión: 4.1.4-1
@@ -1003,7 +1018,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-68. video trimmer
+69. video trimmer
 Paquete: video-trimmer
 Repositorio: extra
 Versión: 26.03.1-1
@@ -1018,7 +1033,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-69. xorg xinput
+70. xorg xinput
 Paquete: xorg-xinput
 Repositorio: extra
 Versión: 1.6.4-2

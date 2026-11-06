@@ -1,7 +1,7 @@
 1. artikulate
 Paquete: artikulate
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Improve your pronunciation by listening to native speakers
 Upstream: https://apps.kde.org/artikulate/
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. filelight
 Paquete: filelight
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: View disk usage information
 Upstream: https://apps.kde.org/filelight/
@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. lskat
 Paquete: lskat
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Lieutenant Skat is a fun and engaging card game for two players
 Upstream: https://apps.kde.org/lskat/
@@ -718,7 +718,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. qt6 quick3d
+49. python web poet
+Paquete: python-web-poet
+Repositorio: extra
+Versión: 0.24.1-2
+Arquitectura: any
+Descripción: Page Object pattern for web scraping
+Upstream: https://github.com/scrapinghub/web-poet
+Licencia: BSD-3-Clause
+Dependencias: python, python-andi, python-async-lru, python-attrs, python-dateutil, python-itemadapter, python-multidict, python-packaging, python-parsel, python-time-machine, python-url-matcher, python-w3lib
+Opcionales: python-niquests: HTTP support for the standalone framework, python-playwright: browser support for the standalone framework, python-pytest: page object testing plugin
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-aiohttp, python-niquests, python-playwright, python-pytest, python-pytest-asyncio, python-pytest-mypy-testing, python-requests, python-types-python-dateutil, python-zyte-common-items
+Proporciona: —
+Estado SST: [ ]
+
+50. qt6 quick3d
 Paquete: qt6-quick3d
 Repositorio: extra
 Versión: 6.12.0-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. rocm language runtime
+51. rocm language runtime
 Paquete: rocm-language-runtime
 Repositorio: extra
 Versión: 7.2.4-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. rofimoji
+52. rofimoji
 Paquete: rofimoji
 Repositorio: extra
 Versión: 6.8.0-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. rtosc
+53. rtosc
 Paquete: rtosc
 Repositorio: extra
 Versión: 0.3.1-4
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: librtosc.so=librtosc.so-64, librtosc-cpp.so=librtosc-cpp.so-64
 Estado SST: [ ]
 
-53. ruby m
+54. ruby m
 Paquete: ruby-m
 Repositorio: extra
 Versión: 1.7.0-1
@@ -793,7 +808,7 @@ Pruebas: ruby-bundler
 Proporciona: —
 Estado SST: [ ]
 
-54. ruby minitest strict
+55. ruby minitest strict
 Paquete: ruby-minitest-strict
 Repositorio: extra
 Versión: 1.0.1-1
@@ -808,7 +823,7 @@ Pruebas: ruby-simplecov
 Proporciona: —
 Estado SST: [ ]
 
-55. sdl3 net
+56. sdl3 net
 Paquete: sdl3_net
 Repositorio: extra
 Versión: 3.2.0-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. tesseract data bre
+57. tesseract data bre
 Paquete: tesseract-data-bre
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-57. texlive bin
+58. texlive bin
 Paquete: texlive-bin
 Repositorio: extra
 Versión: 2026.0-4
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: lcdf-typetools, libptexenc.so=1-64, libtexlua53.so=5-64, libtexluajit.so=2-64, kpathsea, xindy
 Estado SST: [ ]
 
-58. uwsgi plugin python
+59. uwsgi plugin python
 Paquete: uwsgi-plugin-python
 Repositorio: extra
 Versión: 2.0.31-4
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. vlc
+60. vlc
 Paquete: vlc
 Repositorio: extra
 Versión: 3.0.24-1
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. wolf shaper vst3
+61. wolf shaper vst3
 Paquete: wolf-shaper-vst3
 Repositorio: extra
 Versión: 1.0.2-3
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. xlockmore
+62. xlockmore
 Paquete: xlockmore
 Repositorio: extra
 Versión: 5.90-1

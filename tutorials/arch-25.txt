@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. angelfish
 Paquete: angelfish
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Web browser for Plasma Mobile
 Upstream: https://apps.kde.org/angelfish/
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. kdominate
 Paquete: kdominate
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: A tactical game for one or two players, where players place and convert tiles with the goal of controlling the majority of the board
 Upstream: https://apps.kde.org/kdominate/
@@ -643,7 +643,22 @@ Pruebas: python-httpx, python-pytest, python-pytest-asyncio, python-validate-pyp
 Proporciona: —
 Estado SST: [ ]
 
-44. python vcsgraph
+44. python urllib3 future
+Paquete: python-urllib3-future
+Repositorio: extra
+Versión: 2.25.905-1
+Arquitectura: any
+Descripción: HTTP/1.1, HTTP/2 and HTTP/3 client with synchronous and asynchronous APIs
+Upstream: https://github.com/jawah/urllib3.future
+Licencia: MIT
+Dependencias: python, python-h11, python-jh2, python-qh3
+Opcionales: python-brotli: Brotli decompression, python-python-socks: SOCKS proxy support, python-websockets: WebSocket support with compression, python-wsproto: WebSocket support
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-aiofile, python-brotli, python-coverage, python-cryptography, python-idna, python-pytest, python-pytest-asyncio, python-pytest-rerunfailures, python-pytest-timeout, python-python-socks, python-tornado, python-trustme, python-websockets, python-wsproto, python-zstandard
+Proporciona: —
+Estado SST: [ ]
+
+45. python vcsgraph
 Paquete: python-vcsgraph
 Repositorio: extra
 Versión: 0.3.3-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. python ytmusicapi
+46. python ytmusicapi
 Paquete: python-ytmusicapi
 Repositorio: extra
 Versión: 1.12.3-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. qt6 mqtt
+47. qt6 mqtt
 Paquete: qt6-mqtt
 Repositorio: extra
 Versión: 6.12.0-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. qutebrowser
+48. qutebrowser
 Paquete: qutebrowser
 Repositorio: extra
 Versión: 3.7.0-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. riscv64 linux gnu glibc
+49. riscv64 linux gnu glibc
 Paquete: riscv64-linux-gnu-glibc
 Repositorio: extra
 Versión: 2.44-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. rocksndiamonds data
+50. rocksndiamonds data
 Paquete: rocksndiamonds-data
 Repositorio: extra
 Versión: 4.4.2.4-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. ruby prime
+51. ruby prime
 Paquete: ruby-prime
 Repositorio: extra
 Versión: 0.1.4-1
@@ -748,7 +763,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-rbs, ruby-test-unit, ruby-test-unit-ruby-
 Proporciona: —
 Estado SST: [ ]
 
-51. ruby timecop
+52. ruby timecop
 Paquete: ruby-timecop
 Repositorio: extra
 Versión: 0.9.11-1
@@ -763,7 +778,7 @@ Pruebas: ruby-activesupport, ruby-minitest-rg, ruby-mocha, ruby-pry, ruby-rake
 Proporciona: —
 Estado SST: [ ]
 
-52. thunderbird i18n de
+53. thunderbird i18n de
 Paquete: thunderbird-i18n-de
 Repositorio: extra
 Versión: 158.0.1-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. uwsm
+54. uwsm
 Paquete: uwsm
 Repositorio: extra
 Versión: 0.27.1-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. xapp
+55. xapp
 Paquete: xapp
 Repositorio: extra
 Versión: 3.2.3-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: xapps
 Estado SST: [ ]
 
-55. xmltoman
+56. xmltoman
 Paquete: xmltoman
 Repositorio: extra
 Versión: 0.4-6

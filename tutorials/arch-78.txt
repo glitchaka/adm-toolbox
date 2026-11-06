@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. kde inotify survey
 Paquete: kde-inotify-survey
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Tooling for monitoring inotify limits and informing the user when they have been or about to be reached
 Upstream: https://invent.kde.org/system/kde-inotify-survey
@@ -961,12 +961,12 @@ Estado SST: [ ]
 65. wiremix
 Paquete: wiremix
 Repositorio: extra
-Versión: 0.11.0-1
+Versión: 0.11.0-2
 Arquitectura: x86_64
 Descripción: A simple TUI audio mixer for PipeWire
 Upstream: https://github.com/tsowell/wiremix
 Licencia: MIT, Apache-2.0
-Dependencias: gcc-libs, libpipewire
+Dependencias: glibc, libgcc, libpipewire
 Opcionales: —
 Compilación: cargo, clang
 Pruebas: —

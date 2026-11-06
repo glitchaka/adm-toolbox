@@ -46,14 +46,14 @@ Estado SST: [ ]
 4. bookworm
 Paquete: bookworm
 Repositorio: extra
-Versión: 1.1.2-7
+Versión: 1.1.2-8
 Arquitectura: x86_64
 Descripción: A simple user centric eBook reader which displays multiple eBooks formats uniformly
 Upstream: https://babluboy.github.io/bookworm
-Licencia: GPL3
-Dependencias: granite, poppler-glib, python, unarchiver, unzip, webkit2gtk-4.1, python-html2text
-Opcionales: —
-Compilación: meson, vala, ninja
+Licencia: GPL-3.0-or-later
+Dependencias: bash, dconf, gdk-pixbuf2, glib2, glibc, granite, gtk3, hicolor-icon-theme, libarchive, libgee, libxml2, pango, poppler-glib, python, python-html2text, sqlite, webkit2gtk-4.1
+Opcionales: dictd: Dictionary lookup
+Compilación: git, meson, ninja, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. lemonade server
 Paquete: lemonade-server
 Repositorio: extra
-Versión: 2026.44.1-1
+Versión: 2026.45.3-1
 Arquitectura: x86_64
 Descripción: Lemonade helps users discover and run local AI apps by serving optimized LLMs right from their own GPUs and NPUs
 Upstream: https://github.com/lemonade-sdk/lemonade

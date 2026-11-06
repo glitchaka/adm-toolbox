@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. lokalize
 Paquete: lokalize
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Computer-Aided Translation System
 Upstream: https://apps.kde.org/lokalize/
@@ -661,15 +661,15 @@ Estado SST: [ ]
 45. python pydantic monty client
 Paquete: python-pydantic-monty-client
 Repositorio: extra
-Versión: 1.4.0-1
+Versión: 1.5.0-1
 Arquitectura: x86_64
 Descripción: Python client for the Monty sandbox
 Upstream: https://github.com/pydantic/monty
 Licencia: MIT
-Dependencias: glibc, libgcc, python, python-typing_extensions
+Dependencias: ca-certificates, glibc, libgcc, python, python-typing_extensions
 Opcionales: python-opentelemetry-api: telemetry support
 Compilación: cmake, git, maturin, python-build, python-hatchling, python-installer, rust, zstd
-Pruebas: python-anyio, python-dirty-equals, python-inline-snapshot, python-opentelemetry-sdk, python-pytest, python-pytest-examples, python-websockets
+Pruebas: python-anyio, python-dirty-equals, python-grpcio, python-inline-snapshot, python-opentelemetry-sdk, python-pytest, python-pytest-examples
 Proporciona: —
 Estado SST: [ ]
 

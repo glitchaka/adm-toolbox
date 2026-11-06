@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. akonadi
 Paquete: akonadi
 Repositorio: extra
-Versión: 26.08.2-2
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: PIM layer, which provides an asynchronous API to access all kind of PIM data
 Upstream: https://kontact.kde.org
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. python markdown
 Paquete: python-markdown
 Repositorio: extra
-Versión: 3.11.2-1
+Versión: 3.11.3-1
 Arquitectura: any
 Descripción: Python implementation of John Gruber's Markdown
 Upstream: https://python-markdown.github.io/
@@ -883,7 +883,22 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-60. qemu audio sdl
+60. python zyte parsers
+Paquete: python-zyte-parsers
+Repositorio: extra
+Versión: 0.6.0-1
+Arquitectura: any
+Descripción: Parse data from web pages
+Upstream: https://github.com/zytedata/zyte-parsers
+Licencia: MIT
+Dependencias: python, python-attrs, python-gtin-validator, python-html-text, python-lxml, python-parsel, python-price-parser, python-six, python-stdnum, python-w3lib
+Opcionales: —
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+61. qemu audio sdl
 Paquete: qemu-audio-sdl
 Repositorio: extra
 Versión: 11.1.3-1
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. roc toolkit
+62. roc toolkit
 Paquete: roc-toolkit
 Repositorio: extra
 Versión: 0.4.0-3
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: libroc.so=0.4-64
 Estado SST: [ ]
 
-62. ruby sd notify
+63. ruby sd notify
 Paquete: ruby-sd_notify
 Repositorio: extra
 Versión: 0.1.1-6
@@ -928,7 +943,7 @@ Pruebas: ruby-minitest
 Proporciona: —
 Estado SST: [ ]
 
-63. srslte
+64. srslte
 Paquete: srslte
 Repositorio: extra
 Versión: 25.10-3
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: srsue, srsenb, srsepc
 Estado SST: [ ]
 
-64. switchboard plug keyboard
+65. switchboard plug keyboard
 Paquete: switchboard-plug-keyboard
 Repositorio: extra
 Versión: 8.1.1-2
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. symposium
+66. symposium
 Paquete: symposium
 Repositorio: extra
 Versión: 0.5.1-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: cargo-agents
 Estado SST: [ ]
 
-66. thunderbird i18n ast
+67. thunderbird i18n ast
 Paquete: thunderbird-i18n-ast
 Repositorio: extra
 Versión: 158.0.1-1
@@ -988,7 +1003,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-67. tpm2 totp
+68. tpm2 totp
 Paquete: tpm2-totp
 Repositorio: extra
 Versión: 0.3.0-3
@@ -1003,7 +1018,7 @@ Pruebas: iproute2, oath-toolkit, swtpm, tpm2-tools
 Proporciona: —
 Estado SST: [ ]
 
-68. ttc iosevka ss05
+69. ttc iosevka ss05
 Paquete: ttc-iosevka-ss05
 Repositorio: extra
 Versión: 34.9.0-1
@@ -1018,7 +1033,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-69. ttf anonymous pro
+70. ttf anonymous pro
 Paquete: ttf-anonymous-pro
 Repositorio: extra
 Versión: 1.003-9
@@ -1033,7 +1048,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-70. whisper cpp
+71. whisper cpp
 Paquete: whisper-cpp
 Repositorio: extra
 Versión: 1.9.5-1
@@ -1048,7 +1063,7 @@ Pruebas: —
 Proporciona: whisper-cpp
 Estado SST: [ ]
 
-71. xorg xedit
+72. xorg xedit
 Paquete: xorg-xedit
 Repositorio: extra
 Versión: 1.2.5-1
@@ -1063,7 +1078,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-72. yubikey touch detector
+73. yubikey touch detector
 Paquete: yubikey-touch-detector
 Repositorio: extra
 Versión: 1.15.0-1
@@ -1078,7 +1093,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-73. zigbee2mqtt
+74. zigbee2mqtt
 Paquete: zigbee2mqtt
 Repositorio: extra
 Versión: 2.14.3-1

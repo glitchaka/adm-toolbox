@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. kjournald
 Paquete: kjournald
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Framework for interacting with systemd-journald
 Upstream: https://apps.kde.org/kjournaldbrowser/
@@ -673,7 +673,22 @@ Pruebas: gunicorn, hypercorn, python-aiofiles, python-cbor2, python-httpx, pytho
 Proporciona: —
 Estado SST: [ ]
 
-46. python html5lib
+46. python frostwork
+Paquete: python-frostwork
+Repositorio: extra
+Versión: 0.2.2-1
+Arquitectura: x86_64
+Descripción: Streaming HTML extraction with CSS and XPath selectors
+Upstream: https://github.com/scrapy/frostwork
+Licencia: Apache-2.0
+Dependencias: glibc, libgcc, python, python-typing_extensions
+Opcionales: python-web-poet: web-poet page object integration
+Compilación: cargo, git, python-build, python-installer, python-maturin
+Pruebas: mypy, python-andi, python-attrs, python-clear-html, python-cssselect, python-html-text, python-lxml, python-parsel, python-price-parser, python-pytest, python-w3lib, python-web-poet, python-zyte-common-items, python-zyte-parsers
+Proporciona: —
+Estado SST: [ ]
+
+47. python html5lib
 Paquete: python-html5lib
 Repositorio: extra
 Versión: 1.1-18
@@ -688,7 +703,7 @@ Pruebas: python-pytest, python-pytest-expect, python-lxml
 Proporciona: —
 Estado SST: [ ]
 
-47. python opentelemetry instrumentation wsgi
+48. python opentelemetry instrumentation wsgi
 Paquete: python-opentelemetry-instrumentation-wsgi
 Repositorio: extra
 Versión: 0.66b2-1
@@ -703,7 +718,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-48. python pycodestyle
+49. python pycodestyle
 Paquete: python-pycodestyle
 Repositorio: extra
 Versión: 2.15.0-1
@@ -718,7 +733,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-49. python pyicu
+50. python pyicu
 Paquete: python-pyicu
 Repositorio: extra
 Versión: 2.17-1
@@ -733,7 +748,7 @@ Pruebas: python-fonttools, python-pytest, python-six
 Proporciona: —
 Estado SST: [ ]
 
-50. python pytorch
+51. python pytorch
 Paquete: python-pytorch
 Repositorio: extra
 Versión: 2.15.0-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. python sentencepiece
+52. python sentencepiece
 Paquete: python-sentencepiece
 Repositorio: extra
 Versión: 0.2.3-1
@@ -763,7 +778,7 @@ Pruebas: python-numpy, python-protobuf, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-52. python simplespectral
+53. python simplespectral
 Paquete: python-simplespectral
 Repositorio: extra
 Versión: 1.0.0-14
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. python transaction
+54. python transaction
 Paquete: python-transaction
 Repositorio: extra
 Versión: 5.1-2
@@ -793,7 +808,7 @@ Pruebas: python-zope-testrunner
 Proporciona: —
 Estado SST: [ ]
 
-54. python voluptuous
+55. python voluptuous
 Paquete: python-voluptuous
 Repositorio: extra
 Versión: 0.16.0-2
@@ -808,7 +823,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-55. riscv32 elf gdb
+56. riscv32 elf gdb
 Paquete: riscv32-elf-gdb
 Repositorio: extra
 Versión: 17.1-2
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. rocksdb
+57. rocksdb
 Paquete: rocksdb
 Repositorio: extra
 Versión: 11.1.1-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. ruby bundler
+58. ruby bundler
 Paquete: ruby-bundler
 Repositorio: extra
 Versión: 4.0.3-1
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. ruby byebug
+59. ruby byebug
 Paquete: ruby-byebug
 Repositorio: extra
 Versión: 13.0.0-2
@@ -868,7 +883,7 @@ Pruebas: markdownlint, ruby-bundler, ruby-faraday, ruby-faraday-retry, ruby-mini
 Proporciona: —
 Estado SST: [ ]
 
-59. ruby pdf reader
+60. ruby pdf reader
 Paquete: ruby-pdf-reader
 Repositorio: extra
 Versión: 2.15.1-1
@@ -883,7 +898,7 @@ Pruebas: ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-60. ruby polyglot
+61. ruby polyglot
 Paquete: ruby-polyglot
 Repositorio: extra
 Versión: 0.3.5-13
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. supertuxkart
+62. supertuxkart
 Paquete: supertuxkart
 Repositorio: extra
 Versión: 1.5-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. swaybg
+63. swaybg
 Paquete: swaybg
 Repositorio: extra
 Versión: 1.2.2-1
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. the silver searcher
+64. the silver searcher
 Paquete: the_silver_searcher
 Repositorio: extra
 Versión: 2.2.0-4
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. tuna
+65. tuna
 Paquete: tuna
 Repositorio: extra
 Versión: 1:0.21-1
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. v2ray
+66. v2ray
 Paquete: v2ray
 Repositorio: extra
 Versión: 5.53.0-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. wine
+67. wine
 Paquete: wine
 Repositorio: extra
 Versión: 11.21-1
@@ -988,7 +1003,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-67. xcb proto
+68. xcb proto
 Paquete: xcb-proto
 Repositorio: extra
 Versión: 1.17.0-4

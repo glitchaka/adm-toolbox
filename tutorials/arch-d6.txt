@@ -256,12 +256,12 @@ Estado SST: [ ]
 18. keycloak
 Paquete: keycloak
 Repositorio: extra
-Versión: 26.8.1-1
+Versión: 26.8.2-1
 Arquitectura: any
 Descripción: Open Source Identity and Access Management For Modern Applications and Services
 Upstream: https://www.keycloak.org/
 Licencia: Apache-2.0
-Dependencias: java-runtime-headless=21, grep, bash, coreutils, util-linux
+Dependencias: java-runtime-headless>=17, java-runtime-headless<26, grep, bash, coreutils, util-linux
 Opcionales: —
 Compilación: maven, java-environment=21
 Pruebas: —
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. parley
 Paquete: parley
 Repositorio: extra
-Versión: 26.08.2-1
+Versión: 26.08.3-1
 Arquitectura: x86_64
 Descripción: Vocabulary Trainer
 Upstream: https://apps.kde.org/parley/
