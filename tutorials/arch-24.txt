@@ -181,14 +181,14 @@ Estado SST: [ ]
 13. intel compute runtime
 Paquete: intel-compute-runtime
 Repositorio: extra
-Versión: 26.35.39758.10-1
+Versión: 26.40.40196.8-1
 Arquitectura: x86_64
 Descripción: Intel(R) Graphics Compute Runtime for oneAPI Level Zero and OpenCL(TM) Driver
 Upstream: https://github.com/intel/compute-runtime/
 Licencia: MIT
 Dependencias: glibc, intel-gmmlib, intel-graphics-compiler, libgcc, libstdc++
-Opcionales: igsc<1.0.0: for discrete GPU firmware enumeration through Level Zero, libdrm: for cl_intel_va_api_media_sharing OpenCL extension, libnl>=3.0.0: for using Fabric related APIs in Level Zero, libnl<4.0.0: for using Fabric related APIs in Level Zero, libva: for cl_intel_va_api_media_sharing OpenCL extension, systemd-libs: for using Sysman events API in Level Zero
-Compilación: cmake, igsc<1.0.0, level-zero-headers, libnl>=3.0.0, libnl<4.0.0, libva, systemd-libs
+Opcionales: igsc<2.0.0: for discrete GPU firmware enumeration through Level Zero, libdrm: for cl_intel_va_api_media_sharing OpenCL extension, libnl>=3.0.0: for using Fabric related APIs in Level Zero, libnl<4.0.0: for using Fabric related APIs in Level Zero, libva: for cl_intel_va_api_media_sharing OpenCL extension, systemd-libs: for using Sysman events API in Level Zero
+Compilación: cmake, igsc<2.0.0, level-zero-headers, libnl>=3.0.0, libnl<4.0.0, libva, systemd-libs
 Pruebas: —
 Proporciona: level-zero-driver, opencl-driver
 Estado SST: [ ]
@@ -766,7 +766,7 @@ Estado SST: [ ]
 52. stern
 Paquete: stern
 Repositorio: extra
-Versión: 1.34.0-1
+Versión: 1.35.0-1
 Arquitectura: x86_64
 Descripción: Multi pod and container log tailing for Kubernetes
 Upstream: https://github.com/stern/stern

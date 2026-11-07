@@ -721,15 +721,15 @@ Estado SST: [ ]
 49. python web poet
 Paquete: python-web-poet
 Repositorio: extra
-Versión: 0.24.1-2
+Versión: 0.25.0-1
 Arquitectura: any
 Descripción: Page Object pattern for web scraping
 Upstream: https://github.com/scrapinghub/web-poet
 Licencia: BSD-3-Clause
-Dependencias: python, python-andi, python-async-lru, python-attrs, python-dateutil, python-itemadapter, python-multidict, python-packaging, python-parsel, python-time-machine, python-url-matcher, python-w3lib
-Opcionales: python-niquests: HTTP support for the standalone framework, python-playwright: browser support for the standalone framework, python-pytest: page object testing plugin
+Dependencias: python, python-andi, python-async-lru, python-attrs, python-dateutil, python-frostwork, python-itemadapter, python-multidict, python-packaging, python-parsel, python-time-machine, python-url-matcher, python-w3lib
+Opcionales: python-aiohttp: HTTP support for the standalone framework, python-playwright: browser support for the standalone framework, python-pytest: page object testing plugin
 Compilación: git, python-build, python-hatchling, python-installer
-Pruebas: python-aiohttp, python-niquests, python-playwright, python-pytest, python-pytest-asyncio, python-pytest-mypy-testing, python-requests, python-types-python-dateutil, python-zyte-common-items
+Pruebas: python-aiohttp, python-playwright, python-pytest, python-pytest-asyncio, python-pytest-codspeed, python-pytest-mypy-testing, python-requests, python-types-python-dateutil, python-zyte-common-items
 Proporciona: —
 Estado SST: [ ]
 
