@@ -556,7 +556,7 @@ Estado SST: [ ]
 38. mangowm
 Paquete: mangowm
 Repositorio: extra
-Versión: 0.18.4-1
+Versión: 0.18.5-1
 Arquitectura: x86_64
 Descripción: Lightweight, feature rich modern wayland compositor
 Upstream: https://mangowm.github.io
@@ -811,14 +811,14 @@ Estado SST: [ ]
 55. python pytest vcr
 Paquete: python-pytest-vcr
 Repositorio: extra
-Versión: 1.0.2-10
+Versión: 1.0.2-11
 Arquitectura: any
 Descripción: Py.test plugin for managing VCR.py cassettes
 Upstream: https://github.com/ktosiek/pytest-vcr
 Licencia: MIT
 Dependencias: python-pytest, python-vcrpy
 Opcionales: —
-Compilación: python-setuptools
+Compilación: python-build, python-installer, python-setuptools, python-wheel
 Pruebas: python-coverage, python-pytest
 Proporciona: —
 Estado SST: [ ]

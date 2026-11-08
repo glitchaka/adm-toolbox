@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. python referencing
 Paquete: python-referencing
 Repositorio: extra
-Versión: 0.37.0-3
+Versión: 0.37.0-4
 Arquitectura: any
 Descripción: An implementation-agnostic implementation of JSON reference resolution
 Upstream: https://referencing.readthedocs.io
@@ -669,7 +669,7 @@ Licencia: MIT
 Dependencias: python, python-attrs, python-rpds-py
 Opcionales: —
 Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs
-Pruebas: python-pytest, python-pytest-subtests, python-jsonschema
+Pruebas: python-pytest, python-jsonschema
 Proporciona: —
 Estado SST: [ ]
 
@@ -736,12 +736,12 @@ Estado SST: [ ]
 50. switchboard plug printers
 Paquete: switchboard-plug-printers
 Repositorio: extra
-Versión: 8.0.2-1
+Versión: 8.0.2-2
 Arquitectura: x86_64
 Descripción: Switchboard Printers Plug
 Upstream: https://github.com/elementary/switchboard-plug-printers
 Licencia: GPL-3.0-only
-Dependencias: glib2, glibc, gtk4, libcups, libadwaita-1.so=0-64, libgee, libgranite-7.so=7-64, libswitchboard-3.so=0-64
+Dependencias: cups-pk-helper, glib2, glibc, gtk4, libcups, libadwaita-1.so=0-64, libgee, libgranite-7.so=7-64, libswitchboard-3.so=0-64
 Opcionales: —
 Compilación: git, meson, vala
 Pruebas: —

@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. gitlab runner
 Paquete: gitlab-runner
 Repositorio: extra
-Versión: 19.5.2-1
+Versión: 19.5.3-1
 Arquitectura: x86_64
 Descripción: The official GitLab CI runner written in Go
 Upstream: https://gitlab.com/gitlab-org/gitlab-runner
@@ -766,15 +766,15 @@ Estado SST: [ ]
 52. python pyopencl
 Paquete: python-pyopencl
 Repositorio: extra
-Versión: 1:2025.2.7-2
+Versión: 1:2026.1.4-1
 Arquitectura: x86_64
 Descripción: A complete, object-oriented language binding of OpenCL to Python
 Upstream: https://documen.tician.de/pyopencl/
 Licencia: Apache-2.0, BSD-3-Clause, MIT, MIT
-Dependencias: gcc-libs, glibc, ocl-icd, python, python-appdirs, python-mako, python-numpy, python-platformdirs, python-pytools, python-setuptools
+Dependencias: libgcc, libstdc++, glibc, ocl-icd, python, python-mako, python-numpy, python-platformdirs, python-pytools, python-setuptools
 Opcionales: —
-Compilación: ctags, git, nanobind, ocl-icd, opencl-headers, pybind11, python-appdirs, python-build, python-installer, python-mako, python-numpy, python-platformdirs, python-pytools, python-scikit-build-core
-Pruebas: intel-compute-runtime, opencl-mesa, opencl-nvidia, python-pytest, python-six, rocm-opencl-runtime
+Compilación: ctags, git, nanobind, ocl-icd, opencl-headers, pybind11, python-build, python-installer, python-mako, python-numpy, python-platformdirs, python-pytools, python-scikit-build-core
+Pruebas: intel-compute-runtime, opencl-mesa, opencl-nvidia, python-pytest, rocm-opencl-runtime
 Proporciona: —
 Estado SST: [ ]
 

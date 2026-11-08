@@ -601,12 +601,12 @@ Estado SST: [ ]
 41. scrapy
 Paquete: scrapy
 Repositorio: extra
-Versión: 2.19.0-1
+Versión: 2.20.0-1
 Arquitectura: any
 Descripción: A fast high-level scraping and web crawling framework
 Upstream: https://scrapy.org
 Licencia: BSD-3-Clause
-Dependencias: python, python-aiohttp, python-brotli, python-charset-normalizer, python-cryptography, python-cssselect, python-defusedxml, python-itemadapter, python-itemloaders, python-lxml, python-packaging, python-parsel, python-platformdirs, python-protego, python-pydispatcher, python-pyopenssl, python-queuelib, python-service-identity, python-setuptools, python-tldextract, python-twisted, python-w3lib, python-zope-interface
+Dependencias: python, python-aiodns, python-aioftp, python-aiohttp, python-brotli, python-cryptography, python-cssselect, python-defusedxml, python-formerly, python-frostwork, python-itemadapter, python-itemloaders, python-lxml, python-packaging, python-parsel, python-platformdirs, python-protego, python-pydispatcher, python-pyopenssl, python-queuelib, python-service-identity, python-tldextract, python-twisted, python-w3lib, python-zope-interface
 Opcionales: bpython: for ncurses support in cmdline, ipython: for enhanced support of the interactive scraping shell, python-anyio: for HTTPX download handler asyncio support, python-botocore: for various utils, python-colorlog: for colored logging, python-h2: for HTTP2 support, python-hpack: for HTTP2 streaming support, python-httpx2: for HTTPX download handler support
 Compilación: git, python-build, python-hatchling, python-installer, python-wheel
 Pruebas: bpython, ipython, mitmproxy, python-anyio, python-attrs, python-botocore, python-colorlog, python-h2, python-httpx2, python-markupsafe, python-psutil, python-pyftpdlib, python-pytest, python-pytest-rerunfailures, python-pytest-timeout, python-pytest-twisted, python-sybil, python-uvloop
