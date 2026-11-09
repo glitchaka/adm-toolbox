@@ -1081,12 +1081,12 @@ Estado SST: [ ]
 73. xsettingsd
 Paquete: xsettingsd
 Repositorio: extra
-Versión: 1.0.4-1
+Versión: 1.0.4-2
 Arquitectura: x86_64
 Descripción: Provides settings to X11 applications via the XSETTINGS specification
 Upstream: https://codeberg.org/derat/xsettingsd
 Licencia: BSD-3-Clause
-Dependencias: libx11, libgcc, libstdc++
+Dependencias: glibc, libgcc, libstdc++, libxfixes, libx11
 Opcionales: —
 Compilación: cmake, git
 Pruebas: —

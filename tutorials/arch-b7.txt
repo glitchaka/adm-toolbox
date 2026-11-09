@@ -166,12 +166,12 @@ Estado SST: [ ]
 12. desktop file utils
 Paquete: desktop-file-utils
 Repositorio: extra
-Versión: 0.28-1
+Versión: 0.29-1
 Arquitectura: x86_64
 Descripción: Command line utilities for working with desktop entries
 Upstream: https://www.freedesktop.org/wiki/Software/desktop-file-utils
 Licencia: GPL-2.0-or-later
-Dependencias: glib2, glibc, libglib-2.0.so=0-64
+Dependencias: glib2, glibc, libgcc, libglib-2.0.so=0-64
 Opcionales: —
 Compilación: git, meson
 Pruebas: —
@@ -421,16 +421,16 @@ Estado SST: [ ]
 29. libfm qt
 Paquete: libfm-qt
 Repositorio: extra
-Versión: 2.4.0-4
+Versión: 2.5.0-1
 Arquitectura: x86_64
 Descripción: Core library of PCManFM-Qt (Qt binding for libfm)
 Upstream: https://github.com/lxqt/libfm-qt
 Licencia: LGPL-2.1-or-later
-Dependencias: menu-cache, libexif, qt6-base, lxqt-menu-data
+Dependencias: libexif, qt6-base, lxqt-menu-data
 Opcionales: org.freedesktop.secrets: allow to remember mount passwords
 Compilación: lxqt-build-tools
 Pruebas: —
-Proporciona: libfm-qt6.so=17-64
+Proporciona: libfm-qt6.so=18-64
 Estado SST: [ ]
 
 30. libgcrypt
@@ -526,13 +526,13 @@ Estado SST: [ ]
 36. networkmanager dmenu
 Paquete: networkmanager-dmenu
 Repositorio: extra
-Versión: 2.7.2-1
+Versión: 2.7.2-2
 Arquitectura: any
 Descripción: Control Networkmanager via dmenu
 Upstream: https://github.com/firecat53/networkmanager-dmenu
 Licencia: MIT
 Dependencias: python, glib2, libnm, networkmanager, python-gobject
-Opcionales: nm-connection-editor: for connection manager GUI, libnotify: recieve notifications
+Opcionales: nm-connection-editor: for connection manager GUI, libnotify: recieve notifications, bemenu: menu backend, dmenu: menu backend, fuzzel: menu backend, rofi: menu backend, wmenu: menu backend, wofi: menu backend, bluez-utils: bluetooth toggle, modemmanager: WWAN support, pinentry: password prompts
 Compilación: git
 Pruebas: —
 Proporciona: —

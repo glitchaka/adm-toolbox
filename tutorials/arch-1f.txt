@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. libsysstat
 Paquete: libsysstat
 Repositorio: extra
-Versión: 1.1.0-1
+Versión: 1.2.0-1
 Arquitectura: x86_64
 Descripción: Library to query system statistics (net, resource usage, ...)
 Upstream: https://github.com/lxqt/libsysstat
@@ -871,14 +871,14 @@ Estado SST: [ ]
 59. swaync
 Paquete: swaync
 Repositorio: extra
-Versión: 0.12.6-1
+Versión: 0.12.6-2
 Arquitectura: x86_64
 Descripción: A simple GTK based notification daemon for Sway
 Upstream: https://github.com/ErikReider/SwayNotificationCenter
 Licencia: GPL-3.0-only
-Dependencias: gtk4, gtk4-layer-shell, libadwaita, glib2, libgee, json-glib, libpulse, granite7
+Dependencias: gtk4, gtk4-layer-shell, libadwaita, glib2, libgee, json-glib, libpulse, cairo, gdk-pixbuf2, glibc, graphene, pango, wayland
 Opcionales: gvfs: Get album art in MPRIS widget
-Compilación: vala, meson, git, scdoc, sassc, gobject-introspection, blueprint-compiler
+Compilación: vala, meson, git, scdoc, sassc, gobject-introspection, blueprint-compiler, granite7
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

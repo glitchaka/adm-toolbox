@@ -541,14 +541,14 @@ Estado SST: [ ]
 37. pycharm community edition
 Paquete: pycharm-community-edition
 Repositorio: extra
-Versión: 2026.2.3-1
+Versión: 2026.3-1
 Arquitectura: x86_64
 Descripción: Python IDE for Professional Developers
 Upstream: https://www.jetbrains.com/pycharm/
 Licencia: Apache-2.0
 Dependencias: giflib, glib2, python, sh, ttf-font, fontconfig
 Opcionales: ipython: IPython integration for Python 3
-Compilación: git, java-environment-openjdk=21, python-setuptools
+Compilación: git, java-environment-openjdk=21, python-setuptools, procps-ng
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -781,12 +781,12 @@ Estado SST: [ ]
 53. thunderbird i18n de
 Paquete: thunderbird-i18n-de
 Repositorio: extra
-Versión: 158.0.1-1
+Versión: 159.0-1
 Arquitectura: x86_64
 Descripción: German language pack for Thunderbird
 Upstream: https://www.thunderbird.net/
 Licencia: MPL-2.0, GPL-2.0-only, LGPL-2.1-only
-Dependencias: thunderbird>=158.0.1
+Dependencias: thunderbird>=159.0
 Opcionales: —
 Compilación: unzip, zip, diffutils, python, nasm, mesa, libpulse, libice, libsm, rust, clang, llvm, cbindgen, nodejs, lld, gawk, perl, findutils, libotr, wasi-compiler-rt, wasi-libc, wasi-libc++, wasi-libc++abi
 Pruebas: —
@@ -811,12 +811,12 @@ Estado SST: [ ]
 55. xapp
 Paquete: xapp
 Repositorio: extra
-Versión: 3.2.3-1
+Versión: 3.4.0-1
 Arquitectura: x86_64
 Descripción: Common library for X-Apps project
 Upstream: https://github.com/linuxmint/xapp
 Licencia: GPL-3.0-only AND LGPL-3.0-only
-Dependencias: bash, cairo, dconf, libgcc, gdk-pixbuf2, glib2, glibc, gtk3, hicolor-icon-theme, libdbusmenu-gtk3, libgnomekbd, libx11, libxkbfile, pango, python, python-gobject, python-setproctitle, xapp-symbolic-icons
+Dependencias: bash, cairo, dconf, gdk-pixbuf2, glib2, glibc, gtk-layer-shell, gtk3, hicolor-icon-theme, libdbusmenu-gtk3, libgcc, libgnomekbd, libx11, pango, python, python-gobject, python-setproctitle, xapp-symbolic-icons
 Opcionales: —
 Compilación: git, glib2-devel, gobject-introspection, meson, vala
 Pruebas: —

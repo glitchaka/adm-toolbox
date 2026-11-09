@@ -496,7 +496,7 @@ Estado SST: [ ]
 34. lxqt globalkeys
 Paquete: lxqt-globalkeys
 Repositorio: extra
-Versión: 2.4.0-1
+Versión: 2.5.0-1
 Arquitectura: x86_64
 Descripción: LXQt daemon and library for global keyboard shortcuts registration.
 Upstream: https://github.com/lxqt/lxqt-globalkeys
@@ -778,7 +778,22 @@ Pruebas: python-argcomplete, python-attrs, python-hypothesis, python-requests, p
 Proporciona: —
 Estado SST: [ ]
 
-53. python torchvision cuda
+53. python smpclient
+Paquete: python-smpclient
+Repositorio: extra
+Versión: 7.3.0-1
+Arquitectura: any
+Descripción: Simple Management Protocol (SMP) client for remotely managing MCU firmware
+Upstream: https://github.com/intercreate/smpclient
+Licencia: Apache-2.0
+Dependencias: python, python-intelhex, python-pydantic, python-pydantic-core, python-smp, python-typing_extensions
+Opcionales: python-bleak: Bluetooth LE transport, python-pyserial: serial transport
+Compilación: git, python-build, python-hatch-vcs, python-hatchling, python-installer
+Pruebas: python-bleak, python-pyserial, python-pytest, python-pytest-asyncio
+Proporciona: —
+Estado SST: [ ]
+
+54. python torchvision cuda
 Paquete: python-torchvision-cuda
 Repositorio: extra
 Versión: 0.29.2-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: python-torchvision
 Estado SST: [ ]
 
-54. qalculate gtk
+55. qalculate gtk
 Paquete: qalculate-gtk
 Repositorio: extra
 Versión: 5.13.0-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. qemu system aarch64
+56. qemu system aarch64
 Paquete: qemu-system-aarch64
 Repositorio: extra
 Versión: 11.1.3-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. rhvoice language brazilian portuguese
+57. rhvoice language brazilian portuguese
 Paquete: rhvoice-language-brazilian-portuguese
 Repositorio: extra
 Versión: 1.16.5-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. rhvoice language czech
+58. rhvoice language czech
 Paquete: rhvoice-language-czech
 Repositorio: extra
 Versión: 1.16.5-1
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. ruby power assert
+59. ruby power assert
 Paquete: ruby-power_assert
 Repositorio: extra
 Versión: 2.0.5-4
@@ -868,7 +883,7 @@ Pruebas: ruby-test-unit, ruby-irb
 Proporciona: —
 Estado SST: [ ]
 
-59. sc3 plugins
+60. sc3 plugins
 Paquete: sc3-plugins
 Repositorio: extra
 Versión: 3.14.1-1
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. shmdata
+61. shmdata
 Paquete: shmdata
 Repositorio: extra
 Versión: 1.3.74-1
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. sloccount
+62. sloccount
 Paquete: sloccount
 Repositorio: extra
 Versión: 2.26-11
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. tellico
+63. tellico
 Paquete: tellico
 Repositorio: extra
 Versión: 4.3-1
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. tex gyre fonts
+64. tex gyre fonts
 Paquete: tex-gyre-fonts
 Repositorio: extra
 Versión: 2.609-1
@@ -943,22 +958,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. thunderbird i18n ru
+65. thunderbird i18n ru
 Paquete: thunderbird-i18n-ru
 Repositorio: extra
-Versión: 158.0.1-1
+Versión: 159.0-1
 Arquitectura: x86_64
 Descripción: Russian language pack for Thunderbird
 Upstream: https://www.thunderbird.net/
 Licencia: MPL-2.0, GPL-2.0-only, LGPL-2.1-only
-Dependencias: thunderbird>=158.0.1
+Dependencias: thunderbird>=159.0
 Opcionales: —
 Compilación: unzip, zip, diffutils, python, nasm, mesa, libpulse, libice, libsm, rust, clang, llvm, cbindgen, nodejs, lld, gawk, perl, findutils, libotr, wasi-compiler-rt, wasi-libc, wasi-libc++, wasi-libc++abi
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. vid stab
+66. vid stab
 Paquete: vid.stab
 Repositorio: extra
 Versión: 1.1.2-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: libvidstab.so=1.2-64
 Estado SST: [ ]
 
-66. vim spell ru
+67. vim spell ru
 Paquete: vim-spell-ru
 Repositorio: extra
 Versión: 20220628-2

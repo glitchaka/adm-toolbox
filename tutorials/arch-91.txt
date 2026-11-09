@@ -106,12 +106,12 @@ Estado SST: [ ]
 8. extension manager
 Paquete: extension-manager
 Repositorio: extra
-Versión: 0.6.5-1
+Versión: 0.7.0-1
 Arquitectura: x86_64
 Descripción: A native tool for browsing, installing, and managing GNOME Shell Extensions
 Upstream: https://mattjakeman.com/apps/extension-manager
 Licencia: GPL-3.0-or-later
-Dependencias: gtk4, json-glib, libadwaita, libsoup3, libxml2
+Dependencias: dconf, glib2, glibc, glycin, glycin-gtk4, gtk4, hicolor-icon-theme, json-glib, libadwaita, libgcc, libsoup3, libxml2
 Opcionales: —
 Compilación: blueprint-compiler, glib2-devel, gobject-introspection, meson
 Pruebas: —

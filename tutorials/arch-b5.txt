@@ -151,13 +151,13 @@ Estado SST: [ ]
 11. esptool
 Paquete: esptool
 Repositorio: extra
-Versión: 5.5.0-2
+Versión: 5.6.0-2
 Arquitectura: any
 Descripción: Espressif SoC serial bootloader utility
 Upstream: https://github.com/espressif/esptool
-Licencia: GPL-2.0-only
-Dependencias: python, python-pyserial, python-bitstring, python-reedsolo, python-cryptography, python-yaml, python-intelhex, python-click, python-rich-click, python-esp-pylib, python-rich
-Opcionales: python-python-pkcs11: Support for HSM devices
+Licencia: GPL-2.0-or-later AND BSD-3-Clause AND MIT AND (Apache-2.0 OR MIT)
+Dependencias: python, python-pyserial, python-reedsolo, python-cryptography, python-yaml, python-intelhex, python-click, python-rich-click, python-esp-pylib, python-rich
+Opcionales: python-python-pkcs11: Support for HSM devices, python-websockets: IDE integration (ESP_IDE_WS)
 Compilación: git, python-build, python-installer, python-wheel
 Pruebas: —
 Proporciona: —

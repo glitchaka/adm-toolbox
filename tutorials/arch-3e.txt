@@ -541,7 +541,7 @@ Estado SST: [ ]
 37. python aioesphomeapi
 Paquete: python-aioesphomeapi
 Repositorio: extra
-Versión: 46.9.0-1
+Versión: 46.28.0-1
 Arquitectura: x86_64
 Descripción: Python Client for ESPHome native API
 Upstream: https://github.com/esphome/aioesphomeapi
@@ -549,7 +549,7 @@ Licencia: MIT
 Dependencias: glibc, python, python-aiohappyeyeballs, python-async_interrupt, python-protobuf, python-zeroconf, python-chacha20poly1305-reuseable, python-cryptography, python-noiseprotocol, python-tzdata, python-tzlocal
 Opcionales: —
 Compilación: python-build, python-installer, python-wheel, python-setuptools, git, cython
-Pruebas: —
+Pruebas: python-pytest, python-pytest-asyncio, python-pytest-timeout
 Proporciona: —
 Estado SST: [ ]
 

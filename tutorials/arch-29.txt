@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. cinnamon screensaver
 Paquete: cinnamon-screensaver
 Repositorio: extra
-Versión: 6.6.1-3
+Versión: 6.8.1-1
 Arquitectura: x86_64
 Descripción: Screensaver designed to integrate well with the Cinnamon desktop
 Upstream: https://github.com/linuxmint/cinnamon-screensaver
@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. deepin screen recorder
 Paquete: deepin-screen-recorder
 Repositorio: extra
-Versión: 6.6.7-1
+Versión: 6.6.8-1
 Arquitectura: x86_64
 Descripción: Deepin Screen Recorder
 Upstream: https://github.com/linuxdeepin/deepin-screen-recorder
@@ -388,7 +388,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. peazip
+27. pantheon maps
+Paquete: pantheon-maps
+Repositorio: extra
+Versión: 9.0.0-1
+Arquitectura: x86_64
+Descripción: Map viewer designed for Pantheon
+Upstream: https://github.com/elementary/maps
+Licencia: GPL-3.0-or-later
+Dependencias: dconf, geoclue, geocode-glib-2, glib2, glibc, granite7, gtk4, hicolor-icon-theme, libadwaita, libshumate
+Opcionales: —
+Compilación: git, meson, vala
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+28. peazip
 Paquete: peazip
 Repositorio: extra
 Versión: 11.4.0-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. perl crypt openssl rsa
+29. perl crypt openssl rsa
 Paquete: perl-crypt-openssl-rsa
 Repositorio: extra
 Versión: 0.41-2
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. perl module runtime
+30. perl module runtime
 Paquete: perl-module-runtime
 Repositorio: extra
 Versión: 0.018-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. perl perl critic
+31. perl perl critic
 Paquete: perl-perl-critic
 Repositorio: extra
 Versión: 1.156-3
@@ -448,7 +463,7 @@ Pruebas: perl-test-memory-cycle
 Proporciona: —
 Estado SST: [ ]
 
-31. plasma bigscreen
+32. plasma bigscreen
 Paquete: plasma-bigscreen
 Repositorio: extra
 Versión: 6.8.2-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. po4a
+33. po4a
 Paquete: po4a
 Repositorio: extra
 Versión: 0.74-1
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. posterazor
+34. posterazor
 Paquete: posterazor
 Repositorio: extra
 Versión: 1:1.9.6-1
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. pragha
+35. pragha
 Paquete: pragha
 Repositorio: extra
 Versión: 1.3.4-10
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. protonmail bridge
+36. protonmail bridge
 Paquete: protonmail-bridge
 Repositorio: extra
 Versión: 3.27.1-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. pymol
+37. pymol
 Paquete: pymol
 Repositorio: extra
 Versión: 3.1.0-6
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. python cached ipaddress
+38. python cached ipaddress
 Paquete: python-cached-ipaddress
 Repositorio: extra
 Versión: 1.1.2-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. python gpgme
+39. python gpgme
 Paquete: python-gpgme
 Repositorio: extra
 Versión: 2.0.0-2
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. python html5tagger
+40. python html5tagger
 Paquete: python-html5tagger
 Repositorio: extra
 Versión: 2.0.0-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python lhafile
+41. python lhafile
 Paquete: python-lhafile
 Repositorio: extra
 Versión: 0.3.1-2
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. python networkx
+42. python networkx
 Paquete: python-networkx
 Repositorio: extra
 Versión: 3.7-1
@@ -613,7 +628,7 @@ Pruebas: python-pytest, python-lxml, python-pydot, python-pygraphviz
 Proporciona: —
 Estado SST: [ ]
 
-42. python pytest benchmark
+43. python pytest benchmark
 Paquete: python-pytest-benchmark
 Repositorio: extra
 Versión: 5.3.1-1
@@ -628,7 +643,7 @@ Pruebas: python-pygal, python-pygaljs, python-freezegun, mercurial, python-aspec
 Proporciona: —
 Estado SST: [ ]
 
-43. python pytest testinfra
+44. python pytest testinfra
 Paquete: python-pytest-testinfra
 Repositorio: extra
 Versión: 10.2.2-2
@@ -643,7 +658,7 @@ Pruebas: ansible, python-paramiko, python-pytest-xdist, python-pywinrm, python-t
 Proporciona: —
 Estado SST: [ ]
 
-44. python pytorch opt rocm
+45. python pytorch opt rocm
 Paquete: python-pytorch-opt-rocm
 Repositorio: extra
 Versión: 2.15.0-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: python-pytorch=2.15.0, python-pytorch-rocm=2.15.0
 Estado SST: [ ]
 
-45. python statsmodels
+46. python statsmodels
 Paquete: python-statsmodels
 Repositorio: extra
 Versión: 0.15.0-1
@@ -673,7 +688,7 @@ Pruebas: python-pytest, python-pytest-randomly, python-pytest-xdist, python-jobl
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby extconf compile commands json
+47. ruby extconf compile commands json
 Paquete: ruby-extconf_compile_commands_json
 Repositorio: extra
 Versión: 0.0.7-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby memoist
+48. ruby memoist
 Paquete: ruby-memoist
 Repositorio: extra
 Versión: 0.16.2-4
@@ -703,7 +718,7 @@ Pruebas: ruby-bundler, ruby-minitest, ruby-rake
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby rdoc
+49. ruby rdoc
 Paquete: ruby-rdoc
 Repositorio: extra
 Versión: 6.14.0-1
@@ -718,7 +733,7 @@ Pruebas: ruby-test-unit, ruby-test-unit-ruby-core
 Proporciona: —
 Estado SST: [ ]
 
-49. sg 323 clap
+50. sg 323 clap
 Paquete: sg-323-clap
 Repositorio: extra
 Versión: 1.2.0-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. spirv cross
+51. spirv cross
 Paquete: spirv-cross
 Repositorio: extra
 Versión: 1.4.363.0-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. sshs
+52. sshs
 Paquete: sshs
 Repositorio: extra
 Versión: 4.8.0-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. sstp client
+53. sstp client
 Paquete: sstp-client
 Repositorio: extra
 Versión: 1:1.0.20-5
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. tigervnc
+54. tigervnc
 Paquete: tigervnc
 Repositorio: extra
 Versión: 1.16.2-5
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. ttf ubuntu mono nerd
+55. ttf ubuntu mono nerd
 Paquete: ttf-ubuntu-mono-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-55. vim latexsuite
+56. vim latexsuite
 Paquete: vim-latexsuite
 Repositorio: extra
 Versión: 1:1.10.0-5
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. xdotool
+57. xdotool
 Paquete: xdotool
 Repositorio: extra
 Versión: 4.20260303.1-1
@@ -838,7 +853,7 @@ Pruebas: procps-ng, ruby-minitest, xorg-fonts-misc, xorg-mkfontscale, xorg-serve
 Proporciona: libxdo.so=4-64
 Estado SST: [ ]
 
-57. xfce4 smartbookmark plugin
+58. xfce4 smartbookmark plugin
 Paquete: xfce4-smartbookmark-plugin
 Repositorio: extra
 Versión: 0.6.0-2

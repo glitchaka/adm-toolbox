@@ -331,13 +331,13 @@ Estado SST: [ ]
 23. jellyfin mpv shim
 Paquete: jellyfin-mpv-shim
 Repositorio: extra
-Versión: 3.3.0-1
+Versión: 3.3.0-2
 Arquitectura: any
 Descripción: Cast media from Jellyfin Mobile and Web apps to MPV
 Upstream: https://github.com/jellyfin/jellyfin-mpv-shim
-Licencia: MIT
+Licencia: GPL-3.0-or-later AND MIT
 Dependencias: mpv, python, hicolor-icon-theme, python-mpv, python-requests, python-mpv-jsonipc, python-jellyfin-apiclient, python-pillow
-Opcionales: python-pystray: systray support, mpv-shim-default-shaders: default shader pack, python-pypresence: Discord Rich Presence integration
+Opcionales: python-pystray: systray support, mpv-shim-default-shaders: default shader pack, python-pypresence: Discord Rich Presence integration, python-gobject: MPRIS media controls
 Compilación: python-build, python-installer, python-wheel, gettext, python-setuptools
 Pruebas: —
 Proporciona: —
