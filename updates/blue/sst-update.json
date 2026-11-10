@@ -1,32 +1,28 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.54",
+  "version": "0.1.9-blue.55",
   "channel": "blue",
-  "published_at": "2026-11-10T16:04:41.1475588+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.54/sst.exe",
-  "sha256": "0d992af8a23c1d367ef8ad31b1d1f6c635cc42bf8108c63f95215cc4f79618c4",
-  "size": 55528448,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.54/sst-updater.exe",
-  "updater_sha256": "b609d8c594b362d41e2afb127f82a774aeeb22507ca936e5cb31189ee65217bc",
+  "published_at": "2026-11-10T16:35:55.3414861+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.55/sst.exe",
+  "sha256": "943922b8f0322d893d899bb361efd3f4f572093882d1ccbbe4e6d7c95969ebcd",
+  "size": 55527424,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.55/sst-updater.exe",
+  "updater_sha256": "63be05d217f994594113a69572c1c675a535d1d052a96a75dff7ab08214b548a",
   "updater_size": 422400,
   "changes": [
-    "Durante `instp upgrade sst`, muestra una barra de progreso actualizada con los bytes reales descargados, porcentaje, tasa de transferencia y tiempo restante cuando el manifiesto indica el tamaño.",
-    "Las descargas de paquetes de `instp install` y `instp upgrade` emplean el mismo medidor; los recursos de GitHub Releases utilizan el tamaño publicado por GitHub.",
-    "Si el tamaño remoto es desconocido, el progreso muestra los bytes recibidos y la velocidad sin inventar porcentaje ni tiempo restante.",
-    "El medidor sólo se activa en sesiones interactivas; stdout de scripts sigue libre de códigos de control.",
-    "El ejecutable sólo se marca como descargado tras verificar el SHA-256 y el tamaño.",
-    "Se eliminó el marco/adorno ASCII del encabezado de informes.",
-    "Se retiró el cambio general del compositor gráfico Slint introducido en desarrollo: los comandos recuperan el dibujado normal de la consola.",
-    "Continúan las consultas y exportaciones NOTSH LAN/WLAN corregidas en el código fuente anterior.",
-    "Compilación Windows, prueba real NOTSH LAN/WLAN CSV, regresión del actualizador independiente, pruebas Rust, inspección de manifiesto y SHA-256 antes de distribuir.",
-    "La consulta de enlace cableado no debe confundirse con una autorización NAC confirmada."
+    "Se revierte íntegramente el cambio del compositor gráfico Slint que añadió franjas oscuras a cada fila con texto (introducido en la rama de desarrollo el 10 de noviembre).",
+    "El motor de dibujo de la terminal vuelve exactamente al estado anterior a esa capa: se conserva el logo/fondo del usuario sin oscurecerlo artificialmente en las líneas ocupadas.",
+    "No se cambian los recursos gráficos, la imagen personalizada, la configuración de transparencia ni los controles nativos de la ventana.",
+    "Continúan las correcciones NOTSH LAN/WLAN, CSV y medidor de transferencia real de INSTP.",
+    "Las actualizaciones se consultan e instalan con `instp`, sin reintroducir el comando `update`.",
+    "La publicación exige compilación y tests Windows, pruebas de NOTSH, INSTP y actualizador independiente, auditoría, verificación del empaquetado y SHA-256 de los artefactos."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.54.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.54/SST-Setup-0.1.9-blue.54.exe",
-    "sha256": "42bdcb9b71943629e01407ec66974341a0ae50d6652ef0fa841ba1fd591b8117",
-    "size": 56516319,
+    "name": "SST-Setup-0.1.9-blue.55.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.55/SST-Setup-0.1.9-blue.55.exe",
+    "sha256": "db07e03b0bfadb24d308f0bc4209630f84fcf709b9bc857123e544a48c268b4c",
+    "size": 56515295,
     "single_use": true,
-    "package_id": "91815010a2d3a68dff633ca5b94763c5"
+    "package_id": "2bfc34121323f0cd057b3ce5075362e4"
   }
 }
