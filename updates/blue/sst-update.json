@@ -1,30 +1,33 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.42",
+  "version": "0.1.9-blue.47",
   "channel": "blue",
-  "published_at": "2026-11-10T14:49:44.1329968+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.42/sst.exe",
-  "sha256": "928026f8fab65976a81d6a537d01224ef7ec13cb691ed0609f404082230f6410",
-  "size": 55482880,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.42/sst-updater.exe",
-  "updater_sha256": "a6d40edf8927532fee7ca4daee940c81c6432d03b021c8448fce912783a9078e",
+  "published_at": "2026-11-10T15:20:08.0522783+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.47/sst.exe",
+  "sha256": "c69f359be77c45cfb0dfaec088dbfce62743ff232915236eb490011b7344fffd",
+  "size": 55504384,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.47/sst-updater.exe",
+  "updater_sha256": "e251acabc8c7894d777b05b20a3b497df6238018586a686fb3435f85c1258ec6",
   "updater_size": 422400,
   "changes": [
-    "`notsh http show iplisten` consulta con `HttpQueryServiceConfiguration` las direcciones IP limitadas por la configuración del servicio HTTP de Windows.",
-    "`notsh http show urlacl` enumera las reservas de URL mediante la API HTTP Server, sin imprimir descriptores SDDL ni credenciales.",
-    "El parser valida límites y tamaños de buffer para IPv4, IPv6 y cadenas UTF-16 devueltas por la API.",
-    "Se amplían las pruebas nativas de Windows: se comprueba que ambas consultas regresen a Nwash y que no se ejecute `netsh.exe`.",
-    "Informes de la consola SST con libcaca-rs, estado semántico y etiquetas legibles.",
-    "Diagnóstico WLAN, LAN/Dot3, IPv4/IPv6, WinHTTP, Winsock y Windows Defender Firewall mediante API nativas.",
-    "Actualizador independiente y manifiestos verificables con SHA-256.",
-    "SQLite actualizado con comprobaciones RustSec."
+    "La capa visual de informes recibe el ancho efectivo de la terminal y ajusta las líneas antes de enviarlas al renderizador nativo. Los textos largos y notas de versiones mantienen palabras completas e indentación legible.",
+    "Encabezados compactos dibujados con libcaca-rs; el tamaño se limita al espacio disponible, sin convertir toda la pantalla en un marco.",
+    "Separación visible de etiquetas, valores, advertencias, errores y estados de conexión; se evita clasificar DESCONECTADO como CONECTADO.",
+    "Se añade un fondo de lectura semitransparente detrás de las líneas con texto, sin reemplazar la imagen o configuración de fondo del usuario.",
+    "La tarjeta de inicio `fetch` utiliza dimensiones compactas y límites de longitud acordes a la ventana.",
+    "`top` emplea un tablero de procesos con encabezados y filas contrastadas, métricas alineadas y actualización de CPU basada en un muestreador persistente.",
+    "Se conservan la salida original de comandos de scripts, tuberías, redirecciones, JSON, CSV, XML y programas que ya emiten ANSI.",
+    "Se mantienen las consultas nativas mediante Windows API implementadas previamente, con las funciones que aún no existen señaladas explícitamente.",
+    "`instp sst`, `instp check sst` e `instp upgrade sst` gestionan la versión y actualización de SST; `update` ya no se registra como comando independiente.",
+    "La regresión en Windows comprueba el actualizador independiente, la ruta de instalación con instp y las consultas nativas.",
+    "Los informes incluyen pruebas de wrapping, ancho pequeño, campos, estados y preservación de formatos para uso automático."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.42.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.42/SST-Setup-0.1.9-blue.42.exe",
-    "sha256": "529fd4043f6651332293fb40b894a801565b34d97e3e78cc0f377d37c93f73e7",
-    "size": 56470751,
+    "name": "SST-Setup-0.1.9-blue.47.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.47/SST-Setup-0.1.9-blue.47.exe",
+    "sha256": "a7fe2508d8e0ba5c52c930dee07c65ba6e38148298d6f2f7acea638ec536dc13",
+    "size": 56492255,
     "single_use": true,
-    "package_id": "73420e366496203e11328d4e5349f826"
+    "package_id": "61cd6938e4e68b5504fc7cdfa7d027d3"
   }
 }
