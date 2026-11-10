@@ -31,7 +31,7 @@ Estado SST: [ ]
 3. deepin control center
 Paquete: deepin-control-center
 Repositorio: extra
-Versión: 6.1.97-1
+Versión: 6.1.97-2
 Arquitectura: x86_64
 Descripción: Control panel of Deepin Desktop Environment
 Upstream: https://github.com/linuxdeepin/dde-control-center
@@ -298,7 +298,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-21. lua cosmo
+21. live chart
+Paquete: live-chart
+Repositorio: extra
+Versión: 2.0.0-1
+Arquitectura: x86_64
+Descripción: A real-time charting library for Vala and GTK4 based on Cairo
+Upstream: https://github.com/elementary/monitor
+Licencia: MIT
+Dependencias: cairo, glib2, glibc, gtk4, libgee
+Opcionales: —
+Compilación: git, meson, vala, xorg-server-xvfb
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+22. lua cosmo
 Paquete: lua-cosmo
 Repositorio: extra
 Versión: 16.06.04-8
@@ -313,7 +328,7 @@ Pruebas: lua-lpeg
 Proporciona: —
 Estado SST: [ ]
 
-22. lua51 binaryheap
+23. lua51 binaryheap
 Paquete: lua51-binaryheap
 Repositorio: extra
 Versión: 0.4-4
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. minder
+24. minder
 Paquete: minder
 Repositorio: extra
 Versión: 3.0.0-1
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. nettle
+25. nettle
 Paquete: nettle
 Repositorio: core
 Versión: 4.0-1
@@ -358,7 +373,7 @@ Pruebas: valgrind
 Proporciona: libnettle.so=9-64, libhogweed.so=7-64
 Estado SST: [ ]
 
-25. network manager applet
+26. network manager applet
 Paquete: network-manager-applet
 Repositorio: extra
 Versión: 1.36.0-2
@@ -373,22 +388,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. openpace
+27. openpace
 Paquete: openpace
 Repositorio: extra
-Versión: 1.1.4-2
+Versión: 1.1.4-3
 Arquitectura: x86_64
 Descripción: Cryptographic library for EAC version 2
 Upstream: https://frankmorgner.github.io/openpace
 Licencia: GPL-3.0-or-later, GPL-3.0-linking-exception
 Dependencias: openssl
 Opcionales: —
-Compilación: autoconf, gengetopt, git, help2man, libtool, make
+Compilación: gengetopt, git, help2man
 Pruebas: —
 Proporciona: libeac.so=3-64
 Estado SST: [ ]
 
-27. performous
+28. performous
 Paquete: performous
 Repositorio: extra
 Versión: 1.3.1-22
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. perl class load
+29. perl class load
 Paquete: perl-class-load
 Repositorio: extra
 Versión: 0.25-4
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. perl datetime locale
+30. perl datetime locale
 Paquete: perl-datetime-locale
 Repositorio: extra
 Versión: 1.47-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. perl html highlight
+31. perl html highlight
 Paquete: perl-html-highlight
 Repositorio: extra
 Versión: 0.20-18
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. perl ipc system simple
+32. perl ipc system simple
 Paquete: perl-ipc-system-simple
 Repositorio: extra
 Versión: 1.30-9
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. perl package constants
+33. perl package constants
 Paquete: perl-package-constants
 Repositorio: extra
 Versión: 0.06-13
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. perl poe component client keepalive
+34. perl poe component client keepalive
 Paquete: perl-poe-component-client-keepalive
 Repositorio: extra
 Versión: 0.272-14
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. perl shell command
+35. perl shell command
 Paquete: perl-shell-command
 Repositorio: extra
 Versión: 0.06-9
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. python cupy
+36. python cupy
 Paquete: python-cupy
 Repositorio: extra
 Versión: 14.2.0-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. python ext4
+37. python ext4
 Paquete: python-ext4
 Repositorio: extra
 Versión: 1.4.1-2
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. python flexcache
+38. python flexcache
 Paquete: python-flexcache
 Repositorio: extra
 Versión: 0.3-5
@@ -553,7 +568,7 @@ Pruebas: python-pytest, python-pytest-mpl
 Proporciona: —
 Estado SST: [ ]
 
-38. python graphviz
+39. python graphviz
 Paquete: python-graphviz
 Repositorio: extra
 Versión: 0.21-2
@@ -568,7 +583,7 @@ Pruebas: python-pytest, python-pytest-mock
 Proporciona: —
 Estado SST: [ ]
 
-39. python internetarchive
+40. python internetarchive
 Paquete: python-internetarchive
 Repositorio: extra
 Versión: 5.11.1-1
@@ -583,7 +598,7 @@ Pruebas: python-pytest, python-responses
 Proporciona: —
 Estado SST: [ ]
 
-40. python onnxruntime rocm
+41. python onnxruntime rocm
 Paquete: python-onnxruntime-rocm
 Repositorio: extra
 Versión: 1.29.0-3
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: python-onnxruntime=1.29.0
 Estado SST: [ ]
 
-41. python plumbum
+42. python plumbum
 Paquete: python-plumbum
 Repositorio: extra
 Versión: 2.0.2-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python pytest rerunfailures
+43. python pytest rerunfailures
 Paquete: python-pytest-rerunfailures
 Repositorio: extra
 Versión: 16.7-1
@@ -628,7 +643,7 @@ Pruebas: python-pytest-xdist
 Proporciona: —
 Estado SST: [ ]
 
-43. python pytest sugar
+44. python pytest sugar
 Paquete: python-pytest-sugar
 Repositorio: extra
 Versión: 1.1.1-2
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python sphinx autoapi
+45. python sphinx autoapi
 Paquete: python-sphinx-autoapi
 Repositorio: extra
 Versión: 3.8.1-1
@@ -658,7 +673,7 @@ Pruebas: python-beautifulsoup4, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-45. python sphinxcontrib qthelp
+46. python sphinxcontrib qthelp
 Paquete: python-sphinxcontrib-qthelp
 Repositorio: extra
 Versión: 2.0.0-5
@@ -673,7 +688,7 @@ Pruebas: python-defusedxml, python-pytest, python-sphinx
 Proporciona: —
 Estado SST: [ ]
 
-46. python zita jacktools
+47. python zita jacktools
 Paquete: python-zita-jacktools
 Repositorio: extra
 Versión: 1.8.0-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. riscv64 linux gnu gdb
+48. riscv64 linux gnu gdb
 Paquete: riscv64-linux-gnu-gdb
 Repositorio: extra
 Versión: 17.2-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby stomp
+49. ruby stomp
 Paquete: ruby-stomp
 Repositorio: extra
 Versión: 1.4.10-6
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. showmethekey
+50. showmethekey
 Paquete: showmethekey
 Repositorio: extra
 Versión: 1.21.0-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. snmalloc
+51. snmalloc
 Paquete: snmalloc
 Repositorio: extra
 Versión: 0.7.6-1
@@ -748,10 +763,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. spice
+52. spice
 Paquete: spice
 Repositorio: extra
-Versión: 0.16.0-4
+Versión: 0.16.0-5
 Arquitectura: x86_64
 Descripción: SPICE server
 Upstream: https://www.spice-space.org
@@ -763,7 +778,7 @@ Pruebas: gdk-pixbuf2, glib-networking
 Proporciona: libspice-server.so=1-64
 Estado SST: [ ]
 
-52. tela circle icon theme standard
+53. tela circle icon theme standard
 Paquete: tela-circle-icon-theme-standard
 Repositorio: extra
 Versión: 2026_07_07-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: tela-circle-icon-theme
 Estado SST: [ ]
 
-53. tesseract data epo
+54. tesseract data epo
 Paquete: tesseract-data-epo
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-54. vlc plugin mdns
+55. vlc plugin mdns
 Paquete: vlc-plugin-mdns
 Repositorio: extra
 Versión: 3.0.24-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. vlc plugins extra
+56. vlc plugins extra
 Paquete: vlc-plugins-extra
 Repositorio: extra
 Versión: 3.0.24-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. xorg xlsfonts
+57. xorg xlsfonts
 Paquete: xorg-xlsfonts
 Repositorio: extra
 Versión: 1.0.9-1

@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. gambas3 gb mysql
 Paquete: gambas3-gb-mysql
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Mysql extra component
 Upstream: http://gambas.sourceforge.net/
@@ -241,12 +241,12 @@ Estado SST: [ ]
 17. libldap
 Paquete: libldap
 Repositorio: core
-Versión: 2.7.2-2
+Versión: 2.7.2-3
 Arquitectura: x86_64
 Descripción: Lightweight Directory Access Protocol (LDAP) client libraries
 Upstream: https://www.openldap.org/
 Licencia: OLDAP-2.8
-Dependencias: glibc, libsasl, libsasl2.so=3-64, openssl, libcrypto.so=3-64
+Dependencias: glibc, libsasl, libsasl2.so=3-64, openssl, libcrypto.so=4-64
 Opcionales: —
 Compilación: libtool, libsasl, util-linux, chrpath, unixodbc, libsodium, systemd
 Pruebas: —
@@ -736,7 +736,7 @@ Estado SST: [ ]
 50. yara
 Paquete: yara
 Repositorio: extra
-Versión: 4.5.8-1
+Versión: 4.5.8-2
 Arquitectura: x86_64
 Descripción: Tool aimed at helping malware researchers to identify and classify malware samples
 Upstream: https://github.com/VirusTotal/yara
@@ -751,12 +751,12 @@ Estado SST: [ ]
 51. yubihsm shell
 Paquete: yubihsm-shell
 Repositorio: extra
-Versión: 2.8.0-2
+Versión: 2.8.0-3
 Arquitectura: x86_64
 Descripción: Interactive and command-line interface to a YubiHSM
 Upstream: https://github.com/Yubico/yubihsm-shell/
 Licencia: Apache-2.0
-Dependencias: glibc, libedit, libedit.so=0-64, libykhsmauth, libykhsmauth.so=2-64, libyubihsm, libyubihsm.so=2-64, openssl, libcrypto.so=3-64
+Dependencias: glibc, libedit, libedit.so=0-64, libykhsmauth, libykhsmauth.so=2-64, libyubihsm, libyubihsm.so=2-64, openssl, libcrypto.so=4-64
 Opcionales: yubihsm-udev-rules: for accessing YubiHSM2 devices over USB using the _yubihsm2 group membership
 Compilación: curl, cmake, gengetopt, glibc, help2man, libedit, libusb, openssl, pcsclite, zlib
 Pruebas: bats
@@ -766,7 +766,7 @@ Estado SST: [ ]
 52. zabbix common
 Paquete: zabbix-common
 Repositorio: extra
-Versión: 7.4.16-1
+Versión: 7.4.16-2
 Arquitectura: x86_64
 Descripción: Zabbix user and group required by zabbix packages
 Upstream: https://www.zabbix.com
@@ -781,12 +781,12 @@ Estado SST: [ ]
 53. zerotier one
 Paquete: zerotier-one
 Repositorio: extra
-Versión: 1.16.2-1
+Versión: 1.16.2-2
 Arquitectura: x86_64
 Descripción: Creates virtual Ethernet networks of almost unlimited size.
 Upstream: https://www.zerotier.com/
 Licencia: MPL-2.0
-Dependencias: glibc, libgcc, libgcc_s.so=1-64, libnatpmp, libstdc++, libstdc++.so=6-64, miniupnpc, libminiupnpc.so=21-64, openssl, libcrypto.so=3-64, libssl.so=3-64
+Dependencias: glibc, libgcc, libgcc_s.so=1-64, libnatpmp, libstdc++, libstdc++.so=6-64, miniupnpc, libminiupnpc.so=21-64, openssl, libcrypto.so=4-64, libssl.so=4-64
 Opcionales: —
 Compilación: rust
 Pruebas: —

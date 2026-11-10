@@ -346,12 +346,12 @@ Estado SST: [ ]
 24. libyubihsm
 Paquete: libyubihsm
 Repositorio: extra
-Versión: 2.8.0-2
+Versión: 2.8.0-3
 Arquitectura: x86_64
 Descripción: C library to expose low- and high-level functions to interact with a YubiHSM
 Upstream: https://github.com/Yubico/yubihsm-shell/
 Licencia: Apache-2.0
-Dependencias: curl, libcurl.so=4-64, glibc, openssl, libcrypto.so=3-64, libusb, libusb-1.0.so=0-64, zlib, libz.so=1-64
+Dependencias: curl, libcurl.so=4-64, glibc, openssl, libcrypto.so=4-64, libusb, libusb-1.0.so=0-64, zlib, libz.so=1-64
 Opcionales: yubihsm-udev-rules: for accessing YubiHSM2 devices over USB using the _yubihsm2 group membership
 Compilación: curl, cmake, gengetopt, glibc, help2man, libedit, libusb, openssl, pcsclite, zlib
 Pruebas: bats
@@ -436,7 +436,7 @@ Estado SST: [ ]
 30. neon
 Paquete: neon
 Repositorio: extra
-Versión: 0.37.1-1
+Versión: 0.37.1-2
 Arquitectura: x86_64
 Descripción: HTTP/1.1 and WebDAV client library
 Upstream: https://notroj.github.io/neon/
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. uwsgi plugin php
 Paquete: uwsgi-plugin-php
 Repositorio: extra
-Versión: 2.0.31-4
+Versión: 2.0.31-5
 Arquitectura: x86_64
 Descripción: A full stack for building hosting services (PHP plugin)
 Upstream: https://uwsgi-docs.readthedocs.io/en/latest/

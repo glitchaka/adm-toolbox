@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. gambas3 gb media form
 Paquete: gambas3-gb-media-form
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Media player control component
 Upstream: http://gambas.sourceforge.net/
@@ -166,12 +166,12 @@ Estado SST: [ ]
 12. gst devtools libs
 Paquete: gst-devtools-libs
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - development and debugging libraries
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-base-libs=1.28.8-1, gstreamer=1.28.8-1, glib2, glibc, json-glib, orc, zlib
+Dependencias: gst-plugins-base-libs=1.28.9-1, gstreamer=1.28.9-1, glib2, glibc, json-glib, orc, zlib
 Opcionales: —
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. hcxtools
 Paquete: hcxtools
 Repositorio: extra
-Versión: 7.1.2-1
+Versión: 7.1.2-2
 Arquitectura: x86_64
 Descripción: Portable solution for capturing wlan traffic and conversion to hashcat and John the Ripper formats
 Upstream: https://github.com/ZerBea/hcxtools
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. lua54 luaossl
 Paquete: lua54-luaossl
 Repositorio: extra
-Versión: 20260910-1
+Versión: 20260910-2
 Arquitectura: x86_64
 Descripción: Most comprehensive OpenSSL module in the Lua universe for Lua 5.4
 Upstream: http://25thandclement.com/~william/projects/luaossl.html
@@ -451,12 +451,12 @@ Estado SST: [ ]
 31. openpgp ca
 Paquete: openpgp-ca
 Repositorio: extra
-Versión: 0.14.1-1
+Versión: 0.14.1-2
 Arquitectura: x86_64
 Descripción: Tool to handle OpenPGP keys in groups or organizations
 Upstream: https://openpgp-ca.org/
 Licencia: GPL-3.0-or-later
-Dependencias: glibc, gmp, libgcc, bzip2, libbz2.so=1.0-64, openssl, libcrypto.so=3-64, libssl.so=3-64, nettle3, libhogweed.so=6-64, libnettle.so=8-64, pcsclite, libpcsclite.so=1-64, sqlite, libsqlite3.so=0-64
+Dependencias: glibc, gmp, libgcc, bzip2, libbz2.so=1.0-64, openssl, libcrypto.so=4-64, libssl.so=4-64, nettle3, libhogweed.so=6-64, libnettle.so=8-64, pcsclite, libpcsclite.so=1-64, sqlite, libsqlite3.so=0-64
 Opcionales: —
 Compilación: bzip2, clang, nettle3, openssl, pcsclite, rust, sqlite, systemd
 Pruebas: —
@@ -496,12 +496,12 @@ Estado SST: [ ]
 34. postfix
 Paquete: postfix
 Repositorio: extra
-Versión: 3.11.7-1
+Versión: 3.11.7-2
 Arquitectura: x86_64
 Descripción: Fast, easy to administer, secure mail server
 Upstream: https://www.postfix.org/
 Licencia: EPL-2.0 OR IPL-1.0, BSD-4-Clause-UC
-Dependencias: glibc, icu, libicuuc.so=78-64, libnsl, libnsl.so=3-64, libsasl, libsasl2.so=3-64, libtlsrpt, libtlsrpt.so=0-64, openssl, libcrypto.so=3-64, libssl.so=3-64, postfix-lmdb, sh
+Dependencias: glibc, icu, libicuuc.so=78-64, libnsl, libnsl.so=3-64, libsasl, libsasl2.so=3-64, libtlsrpt, libtlsrpt.so=0-64, openssl, libcrypto.so=4-64, libssl.so=4-64, postfix-lmdb, sh
 Opcionales: perl: for postfix-collate.pl, postfix-tlstype.pl and qshape, postfix-cdb: for CDB integration, postfix-ldap: for LDAP integration, postfix-lmdb: for LMDB integration, postfix-mongodb: for MongoDB integration, postfix-mysql: for MySQL integration, postfix-pcre: for PCRE integration, postfix-pgsql: for PostgreSQL integration, postfix-sqlite: for SQLite integration
 Compilación: icu, libldap, libnsl, libsasl, libtlsrpt, lmdb, mariadb-libs, mongo-c-driver, openssl, pcre2, postgresql-libs, sqlite, tinycdb
 Pruebas: —

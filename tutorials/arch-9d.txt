@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. coturn
 Paquete: coturn
 Repositorio: extra
-Versión: 4.18.0-2
+Versión: 4.18.0-3
 Arquitectura: x86_64
 Descripción: Open-source implementation of TURN and STUN server
 Upstream: https://github.com/coturn/coturn
@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. kunifiedpush
 Paquete: kunifiedpush
 Repositorio: extra
-Versión: 26.08.3-1
+Versión: 26.08.3-2
 Arquitectura: x86_64
 Descripción: UnifiedPush client components
 Upstream: https://www.kde.org
@@ -496,7 +496,7 @@ Estado SST: [ ]
 34. lua51 luaossl
 Paquete: lua51-luaossl
 Repositorio: extra
-Versión: 20260910-1
+Versión: 20260910-2
 Arquitectura: x86_64
 Descripción: Most comprehensive OpenSSL module in the Lua universe for Lua 5.1
 Upstream: http://25thandclement.com/~william/projects/luaossl.html
@@ -586,14 +586,14 @@ Estado SST: [ ]
 40. pantheon onboarding
 Paquete: pantheon-onboarding
 Repositorio: extra
-Versión: 8.1.0-1
+Versión: 8.1.0-2
 Arquitectura: x86_64
 Descripción: Onboarding app for new users
 Upstream: https://github.com/elementary/onboarding
 Licencia: GPL-3.0-only
-Dependencias: dconf, glib2, glibc, gtk4, hicolor-icon-theme, libadwaita-1.so=0-64, libgranite-7.so=7-64, pantheon-wayland
+Dependencias: dconf, glib2, glibc, gnome-settings-daemon, gtk4, hicolor-icon-theme, libadwaita-1.so=0-64, libgranite-7.so=7-64, pantheon-appcenter, pantheon-settings-daemon, pantheon-wayland
 Opcionales: —
-Compilación: git, intltool, meson, vala
+Compilación: git, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

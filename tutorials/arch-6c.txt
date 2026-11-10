@@ -76,13 +76,13 @@ Estado SST: [ ]
 6. efitools
 Paquete: efitools
 Repositorio: extra
-Versión: 1.9.2-7
+Versión: 1.9.2-8
 Arquitectura: x86_64
 Descripción: Tools for manipulating UEFI secure boot platforms
 Upstream: https://git.kernel.org/pub/scm/linux/kernel/git/jejb/efitools.git/about/
 Licencia: GPL-2.0-only, LGPL-2.1-only
-Dependencias: glibc, openssl
-Opcionales: —
+Dependencias: bash, coreutils, glibc, mtools, openssl, parted, util-linux
+Opcionales: sbsigntools: for signing of EFI binaries and drivers
 Compilación: git, gnu-efi-libs, help2man, perl-file-slurp, sbsigntools
 Pruebas: —
 Proporciona: —
@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. fdm
 Paquete: fdm
 Repositorio: extra
-Versión: 2.2-3
+Versión: 2.2-4
 Arquitectura: x86_64
 Descripción: Program to fetch mail and deliver it in various ways
 Upstream: https://github.com/nicm/fdm
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. gambas3 gb image
 Paquete: gambas3-gb-image
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Image component
 Upstream: http://gambas.sourceforge.net/
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. gambas3 gb map
 Paquete: gambas3-gb-map
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Display maps component
 Upstream: http://gambas.sourceforge.net/
@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. librepo
 Paquete: librepo
 Repositorio: extra
-Versión: 1.21.3-1
+Versión: 1.22.0-1
 Arquitectura: x86_64
 Descripción: Repodata downloading library
 Upstream: https://github.com/rpm-software-management/librepo
@@ -436,12 +436,12 @@ Estado SST: [ ]
 30. pacman bintrans
 Paquete: pacman-bintrans
 Repositorio: extra
-Versión: 0.5.0-2
+Versión: 0.5.0-3
 Arquitectura: x86_64
 Descripción: Binary transparency for pacman
 Upstream: https://github.com/kpcyrd/pacman-bintrans
 Licencia: GPL-3.0-or-later
-Dependencias: bzip2, libbz2.so=1.0-64, gcc-libs, glibc, openssl, libssl.so=3-64, rekor, shared-mime-info, xz, liblzma.so=5-64, zstd, libzstd.so=1-64
+Dependencias: bzip2, libbz2.so=1.0-64, libgcc, glibc, openssl, libssl.so=4-64, rekor, shared-mime-info, xz, liblzma.so=5-64, zstd, libzstd.so=1-64
 Opcionales: —
 Compilación: cargo, sqlite, libsqlite3.so
 Pruebas: —

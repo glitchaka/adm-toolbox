@@ -1,7 +1,7 @@
 1. acpi call lts
 Paquete: acpi_call-lts
 Repositorio: extra
-Versión: 1.2.2-375
+Versión: 1.2.2-377
 Arquitectura: x86_64
 Descripción: A linux kernel module that enables calls to ACPI methods through /proc/acpi/call
 Upstream: https://github.com/mkottman/acpi_call
@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. chess tui
 Paquete: chess-tui
 Repositorio: extra
-Versión: 2.8.0-1
+Versión: 2.8.0-2
 Arquitectura: x86_64
 Descripción: Play chess in your terminal
 Upstream: https://github.com/thomas-mauran/chess-tui
@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. gambas3 gb gsl
 Paquete: gambas3-gb-gsl
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: The GNU Scientific Library component
 Upstream: http://gambas.sourceforge.net/
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. gst plugin streamgrouper
 Paquete: gst-plugin-streamgrouper
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - streamgrouper plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -286,12 +286,12 @@ Estado SST: [ ]
 20. ipmitool
 Paquete: ipmitool
 Repositorio: extra
-Versión: 1.8.19-4
+Versión: 1.8.19-5
 Arquitectura: x86_64
 Descripción: Command-line interface to IPMI-enabled devices
 Upstream: https://codeberg.org/IPMITool/ipmitool
-Licencia: BSD
-Dependencias: openssl
+Licencia: BSD-3-Clause-Sun
+Dependencias: glibc, readline, openssl
 Opcionales: —
 Compilación: git
 Pruebas: —
@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. lua52 cqueues
 Paquete: lua52-cqueues
 Repositorio: extra
-Versión: 20261006-1
+Versión: 20261006-2
 Arquitectura: x86_64
 Descripción: Continuation Queues: Embeddable asynchronous networking, threading, and notification framework for Lua 5.2
 Upstream: http://25thandclement.com/~william/projects/cqueues.html
@@ -451,14 +451,14 @@ Estado SST: [ ]
 31. maelstrom run
 Paquete: maelstrom-run
 Repositorio: extra
-Versión: 0.14.0-2
+Versión: 0.14.0-3
 Arquitectura: x86_64
 Descripción: Program for submitting jobs to Maelstrom clusters
 Upstream: https://maelstrom-software.com/
 Licencia: Apache-2.0 OR MIT
-Dependencias: gcc-libs, glibc, openssl, libcrypto.so=3-64, libssl.so=3-64
+Dependencias: libgcc, glibc, openssl, libcrypto.so=4-64, libssl.so=4-64
 Opcionales: —
-Compilación: gcc-libs, glibc, git, openssl, protobuf, rust
+Compilación: glibc, git, openssl, protobuf, rust
 Pruebas: go, python-pip, python-pytest
 Proporciona: —
 Estado SST: [ ]
@@ -466,12 +466,12 @@ Estado SST: [ ]
 32. mariadb libs
 Paquete: mariadb-libs
 Repositorio: extra
-Versión: 13.0.2-2
+Versión: 13.0.2-3
 Arquitectura: x86_64
 Descripción: MariaDB libraries
 Upstream: https://mariadb.org/
 Licencia: GPL-2.0-only
-Dependencias: liburing, liburing.so=2-64, libxcrypt, libcrypt.so=2-64, openssl, libcrypto.so=3-64, libssl.so=3-64, pcre2, libpcre2-8.so=0-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
+Dependencias: liburing, liburing.so=2-64, libxcrypt, libcrypt.so=2-64, openssl, libcrypto.so=4-64, libssl.so=4-64, pcre2, libpcre2-8.so=0-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
 Opcionales: krb5: for gssapi authentication
 Compilación: git, boost, bzip2, cmake, cracklib, curl, jemalloc, judy, krb5, liburing, libxcrypt, libxml2, lz4, openssl, pcre2, systemd, zlib, zstd, xz
 Pruebas: —
@@ -496,7 +496,7 @@ Estado SST: [ ]
 34. munge
 Paquete: munge
 Repositorio: extra
-Versión: 0.5.18-2
+Versión: 0.5.18-3
 Arquitectura: x86_64
 Descripción: An authentication service for creating and validating credentials. It is designed to be highly scalable for use in an HPC cluster environment.
 Upstream: https://github.com/dun/munge
@@ -541,7 +541,7 @@ Estado SST: [ ]
 37. nvme cli
 Paquete: nvme-cli
 Repositorio: extra
-Versión: 3.2-1
+Versión: 3.2-2
 Arquitectura: x86_64
 Descripción: NVM-Express user space tooling for Linux
 Upstream: https://github.com/linux-nvme/nvme-cli

@@ -151,14 +151,14 @@ Estado SST: [ ]
 11. galera
 Paquete: galera
 Repositorio: extra
-Versión: 26.4.28-1
+Versión: 26.4.28-2
 Arquitectura: x86_64
 Descripción: write set replication (WSREP) provider for MariaDB cluster
 Upstream: https://galeracluster.com/
 Licencia: GPL-2.0-or-later, custom:OpenSSL Linking Exception
-Dependencias: glibc, boost-libs, libboost_program_options.so=1.92.0-64, libgcc, libgcc_s.so=1-64, libstdc++, libstdc++.so=6-64, mariadb-server, openssl, libcrypto.so=3-64, libssl.so=3-64
+Dependencias: glibc, boost-libs, libboost_program_options.so=1.92.0-64, libgcc, libgcc_s.so=1-64, libstdc++, libstdc++.so=6-64, mariadb-server, openssl, libcrypto.so=4-64, libssl.so=4-64
 Opcionales: rsync: State Snapshot Transfers with rsync, socat: State Snapshot Transfers with mariabackup
-Compilación: git, boost, check, cmake
+Compilación: git, asio, boost, check, cmake
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -691,7 +691,7 @@ Estado SST: [ ]
 47. rustypaste
 Paquete: rustypaste
 Repositorio: extra
-Versión: 0.18.1-1
+Versión: 0.18.1-2
 Arquitectura: x86_64
 Descripción: A minimal file upload/pastebin service
 Upstream: https://github.com/orhun/rustypaste
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. vaultwarden
 Paquete: vaultwarden
 Repositorio: extra
-Versión: 1.37.5-1
+Versión: 1.37.5-2
 Arquitectura: x86_64
 Descripción: Unofficial Bitwarden compatible server written in Rust
 Upstream: https://github.com/dani-garcia/vaultwarden

@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. gambas3 gb opengl
 Paquete: gambas3-gb-opengl
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: OpenGL component
 Upstream: http://gambas.sourceforge.net/
@@ -226,12 +226,12 @@ Estado SST: [ ]
 16. gst plugin aws
 Paquete: gst-plugin-aws
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - aws plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: MPL-2.0
-Dependencias: glib2, glibc, gstreamer, libgcc, gst-plugin-hlssink3=0.15.4-1, gst-plugins-bad, gst-plugins-base-libs, openssl
+Dependencias: glib2, glibc, gstreamer, libgcc, gst-plugin-hlssink3=0.15.4-2, gst-plugins-bad, gst-plugins-base-libs, openssl
 Opcionales: —
 Compilación: cairo, cargo-c, clang, cmake, csound, dav1d, fontconfig, freetype2, git, graphene, gst-plugins-bad, gst-plugins-bad-libs, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gtk4, libsodium, libstdc++, nasm, openssl, pango, rust, vulkan-headers, vulkan-icd-loader
 Pruebas: —
@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. php enchant
 Paquete: php-enchant
 Repositorio: extra
-Versión: 8.5.12-3
+Versión: 8.5.12-4
 Arquitectura: x86_64
 Descripción: enchant module for PHP
 Upstream: https://www.php.net/
@@ -511,12 +511,12 @@ Estado SST: [ ]
 35. proton vpn cli
 Paquete: proton-vpn-cli
 Repositorio: extra
-Versión: 1.0.5-1
+Versión: 1.1.0-1
 Arquitectura: any
 Descripción: Official ProtonVPN CLI Linux app
 Upstream: https://github.com/ProtonVPN/proton-vpn-cli
 Licencia: GPL-3.0-only
-Dependencias: python, python-click, python-dbus-fast, python-packaging, python-proton-core, python-proton-vpn-api-core, python-proton-keyring-linux, python-proton-vpn-network-manager, python-proton-vpn-local-agent, proton-vpn-daemon, python-sentry_sdk, python-tabulate
+Dependencias: python, python-click, python-dbus-fast, python-packaging, python-proton-core, python-proton-vpn-api-core>=6.0.0, python-proton-keyring-linux, python-proton-vpn-network-manager, python-proton-vpn-local-agent, proton-vpn-daemon, python-sentry_sdk, python-tabulate
 Opcionales: —
 Compilación: git, python-build, python-installer, python-wheel, python-setuptools
 Pruebas: —

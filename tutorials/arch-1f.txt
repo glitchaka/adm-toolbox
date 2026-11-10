@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. firefox ublock origin
 Paquete: firefox-ublock-origin
 Repositorio: extra
-Versión: 1.75.2-1
+Versión: 1.75.4-1
 Arquitectura: any
 Descripción: Efficient blocker add-on for various browsers. Fast, potent, and lean
 Upstream: https://github.com/gorhill/uBlock
@@ -628,7 +628,22 @@ Pruebas: python-pytest, python-pytest-asyncio, python-pytest-httpbin, python-pyt
 Proporciona: —
 Estado SST: [ ]
 
-43. python ldap3
+43. python lazy importer
+Paquete: python-lazy-importer
+Repositorio: extra
+Versión: 0.1.0-1
+Arquitectura: any
+Descripción: Context manager for portable, opt-in lazy imports
+Upstream: https://github.com/pganssle/lazy_importer
+Licencia: Apache-2.0
+Dependencias: python
+Opcionales: —
+Compilación: git, python-build, python-flit-core, python-installer
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+44. python ldap3
 Paquete: python-ldap3
 Repositorio: extra
 Versión: 2.9.1-10
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python netifaces
+45. python netifaces
 Paquete: python-netifaces
 Repositorio: extra
 Versión: 0.11.0-9
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. python pluggy
+46. python pluggy
 Paquete: python-pluggy
 Repositorio: extra
 Versión: 1.7.0-1
@@ -673,7 +688,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-46. python py key value aio
+47. python py key value aio
 Paquete: python-py-key-value-aio
 Repositorio: extra
 Versión: 0.4.6-1
@@ -688,7 +703,7 @@ Pruebas: python-aiofile, python-aiohttp, python-anyio, python-asyncpg, python-ca
 Proporciona: —
 Estado SST: [ ]
 
-47. python pycryptodomex
+48. python pycryptodomex
 Paquete: python-pycryptodomex
 Repositorio: extra
 Versión: 3.23.0-3
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. python pyhamcrest
+49. python pyhamcrest
 Paquete: python-pyhamcrest
 Repositorio: extra
 Versión: 2.1.0-5
@@ -718,7 +733,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-49. python pytest aiohttp
+50. python pytest aiohttp
 Paquete: python-pytest-aiohttp
 Repositorio: extra
 Versión: 1.1.1-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. python typing extensions
+51. python typing extensions
 Paquete: python-typing_extensions
 Repositorio: extra
 Versión: 4.16.0-1
@@ -748,7 +763,7 @@ Pruebas: python-tests
 Proporciona: —
 Estado SST: [ ]
 
-51. qemu system xtensa
+52. qemu system xtensa
 Paquete: qemu-system-xtensa
 Repositorio: extra
 Versión: 11.1.3-1
@@ -763,10 +778,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. qpdf docs
+53. qpdf docs
 Paquete: qpdf-docs
 Repositorio: extra
-Versión: 12.4.2-1
+Versión: 12.4.2-2
 Arquitectura: x86_64
 Descripción: QPDF: A Content-Preserving PDF Transformation System (documentation)
 Upstream: https://github.com/qpdf/qpdf
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. qsopt ex
+54. qsopt ex
 Paquete: qsopt-ex
 Repositorio: extra
 Versión: 2.5.10.3-2
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. qt6 lottie
+55. qt6 lottie
 Paquete: qt6-lottie
 Repositorio: extra
 Versión: 6.12.0-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. qt6 networkauth
+56. qt6 networkauth
 Paquete: qt6-networkauth
 Repositorio: extra
 Versión: 6.12.0-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. rsnapshot
+57. rsnapshot
 Paquete: rsnapshot
 Repositorio: extra
 Versión: 1.5.1-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. ruby jekyll feed
+58. ruby jekyll feed
 Paquete: ruby-jekyll-feed
 Repositorio: extra
 Versión: 0.18.0-1
@@ -853,7 +868,7 @@ Pruebas: ruby-nokogiri, ruby-rspec, ruby-rss, ruby-typhoeus
 Proporciona: —
 Estado SST: [ ]
 
-58. ruby net scp
+59. ruby net scp
 Paquete: ruby-net-scp
 Repositorio: extra
 Versión: 4.0.0-5
@@ -868,7 +883,7 @@ Pruebas: ruby-minitest, ruby-mocha, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-59. swaync
+60. swaync
 Paquete: swaync
 Repositorio: extra
 Versión: 0.12.6-2
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. texworks
+61. texworks
 Paquete: texworks
 Repositorio: extra
 Versión: 0.6.11-2
@@ -898,7 +913,7 @@ Pruebas: gsfonts, poppler-data
 Proporciona: —
 Estado SST: [ ]
 
-61. trivy
+62. trivy
 Paquete: trivy
 Repositorio: extra
 Versión: 0.76.2-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: trivy
 Estado SST: [ ]
 
-62. ttf fantasque nerd
+63. ttf fantasque nerd
 Paquete: ttf-fantasque-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-63. vlc plugin opus
+64. vlc plugin opus
 Paquete: vlc-plugin-opus
 Repositorio: extra
 Versión: 3.0.24-1
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. yabridge
+65. yabridge
 Paquete: yabridge
 Repositorio: extra
 Versión: 5.1.1-10
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. zathura pdf mupdf
+66. zathura pdf mupdf
 Paquete: zathura-pdf-mupdf
 Repositorio: extra
 Versión: 2026.07.18-6

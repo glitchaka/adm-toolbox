@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. gambas3 gb db2 sqlite3
 Paquete: gambas3-gb-db2-sqlite3
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Sqlite3 database access component
 Upstream: http://gambas.sourceforge.net/
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. gst plugin claxon
 Paquete: gst-plugin-claxon
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - claxon plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -226,12 +226,12 @@ Estado SST: [ ]
 16. gst python
 Paquete: gst-python
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - python plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-base-libs=1.28.8-1, gstreamer=1.28.8-1, glib2, glibc, python, python-gobject, python-typing_extensions
+Dependencias: gst-plugins-base-libs=1.28.9-1, gstreamer=1.28.9-1, glib2, glibc, python, python-gobject, python-typing_extensions
 Opcionales: gst-plugins-bad-libs: GstAnalytics support
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. nginx mod acme
 Paquete: nginx-mod-acme
 Repositorio: extra
-Versión: 0.4.1-8
+Versión: 0.4.2-1
 Arquitectura: x86_64
 Descripción: Nginx module adding support for the ACME protocol
 Upstream: https://github.com/nginx/nginx-acme/
@@ -556,12 +556,12 @@ Estado SST: [ ]
 38. plastic
 Paquete: plastic
 Repositorio: extra
-Versión: 0.3.5-1
+Versión: 0.3.5-2
 Arquitectura: x86_64
 Descripción: A NES emulator with GUI and TUI
 Upstream: https://github.com/Amjad50/plastic
 Licencia: MIT
-Dependencias: gcc-libs, alsa-lib
+Dependencias: libgcc, alsa-lib
 Opcionales: —
 Compilación: cargo, alsa-lib
 Pruebas: —
@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. qt6 base
 Paquete: qt6-base
 Repositorio: extra
-Versión: 6.12.0-3
+Versión: 6.12.0-4
 Arquitectura: x86_64
 Descripción: A cross-platform application and UI framework
 Upstream: https://www.qt.io
@@ -751,12 +751,12 @@ Estado SST: [ ]
 51. sslscan
 Paquete: sslscan
 Repositorio: extra
-Versión: 2.2.3-1
+Versión: 2.2.3-2
 Arquitectura: x86_64
 Descripción: Fast tool to scan SSL services such as HTTPS to determine supported ciphers
 Upstream: https://github.com/rbsec/sslscan
 Licencia: GPL-3.0-or-later
-Dependencias: glibc, openssl
+Dependencias: glibc, openssl-3
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -826,12 +826,12 @@ Estado SST: [ ]
 56. yubihsm pkcs11
 Paquete: yubihsm-pkcs11
 Repositorio: extra
-Versión: 2.8.0-2
+Versión: 2.8.0-3
 Arquitectura: x86_64
 Descripción: PKCS#11 module using libyubihsm
 Upstream: https://github.com/Yubico/yubihsm-shell/
 Licencia: Apache-2.0
-Dependencias: glibc, libykhsmauth, libykhsmauth.so=2-64, libyubihsm, libyubihsm.so=2-64, openssl, libcrypto.so=3-64
+Dependencias: glibc, libykhsmauth, libykhsmauth.so=2-64, libyubihsm, libyubihsm.so=2-64, openssl, libcrypto.so=4-64
 Opcionales: yubihsm-udev-rules: for accessing YubiHSM2 devices over USB using the _yubihsm2 group membership
 Compilación: curl, cmake, gengetopt, glibc, help2man, libedit, libusb, openssl, pcsclite, zlib
 Pruebas: bats

@@ -316,12 +316,12 @@ Estado SST: [ ]
 22. libcurl compat
 Paquete: libcurl-compat
 Repositorio: core
-Versión: 8.23.0-1
+Versión: 8.23.0-2
 Arquitectura: x86_64
 Descripción: command line tool and library for transferring data with URLs (no versioned symbols)
 Upstream: https://curl.se/
 Licencia: curl
-Dependencias: ca-certificates, brotli, libbrotlidec.so=1-64, krb5, libgssapi_krb5.so=2-64, libidn2, libidn2.so=0-64, libnghttp2, libnghttp2.so=14-64, libnghttp3, libnghttp3.so=9-64, libngtcp2, libngtcp2.so=16-64, libpsl, libpsl.so=5-64, libssh2, libssh2.so=1-64, openssl, libcrypto.so=3-64, libssl.so=3-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
+Dependencias: ca-certificates, brotli, libbrotlidec.so=1-64, krb5, libgssapi_krb5.so=2-64, libidn2, libidn2.so=0-64, libnghttp2, libnghttp2.so=14-64, libnghttp3, libnghttp3.so=9-64, libngtcp2, libngtcp2.so=16-64, libpsl, libpsl.so=5-64, libssh2, libssh2.so=1-64, openssl, libcrypto.so=4-64, libssl.so=4-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
 Opcionales: —
 Compilación: git, patchelf, ca-certificates, brotli, gnutls, krb5, libidn2, libnghttp2, libnghttp3, libngtcp2, libpsl, libssh2, nettle, zlib, zstd
 Pruebas: valgrind
@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. php
 Paquete: php
 Repositorio: extra
-Versión: 8.5.12-3
+Versión: 8.5.12-4
 Arquitectura: x86_64
 Descripción: A general-purpose scripting language that is especially suited to web development
 Upstream: https://www.php.net/
@@ -736,12 +736,12 @@ Estado SST: [ ]
 50. rust kanban
 Paquete: rust-kanban
 Repositorio: extra
-Versión: 0.10.5-1
+Versión: 0.10.5-2
 Arquitectura: x86_64
 Descripción: A kanban board for the terminal
 Upstream: https://github.com/yashs662/rust_kanban
 Licencia: MIT
-Dependencias: gcc-libs, openssl
+Dependencias: libgcc, openssl
 Opcionales: —
 Compilación: cargo
 Pruebas: —

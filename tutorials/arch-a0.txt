@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. dioxus cli
 Paquete: dioxus-cli
 Repositorio: extra
-Versión: 0.7.10-1
+Versión: 0.7.10-2
 Arquitectura: x86_64
 Descripción: CLI tool for developing, testing, and publishing Dioxus apps
 Upstream: https://github.com/DioxusLabs/dioxus
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. gitlogue
 Paquete: gitlogue
 Repositorio: extra
-Versión: 0.9.0-1
+Versión: 0.9.0-3
 Arquitectura: x86_64
 Descripción: A cinematic Git commit replay tool for the terminal
 Upstream: https://github.com/unhappychoice/gitlogue
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gst plugin rsrtp
 Paquete: gst-plugin-rsrtp
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - rsrtp plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -391,14 +391,14 @@ Estado SST: [ ]
 27. maelstrom worker
 Paquete: maelstrom-worker
 Repositorio: extra
-Versión: 0.14.0-2
+Versión: 0.14.0-3
 Arquitectura: x86_64
 Descripción: Maelstrom worker, executing jobs as directed by maelstrom-broker
 Upstream: https://maelstrom-software.com/
 Licencia: Apache-2.0 OR MIT
-Dependencias: gcc-libs, glibc, openssl, libcrypto.so=3-64, libssl.so=3-64
+Dependencias: libgcc, glibc, openssl, libcrypto.so=4-64, libssl.so=4-64
 Opcionales: —
-Compilación: gcc-libs, glibc, git, openssl, protobuf, rust
+Compilación: glibc, git, openssl, protobuf, rust
 Pruebas: go, python-pip, python-pytest
 Proporciona: —
 Estado SST: [ ]
@@ -436,7 +436,7 @@ Estado SST: [ ]
 30. nix
 Paquete: nix
 Repositorio: extra
-Versión: 2.35.5-1
+Versión: 2.35.6-1
 Arquitectura: x86_64
 Descripción: A purely functional package manager
 Upstream: https://nixos.org/nix
@@ -445,7 +445,7 @@ Dependencias: aws-crt-cpp, aws-c-auth, aws-c-common, boost-libs, brotli, curl, e
 Opcionales: —
 Compilación: boost, bzip2, cmake, git, graphviz, gtest, jq, meson, rapidcheck, toml11
 Pruebas: —
-Proporciona: libnixutilc.so=2.35.5-64, libnixutil.so=2.35.5-64, libnixstorec.so=2.35.5-64, libnixstore.so=2.35.5-64, libnixmainc.so=2.35.5-64, libnixmain.so=2.35.5-64, libnixflakec.so=2.35.5-64, libnixflake.so=2.35.5-64, libnixfetchersc.so=2.35.5-64, libnixfetchers.so=2.35.5-64, libnixexprc.so=2.35.5-64, libnixexpr.so=2.35.5-64, libnixcmd.so=2.35.5-64
+Proporciona: libnixutilc.so=2.35.6-64, libnixutil.so=2.35.6-64, libnixstorec.so=2.35.6-64, libnixstore.so=2.35.6-64, libnixmainc.so=2.35.6-64, libnixmain.so=2.35.6-64, libnixflakec.so=2.35.6-64, libnixflake.so=2.35.6-64, libnixfetchersc.so=2.35.6-64, libnixfetchers.so=2.35.6-64, libnixexprc.so=2.35.6-64, libnixexpr.so=2.35.6-64, libnixcmd.so=2.35.6-64
 Estado SST: [ ]
 
 31. openjdk25 doc

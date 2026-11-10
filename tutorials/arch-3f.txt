@@ -91,14 +91,14 @@ Estado SST: [ ]
 7. dotnet sdk 8 0
 Paquete: dotnet-sdk-8.0
 Repositorio: extra
-Versión: 8.0.33.sdk133-1
+Versión: 8.0.33.sdk133-2
 Arquitectura: x86_64
 Descripción: The .NET Core SDK
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
 Dependencias: dotnet-runtime-8.0, dotnet-targeting-pack-8.0, glibc, libgcc, libstdc++, netstandard-targeting-pack
 Opcionales: aspnet-targeting-pack: Build ASP.NET Core applications
-Compilación: bash, clang20, cmake, dotnet-sdk-8.0, dotnet-source-built-artifacts-8.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk-8.0, dotnet-source-built-artifacts-8.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-sdk=8.0
 Estado SST: [ ]
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. gst plugin icecast
 Paquete: gst-plugin-icecast
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - icecast plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -481,12 +481,12 @@ Estado SST: [ ]
 33. pipewire ffado
 Paquete: pipewire-ffado
 Repositorio: extra
-Versión: 1:1.6.10-1
+Versión: 1:1.6.11-1
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - FireWire support
 Upstream: https://pipewire.org
 Licencia: MIT
-Dependencias: libpipewire=1:1.6.10-1, libpipewire-0.3.so=0-64, pipewire-audio=1:1.6.10-1, pipewire=1:1.6.10-1, glibc, libffado, libffado.so=2-64
+Dependencias: libpipewire=1:1.6.11-1, libpipewire-0.3.so=0-64, pipewire-audio=1:1.6.11-1, pipewire=1:1.6.11-1, glibc, libffado, libffado.so=2-64
 Opcionales: —
 Compilación: alsa-lib, avahi, bluez-libs, dbus, dconf, doxygen, fftw, git, glib2, glib2-devel, graphviz, gst-plugins-base, jack2, libcamera, libcanberra, libebur128, libfdk-aac, libffado, libfreeaptx, libgcc, liblc3, libldac, libmysofa, libpulse, libsndfile, libstdc++, libusb, libx11, libxfixes, lilv, meson, ncurses, onnxruntime, opus, python-docutils, readline, roc-toolkit, rtkit, sbc, sdl2, spandsp, systemd, valgrind, webrtc-audio-processing-1
 Pruebas: desktop-file-utils, openal
@@ -496,12 +496,12 @@ Estado SST: [ ]
 34. ponyc
 Paquete: ponyc
 Repositorio: extra
-Versión: 0.72.1-1
+Versión: 0.75.0-2
 Arquitectura: x86_64
 Descripción: An actor model, capabilities, high performance programming language
 Upstream: https://ponylang.org/
 Licencia: BSD-2-Clause
-Dependencias: glibc, libatomic, libgcc, openssl, zlib
+Dependencias: glibc, libatomic, libgcc, openssl-3, zlib
 Opcionales: —
 Compilación: cmake, git, python
 Pruebas: —
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. prusa slicer
 Paquete: prusa-slicer
 Repositorio: extra
-Versión: 2.9.6-5
+Versión: 2.9.6-6
 Arquitectura: x86_64
 Descripción: G-code generator for 3D printers (Prusa fork of Slic3r)
 Upstream: https://github.com/prusa3d/PrusaSlicer
@@ -691,7 +691,7 @@ Estado SST: [ ]
 47. transmission gtk
 Paquete: transmission-gtk
 Repositorio: extra
-Versión: 4.1.4-1
+Versión: 4.1.4-2
 Arquitectura: x86_64
 Descripción: Fast, easy, and free BitTorrent client (GTK+ GUI)
 Upstream: http://www.transmissionbt.com/

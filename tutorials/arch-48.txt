@@ -76,12 +76,12 @@ Estado SST: [ ]
 6. clamav
 Paquete: clamav
 Repositorio: extra
-Versión: 1.5.4-1
+Versión: 1.5.4-2
 Arquitectura: x86_64
 Descripción: Anti-virus toolkit for Unix
 Upstream: https://www.clamav.net/
 Licencia: GPL-2.0-only
-Dependencias: bash, bzip2, curl, glibc, json-c, libgcc, libltdl, libmspack, libmilter, libstdc++, libxml2, ncurses, openssl, pcre2, systemd-libs, zlib, libsystemd.so=0-64, libncursesw.so=6-64, libcurl.so=4-64, libjson-c.so=5-64, libbz2.so=1.0-64
+Dependencias: bash, bzip2, curl, glibc, json-c, libgcc, libltdl, libmspack, libmilter, libstdc++, libxml2, ncurses, openssl-3, pcre2, systemd-libs, zlib, libsystemd.so=0-64, libncursesw.so=6-64, libcurl.so=4-64, libjson-c.so=5-64, libbz2.so=1.0-64
 Opcionales: —
 Compilación: cargo, cmake, ninja, python, python-pytest, systemd
 Pruebas: check
@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. dcmtk docs
 Paquete: dcmtk-docs
 Repositorio: extra
-Versión: 3.7.1-1
+Versión: 3.7.1-2
 Arquitectura: x86_64
 Descripción: A collection of libraries and applications implementing large parts the DICOM standard - documentation
 Upstream: http://dicom.offis.de/dcmtk
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. erlang os mon
 Paquete: erlang-os_mon
 Repositorio: extra
-Versión: 29.1.1-1
+Versión: 29.1.1-2
 Arquitectura: x86_64
 Descripción: A monitor which allows inspection of the underlying operating system
 Upstream: https://erlang.org/
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. gambas3 gb chart
 Paquete: gambas3-gb-chart
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Chart component
 Upstream: http://gambas.sourceforge.net/
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gambas3 gb desktop
 Paquete: gambas3-gb-desktop
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Desktop component
 Upstream: http://gambas.sourceforge.net/
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. gst plugin gif
 Paquete: gst-plugin-gif
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - gif plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -406,12 +406,12 @@ Estado SST: [ ]
 28. libarchive
 Paquete: libarchive
 Repositorio: core
-Versión: 3.8.11-1
+Versión: 3.8.11-2
 Arquitectura: x86_64
 Descripción: Multi-format archive and compression library
 Upstream: https://libarchive.org/
 Licencia: BSD-2-Clause, BSD-4-Clause-UC, Apache-2.0 OR CC0-1.0 OR OpenSSL
-Dependencias: acl, bzip2, glibc, libxml2, lz4, openssl, xz, zlib, zstd, libacl.so=1-64, libbz2.so=1.0-64, libxml2.so=16-64, libcrypto.so=3-64, liblzma.so=5-64, libz.so=1-64, libzstd.so=1-64
+Dependencias: acl, bzip2, glibc, libxml2, lz4, openssl, xz, zlib, zstd, libacl.so=1-64, libbz2.so=1.0-64, libxml2.so=16-64, libcrypto.so=4-64, liblzma.so=5-64, libz.so=1-64, libzstd.so=1-64
 Opcionales: —
 Compilación: git
 Pruebas: —
@@ -751,7 +751,7 @@ Estado SST: [ ]
 51. root
 Paquete: root
 Repositorio: extra
-Versión: 6.40.04-1
+Versión: 6.40.04-2
 Arquitectura: x86_64
 Descripción: C++ data analysis framework and interpreter from CERN
 Upstream: https://root.cern
@@ -766,14 +766,14 @@ Estado SST: [ ]
 52. rtl 433
 Paquete: rtl_433
 Repositorio: extra
-Versión: 25.12-1
+Versión: 25.12-3
 Arquitectura: x86_64
 Descripción: Program to decode radio transmissions from devices on the ISM bands (and other frequencies)
 Upstream: https://github.com/merbanan/rtl_433
 Licencia: GPL-2.0-only
 Dependencias: rtl-sdr, soapysdr, glibc, openssl, libusb
 Opcionales: —
-Compilación: gcc, cmake, doxygen
+Compilación: cmake
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

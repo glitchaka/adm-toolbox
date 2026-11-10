@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gambas3 gb compress
 Paquete: gambas3-gb-compress
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Compression support component
 Upstream: http://gambas.sourceforge.net/
@@ -406,14 +406,14 @@ Estado SST: [ ]
 28. kvirc
 Paquete: kvirc
 Repositorio: extra
-Versión: 5.2.10-2
+Versión: 5.2.10-3
 Arquitectura: x86_64
 Descripción: Qt based IRC client
 Upstream: https://www.kvirc.net/
-Licencia: GPL2
-Dependencias: enchant, hicolor-icon-theme, qt6-multimedia, qt6-webengine, qt6-5compat
+Licencia: GPL-2.0-or-later
+Dependencias: enchant, glibc, libgcc, libstdc++, openssl, qt6-5compat, qt6-base, qt6-multimedia, qt6-webengine, sh, zlib
 Opcionales: perl: scripting support, python: scripting support
-Compilación: cmake, ninja, python
+Compilación: cmake, git, python
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. mokutil
 Paquete: mokutil
 Repositorio: extra
-Versión: 0.7.2-2
+Versión: 0.7.2-3
 Arquitectura: x86_64
 Descripción: Shim.efi Machine Owner Key management tool
 Upstream: https://github.com/lcp/mokutil
@@ -811,7 +811,7 @@ Estado SST: [ ]
 55. smartdns
 Paquete: smartdns
 Repositorio: extra
-Versión: 48.4-1
+Versión: 48.4-2
 Arquitectura: x86_64
 Descripción: A local DNS server to obtain the fastest website IP for the best Internet experience
 Upstream: https://github.com/pymumu/smartdns

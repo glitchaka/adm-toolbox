@@ -91,14 +91,14 @@ Estado SST: [ ]
 7. dotnet source built artifacts 10 0
 Paquete: dotnet-source-built-artifacts-10.0
 Repositorio: extra
-Versión: 10.0.14.sdk114-1
+Versión: 10.0.14.sdk114-2
 Arquitectura: x86_64
 Descripción: Internal package for building the .NET Core SDK
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
 Dependencias: —
 Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang20, cmake, dotnet-sdk-10.0, dotnet-source-built-artifacts-10.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk-10.0, dotnet-source-built-artifacts-10.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-source-built-artifacts=10.0
 Estado SST: [ ]
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. gambas3 gb form stock
 Paquete: gambas3-gb-form-stock
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Default stock icons component
 Upstream: http://gambas.sourceforge.net/
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. lighttpd
 Paquete: lighttpd
 Repositorio: extra
-Versión: 1.4.85-1
+Versión: 1.4.85-2
 Arquitectura: x86_64
 Descripción: A secure, fast, compliant and very flexible web-server
 Upstream: https://www.lighttpd.net/
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. netsurf
 Paquete: netsurf
 Repositorio: extra
-Versión: 3.11-11
+Versión: 3.11-12
 Arquitectura: x86_64
 Descripción: Lightweight and fast web browser
 Upstream: https://www.netsurf-browser.org/
@@ -571,7 +571,7 @@ Estado SST: [ ]
 39. pappl
 Paquete: pappl
 Repositorio: extra
-Versión: 1.4.12-1
+Versión: 1.4.12-2
 Arquitectura: x86_64
 Descripción: a simple C-based framework/library for developing CUPS Printer Applications
 Upstream: https://www.msweet.org/pappl/
@@ -1006,14 +1006,14 @@ Estado SST: [ ]
 68. systemd resolvconf
 Paquete: systemd-resolvconf
 Repositorio: core
-Versión: 262.1-1
+Versión: 262.2-1
 Arquitectura: x86_64
 Descripción: systemd resolvconf replacement (for use with systemd-resolved)
 Upstream: https://www.github.com/systemd/systemd
 Licencia: LGPL-2.1-or-later
-Dependencias: systemd=262.1
+Dependencias: systemd=262.2
 Opcionales: —
-Compilación: acl, apparmor, cryptsetup, docbook-xsl, gperf, lz4, xz, pam, libelf, intltool, iptables, kmod, libarchive, libidn2, libgcrypt, libmicrohttpd, libxcrypt, libxslt, util-linux, linux-api-headers, python-jinja, python-lxml, quota-tools, shadow, git, meson, libseccomp, pcre2, audit, kexec-tools, libxkbcommon, bash-completion, p11-kit, systemd, libfido2, tpm2-tss, rsync, bpf, libbpf, clang, llvm, curl, gnutls, python-pyelftools, libpwquality, qrencode, lib32-gcc-libs, python-pefile, linux-headers
+Compilación: acl, apparmor, cryptsetup, docbook-xsl, gperf, lz4, xz, pam, libelf, intltool, iptables, kmod, libarchive, libidn2, libgcrypt, libmicrohttpd, libxcrypt, libxslt, util-linux, linux-api-headers, python-jinja, python-lxml, quota-tools, shadow, git, meson, libseccomp, pcre2, audit, kexec-tools, libxkbcommon, bash-completion, p11-kit, systemd, libfido2, tpm2-tss, rsync, bpf, libbpf, clang, llvm, curl, gnutls, python-pyelftools, libpwquality, qrencode, lib32-gcc-libs, python-pefile, linux-headers, rust, rust-bindgen
 Pruebas: —
 Proporciona: openresolv, resolvconf
 Estado SST: [ ]

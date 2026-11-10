@@ -16,12 +16,12 @@ Estado SST: [ ]
 2. cryptsetup
 Paquete: cryptsetup
 Repositorio: core
-Versión: 2.8.8-1
+Versión: 2.8.8-2
 Arquitectura: x86_64
 Descripción: Userspace setup tool for transparent encryption of block devices using dm-crypt
 Upstream: https://gitlab.com/cryptsetup/cryptsetup/
 Licencia: GPL-2.0-or-later
-Dependencias: device-mapper, libdevmapper.so=1.02-64, glibc, openssl, libcrypto.so=3-64, popt, util-linux-libs, libblkid.so=1-64, libuuid.so=1-64, json-c, libjson-c.so=5-64
+Dependencias: device-mapper, libdevmapper.so=1.02-64, glibc, openssl, libcrypto.so=4-64, popt, util-linux-libs, libblkid.so=1-64, libuuid.so=1-64, json-c, libjson-c.so=5-64
 Opcionales: —
 Compilación: util-linux, asciidoctor
 Pruebas: jq, procps-ng, xxd
@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. dbmail
 Paquete: dbmail
 Repositorio: extra
-Versión: 3.5.6-2
+Versión: 3.5.6-3
 Arquitectura: x86_64
 Descripción: Fast and scalable sql based mail services
 Upstream: https://github.com/dbmail/dbmail
@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. gambas3 gb desktop x11
 Paquete: gambas3-gb-desktop-x11
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: X-Window library support component
 Upstream: http://gambas.sourceforge.net/
@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. gambas3 gb net curl
 Paquete: gambas3-gb-net-curl
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Curl component
 Upstream: http://gambas.sourceforge.net/
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. gst plugin ffv1
 Paquete: gst-plugin-ffv1
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - ffv1 plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -556,7 +556,7 @@ Estado SST: [ ]
 38. php legacy sodium
 Paquete: php-legacy-sodium
 Repositorio: extra
-Versión: 8.3.36-3
+Versión: 8.3.36-4
 Arquitectura: x86_64
 Descripción: sodium module for PHP
 Upstream: https://www.php.net/
@@ -571,12 +571,12 @@ Estado SST: [ ]
 39. pipewire libcamera
 Paquete: pipewire-libcamera
 Repositorio: extra
-Versión: 1:1.6.10-1
+Versión: 1:1.6.11-1
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - Libcamera support
 Upstream: https://pipewire.org
 Licencia: MIT
-Dependencias: pipewire=1:1.6.10-1, glibc, libcamera, libcamera-base.so=0.7-64, libcamera.so=0.7-64, libgcc, libstdc++
+Dependencias: pipewire=1:1.6.11-1, glibc, libcamera, libcamera-base.so=0.7-64, libcamera.so=0.7-64, libgcc, libstdc++
 Opcionales: —
 Compilación: alsa-lib, avahi, bluez-libs, dbus, dconf, doxygen, fftw, git, glib2, glib2-devel, graphviz, gst-plugins-base, jack2, libcamera, libcanberra, libebur128, libfdk-aac, libffado, libfreeaptx, libgcc, liblc3, libldac, libmysofa, libpulse, libsndfile, libstdc++, libusb, libx11, libxfixes, lilv, meson, ncurses, onnxruntime, opus, python-docutils, readline, roc-toolkit, rtkit, sbc, sdl2, spandsp, systemd, valgrind, webrtc-audio-processing-1
 Pruebas: desktop-file-utils, openal

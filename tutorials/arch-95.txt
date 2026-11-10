@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. collision
 Paquete: collision
 Repositorio: extra
-Versión: 3.14.1-1
+Versión: 3.14.1-2
 Arquitectura: x86_64
 Descripción: GUI tool to generate, compare and verify MD5, SHA-1, SHA-256, SHA-512, Blake3, CRC32 and Adler32 hashes
 Upstream: https://apps.gnome.org/Collision/
@@ -54,7 +54,7 @@ Licencia: BSD-2-Clause
 Dependencias: dconf, gc, glib2, glibc, gtk4, hicolor-icon-theme, libadwaita, libgcc, openssl, pcre2, zlib
 Opcionales: nautilus-python: Nautilus context menu extension
 Compilación: crystal, git, gobject-introspection, shards
-Pruebas: —
+Pruebas: appstream
 Proporciona: —
 Estado SST: [ ]
 
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. gst plugin textwrap
 Paquete: gst-plugin-textwrap
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - textwrap plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -856,12 +856,12 @@ Estado SST: [ ]
 58. release plz
 Paquete: release-plz
 Repositorio: extra
-Versión: 0.4.3-1
+Versión: 0.4.3-2
 Arquitectura: x86_64
 Descripción: Release Rust packages without using the command line
 Upstream: https://github.com/MarcoIeni/release-plz
 Licencia: MIT, Apache-2.0
-Dependencias: curl, libcurl.so=4-64, glibc, libgcc, libgcc_s.so=1-64, libgit2, libgit2.so=1.9-64, openssl, libssl.so=3-64, sqlite, libsqlite3.so=0-64, zstd, libzstd.so=1-64
+Dependencias: curl, libcurl.so=4-64, glibc, libgcc, libgcc_s.so=1-64, libgit2, libgit2.so=1.9-64, openssl, libssl.so=4-64, sqlite, libsqlite3.so=0-64, zstd, libzstd.so=1-64
 Opcionales: cargo-semver-checks: check for API breaking changes
 Compilación: cargo, git
 Pruebas: —

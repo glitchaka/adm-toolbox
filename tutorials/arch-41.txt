@@ -76,11 +76,11 @@ Estado SST: [ ]
 6. axel
 Paquete: axel
 Repositorio: extra
-Versión: 2.17.14-2
+Versión: 2.17.14-3
 Arquitectura: x86_64
 Descripción: Light command line download accelerator
 Upstream: https://github.com/axel-download-accelerator/axel
-Licencia: GPL
+Licencia: GPL-2.0-or-later
 Dependencias: glibc, openssl
 Opcionales: —
 Compilación: —
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. gstreamer docs
 Paquete: gstreamer-docs
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - documentation
 Upstream: https://gstreamer.freedesktop.org/
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. libmesode doc
 Paquete: libmesode-doc
 Repositorio: extra
-Versión: 0.10.1-3
+Versión: 0.10.1-4
 Arquitectura: x86_64
 Descripción: Simple, lightweight C library for writing prifanity XMPP client (documentation and samples)
 Upstream: https://github.com/boothj5/libmesode
@@ -616,7 +616,7 @@ Estado SST: [ ]
 42. lua luaossl
 Paquete: lua-luaossl
 Repositorio: extra
-Versión: 20260910-1
+Versión: 20260910-2
 Arquitectura: x86_64
 Descripción: Most comprehensive OpenSSL module in the Lua universe for Lua 5.5
 Upstream: http://25thandclement.com/~william/projects/luaossl.html
@@ -706,7 +706,7 @@ Estado SST: [ ]
 48. openssl
 Paquete: openssl
 Repositorio: core
-Versión: 3.6.5-1
+Versión: 4.1.0-1
 Arquitectura: x86_64
 Descripción: The Open Source toolkit for cryptography and Transport Layer Security
 Upstream: https://www.openssl.org
@@ -715,13 +715,13 @@ Dependencias: brotli, glibc, zlib, zstd
 Opcionales: ca-certificates, perl
 Compilación: perl
 Pruebas: —
-Proporciona: libcrypto.so=3-64, libssl.so=3-64
+Proporciona: libcrypto.so=4-64, libssl.so=4-64
 Estado SST: [ ]
 
 49. perl crypt openssl dsa
 Paquete: perl-crypt-openssl-dsa
 Repositorio: extra
-Versión: 0.20-9
+Versión: 0.20-10
 Arquitectura: x86_64
 Descripción: Digital Signature Algorithm using OpenSSL
 Upstream: https://search.cpan.org/dist/Crypt-OpenSSL-DSA
@@ -751,7 +751,7 @@ Estado SST: [ ]
 51. php fpm
 Paquete: php-fpm
 Repositorio: extra
-Versión: 8.5.12-3
+Versión: 8.5.12-4
 Arquitectura: x86_64
 Descripción: FastCGI Process Manager for PHP
 Upstream: https://www.php.net/
@@ -1096,7 +1096,7 @@ Estado SST: [ ]
 74. zabbix server
 Paquete: zabbix-server
 Repositorio: extra
-Versión: 7.4.16-1
+Versión: 7.4.16-2
 Arquitectura: x86_64
 Descripción: Monitoring software for networks and applications
 Upstream: https://www.zabbix.com

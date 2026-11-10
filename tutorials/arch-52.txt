@@ -1,12 +1,12 @@
 1. arch repro status
 Paquete: arch-repro-status
 Repositorio: extra
-Versión: 1.4.3-3
+Versión: 1.4.3-4
 Arquitectura: x86_64
 Descripción: Check the reproducibility status of your Arch Linux packages
 Upstream: https://gitlab.archlinux.org/archlinux/arch-repro-status
 Licencia: MIT
-Dependencias: glibc, libgcc, libalpm.so=16-64, libssl.so=3-64
+Dependencias: glibc, libgcc, libalpm.so=16-64, libssl.so=4-64
 Opcionales: —
 Compilación: cargo, git
 Pruebas: —
@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. bluez
 Paquete: bluez
 Repositorio: extra
-Versión: 5.87-2
+Versión: 5.88-1
 Arquitectura: x86_64
 Descripción: Daemons for the bluetooth protocol stack
 Upstream: http://www.bluez.org/
@@ -481,7 +481,7 @@ Estado SST: [ ]
 33. nmap
 Paquete: nmap
 Repositorio: extra
-Versión: 7.993-1
+Versión: 7.993-2
 Arquitectura: x86_64
 Descripción: Utility for network discovery and security auditing
 Upstream: https://nmap.org/
@@ -781,14 +781,14 @@ Estado SST: [ ]
 53. rust
 Paquete: rust
 Repositorio: extra
-Versión: 1:1.99.1-1
+Versión: 1:1.99.1-2
 Arquitectura: x86_64
 Descripción: Systems programming language focused on safety, speed and concurrency
 Upstream: https://www.rust-lang.org/
 Licencia: Apache-2.0 OR MIT
-Dependencias: bash, compiler-rt, curl, gcc, glibc, libgcc, libgit2, libssh2, libstdc++, lld, llvm-libs, openssl, sqlite, zlib, libcurl.so=4-64, libgcc_s.so=1-64, libgit2.so=1.9-64, libsqlite3.so=0-64, libssh2.so=1-64, libssl.so=3-64
+Dependencias: bash, compiler-rt, curl, gcc, glibc, libgcc, libgit2, libssh2, libstdc++, lld, llvm-libs, openssl, sqlite, zlib, libcurl.so=4-64, libgcc_s.so=1-64, libgit2.so=1.9-64, libsqlite3.so=0-64, libssh2.so=1-64, libssl.so=4-64
 Opcionales: gdb: rust-gdb script, lldb: rust-lldb script
-Compilación: clang=23.1.3, llvm=23.1.3, cmake, libffi, musl, ninja, perl, python, rust, wasi-libc, wasm-component-ld, aarch64-linux-gnu-gcc, aarch64-linux-gnu-glibc, lib32-gcc-libs, lib32-glibc, musl-aarch64
+Compilación: clang=23.1.3, llvm=23.1.3, cmake, libffi, musl, ninja, perl, python, rust, wasi-libc, wasm-component-ld, openssl-3, aarch64-linux-gnu-gcc, aarch64-linux-gnu-glibc, lib32-gcc-libs, lib32-glibc, musl-aarch64
 Pruebas: gdb, procps-ng
 Proporciona: cargo, rustfmt
 Estado SST: [ ]
@@ -916,7 +916,7 @@ Estado SST: [ ]
 62. wezterm
 Paquete: wezterm
 Repositorio: extra
-Versión: 20240203.110809.5046fc22.r869.g76b606ec5-3
+Versión: 20240203.110809.5046fc22.r869.g76b606ec5-4
 Arquitectura: x86_64
 Descripción: A GPU-accelerated cross-platform terminal emulator and multiplexer
 Upstream: https://github.com/wezterm/wezterm

@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. ausweisapp
 Paquete: ausweisapp
 Repositorio: extra
-Versión: 2.6.1-1
+Versión: 2.6.2-1
 Arquitectura: x86_64
 Descripción: official client for using the German electronic ID card (eID)
 Upstream: https://www.ausweisapp.bund.de/
@@ -166,12 +166,12 @@ Estado SST: [ ]
 12. dcmtk
 Paquete: dcmtk
 Repositorio: extra
-Versión: 3.7.1-1
+Versión: 3.7.1-2
 Arquitectura: x86_64
 Descripción: A collection of libraries and applications implementing large parts the DICOM standard
 Upstream: http://dicom.offis.de/dcmtk
 Licencia: BSD-3-Clause
-Dependencias: glibc, libgcc, libpng, libpng16.so=16-64, libstdc++, libtiff, libtiff.so=6-64, libxml2, libxml2.so=16-64, openjpeg2, openssl, libcrypto.so=3-64, zlib, libz.so=1-64
+Dependencias: glibc, libgcc, libpng, libpng16.so=16-64, libstdc++, libtiff, libtiff.so=6-64, libxml2, libxml2.so=16-64, openjpeg2, openssl, libcrypto.so=4-64, zlib, libz.so=1-64
 Opcionales: dcmtk-docs: DCMTK documentation
 Compilación: cmake, doxygen, ninja, glibc, libgcc, libpng, libstdc++, libtiff, libxml2, openjpeg2, openssl, zlib
 Pruebas: —
@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. stunnel
 Paquete: stunnel
 Repositorio: extra
-Versión: 5.82-1
+Versión: 5.82-2
 Arquitectura: x86_64
 Descripción: A program that allows you to encrypt arbitrary TCP connections inside SSL
 Upstream: https://www.stunnel.org/

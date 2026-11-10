@@ -1,14 +1,14 @@
 1. aspnet runtime 10 0
 Paquete: aspnet-runtime-10.0
 Repositorio: extra
-Versión: 10.0.14.sdk114-1
+Versión: 10.0.14.sdk114-2
 Arquitectura: x86_64
 Descripción: The ASP.NET Core runtime
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
 Dependencias: dotnet-runtime-10.0
 Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang20, cmake, dotnet-sdk-10.0, dotnet-source-built-artifacts-10.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk-10.0, dotnet-source-built-artifacts-10.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: aspnet-runtime=10.0
 Estado SST: [ ]
@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. gst plugin hlsmultivariantsink
 Paquete: gst-plugin-hlsmultivariantsink
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - hlsmultivariantsink plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: MPL-2.0
-Dependencias: glib2, glibc, gstreamer, libgcc, gst-plugin-hlssink3=0.15.4-1, gst-plugins-base-libs
+Dependencias: glib2, glibc, gstreamer, libgcc, gst-plugin-hlssink3=0.15.4-2, gst-plugins-base-libs
 Opcionales: —
 Compilación: cairo, cargo-c, clang, cmake, csound, dav1d, fontconfig, freetype2, git, graphene, gst-plugins-bad, gst-plugins-bad-libs, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gtk4, libsodium, libstdc++, nasm, openssl, pango, rust, vulkan-headers, vulkan-icd-loader
 Pruebas: —
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. gst plugin raptorq
 Paquete: gst-plugin-raptorq
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - raptorq plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. pulse native provider
 Paquete: pulse-native-provider
 Repositorio: extra
-Versión: 1:1.6.10-1
+Versión: 1:1.6.11-1
 Arquitectura: x86_64
 Descripción: PulseAudio sound server (default provider)
 Upstream: https://pipewire.org
@@ -766,7 +766,7 @@ Estado SST: [ ]
 52. swtpm
 Paquete: swtpm
 Repositorio: extra
-Versión: 0.10.2-1
+Versión: 0.10.2-2
 Arquitectura: x86_64
 Descripción: Libtpms-based TPM emulator with socket, character device, and Linux CUSE interface
 Upstream: https://github.com/stefanberger/swtpm
@@ -886,12 +886,12 @@ Estado SST: [ ]
 60. xmrig
 Paquete: xmrig
 Repositorio: extra
-Versión: 6.26.0-1
+Versión: 6.26.0-2
 Arquitectura: x86_64
 Descripción: RandomX, KawPow, CryptoNight, AstroBWT and GhostRider unified CPU/GPU miner and RandomX benchmark
 Upstream: https://github.com/xmrig/xmrig
 Licencia: GPL-3.0-only
-Dependencias: glibc, hwloc, openssl, libssl.so=3-64, libuv
+Dependencias: glibc, hwloc, openssl, libssl.so=4-64, libuv
 Opcionales: —
 Compilación: cmake
 Pruebas: —

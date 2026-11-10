@@ -91,14 +91,14 @@ Estado SST: [ ]
 7. dotnet runtime
 Paquete: dotnet-runtime
 Repositorio: extra
-Versión: 10.0.14.sdk114-1
+Versión: 10.0.14.sdk114-2
 Arquitectura: x86_64
 Descripción: The .NET Core runtime
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
-Dependencias: dotnet-host, glibc, icu, krb5, libgcc, libstdc++, libunwind, zlib, openssl
+Dependencias: dotnet-host, glibc, icu, krb5, libgcc, libstdc++, libunwind, zlib, openssl-3
 Opcionales: lttng-ust2.12: CoreCLR tracing
-Compilación: bash, clang20, cmake, dotnet-sdk, dotnet-source-built-artifacts, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk, dotnet-source-built-artifacts, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-runtime=10.0, dotnet-runtime-10.0
 Estado SST: [ ]
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. easytier core
 Paquete: easytier-core
 Repositorio: extra
-Versión: 2.6.4-8
+Versión: 2.6.4-9
 Arquitectura: x86_64
 Descripción: A simple, decentralized mesh VPN with WireGuard support - Core daemon
 Upstream: https://easytier.cn/
@@ -271,12 +271,12 @@ Estado SST: [ ]
 19. input leap
 Paquete: input-leap
 Repositorio: extra
-Versión: 3.0.3-1
+Versión: 3.0.3-2
 Arquitectura: x86_64
 Descripción: Open-source KVM software
 Upstream: https://github.com/input-leap/input-leap
 Licencia: LicenseRef-GPL-2.0-only-WITH-OpenSSL-Exception
-Dependencias: avahi, gcc-libs, glib2, glibc, hicolor-icon-theme, libei, libportal, libx11, libxext, libxi, libxinerama, libxkbcommon, libxkbcommon-x11, libxrandr, libxtst, openssl, qt6-base, xdg-desktop-portal
+Dependencias: avahi, libgcc, libstdc++, glib2, glibc, hicolor-icon-theme, libei, libportal, libx11, libxext, libxi, libxinerama, libxkbcommon, libxkbcommon-x11, libxrandr, libxtst, openssl, qt6-base, xdg-desktop-portal
 Opcionales: —
 Compilación: cmake, git, gmock, gtest, gulrak-filesystem, libice, libsm, ninja, qt6-tools, xorgproto
 Pruebas: —
@@ -526,12 +526,12 @@ Estado SST: [ ]
 36. monolith
 Paquete: monolith
 Repositorio: extra
-Versión: 2.10.1-1
+Versión: 2.10.1-2
 Arquitectura: x86_64
 Descripción: CLI to save web pages as single HTML files
 Upstream: https://github.com/Y2Z/monolith
 Licencia: CC0-1.0
-Dependencias: openssl, gcc-libs
+Dependencias: openssl, libgcc
 Opcionales: —
 Compilación: cargo
 Pruebas: —
@@ -676,7 +676,7 @@ Estado SST: [ ]
 46. python cryptography
 Paquete: python-cryptography
 Repositorio: extra
-Versión: 50.0.2-1
+Versión: 50.0.2-2
 Arquitectura: x86_64
 Descripción: A package designed to expose cryptographic recipes and primitives to Python developers
 Upstream: https://github.com/pyca/cryptography

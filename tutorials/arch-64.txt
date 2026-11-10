@@ -31,7 +31,7 @@ Estado SST: [ ]
 3. bluez obex
 Paquete: bluez-obex
 Repositorio: extra
-Versión: 5.87-2
+Versión: 5.88-1
 Arquitectura: x86_64
 Descripción: Object Exchange daemon for sharing content
 Upstream: http://www.bluez.org/
@@ -181,12 +181,12 @@ Estado SST: [ ]
 13. gst plugin qml6
 Paquete: gst-plugin-qml6
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - qml6 plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-base-libs=1.28.8-1, gstreamer=1.28.8-1, glib2, glibc, libgcc, libglvnd, libstdc++, qt6-base, qt6-declarative
+Dependencias: gst-plugins-base-libs=1.28.9-1, gstreamer=1.28.9-1, glib2, glibc, libgcc, libglvnd, libstdc++, qt6-base, qt6-declarative
 Opcionales: —
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. gst plugin rsflv
 Paquete: gst-plugin-rsflv
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - rsflv plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. libfprint
 Paquete: libfprint
 Repositorio: extra
-Versión: 1.94.100-1
+Versión: 1.94.100-2
 Arquitectura: x86_64
 Descripción: Library for fingerprint readers
 Upstream: https://fprint.freedesktop.org/
@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. lua53 luaossl
 Paquete: lua53-luaossl
 Repositorio: extra
-Versión: 20260910-1
+Versión: 20260910-2
 Arquitectura: x86_64
 Descripción: Most comprehensive OpenSSL module in the Lua universe for Lua 5.3
 Upstream: http://25thandclement.com/~william/projects/luaossl.html
@@ -571,7 +571,7 @@ Estado SST: [ ]
 39. php embed
 Paquete: php-embed
 Repositorio: extra
-Versión: 8.5.12-3
+Versión: 8.5.12-4
 Arquitectura: x86_64
 Descripción: Embedded PHP SAPI library
 Upstream: https://www.php.net/
@@ -586,12 +586,12 @@ Estado SST: [ ]
 40. pipewire zeroconf
 Paquete: pipewire-zeroconf
 Repositorio: extra
-Versión: 1:1.6.10-1
+Versión: 1:1.6.11-1
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - Zeroconf support
 Upstream: https://pipewire.org
 Licencia: MIT
-Dependencias: libpipewire=1:1.6.10-1, libpipewire-0.3.so=0-64, pipewire-audio=1:1.6.10-1, pipewire=1:1.6.10-1, avahi, libavahi-client.so=3-64, libavahi-common.so=3-64, glibc, libgcc, openssl, libcrypto.so=3-64, opus, libopus.so=0-64
+Dependencias: libpipewire=1:1.6.11-1, libpipewire-0.3.so=0-64, pipewire-audio=1:1.6.11-1, pipewire=1:1.6.11-1, avahi, libavahi-client.so=3-64, libavahi-common.so=3-64, glibc, libgcc, openssl, libcrypto.so=4-64, opus, libopus.so=0-64
 Opcionales: —
 Compilación: alsa-lib, avahi, bluez-libs, dbus, dconf, doxygen, fftw, git, glib2, glib2-devel, graphviz, gst-plugins-base, jack2, libcamera, libcanberra, libebur128, libfdk-aac, libffado, libfreeaptx, libgcc, liblc3, libldac, libmysofa, libpulse, libsndfile, libstdc++, libusb, libx11, libxfixes, lilv, meson, ncurses, onnxruntime, opus, python-docutils, readline, roc-toolkit, rtkit, sbc, sdl2, spandsp, systemd, valgrind, webrtc-audio-processing-1
 Pruebas: desktop-file-utils, openal
@@ -631,7 +631,7 @@ Estado SST: [ ]
 43. python faker
 Paquete: python-faker
 Repositorio: extra
-Versión: 40.44.0-1
+Versión: 40.45.0-1
 Arquitectura: any
 Descripción: Faker generates fake data for you.
 Upstream: https://faker.readthedocs.io/en/master/
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. syslog ng geoip2
 Paquete: syslog-ng-geoip2
 Repositorio: extra
-Versión: 4.12.0-3
+Versión: 4.12.0-4
 Arquitectura: x86_64
 Descripción: Next-generation syslogd with advanced networking and filtering capabilities (GeoIP2 module)
 Upstream: https://github.com/syslog-ng/syslog-ng

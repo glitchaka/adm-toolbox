@@ -1,7 +1,7 @@
 1. argyllcms
 Paquete: argyllcms
 Repositorio: extra
-Versión: 3.5.0-1
+Versión: 3.5.0-2
 Arquitectura: x86_64
 Descripción: An ICC compatible color management system with support for different colorimeter hardware
 Upstream: https://www.argyllcms.com/
@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. bind
 Paquete: bind
 Repositorio: extra
-Versión: 9.20.30-1
+Versión: 9.20.30-2
 Arquitectura: x86_64
 Descripción: A complete, highly portable implementation of the DNS protocol
 Upstream: https://www.isc.org/software/bind/
@@ -61,14 +61,14 @@ Estado SST: [ ]
 5. dotnet runtime 6 0
 Paquete: dotnet-runtime-6.0
 Repositorio: extra
-Versión: 6.0.36.sdk136-3
+Versión: 6.0.36.sdk136-4
 Arquitectura: x86_64
 Descripción: The .NET Core runtime
 Upstream: https://www.microsoft.com/net/core
 Licencia: MIT
-Dependencias: dotnet-host, gcc-libs, glibc, icu, krb5, libunwind, zlib, openssl
+Dependencias: dotnet-host, gcc-libs, glibc, icu, krb5, libunwind, zlib, openssl-3
 Opcionales: lttng-ust2.12: CoreCLR tracing
-Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl, patchutils, systemd, zlib
+Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl-3, patchutils, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-runtime=6.0
 Estado SST: [ ]
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. efl docs
 Paquete: efl-docs
 Repositorio: extra
-Versión: 1.29.0-1
+Versión: 1.29.0-2
 Arquitectura: x86_64
 Descripción: Documentation for the Enlightenment Foundation Libraries
 Upstream: https://www.enlightenment.org
@@ -448,7 +448,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. perl
+31. pantheon appcenter
+Paquete: pantheon-appcenter
+Repositorio: extra
+Versión: 8.4.0-1
+Arquitectura: x86_64
+Descripción: App store for Pantheon
+Upstream: https://github.com/elementary/appcenter
+Licencia: GPL-3.0-or-later
+Dependencias: appstream, dconf, flatpak, glib2, glibc, granite7, gtk4, hicolor-icon-theme, json-glib, libadwaita, libgee, libportal, libportal-gtk4, libsoup3, libxml2
+Opcionales: —
+Compilación: git, meson, sassc, vala
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+32. perl
 Paquete: perl
 Repositorio: core
 Versión: 5.44.0-1
@@ -463,7 +478,7 @@ Pruebas: procps-ng
 Proporciona: perl-archive-tar=3.12, perl-attribute-handlers=1.03, perl-autodie=2.37, perl-autoloader=5.74, perl-autouse=1.11, perl-base=2.27, perl-bignum=0.67, perl-carp=1.54, perl-compress-raw-bzip2=2.218, perl-compress-raw-zlib=2.222, perl-config-perl-v=0.39, perl-constant=1.33, perl-cpan-meta-requirements=2.145, perl-cpan-meta-yaml=0.020, perl-cpan-meta=2.150013, perl-cpan=2.38, perl-data-dumper=2.192, perl-db_file=1.860, perl-devel-ppport=3.73, perl-devel-selfstubber=1.06, perl-digest-md5=2.59, perl-digest-sha=6.04, perl-digest=1.20, perl-dumpvalue=1.21, perl-encode=3.24, perl-encoding-warnings=0.14, perl-env=1.06, perl-experimental=0.036, perl-exporter=5.79, perl-extutils-cbuilder=0.280243, perl-extutils-constant=0.25, perl-extutils-install=2.22, perl-extutils-makemaker=7.78, perl-extutils-manifest=1.75, perl-extutils-parsexs=3.63, perl-extutils-pl2bat=0.005, perl-file-fetch=1.08, perl-file-path=2.18, perl-file-temp=0.2312, perl-filter-simple=0.97, perl-filter-util-call=1.65, perl-findbin=1.54, perl-getopt-long=2.58, perl-http-tiny=0.096, perl-i18n-collate=1.02, perl-i18n-langtags=0.45, perl-if=0.0610, perl-io-compress=2.223, perl-io-socket-ip=0.44, perl-io-zlib=1.15, perl-io=1.56, perl-ipc-cmd=1.04, perl-ipc-sysv=2.09, perl-json-pp=4.16, perl-lib=0.65, perl-libnet=3.15, perl-locale-maketext-simple=0.21_01, perl-locale-maketext=1.33, perl-math-bigint-fastcalc=0.5020, perl-math-bigint=2.005003, perl-math-complex=1.63, perl-memoize=1.17, perl-mime-base64=3.16_01, perl-module-corelist=5.20260708, perl-module-load-conditional=0.74, perl-module-load=0.36, perl-module-loaded=0.08, perl-module-metadata=1.000039, perl-net-ping=2.77, perl-params-check=0.38, perl-parent=0.244, perl-pathtools=3.95, perl-perl-ostype=1.010, perl-perlfaq=5.20250619, perl-perlio-via-quotedprint=0.10, perl-pod-checker=1.77, perl-pod-escapes=1.07, perl-pod-perldoc=3.2801, perl-pod-simple=3.48, perl-pod-usage=2.05, perl-podlators=6.0.2, perl-safe=2.47, perl-scalar-list-utils=1.70, perl-search-dict=1.08, perl-selfloader=1.29, perl-socket=2.041, perl-storable=3.41, perl-sys-syslog=0.36, perl-term-ansicolor=5.01, perl-term-cap=1.18, perl-term-complete=1.403, perl-term-readline=1.17, perl-term-table=0.028, perl-test-harness=3.52, perl-test-simple=1.302219, perl-test=1.31, perl-text-abbrev=1.02, perl-text-balanced=2.07, perl-text-parsewords=3.31, perl-text-tabs=2024.001, perl-thread-queue=3.14, perl-thread-semaphore=2.13, perl-threads-shared=1.73, perl-threads=2.45, perl-tie-file=1.10, perl-tie-refhash=1.41, perl-time-hires=1.9780, perl-time-local=1.35, perl-time-piece=1.41, perl-unicode-collate=1.31, perl-unicode-normalize=1.32, perl-version=0.9934, perl-xsloader=0.32
 Estado SST: [ ]
 
-32. python docstring to markdown
+33. python docstring to markdown
 Paquete: python-docstring-to-markdown
 Repositorio: extra
 Versión: 0.17-2
@@ -478,7 +493,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-33. python genshi
+34. python genshi
 Paquete: python-genshi
 Repositorio: extra
 Versión: 0.7.12-1
@@ -493,7 +508,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-34. python httpx aiohttp
+35. python httpx aiohttp
 Paquete: python-httpx-aiohttp
 Repositorio: extra
 Versión: 0.2.0-1
@@ -508,7 +523,7 @@ Pruebas: python-brotli, python-brotlicffi, python-chardet, python-h2, python-pyt
 Proporciona: —
 Estado SST: [ ]
 
-35. python imageio
+36. python imageio
 Paquete: python-imageio
 Repositorio: extra
 Versión: 2.38.1-1
@@ -523,7 +538,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-36. python oauthlib
+37. python oauthlib
 Paquete: python-oauthlib
 Repositorio: extra
 Versión: 3.3.1-2
@@ -538,10 +553,10 @@ Pruebas: python-blinker, python-cryptography, python-pyjwt, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-37. python pycurl
+38. python pycurl
 Paquete: python-pycurl
 Repositorio: extra
-Versión: 7.49.0-1
+Versión: 7.49.0-2
 Arquitectura: x86_64
 Descripción: A Python 3.x interface to libcurl
 Upstream: https://github.com/pycurl/pycurl
@@ -553,7 +568,7 @@ Pruebas: python-flaky, python-flask, python-numpy, python-paramiko, python-pyfla
 Proporciona: —
 Estado SST: [ ]
 
-38. python pydantic handlebars
+39. python pydantic handlebars
 Paquete: python-pydantic-handlebars
 Repositorio: extra
 Versión: 0.2.1-1
@@ -568,7 +583,7 @@ Pruebas: python-hypothesis, python-pytest, python-pytest-examples
 Proporciona: —
 Estado SST: [ ]
 
-39. python pylint pydantic
+40. python pylint pydantic
 Paquete: python-pylint-pydantic
 Repositorio: extra
 Versión: 0.3.5-2
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: python-pylint-pydantic
 Estado SST: [ ]
 
-40. python pyscipopt
+41. python pyscipopt
 Paquete: python-pyscipopt
 Repositorio: extra
 Versión: 6.3.0-1
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. python ruff
+42. python ruff
 Paquete: python-ruff
 Repositorio: extra
 Versión: 0.17.4-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python spherogram
+43. python spherogram
 Paquete: python-spherogram
 Repositorio: extra
 Versión: 2.4.1-1
@@ -628,10 +643,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. qxmpp
+44. qxmpp
 Paquete: qxmpp
 Repositorio: extra
-Versión: 1.17.1-1
+Versión: 1.17.2-1
 Arquitectura: x86_64
 Descripción: Cross-platform C++ XMPP client and server library
 Upstream: https://invent.kde.org/libraries/qxmpp
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: qxmpp-qt6
 Estado SST: [ ]
 
-44. reproducible faketools ar
+45. reproducible faketools ar
 Paquete: reproducible-faketools-ar
 Repositorio: extra
 Versión: 0.5.5-3
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. ruby lru redux
+46. ruby lru redux
 Paquete: ruby-lru_redux
 Repositorio: extra
 Versión: 1.1.0-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby simpleitk
+47. ruby simpleitk
 Paquete: ruby-simpleitk
 Repositorio: extra
 Versión: 2.5.7-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby subprocess
+48. ruby subprocess
 Paquete: ruby-subprocess
 Repositorio: extra
 Versión: 1.5.7-1
@@ -703,7 +718,7 @@ Pruebas: procps-ng, ruby-rdoc, ruby-bundler, ruby-minitest, ruby-pry, ruby-rake
 Proporciona: —
 Estado SST: [ ]
 
-48. webrtc audio processing 1
+49. webrtc audio processing 1
 Paquete: webrtc-audio-processing-1
 Repositorio: extra
 Versión: 1.3-6
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: libwebrtc-audio-coding-1.so=3-64, libwebrtc-audio-processing-1.so=3-64
 Estado SST: [ ]
 
-49. xcb util cursor
+50. xcb util cursor
 Paquete: xcb-util-cursor
 Repositorio: extra
 Versión: 0.1.6-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. xerces c
+51. xerces c
 Paquete: xerces-c
 Repositorio: extra
 Versión: 3.3.0-4
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. xorg fonts alias cyrillic
+52. xorg fonts alias cyrillic
 Paquete: xorg-fonts-alias-cyrillic
 Repositorio: extra
 Versión: 1.0.6-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. zlib ng compat
+53. zlib ng compat
 Paquete: zlib-ng-compat
 Repositorio: extra
 Versión: 2.3.3-1

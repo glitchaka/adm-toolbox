@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. gambas3 gb db
 Paquete: gambas3-gb-db
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Database access component
 Upstream: http://gambas.sourceforge.net/
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. gambas3 gb inotify
 Paquete: gambas3-gb-inotify
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Filesystem events monitoring component
 Upstream: http://gambas.sourceforge.net/
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. gambas3 gb xml xslt
 Paquete: gambas3-gb-xml-xslt
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: XML-XSLT component
 Upstream: http://gambas.sourceforge.net/
@@ -301,16 +301,16 @@ Estado SST: [ ]
 21. gst libav
 Paquete: gst-libav
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - libav plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-base-libs=1.28.8-1, gstreamer=1.28.8-1, ffmpeg, glib2, glibc
+Dependencias: gst-plugins-base-libs=1.28.9-1, gstreamer=1.28.9-1, ffmpeg, glib2, glibc
 Opcionales: —
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
-Proporciona: gst-ffmpeg=1.28.8-1
+Proporciona: gst-ffmpeg=1.28.9-1
 Estado SST: [ ]
 
 22. gtksourceview3
@@ -1291,12 +1291,12 @@ Estado SST: [ ]
 87. yubihsm auth
 Paquete: yubihsm-auth
 Repositorio: extra
-Versión: 2.8.0-2
+Versión: 2.8.0-3
 Arquitectura: x86_64
 Descripción: Command-line tool to use the YubiKey HSM Auth application
 Upstream: https://github.com/Yubico/yubihsm-shell/
 Licencia: Apache-2.0
-Dependencias: glibc, libykhsmauth, libykhsmauth.so=2-64, openssl, libcrypto.so=3-64
+Dependencias: glibc, libykhsmauth, libykhsmauth.so=2-64, openssl, libcrypto.so=4-64
 Opcionales: —
 Compilación: curl, cmake, gengetopt, glibc, help2man, libedit, libusb, openssl, pcsclite, zlib
 Pruebas: bats

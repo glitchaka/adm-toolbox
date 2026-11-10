@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. falkon
 Paquete: falkon
 Repositorio: extra
-Versión: 26.08.3-1
+Versión: 26.08.3-2
 Arquitectura: x86_64
 Descripción: Cross-platform QtWebEngine browser
 Upstream: https://www.falkon.org/
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. firefox noscript
 Paquete: firefox-noscript
 Repositorio: extra
-Versión: 13.6.37-1
+Versión: 13.6.38-1
 Arquitectura: any
 Descripción: Extension for firefox which disables javascript
 Upstream: https://noscript.net/
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. graphviz
 Paquete: graphviz
 Repositorio: extra
-Versión: 16.1.0-2
+Versión: 16.1.1-1
 Arquitectura: x86_64
 Descripción: Graph visualization software
 Upstream: https://www.graphviz.org/
@@ -256,12 +256,12 @@ Estado SST: [ ]
 18. lib32 curl
 Paquete: lib32-curl
 Repositorio: multilib
-Versión: 8.23.0-1
+Versión: 8.23.0-2
 Arquitectura: x86_64
 Descripción: command line tool and library for transferring data with URLs (32-bit)
 Upstream: https://curl.se/
 Licencia: curl
-Dependencias: curl, lib32-brotli, libbrotlidec.so=1-32, lib32-krb5, libgssapi_krb5.so=2-32, lib32-libidn2, libidn2.so=0-32, lib32-libnghttp2, libnghttp2.so=14-32, lib32-libnghttp3, libnghttp3.so=9-32, lib32-libngtcp2, libngtcp2.so=16-32, lib32-libpsl, libpsl.so=5-32, lib32-libssh2, libssh2.so=1-32, lib32-openssl, libcrypto.so=3-32, libssl.so=3-32, lib32-zlib, libz.so=1-32, lib32-zstd, libzstd.so=1-32
+Dependencias: curl, lib32-brotli, libbrotlidec.so=1-32, lib32-krb5, libgssapi_krb5.so=2-32, lib32-libidn2, libidn2.so=0-32, lib32-libnghttp2, libnghttp2.so=14-32, lib32-libnghttp3, libnghttp3.so=9-32, lib32-libngtcp2, libngtcp2.so=16-32, lib32-libpsl, libpsl.so=5-32, lib32-libssh2, libssh2.so=1-32, lib32-openssl, libcrypto.so=4-32, libssl.so=4-32, lib32-zlib, libz.so=1-32, lib32-zstd, libzstd.so=1-32
 Opcionales: —
 Compilación: git, patchelf, curl, lib32-brotli, lib32-gnutls, lib32-krb5, lib32-nettle, lib32-libidn2, lib32-libnghttp2, lib32-libnghttp3, lib32-libngtcp2, lib32-libpsl, lib32-libssh2, lib32-openssl, lib32-zlib, lib32-zstd
 Pruebas: —
@@ -391,12 +391,12 @@ Estado SST: [ ]
 27. pacman bintrans tools
 Paquete: pacman-bintrans-tools
 Repositorio: extra
-Versión: 0.5.0-2
+Versión: 0.5.0-3
 Arquitectura: x86_64
 Descripción: Binary transparency for pacman (sign/monitor tools)
 Upstream: https://github.com/kpcyrd/pacman-bintrans
 Licencia: GPL-3.0-or-later
-Dependencias: bzip2, libbz2.so=1.0-64, gcc-libs, glibc, openssl, libssl.so=3-64, rekor, shared-mime-info, sqlite, libsqlite3.so=0-64, xz, liblzma.so=5-64, zstd, libzstd.so=1-64
+Dependencias: bzip2, libbz2.so=1.0-64, libgcc, glibc, openssl, libssl.so=4-64, rekor, shared-mime-info, sqlite, libsqlite3.so=0-64, xz, liblzma.so=5-64, zstd, libzstd.so=1-64
 Opcionales: —
 Compilación: cargo, sqlite, libsqlite3.so
 Pruebas: —
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. pam u2f
 Paquete: pam-u2f
 Repositorio: extra
-Versión: 1.4.0-2
+Versión: 1.4.0-3
 Arquitectura: x86_64
 Descripción: Universal 2nd Factor (U2F) PAM authentication module from Yubico
 Upstream: https://developers.yubico.com/pam-u2f
@@ -706,7 +706,7 @@ Estado SST: [ ]
 48. virtualbox ext vnc
 Paquete: virtualbox-ext-vnc
 Repositorio: extra
-Versión: 7.2.22-1
+Versión: 7.2.22-2
 Arquitectura: x86_64
 Descripción: VirtualBox VNC extension pack
 Upstream: https://virtualbox.org/

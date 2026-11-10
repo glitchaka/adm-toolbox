@@ -436,7 +436,7 @@ Estado SST: [ ]
 30. libssh
 Paquete: libssh
 Repositorio: extra
-Versión: 0.12.2-1
+Versión: 0.12.2-2
 Arquitectura: x86_64
 Descripción: Library for accessing ssh client services through C libraries
 Upstream: https://www.libssh.org/
@@ -466,12 +466,12 @@ Estado SST: [ ]
 32. mariadb lts libs
 Paquete: mariadb-lts-libs
 Repositorio: extra
-Versión: 12.3.3-2
+Versión: 12.3.3-3
 Arquitectura: x86_64
 Descripción: MariaDB libraries (LTS)
 Upstream: https://mariadb.org/
 Licencia: GPL-2.0-only
-Dependencias: liburing, liburing.so=2-64, libxcrypt, libcrypt.so=2-64, openssl, libcrypto.so=3-64, libssl.so=3-64, pcre2, libpcre2-8.so=0-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
+Dependencias: liburing, liburing.so=2-64, libxcrypt, libcrypt.so=2-64, openssl, libcrypto.so=4-64, libssl.so=4-64, pcre2, libpcre2-8.so=0-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
 Opcionales: krb5: for gssapi authentication
 Compilación: git, boost, bzip2, cmake, cracklib, curl, jemalloc, judy, krb5, liburing, libxcrypt, libxml2, lz4, openssl, pcre2, systemd, zlib, zstd, xz
 Pruebas: —
@@ -541,7 +541,7 @@ Estado SST: [ ]
 37. pcp pmda activemq
 Paquete: pcp-pmda-activemq
 Repositorio: extra
-Versión: 7.2.2-2
+Versión: 7.2.2-3
 Arquitectura: x86_64
 Descripción: PCP Performance Metrics Domain Agent (PMDA) for collecting metrics from ActiveMQ
 Upstream: https://pcp.io

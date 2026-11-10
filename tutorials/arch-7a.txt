@@ -61,12 +61,12 @@ Estado SST: [ ]
 5. composefs
 Paquete: composefs
 Repositorio: extra
-Versión: 1.0.8-1
+Versión: 1.0.8-2
 Arquitectura: x86_64
 Descripción: A file system for mounting container images
 Upstream: https://github.com/containers/composefs
 Licencia: LGPL-2.1-or-later, BSD-2-Clause OR GPL-2.0-or-later, GPL-2.0-only OR Apache-2.0, GPL-3.0-or-later
-Dependencias: gcc-libs, glibc, openssl
+Dependencias: glibc, libgcc, openssl
 Opcionales: —
 Compilación: fuse3, go-md2man, meson
 Pruebas: python
@@ -346,12 +346,12 @@ Estado SST: [ ]
 24. libzip
 Paquete: libzip
 Repositorio: extra
-Versión: 1.11.4-1
+Versión: 1.11.4-2
 Arquitectura: x86_64
 Descripción: C library for reading, creating, and modifying zip archives
 Upstream: https://libzip.org
 Licencia: BSD
-Dependencias: zlib, bzip2, zstd, openssl, gnutls
+Dependencias: bzip2, glibc, gnutls, openssl, xz, zlib, zstd
 Opcionales: —
 Compilación: cmake
 Pruebas: —
@@ -481,7 +481,7 @@ Estado SST: [ ]
 33. python mupdf
 Paquete: python-mupdf
 Repositorio: extra
-Versión: 1.28.5-2
+Versión: 1.28.5-3
 Arquitectura: x86_64
 Descripción: Library for Lightweight PDF and XPS viewer - Python bindings
 Upstream: https://mupdf.com
@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. trojan
 Paquete: trojan
 Repositorio: extra
-Versión: 1.16.0-18
+Versión: 1.16.0-19
 Arquitectura: x86_64
 Descripción: An unidentifiable mechanism that helps you bypass GFW
 Upstream: https://github.com/trojan-gfw/trojan
@@ -676,7 +676,7 @@ Estado SST: [ ]
 46. uwsgi plugin pypy
 Paquete: uwsgi-plugin-pypy
 Repositorio: extra
-Versión: 2.0.31-4
+Versión: 2.0.31-5
 Arquitectura: x86_64
 Descripción: A full stack for building hosting services (PyPy plugin)
 Upstream: https://uwsgi-docs.readthedocs.io/en/latest/

@@ -76,14 +76,14 @@ Estado SST: [ ]
 6. dovecot
 Paquete: dovecot
 Repositorio: extra
-Versión: 2.4.5-1
+Versión: 2.4.5-2
 Arquitectura: x86_64
 Descripción: An IMAP and POP3 server written with security primarily in mind
 Upstream: https://dovecot.org/
 Licencia: MIT, LGPL-2.1-only
-Dependencias: glibc, bzip2, libbz2.so=1.0-64, expat, libexpat.so=1-64, icu, libicuuc.so=78-64, libicui18n.so=78-64, krb5, libgssapi_krb5.so=2-64, libkrb5.so=3-64, libcap, libcap.so=2-64, libgcc, libgcc_s.so=1-64, libsodium, libsodium.so=26-64, libstdc++, libstdc++.so=6-64, libstemmer, libstemmer.so=0-64, libxcrypt, libcrypt.so=2-64, lz4, liblz4.so=1-64, mariadb-libs, libmariadb.so=3-64, openssl, libcrypto.so=3-64, libssl.so=3-64, pam, libpam.so=0-64, pcre2, libpcre2-32.so=0-64, postgresql-libs, libpq.so=5-64, sqlite, libsqlite3.so=0-64, systemd-libs, libsystemd.so=0-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
+Dependencias: glibc, bzip2, libbz2.so=1.0-64, expat, libexpat.so=1-64, icu, libicuuc.so=78-64, libicui18n.so=78-64, krb5, libgssapi_krb5.so=2-64, libkrb5.so=3-64, libcap, libcap.so=2-64, libgcc, libgcc_s.so=1-64, libsodium, libsodium.so=26-64, libstdc++, libstdc++.so=6-64, libstemmer, libstemmer.so=0-64, libxcrypt, libcrypt.so=2-64, lz4, liblz4.so=1-64, mariadb-libs, libmariadb.so=3-64, openssl-3, libcrypto.so=3-64, libssl.so=3-64, pam, libpam.so=0-64, pcre2, libpcre2-32.so=0-64, postgresql-libs, libpq.so=5-64, sqlite, libsqlite3.so=0-64, systemd-libs, libsystemd.so=0-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
 Opcionales: libldap: LDAP plugin, lua53: Lua auth and push support, xapian-core: FTS flatcurve indexer
-Compilación: libldap, lua53, systemd, xapian-core, bzip2, expat, glibc, krb5, icu, libcap, libgcc, libsodium, libstdc++, libstemmer, libxcrypt, lz4, mariadb-libs, openssl, pam, pcre2, postgresql-libs, sqlite, systemd-libs, zlib, zstd
+Compilación: libldap, lua53, systemd, xapian-core, bzip2, expat, glibc, krb5, icu, libcap, libgcc, libsodium, libstdc++, libstemmer, libxcrypt, lz4, mariadb-libs, openssl-3, pam, pcre2, postgresql-libs, sqlite, systemd-libs, zlib, zstd
 Pruebas: —
 Proporciona: imap-server, pop3-server, libdovecot.so=0-64, libdovecot-storage.so=0-64, libdovecot-storage-lua.so=0-64, libdovecot-sql.so=0-64, libdovecot-lua.so=0-64, libdovecot-login.so=0-64, libdovecot-ldap.so=0-64, libdovecot-lda.so=0-64, libdovecot-language.so=0-64, libdovecot-gssapi.so=0-64, libdovecot-dsync.so=0-64, libdovecot-compression.so=0-64
 Estado SST: [ ]
@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. lua location
 Paquete: lua-location
 Repositorio: extra
-Versión: 0.9.19-1
+Versión: 0.9.19-2
 Arquitectura: x86_64
 Descripción: IPFire Location Database - Determine the location of someone on the Internet (Lua bindings)
 Upstream: https://git.ipfire.org/?p=location/libloc.git;a=summary
@@ -661,12 +661,12 @@ Estado SST: [ ]
 45. python importlib metadata
 Paquete: python-importlib-metadata
 Repositorio: extra
-Versión: 10.1.0-1
+Versión: 10.2.0-1
 Arquitectura: any
 Descripción: Read metadata from Python packages
 Upstream: https://importlib-metadata.readthedocs.io
 Licencia: Apache-2.0
-Dependencias: python, python-zipp
+Dependencias: python, python-lazy-importer, python-zipp
 Opcionales: —
 Compilación: git, python-build, python-installer, python-setuptools, python-setuptools-scm, python-wheel
 Pruebas: python-jaraco.test, python-pytest, python-pyfakefs, python-pip, python-tests
@@ -991,7 +991,7 @@ Estado SST: [ ]
 67. uwsgi plugin zabbix
 Paquete: uwsgi-plugin-zabbix
 Repositorio: extra
-Versión: 2.0.31-4
+Versión: 2.0.31-5
 Arquitectura: x86_64
 Descripción: A full stack for building hosting services (zabbix plugin)
 Upstream: https://uwsgi-docs.readthedocs.io/en/latest/

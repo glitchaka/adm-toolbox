@@ -1,7 +1,7 @@
 1. arch pkg repo updater
 Paquete: arch-pkg-repo-updater
 Repositorio: extra
-Versión: 0.0.7-1
+Versión: 0.0.7-2
 Arquitectura: x86_64
 Descripción: Arch Linux packaging Git repository updater
 Upstream: https://gitlab.archlinux.org/archlinux/buildbtw/-/tree/main/src/bin/repo-updater
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. libdatovka
 Paquete: libdatovka
 Repositorio: extra
-Versión: 0.7.4-1
+Versión: 0.7.4-2
 Arquitectura: x86_64
 Descripción: ISDS client library
 Upstream: https://www.datovka.cz/cs/pages/libdatovka.html
@@ -481,12 +481,12 @@ Estado SST: [ ]
 33. openai codex voice
 Paquete: openai-codex-voice
 Repositorio: extra
-Versión: 0.167.0-1
+Versión: 0.167.0-3
 Arquitectura: x86_64
 Descripción: Voice mode support for the Codex CLI
 Upstream: https://github.com/openai/codex
 Licencia: Apache-2.0
-Dependencias: alsa-lib, glib2, glibc, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gstreamer, libgcc, openai-codex=0.167.0-1
+Dependencias: alsa-lib, glib2, glibc, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gstreamer, libgcc, openai-codex=0.167.0-3
 Opcionales: —
 Compilación: alsa-lib, cargo, cmake, glib2, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gstreamer
 Pruebas: —
@@ -496,12 +496,12 @@ Estado SST: [ ]
 34. oscpack
 Paquete: oscpack
 Repositorio: extra
-Versión: 1.1.0-4
+Versión: 1.1.0-5
 Arquitectura: x86_64
 Descripción: Open Sound Control packet manipulation library
 Upstream: https://github.com/RossBencina/oscpack
 Licencia: MIT
-Dependencias: gcc-libs, glibc
+Dependencias: libgcc, libstdc++, glibc
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -826,7 +826,7 @@ Estado SST: [ ]
 56. springlobby
 Paquete: springlobby
 Repositorio: extra
-Versión: 0.274-6
+Versión: 0.274-7
 Arquitectura: x86_64
 Descripción: A free cross-platform lobby client for the Spring RTS project
 Upstream: https://github.com/springlobby/springlobby
@@ -991,7 +991,7 @@ Estado SST: [ ]
 67. xorg xwayland
 Paquete: xorg-xwayland
 Repositorio: extra
-Versión: 24.1.14-1
+Versión: 24.1.15-1
 Arquitectura: x86_64
 Descripción: run X clients under wayland
 Upstream: https://xorg.freedesktop.org

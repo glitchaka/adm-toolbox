@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. lib32 systemd
 Paquete: lib32-systemd
 Repositorio: multilib
-Versión: 262.1-1
+Versión: 262.2-1
 Arquitectura: x86_64
 Descripción: system and service manager (32-bit)
 Upstream: https://www.github.com/systemd/systemd
@@ -631,7 +631,7 @@ Estado SST: [ ]
 43. monit
 Paquete: monit
 Repositorio: extra
-Versión: 6.0.0-1
+Versión: 6.0.0-2
 Arquitectura: x86_64
 Descripción: Utility for managing and monitoring, processes, files, directories and devices on a *NIX system
 Upstream: https://mmonit.com/monit/
@@ -661,12 +661,12 @@ Estado SST: [ ]
 45. newsflash
 Paquete: newsflash
 Repositorio: extra
-Versión: 5.2.5-1
+Versión: 6.0.2-1
 Arquitectura: x86_64
 Descripción: Feed reader application designed to complement an already existing web-based RSS reader account
 Upstream: https://apps.gnome.org/NewsFlash/
 Licencia: GPL-3.0-or-later
-Dependencias: cairo, fontconfig, glib2, glibc, graphene, gtk4, gtksourceview5, hicolor-icon-theme, lcms2, libadwaita, libclapper, libclapper-gtk, libgcc, libseccomp, libxml2, openssl, pango, sqlite
+Dependencias: cairo, fontconfig, glib2, glibc, graphene, gstreamer, gtk4, gtksourceview5, hicolor-icon-theme, libadwaita, libclapper, libclapper-gtk, libgcc, libseccomp, pango, sqlite
 Opcionales: —
 Compilación: appstream, blueprint-compiler, clang, git, meson, rust, webkitgtk-6.0
 Pruebas: —
@@ -736,12 +736,12 @@ Estado SST: [ ]
 50. pulseaudio
 Paquete: pulseaudio
 Repositorio: extra
-Versión: 17.0+r134+g77d25a1e6-1
+Versión: 17.0+r134+g77d25a1e6-2
 Arquitectura: x86_64
 Descripción: A featureful, general-purpose sound server
 Upstream: https://www.freedesktop.org/wiki/Software/PulseAudio/
 Licencia: LGPL-2.1-or-later
-Dependencias: libpulse=17.0+r134+g77d25a1e6-1, alsa-lib, bash, dbus, fftw, glib2, glibc, libcap, libgcc, libice, libltdl, libsm, libsndfile, libsoxr, libx11, libxcb, libxtst, orc, rtkit, speexdsp, systemd, systemd-libs, tdb, webrtc-audio-processing-1
+Dependencias: libpulse=17.0+r134+g77d25a1e6-2, alsa-lib, bash, dbus, fftw, glib2, glibc, libcap, libgcc, libice, libltdl, libsm, libsndfile, libsoxr, libx11, libxcb, libxtst, orc, rtkit, speexdsp, systemd, systemd-libs, tdb, webrtc-audio-processing-1
 Opcionales: pulseaudio-alsa: ALSA configuration (recommended), pulseaudio-bluetooth: Bluetooth support, pulseaudio-equalizer: Graphical equalizer, pulseaudio-jack: Jack support, pulseaudio-lirc: IR (lirc) support, pulseaudio-rtp: RTP and RAOP support, pulseaudio-zeroconf: Zeroconf support
 Compilación: alsa-lib, attr, avahi, bash, bluez, bluez-libs, check, dbus, doxygen, fftw, git, glib2, glibc, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gstreamer, gtk3, jack2, libasyncns, libcap, libgcc, libice, libltdl, libsm, libsndfile, libsoxr, libx11, libxcb, libxtst, lirc, meson, openssl, orc, python, python-dbus, python-pyqt5, rtkit, sbc, speexdsp, systemd, systemd-libs, tdb, valgrind, webrtc-audio-processing-1, xmltoman
 Pruebas: —
@@ -1006,7 +1006,7 @@ Estado SST: [ ]
 68. transmission cli
 Paquete: transmission-cli
 Repositorio: extra
-Versión: 4.1.4-1
+Versión: 4.1.4-2
 Arquitectura: x86_64
 Descripción: Fast, easy, and free BitTorrent client (CLI tools, daemon and web client)
 Upstream: http://www.transmissionbt.com/

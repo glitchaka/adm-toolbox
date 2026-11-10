@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. erlang runtime tools
 Paquete: erlang-runtime_tools
 Repositorio: extra
-Versión: 29.1.1-1
+Versión: 29.1.1-2
 Arquitectura: x86_64
 Descripción: A set of tools to include in a production system
 Upstream: https://erlang.org/
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. libmemcached awesome
 Paquete: libmemcached-awesome
 Repositorio: extra
-Versión: 1.1.4-4
+Versión: 1.1.4-5
 Arquitectura: x86_64
 Descripción: C/C++ client library and tools for the memcached server
 Upstream: https://awesomized.github.io/libmemcached/
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. libressl
 Paquete: libressl
 Repositorio: extra
-Versión: 4.4.0-1
+Versión: 4.4.0-2
 Arquitectura: x86_64
 Descripción: Free version of the TLS/crypto stack forked from OpenSSL
 Upstream: https://www.libressl.org/
@@ -421,12 +421,12 @@ Estado SST: [ ]
 29. opencode desktop
 Paquete: opencode-desktop
 Repositorio: extra
-Versión: 2.2.6-1
+Versión: 2.2.7-1
 Arquitectura: x86_64
 Descripción: The open source coding agent (desktop app)
 Upstream: https://github.com/anomalyco/opencode
 Licencia: MIT
-Dependencias: electron44, gcc-libs, glibc, opencode=2.2.6, sh
+Dependencias: electron44, gcc-libs, glibc, opencode=2.2.7, sh
 Opcionales: —
 Compilación: bun, electron44, git, nodejs
 Pruebas: —
@@ -616,7 +616,7 @@ Estado SST: [ ]
 42. ripasso
 Paquete: ripasso
 Repositorio: extra
-Versión: 0.7.0-5
+Versión: 0.7.0-6
 Arquitectura: x86_64
 Descripción: A simple password manager written in Rust
 Upstream: https://github.com/cortex/ripasso
@@ -631,7 +631,7 @@ Estado SST: [ ]
 43. rofi
 Paquete: rofi
 Repositorio: extra
-Versión: 2.0.0-1
+Versión: 2.1.0-1
 Arquitectura: x86_64
 Descripción: A window switcher, application launcher and dmenu replacement
 Upstream: https://davatorium.github.io/rofi
@@ -781,12 +781,12 @@ Estado SST: [ ]
 53. wireplumber
 Paquete: wireplumber
 Repositorio: extra
-Versión: 0.5.18-1
+Versión: 0.5.19-1
 Arquitectura: x86_64
 Descripción: Session / policy manager implementation for PipeWire
 Upstream: https://pipewire.pages.freedesktop.org/wireplumber/
 Licencia: MIT
-Dependencias: libwireplumber=0.5.18-1, glibc, libgcc, libglib-2.0.so=0-64, libgobject-2.0.so=0-64, libgio-2.0.so=0-64, libpipewire, libpipewire-0.3.so=0-64, libsystemd.so=0-64, lua, pipewire, systemd-libs
+Dependencias: libwireplumber=0.5.19-1, glibc, libgcc, libglib-2.0.so=0-64, libgobject-2.0.so=0-64, libgio-2.0.so=0-64, libpipewire, libpipewire-0.3.so=0-64, libsystemd.so=0-64, lua, pipewire, systemd-libs
 Opcionales: wireplumber-docs: Documentation, wireplumber-system-services: System daemon (not recommended)
 Compilación: doxygen, git, glib2, glib2-devel, glibc, gobject-introspection, graphviz, libgcc, libpipewire, lua, meson, pipewire, python-breathe, python-lxml, python-sphinx, python-sphinx_rtd_theme, systemd, systemd-libs
 Pruebas: pipewire-audio

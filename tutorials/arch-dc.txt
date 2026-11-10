@@ -1,7 +1,7 @@
 1. age plugin tpm
 Paquete: age-plugin-tpm
 Repositorio: extra
-Versión: 1.0.1-2
+Versión: 1.0.1-3
 Arquitectura: x86_64
 Descripción: TPM plugin for age
 Upstream: https://github.com/Foxboron/age-plugin-tpm
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. drpm
 Paquete: drpm
 Repositorio: extra
-Versión: 0.5.3-1
+Versión: 0.5.3-2
 Arquitectura: x86_64
 Descripción: A small library for fetching information from deltarpm packages
 Upstream: https://github.com/rpm-software-management/drpm
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. erlang public key
 Paquete: erlang-public_key
 Repositorio: extra
-Versión: 29.1.1-1
+Versión: 29.1.1-2
 Arquitectura: x86_64
 Descripción: API to public key infrastructure
 Upstream: https://erlang.org/
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. libdatachannel
 Paquete: libdatachannel
 Repositorio: extra
-Versión: 0.24.5-2
+Versión: 0.24.5-3
 Arquitectura: x86_64
 Descripción: C/C++ WebRTC network library featuring Data Channels, Media Transport, and WebSockets
 Upstream: https://github.com/paullouisageneau/libdatachannel
@@ -391,14 +391,14 @@ Estado SST: [ ]
 27. maelstrom go test
 Paquete: maelstrom-go-test
 Repositorio: extra
-Versión: 0.14.0-2
+Versión: 0.14.0-3
 Arquitectura: x86_64
 Descripción: Go test runner for Maelstrom
 Upstream: https://maelstrom-software.com/
 Licencia: Apache-2.0 OR MIT
-Dependencias: gcc-libs, glibc, go, openssl, libcrypto.so=3-64, libssl.so=3-64
+Dependencias: libgcc, glibc, go, openssl, libcrypto.so=4-64, libssl.so=4-64
 Opcionales: —
-Compilación: gcc-libs, glibc, git, openssl, protobuf, rust
+Compilación: glibc, git, openssl, protobuf, rust
 Pruebas: go, python-pip, python-pytest
 Proporciona: —
 Estado SST: [ ]
@@ -826,7 +826,7 @@ Estado SST: [ ]
 56. zchunk
 Paquete: zchunk
 Repositorio: extra
-Versión: 1.5.4-1
+Versión: 1.5.5-1
 Arquitectura: x86_64
 Descripción: A file format designed for highly efficient deltas while maintaining good compression
 Upstream: https://github.com/zchunk/zchunk

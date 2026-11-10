@@ -316,12 +316,12 @@ Estado SST: [ ]
 22. kwaak
 Paquete: kwaak
 Repositorio: extra
-Versión: 0.19.0-1
+Versión: 0.19.0-2
 Arquitectura: x86_64
 Descripción: Run a team of autonomous AI agents from your terminal
 Upstream: https://github.com/bosun-ai/kwaak
 Licencia: MIT
-Dependencias: gcc-libs, openssl, oniguruma
+Dependencias: libgcc, libstdc++, openssl, oniguruma
 Opcionales: —
 Compilación: cargo, protobuf
 Pruebas: git
@@ -451,14 +451,14 @@ Estado SST: [ ]
 31. medusa
 Paquete: medusa
 Repositorio: extra
-Versión: 2.2-13
+Versión: 2.3-1
 Arquitectura: x86_64
 Descripción: Speedy, massively parallel and modular login brute-forcer for network
 Upstream: http://www.foofus.net/jmk/medusa/medusa.html
 Licencia: GPL2
 Dependencias: openssl
 Opcionales: openssl: HTTP, MSSQL, SMBNT and SSL-based connection support, libssh2: SSH support, postgresql-libs: PostgreSQL support, afpfs-ng: AFP support, subversion: Subversion support
-Compilación: libssh2, postgresql-libs, afpfs-ng, subversion, freerdp
+Compilación: libssh2, postgresql-libs, afpfs-ng, subversion, freerdp, git
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. syslog ng mongodb
 Paquete: syslog-ng-mongodb
 Repositorio: extra
-Versión: 4.12.0-3
+Versión: 4.12.0-4
 Arquitectura: x86_64
 Descripción: Next-generation syslogd with advanced networking and filtering capabilities (MongoDB module)
 Upstream: https://github.com/syslog-ng/syslog-ng

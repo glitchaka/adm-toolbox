@@ -16,14 +16,14 @@ Estado SST: [ ]
 2. aspnet runtime 6 0
 Paquete: aspnet-runtime-6.0
 Repositorio: extra
-Versión: 6.0.36.sdk136-3
+Versión: 6.0.36.sdk136-4
 Arquitectura: x86_64
 Descripción: The ASP.NET Core runtime
 Upstream: https://www.microsoft.com/net/core
 Licencia: MIT
 Dependencias: dotnet-runtime-6.0
 Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl, patchutils, systemd, zlib
+Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl-3, patchutils, systemd, zlib
 Pruebas: —
 Proporciona: aspnet-runtime=6.0
 Estado SST: [ ]
@@ -31,14 +31,14 @@ Estado SST: [ ]
 3. aspnet targeting pack 10 0
 Paquete: aspnet-targeting-pack-10.0
 Repositorio: extra
-Versión: 10.0.14.sdk114-1
+Versión: 10.0.14.sdk114-2
 Arquitectura: x86_64
 Descripción: The ASP.NET Core targeting pack
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
 Dependencias: dotnet-targeting-pack-10.0
 Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang20, cmake, dotnet-sdk-10.0, dotnet-source-built-artifacts-10.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk-10.0, dotnet-source-built-artifacts-10.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: aspnet-targeting-pack=10.0
 Estado SST: [ ]
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. libmythes
 Paquete: libmythes
 Repositorio: extra
-Versión: 1:1.2.6-1
+Versión: 1:1.2.7-1
 Arquitectura: x86_64
 Descripción: a simple thesaurus
 Upstream: https://github.com/hunspell/mythes
@@ -556,7 +556,7 @@ Estado SST: [ ]
 38. opendkim
 Paquete: opendkim
 Repositorio: extra
-Versión: 2.11.0beta2-1
+Versión: 2.11.0beta2-2
 Arquitectura: x86_64
 Descripción: Open source implementation of the DKIM sender authentication system. Based on a fork of dkim-milter.
 Upstream: http://www.opendkim.org/
@@ -901,7 +901,7 @@ Estado SST: [ ]
 61. uwsgi plugin psgi
 Paquete: uwsgi-plugin-psgi
 Repositorio: extra
-Versión: 2.0.31-4
+Versión: 2.0.31-5
 Arquitectura: x86_64
 Descripción: A full stack for building hosting services (Perl psgi plugin)
 Upstream: https://uwsgi-docs.readthedocs.io/en/latest/

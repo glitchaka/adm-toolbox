@@ -286,12 +286,12 @@ Estado SST: [ ]
 20. john
 Paquete: john
 Repositorio: extra
-Versión: 1.9.0.jumbo1-13
+Versión: 1.9.0.jumbo1-14
 Arquitectura: x86_64
 Descripción: John the Ripper password cracker
 Upstream: https://www.openwall.com/john
 Licencia: GPL2, custom
-Dependencias: openssl, gmp, libpcap, openmpi, gcc-libs, opencl-icd-loader, libxcrypt, libcrypt.so=2-64
+Dependencias: openssl, gmp, libpcap, openmpi, libgcc, libgomp, opencl-icd-loader, libxcrypt, libcrypt.so=2-64
 Opcionales: bash-completion: completion for bash, lua: lua based john scripts, perl: perl based john scripts, ruby: ruby based john scripts, python: python based john scripts
 Compilación: pkg-config, opencl-headers
 Pruebas: —
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. nextcloud app mail
 Paquete: nextcloud-app-mail
 Repositorio: extra
-Versión: 5.13.1-1
+Versión: 5.13.2-1
 Arquitectura: any
 Descripción: An email app for NextCloud
 Upstream: https://github.com/nextcloud/mail
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. vhba module
 Paquete: vhba-module
 Repositorio: extra
-Versión: 20260313-57
+Versión: 20260313-59
 Arquitectura: x86_64
 Descripción: Virtual SCSI adapter - Linux modules
 Upstream: https://cdemu.sourceforge.io/

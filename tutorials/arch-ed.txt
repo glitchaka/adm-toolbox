@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. bigloo
 Paquete: bigloo
 Repositorio: extra
-Versión: 4.7a-1
+Versión: 4.7a-2
 Arquitectura: x86_64
 Descripción: Fast scheme compiler
 Upstream: https://www-sop.inria.fr/mimosa/fp/Bigloo/
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gambas3 gb signal
 Paquete: gambas3-gb-signal
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: POSIX Signals component
 Upstream: http://gambas.sourceforge.net/
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. percona server
 Paquete: percona-server
 Repositorio: extra
-Versión: 9.7.2_2-1
+Versión: 9.7.2_2-2
 Arquitectura: x86_64
 Descripción: Drop-in replacement for MySQL that provides improved performance, diagnostics, instrumentation and MyRocks storage engine
 Upstream: https://www.percona.com/software/mysql-database/percona-server
@@ -571,7 +571,7 @@ Estado SST: [ ]
 39. pipewire docs
 Paquete: pipewire-docs
 Repositorio: extra
-Versión: 1:1.6.10-1
+Versión: 1:1.6.11-1
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - documentation
 Upstream: https://pipewire.org
@@ -721,12 +721,12 @@ Estado SST: [ ]
 49. rqbit desktop
 Paquete: rqbit-desktop
 Repositorio: extra
-Versión: 9.0.1-1
+Versión: 9.0.1-2
 Arquitectura: x86_64
 Descripción: A bittorrent client in Rust (desktop app)
 Upstream: https://github.com/ikatson/rqbit
 Licencia: Apache-2.0
-Dependencias: glibc, hicolor-icon-theme, libcairo.so=2-64, libdbus-1.so=3-64, libgcc, libgdk_pixbuf-2.0.so=0-64, libglib-2.0.so=0-64, libgtk-3.so=0-64, libsoup-3.0.so=0-64, libssl.so=3-64, libwebkit2gtk-4.1.so=0-64, rqbit
+Dependencias: glibc, hicolor-icon-theme, libcairo.so=2-64, libdbus-1.so=3-64, libgcc, libgdk_pixbuf-2.0.so=0-64, libglib-2.0.so=0-64, libgtk-3.so=0-64, libsoup-3.0.so=0-64, libssl.so=4-64, libwebkit2gtk-4.1.so=0-64, rqbit
 Opcionales: —
 Compilación: cairo, libcairo.so, cargo, cargo-tauri, dbus, libdbus-1.so, gdk-pixbuf2, libgdk_pixbuf-2.0.so, glib2, libglib-2.0.so, gtk3, libgtk-3.so, libsoup3, libsoup-3.0.so, npm, openssl, libssl.so, typescript, webkit2gtk-4.1, libwebkit2gtk-4.1.so
 Pruebas: —
@@ -766,14 +766,14 @@ Estado SST: [ ]
 52. systemd tests
 Paquete: systemd-tests
 Repositorio: core
-Versión: 262.1-1
+Versión: 262.2-1
 Arquitectura: x86_64
 Descripción: systemd tests
 Upstream: https://www.github.com/systemd/systemd
 Licencia: LGPL-2.1-or-later
-Dependencias: bash, glibc, libgcc, python, python-packaging, python-colorama, python-pexpect, python-pytest, python-psutil, systemd=262.1-1, systemd-libs=262.1-1
+Dependencias: bash, glibc, libgcc, python, python-packaging, python-colorama, python-pexpect, python-pytest, python-psutil, systemd=262.2-1, systemd-libs=262.2-1
 Opcionales: —
-Compilación: acl, apparmor, cryptsetup, docbook-xsl, gperf, lz4, xz, pam, libelf, intltool, iptables, kmod, libarchive, libidn2, libgcrypt, libmicrohttpd, libxcrypt, libxslt, util-linux, linux-api-headers, python-jinja, python-lxml, quota-tools, shadow, git, meson, libseccomp, pcre2, audit, kexec-tools, libxkbcommon, bash-completion, p11-kit, systemd, libfido2, tpm2-tss, rsync, bpf, libbpf, clang, llvm, curl, gnutls, python-pyelftools, libpwquality, qrencode, lib32-gcc-libs, python-pefile, linux-headers
+Compilación: acl, apparmor, cryptsetup, docbook-xsl, gperf, lz4, xz, pam, libelf, intltool, iptables, kmod, libarchive, libidn2, libgcrypt, libmicrohttpd, libxcrypt, libxslt, util-linux, linux-api-headers, python-jinja, python-lxml, quota-tools, shadow, git, meson, libseccomp, pcre2, audit, kexec-tools, libxkbcommon, bash-completion, p11-kit, systemd, libfido2, tpm2-tss, rsync, bpf, libbpf, clang, llvm, curl, gnutls, python-pyelftools, libpwquality, qrencode, lib32-gcc-libs, python-pefile, linux-headers, rust, rust-bindgen
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

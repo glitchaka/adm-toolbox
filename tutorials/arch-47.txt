@@ -76,12 +76,12 @@ Estado SST: [ ]
 6. dovecot23
 Paquete: dovecot23
 Repositorio: extra
-Versión: 2.3.21.1-5
+Versión: 2.3.21.1-6
 Arquitectura: x86_64
 Descripción: An IMAP and POP3 server written with security primarily in mind (2.3 branch)
 Upstream: https://dovecot.org/
 Licencia: MIT, LGPL-2.1-only
-Dependencias: bzip2, expat, libgcc, glibc, icu, krb5, libcap, libsodium, libstemmer, libxcrypt, lz4, mariadb-libs, openssl, pam, postgresql-libs, sqlite, systemd-libs, zlib, zstd
+Dependencias: bzip2, expat, libgcc, glibc, icu, krb5, libcap, libsodium, libstemmer, libxcrypt, lz4, mariadb-libs, openssl-3, pam, postgresql-libs, sqlite, systemd-libs, zlib, zstd
 Opcionales: libldap: ldap plugin, lua53: LUA auth and push support, xapian-core: FTS flatcurve indexer
 Compilación: libldap, lua53, systemd, xapian-core
 Pruebas: —
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. gambas3 gb opengl glu
 Paquete: gambas3-gb-opengl-glu
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: GL Utility component
 Upstream: http://gambas.sourceforge.net/
@@ -226,12 +226,12 @@ Estado SST: [ ]
 16. icedtea web
 Paquete: icedtea-web
 Repositorio: extra
-Versión: 1.8.8-1
+Versión: 1.8.8-4
 Arquitectura: x86_64
 Descripción: Additional components for OpenJDK - Browser plug-in and Web Start implementation
 Upstream: https://github.com/AdoptOpenJDK/IcedTea-Web
-Licencia: GPL2
-Dependencias: java-runtime-openjdk, desktop-file-utils
+Licencia: GPL-2.0-only WITH Classpath-exception-2.0
+Dependencias: glibc, libgcc, libstdc++, glib2, java-runtime-openjdk, desktop-file-utils
 Opcionales: rhino: for using proxy auto config files
 Compilación: java-environment=8, zip, libxtst, npapi-sdk, rhino, junit, firefox, epiphany, rust, bc
 Pruebas: —
@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. netdata
 Paquete: netdata
 Repositorio: extra
-Versión: 2.12.3-1
+Versión: 2.12.3-2
 Arquitectura: x86_64
 Descripción: Real-time performance monitoring, in the greatest possible detail, over the web
 Upstream: https://github.com/netdata/netdata
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. php sodium
 Paquete: php-sodium
 Repositorio: extra
-Versión: 8.5.12-3
+Versión: 8.5.12-4
 Arquitectura: x86_64
 Descripción: sodium module for PHP
 Upstream: https://www.php.net/

@@ -31,12 +31,12 @@ Estado SST: [ ]
 3. cargo clone
 Paquete: cargo-clone
 Repositorio: extra
-Versión: 1.2.4-2
+Versión: 1.2.4-3
 Arquitectura: x86_64
 Descripción: A cargo subcommand to fetch the source code of a Rust crate
 Upstream: https://github.com/JanLikar/cargo-clone
 Licencia: Apache-2.0, MIT
-Dependencias: cargo, curl, glibc, libgcc, libgit2, libssh2, openssl, sqlite, zlib, libcrypto.so, libcurl.so=4-64, libssh2.so=1-64, libssl.so=3-64, libsqlite3.so=0-64
+Dependencias: cargo, curl, glibc, libgcc, libgit2, libssh2, openssl, sqlite, zlib, libcurl.so=4-64, libssh2.so=1-64, libssl.so=4-64, libsqlite3.so=0-64
 Opcionales: —
 Compilación: —
 Pruebas: git
@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. cryload
 Paquete: cryload
 Repositorio: extra
-Versión: 6.1.0-1
+Versión: 6.1.0-2
 Arquitectura: x86_64
 Descripción: Cross-platform HTTP load testing CLI
 Upstream: https://github.com/sdogruyol/cryload
@@ -91,12 +91,12 @@ Estado SST: [ ]
 7. deluge gtk
 Paquete: deluge-gtk
 Repositorio: extra
-Versión: 1:2.2.0-8
+Versión: 1:2.2.0-9
 Arquitectura: x86_64
 Descripción: GTK UI for Deluge
 Upstream: https://deluge-torrent.org/
 Licencia: GPL-3.0-or-later WITH GPL-3.0-linking-exception
-Dependencias: glib2, gtk3, hicolor-icon-theme, librsvg, pango, python-cairo, python-gobject, xdg-utils, deluge=1:2.2.0-8, python, python-rencode, python-setproctitle, python-twisted
+Dependencias: glib2, gtk3, hicolor-icon-theme, librsvg, pango, python-cairo, python-gobject, xdg-utils, deluge=1:2.2.0-9, python, python-rencode, python-setproctitle, python-twisted
 Opcionales: libappindicator-gtk3: appindicator notifications, python-pygame: audible notifications, libnotify: desktop notifications
 Compilación: glib2, gtk3, hicolor-icon-theme, librsvg, pango, python-cairo, python-gobject, xdg-utils, boost, cmake, git, intltool, libappindicator-gtk3, libnotify, ninja, python-build, python-installer, python-pygame, python-rjsmin, python-wheel
 Pruebas: —
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. elinks
 Paquete: elinks
 Repositorio: extra
-Versión: 0.20.0-1
+Versión: 0.20.0-2
 Arquitectura: x86_64
 Descripción: Advanced feature-rich text-mode web browser
 Upstream: https://github.com/rkd77/elinks
@@ -631,7 +631,7 @@ Estado SST: [ ]
 43. net snmp
 Paquete: net-snmp
 Repositorio: extra
-Versión: 5.9.5.2-2
+Versión: 5.9.5.2-3
 Arquitectura: x86_64
 Descripción: A suite of applications used to implement SNMP v1, SNMP v2c and SNMP v3 using both IPv4 and IPv6
 Upstream: http://www.net-snmp.org/
@@ -976,7 +976,7 @@ Estado SST: [ ]
 66. sigil
 Paquete: sigil
 Repositorio: extra
-Versión: 2.8.5-1
+Versión: 2.8.6-1
 Arquitectura: x86_64
 Descripción: multi-platform EPUB2/EPUB3 ebook editor
 Upstream: https://sigil-ebook.com
@@ -991,16 +991,16 @@ Estado SST: [ ]
 67. spice gtk
 Paquete: spice-gtk
 Repositorio: extra
-Versión: 0.42-5
+Versión: 0.43-2
 Arquitectura: x86_64
 Descripción: GTK+ client library for SPICE
 Upstream: https://www.spice-space.org/
 Licencia: LGPL-2.1-only
 Dependencias: acl, cairo, gdk-pixbuf2, glib2, gst-plugins-base, gst-plugins-good, gstreamer, gtk3, json-glib, libcacard, libcap-ng, libepoxy, libjpeg-turbo, libsasl, libsoup3, libusb, libx11, lz4, openssl, opus, phodav, pixman, polkit, spice-protocol, usbredir, wayland, zlib
 Opcionales: —
-Compilación: gobject-introspection, glib2-devel, meson, python-six, python-pyparsing, usbutils, vala, wayland-protocols
+Compilación: gi-docgen, gobject-introspection, glib2-devel, meson, python-six, python-pyparsing, usbutils, vala, wayland-protocols
 Pruebas: —
-Proporciona: spice-glib=0.42, spice-gtk3=0.42
+Proporciona: spice-glib=0.43, spice-gtk3=0.43
 Estado SST: [ ]
 
 68. vim spell it

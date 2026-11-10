@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. buildbtw client
 Paquete: buildbtw-client
 Repositorio: extra
-Versión: 0.0.7-1
+Versión: 0.0.7-2
 Arquitectura: x86_64
 Descripción: CLI client for buildbtw (bbtw)
 Upstream: https://gitlab.archlinux.org/archlinux/buildbtw/
@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. deltachat rpc server
 Paquete: deltachat-rpc-server
 Repositorio: extra
-Versión: 2.65.0-1
+Versión: 2.65.0-2
 Arquitectura: x86_64
 Descripción: A JSON-RPC 2.0 interface to DeltaChat over standard I/O
 Upstream: https://github.com/deltachat/deltachat-core-rust/tree/main/deltachat-rpc-server
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. erlang tools
 Paquete: erlang-tools
 Repositorio: extra
-Versión: 29.1.1-1
+Versión: 29.1.1-2
 Arquitectura: x86_64
 Descripción: A set of programming tools including a coverage analyzer etc
 Upstream: https://erlang.org/
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gstreamer
 Paquete: gstreamer
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - core
 Upstream: https://gstreamer.freedesktop.org/
@@ -376,12 +376,12 @@ Estado SST: [ ]
 26. mumble
 Paquete: mumble
 Repositorio: extra
-Versión: 1.5.939-1
+Versión: 1.5.939-2
 Arquitectura: x86_64
 Descripción: An Open Source, low-latency, high quality voice chat software (client)
 Upstream: https://www.mumble.info/
 Licencia: BSD-3-Clause
-Dependencias: abseil-cpp, libgcc, libstdc++, glibc, qt5-base, alsa-lib, libasound.so=2-64, avahi, libdns_sd.so=1-64, hicolor-icon-theme, jack, protobuf, libprotobuf.so=36.1.0-64, libpulse, libsndfile, libsndfile.so=1-64, libspeechd, libx11, libxi, openssl, libcrypto.so=3-64, libssl.so=3-64, opus, libopus.so=0-64, poco, libPocoFoundation.so=124-64, libPocoXML.so=124-64, libPocoZip.so=124-64, qt5-svg, rnnoise, speexdsp, libspeexdsp.so=1-64, xdg-utils
+Dependencias: abseil-cpp, libgcc, libstdc++, glibc, qt5-base, alsa-lib, libasound.so=2-64, avahi, libdns_sd.so=1-64, hicolor-icon-theme, jack, protobuf, libprotobuf.so=36.1.0-64, libpulse, libsndfile, libsndfile.so=1-64, libspeechd, libx11, libxi, openssl, libcrypto.so=4-64, libssl.so=4-64, opus, libopus.so=0-64, poco, libPocoFoundation.so=124-64, libPocoXML.so=124-64, libPocoZip.so=124-64, qt5-svg, rnnoise, speexdsp, libspeexdsp.so=1-64, xdg-utils
 Opcionales: bash: for mumble-overlay, lib32-glibc: for mumble-overlay, espeak-ng: Text-to-speech support, speech-dispatcher: Text-to-speech support
 Compilación: avahi, boost, cmake, openssl, protobuf, python, qt5-tools, alsa-lib, hicolor-icon-theme, jack, lib32-gcc-libs, libpulse, libsndfile, libspeechd, libx11, libxi, mesa, nlohmann-json, opus, poco, qt5-svg, rnnoise, speech-dispatcher, speexdsp, xdg-utils, libcap, systemd, zeroc-ice
 Pruebas: xorg-server-xvfb
@@ -916,12 +916,12 @@ Estado SST: [ ]
 62. wireplumber system services
 Paquete: wireplumber-system-services
 Repositorio: extra
-Versión: 0.5.18-1
+Versión: 0.5.19-1
 Arquitectura: x86_64
 Descripción: Session / policy manager implementation for PipeWire - system services
 Upstream: https://pipewire.pages.freedesktop.org/wireplumber/
 Licencia: MIT
-Dependencias: wireplumber=0.5.18-1, pipewire-system-services
+Dependencias: wireplumber=0.5.19-1, pipewire-system-services
 Opcionales: —
 Compilación: doxygen, git, glib2, glib2-devel, glibc, gobject-introspection, graphviz, libgcc, libpipewire, lua, meson, pipewire, python-breathe, python-lxml, python-sphinx, python-sphinx_rtd_theme, systemd, systemd-libs
 Pruebas: pipewire-audio

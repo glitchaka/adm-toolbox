@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. erlang inets
 Paquete: erlang-inets
 Repositorio: extra
-Versión: 29.1.1-1
+Versión: 29.1.1-2
 Arquitectura: x86_64
 Descripción: A set of services such as a Web server and a HTTP client etc
 Upstream: https://erlang.org/
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gst plugin webrtchttp
 Paquete: gst-plugin-webrtchttp
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - webrtchttp plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. libwireplumber
 Paquete: libwireplumber
 Repositorio: extra
-Versión: 0.5.18-1
+Versión: 0.5.19-1
 Arquitectura: x86_64
 Descripción: Session / policy manager implementation for PipeWire - client library
 Upstream: https://pipewire.pages.freedesktop.org/wireplumber/
@@ -496,12 +496,12 @@ Estado SST: [ ]
 34. openvpn
 Paquete: openvpn
 Repositorio: extra
-Versión: 2.7.8-1
+Versión: 2.7.9-1
 Arquitectura: x86_64
 Descripción: An easy-to-use, robust and highly configurable VPN (Virtual Private Network)
 Upstream: https://openvpn.net/index.php/open-source.html
 Licencia: GPL-2.0-only
-Dependencias: libcap-ng, libcap-ng.so=0-64, libnl, libnl-genl-3.so=200-64, libnl-3.so=200-64, lz4, lzo, liblzo2.so=2-64, openssl, libcrypto.so=3-64, libssl.so=3-64, pkcs11-helper, libpkcs11-helper.so=1-64, systemd-libs, libsystemd.so=0-64
+Dependencias: libcap-ng, libcap-ng.so=0-64, libnl, libnl-genl-3.so=200-64, libnl-3.so=200-64, lz4, lzo, liblzo2.so=2-64, openssl, libcrypto.so=4-64, libssl.so=4-64, pkcs11-helper, libpkcs11-helper.so=1-64, systemd-libs, libsystemd.so=0-64
 Opcionales: easy-rsa: easy CA and certificate handling, pam: authenticate via PAM
 Compilación: git, systemd, python-docutils
 Pruebas: —
@@ -661,12 +661,12 @@ Estado SST: [ ]
 45. python hf xet
 Paquete: python-hf-xet
 Repositorio: extra
-Versión: 1.8.0-1
+Versión: 1.8.0-2
 Arquitectura: x86_64
 Descripción: xet client tech, used in Huggingface Hub
 Upstream: https://github.com/huggingface/xet-core
 Licencia: Apache-2.0
-Dependencias: glibc, libgcc, openssl, libssl.so=3-64, libcrypto.so=3-64, python
+Dependencias: glibc, libgcc, openssl, libssl.so=4-64, libcrypto.so=4-64, python
 Opcionales: —
 Compilación: cargo, maturin, python-installer, openssl
 Pruebas: —
@@ -781,7 +781,7 @@ Estado SST: [ ]
 53. railway
 Paquete: railway
 Repositorio: extra
-Versión: 2.10.1-1
+Versión: 2.10.1-2
 Arquitectura: x86_64
 Descripción: Look up travel information for many different railways
 Upstream: https://apps.gnome.org/DieBahn/
@@ -871,12 +871,12 @@ Estado SST: [ ]
 59. tpm2 openssl
 Paquete: tpm2-openssl
 Repositorio: extra
-Versión: 1.3.0-2
+Versión: 1.3.1rc1.r3.gb3da8eb-1
 Arquitectura: x86_64
 Descripción: OpenSSL Provider for Trusted Platform Module 2.0 integration
 Upstream: https://github.com/tpm2-software/tpm2-openssl
 Licencia: BSD-3-Clause
-Dependencias: glibc, tpm2-tss, libtss2-esys.so=0-64, libtss2-rc.so=0-64, libtss2-tctildr.so=0-64
+Dependencias: glibc, openssl, tpm2-tss, libtss2-esys.so=0-64, libtss2-rc.so=0-64, libtss2-tctildr.so=0-64
 Opcionales: tpm2-abrmd: user space resource manager
 Compilación: autoconf-archive, git
 Pruebas: dbus, swtpm, tpm2-abrmd, tpm2-tools
@@ -886,7 +886,7 @@ Estado SST: [ ]
 60. transmission qt
 Paquete: transmission-qt
 Repositorio: extra
-Versión: 4.1.4-1
+Versión: 4.1.4-2
 Arquitectura: x86_64
 Descripción: Fast, easy, and free BitTorrent client (Qt GUI)
 Upstream: http://www.transmissionbt.com/

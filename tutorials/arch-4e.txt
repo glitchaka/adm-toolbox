@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. encfs
 Paquete: encfs
 Repositorio: extra
-Versión: 1.9.5-10
+Versión: 1.9.5-11
 Arquitectura: x86_64
 Descripción: Encrypted filesystem in user-space
 Upstream: https://vgough.github.io/encfs/
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gambas3 gb cairo
 Paquete: gambas3-gb-cairo
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Cairo component
 Upstream: http://gambas.sourceforge.net/
@@ -571,12 +571,12 @@ Estado SST: [ ]
 39. mympd
 Paquete: mympd
 Repositorio: extra
-Versión: 26.1.2-1
+Versión: 26.1.2-2
 Arquitectura: x86_64
 Descripción: A standalone and lightweight web-based MPD client
 Upstream: https://github.com/jcorporation/myMPD
 Licencia: GPL-3.0-or-later
-Dependencias: glibc, libutf8proc, lua54, flac, libFLAC.so=14-64, libid3tag, libid3tag.so=0-64, openssl, libssl.so=3-64, pcre2, libpcre2-8.so=0-64
+Dependencias: glibc, libutf8proc, lua54, flac, libFLAC.so=14-64, libid3tag, libid3tag.so=0-64, openssl, libssl.so=4-64, pcre2, libpcre2-8.so=0-64
 Opcionales: libnewt: for mympd-config, sh: for mympd-config
 Compilación: cmake, flac, jq, libid3tag, openssl, pcre2, perl
 Pruebas: —
@@ -646,12 +646,12 @@ Estado SST: [ ]
 44. pacman
 Paquete: pacman
 Repositorio: core
-Versión: 7.1.0.r9.g54d9411-3
+Versión: 7.1.0.r9.g54d9411-4
 Arquitectura: x86_64
 Descripción: A library-based package manager with dependency support
 Upstream: https://www.archlinux.org/pacman/
 Licencia: GPL-2.0-or-later
-Dependencias: bash, coreutils, curl, libcurl.so=4-64, gawk, gettext, glibc, gnupg, gpgme, libgpgme.so=45-64, grep, libarchive, libarchive.so=13-64, openssl, libcrypto.so=3-64, pacman-mirrorlist, systemd, libmakepkg-dropins
+Dependencias: bash, coreutils, curl, libcurl.so=4-64, gawk, gettext, glibc, gnupg, gpgme, libgpgme.so=45-64, grep, libarchive, libarchive.so=13-64, openssl, libcrypto.so=4-64, pacman-mirrorlist, systemd, libmakepkg-dropins
 Opcionales: base-devel: required to use makepkg, perl-locale-gettext: translation support in makepkg-template
 Compilación: asciidoc, doxygen, git, meson
 Pruebas: fakechroot, python
@@ -871,7 +871,7 @@ Estado SST: [ ]
 59. sc controller
 Paquete: sc-controller
 Repositorio: extra
-Versión: 1.0.8-1
+Versión: 1.0.9-1
 Arquitectura: x86_64
 Descripción: User-mode driver, mapper, and GTK 4 based GUI for game controllers, including but not limited to Steam Controller (2015 & 2026)
 Upstream: https://github.com/C0rn3j/sc-controller
@@ -946,12 +946,12 @@ Estado SST: [ ]
 64. toml bombadil
 Paquete: toml-bombadil
 Repositorio: extra
-Versión: 4.2.0-2
+Versión: 4.2.0-3
 Arquitectura: x86_64
 Descripción: A dotfile manager with templating
 Upstream: https://github.com/oknozor/toml-bombadil
 Licencia: MIT
-Dependencias: glibc, libgcc, libgit2, libssh2, openssl
+Dependencias: glibc, libgcc, libgit2, libssh2, openssl-3
 Opcionales: —
 Compilación: rust
 Pruebas: —

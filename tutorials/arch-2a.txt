@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. gala
 Paquete: gala
 Repositorio: extra
-Versión: 8.6.2-1
+Versión: 8.6.2-2
 Arquitectura: x86_64
 Descripción: The Pantheon Window Manager
 Upstream: https://github.com/elementary/gala
 Licencia: GPL-3.0-only
-Dependencias: at-spi2-core, cairo, dconf, gdk-pixbuf2, glib2, glibc, gnome-desktop-4, granite, granite7, graphene, gtk3, gtk4, json-glib, libgee, libgl, libhandy, libibus, libxext, libxfixes, mutter49, pango, sqlite, systemd-libs, wayland
+Dependencias: at-spi2-core, cairo, dconf, gdk-pixbuf2, glib2, glibc, glycin, gnome-desktop-4, granite7, graphene, gtk4, json-glib, libgee, libibus, libxext, libxfixes, mutter, pango, sqlite, systemd-libs, wayland
 Opcionales: —
 Compilación: git, meson, vala
 Pruebas: —
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gnubiff
 Paquete: gnubiff
 Repositorio: extra
-Versión: 2.2.17-13
+Versión: 2.2.17-14
 Arquitectura: x86_64
 Descripción: Mail notification program that checks for mail and displays headers when new mail has arrived
 Upstream: https://gnubiff.sourceforge.net/
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. python google api core
 Paquete: python-google-api-core
 Repositorio: extra
-Versión: 2.43.2-1
+Versión: 2.44.0-1
 Arquitectura: any
 Descripción: Google API client core library
 Upstream: https://github.com/googleapis/google-cloud-python/tree/main/packages/google-api-core
@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. retroarch
 Paquete: retroarch
 Repositorio: extra
-Versión: 1.22.2-5
+Versión: 1.22.2-6
 Arquitectura: x86_64
 Descripción: Reference frontend for the libretro API
 Upstream: http://www.libretro.com/
@@ -766,12 +766,12 @@ Estado SST: [ ]
 52. tpm2 tss engine
 Paquete: tpm2-tss-engine
 Repositorio: extra
-Versión: 1.2.0-2
+Versión: 1.2.0-3
 Arquitectura: x86_64
 Descripción: OpenSSL engine for Trusted Platform Module 2.0 devices
 Upstream: https://github.com/tpm2-software/tpm2-tss-engine
 Licencia: BSD-3-Clause
-Dependencias: glibc, openssl, tpm2-tss, libcrypto.so=3-64, libtss2-esys.so=0-64, libtss2-mu.so=0-64, libtss2-tctildr.so=0-64
+Dependencias: glibc, openssl-3, tpm2-tss, libcrypto.so=3-64, libtss2-esys.so=0-64, libtss2-mu.so=0-64, libtss2-tctildr.so=0-64
 Opcionales: —
 Compilación: git, autoconf-archive, pandoc
 Pruebas: cmocka, expect, iproute2, swtpm, tpm2-tools
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. v2ray domain list community
 Paquete: v2ray-domain-list-community
 Repositorio: extra
-Versión: 20261108011013-1
+Versión: 20261110034535-1
 Arquitectura: any
 Descripción: A list of domains to be used as geosites for routing purpose in Project V
 Upstream: https://github.com/v2fly/domain-list-community
@@ -841,14 +841,14 @@ Estado SST: [ ]
 57. wingpanel
 Paquete: wingpanel
 Repositorio: extra
-Versión: 8.0.4-4
+Versión: 8.0.4-5
 Arquitectura: x86_64
 Descripción: The Pantheon Top Panel
 Upstream: https://github.com/elementary/wingpanel
 Licencia: GPL-3.0-or-later
-Dependencias: gala, glib2, glibc, granite7, gtk4, hicolor-icon-theme, libgee, mutter49, pantheon-notifications, wayland
+Dependencias: dconf, gala, glib2, glibc, granite7, gtk4, hicolor-icon-theme, libgee, libx11, mutter, wayland
 Opcionales: —
-Compilación: cmake, git, gala, meson, vala
+Compilación: git, meson, vala
 Pruebas: —
 Proporciona: libwingpanel-9.so=8-64
 Estado SST: [ ]

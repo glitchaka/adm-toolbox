@@ -91,12 +91,12 @@ Estado SST: [ ]
 7. cargo c
 Paquete: cargo-c
 Repositorio: extra
-Versión: 0.10.26-1
+Versión: 0.10.26-2
 Arquitectura: x86_64
 Descripción: A cargo subcommand to build and install C-ABI compatible dynamic and static libraries
 Upstream: https://github.com/lu-zero/cargo-c/
 Licencia: MIT
-Dependencias: cargo, curl, libcurl.so=4-64, glibc, libgcc, libgcc_s.so=1-64, libgit2, libgit2.so=1.9-64, libssh2, libssh2.so=1-64, openssl, libssl.so=3-64, sqlite
+Dependencias: cargo, curl, libcurl.so=4-64, glibc, libgcc, libgcc_s.so=1-64, libgit2, libgit2.so=1.9-64, libssh2, libssh2.so=1-64, openssl, libssl.so=4-64, sqlite
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -196,11 +196,11 @@ Estado SST: [ ]
 14. fio
 Paquete: fio
 Repositorio: extra
-Versión: 3.42-1
+Versión: 3.43-1
 Arquitectura: x86_64
 Descripción: Scriptable I/O tool for storage benchmarks and drive testing
 Upstream: https://github.com/axboe/fio
-Licencia: GPL2
+Licencia: GPL-2.0-only
 Dependencias: bash, curl, libaio, python, numactl, glusterfs, gperftools
 Opcionales: gnuplot: generating plots using fio_generate_plots
 Compilación: —
@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. linux rt headers
 Paquete: linux-rt-headers
 Repositorio: extra
-Versión: 7.2.15.rt3.arch1-1
+Versión: 7.2.15.rt3.arch1-2
 Arquitectura: x86_64
 Descripción: Headers and scripts for building modules for the Linux RT kernel
 Upstream: https://gitlab.archlinux.org/archlinux/packaging/upstream/linux-rt
@@ -541,7 +541,7 @@ Estado SST: [ ]
 37. lua51 cqueues
 Paquete: lua51-cqueues
 Repositorio: extra
-Versión: 20261006-1
+Versión: 20261006-2
 Arquitectura: x86_64
 Descripción: Continuation Queues: Embeddable asynchronous networking, threading, and notification framework for Lua 5.1
 Upstream: http://25thandclement.com/~william/projects/cqueues.html
@@ -586,7 +586,7 @@ Estado SST: [ ]
 40. mongo c driver
 Paquete: mongo-c-driver
 Repositorio: extra
-Versión: 2.5.5-1
+Versión: 2.5.5-2
 Arquitectura: x86_64
 Descripción: A client library written in C for MongoDB
 Upstream: https://github.com/mongodb/mongo-c-driver
@@ -841,7 +841,7 @@ Estado SST: [ ]
 57. serf
 Paquete: serf
 Repositorio: extra
-Versión: 1.3.10-2
+Versión: 1.3.10-3
 Arquitectura: x86_64
 Descripción: High-performance asynchronous HTTP client library
 Upstream: https://serf.apache.org

@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. intel oneapi toolkit
 Paquete: intel-oneapi-toolkit
 Repositorio: extra
-Versión: 2026.0.1.27+c9c3d3e3_ddb4_490e_bb41_6e9041ba32a7-2
+Versión: 2026.0.1.27+c9c3d3e3_ddb4_490e_bb41_6e9041ba32a7-3
 Arquitectura: x86_64
 Descripción: Intel oneAPI Toolkit for Linux
 Upstream: https://software.intel.com/content/www/us/en/develop/tools/oneapi.html
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. linux lts headers
 Paquete: linux-lts-headers
 Repositorio: core
-Versión: 6.18.60-1
+Versión: 6.18.62-1
 Arquitectura: x86_64
 Descripción: Headers and scripts for building modules for the LTS Linux kernel
 Upstream: https://www.kernel.org
@@ -763,10 +763,25 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. xorg server src
+52. xdg desktop portal pantheon
+Paquete: xdg-desktop-portal-pantheon
+Repositorio: extra
+Versión: 8.2.0-1
+Arquitectura: x86_64
+Descripción: Backend implementation for xdg-desktop-portal on Pantheon
+Upstream: https://github.com/elementary/portals
+Licencia: GPL-3.0-or-later
+Dependencias: accountsservice, dconf, glib2, glibc, granite7, gtk4, libadwaita, libgee, libx11, pango, pantheon-wayland, xdg-desktop-portal
+Opcionales: —
+Compilación: git, meson, vala
+Pruebas: —
+Proporciona: xdg-desktop-portal-impl
+Estado SST: [ ]
+
+53. xorg server src
 Paquete: xorg-server-src
 Repositorio: extra
-Versión: 21.1.25-2
+Versión: 21.1.26-1
 Arquitectura: x86_64
 Descripción: Source files of the X.Org X server
 Upstream: https://xorg.freedesktop.org
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. xviewer
+54. xviewer
 Paquete: xviewer
 Repositorio: extra
 Versión: 3.4.17-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. yubikey personalization gui
+55. yubikey personalization gui
 Paquete: yubikey-personalization-gui
 Repositorio: extra
 Versión: 3.1.25-4

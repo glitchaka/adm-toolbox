@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. gwenhywfar
 Paquete: gwenhywfar
 Repositorio: extra
-Versión: 5.14.1-3
+Versión: 5.14.1-4
 Arquitectura: x86_64
 Descripción: OS abstraction functions for various projects
 Upstream: https://www.aquamaniac.de/rdm
@@ -871,12 +871,12 @@ Estado SST: [ ]
 59. yubihsm wrap
 Paquete: yubihsm-wrap
 Repositorio: extra
-Versión: 2.8.0-2
+Versión: 2.8.0-3
 Arquitectura: x86_64
 Descripción: Command-line tool to create encrypted objects (wraps) that can be imported in the YubiHSM
 Upstream: https://github.com/Yubico/yubihsm-shell/
 Licencia: Apache-2.0
-Dependencias: glibc, libyubihsm, libyubihsm.so=2-64, openssl, libcrypto.so=3-64
+Dependencias: glibc, libyubihsm, libyubihsm.so=2-64, openssl, libcrypto.so=4-64
 Opcionales: yubihsm-udev-rules: for accessing YubiHSM2 devices over USB using the _yubihsm2 group membership
 Compilación: curl, cmake, gengetopt, glibc, help2man, libedit, libusb, openssl, pcsclite, zlib
 Pruebas: bats

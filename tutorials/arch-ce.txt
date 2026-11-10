@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. fastd
 Paquete: fastd
 Repositorio: extra
-Versión: 23-1
+Versión: 23-2
 Arquitectura: x86_64
 Descripción: Fast and secure tunneling daemon
 Upstream: https://github.com/neocturne/fastd
 Licencia: BSD-2-Clause AND BSD-3-Clause AND LGPL-2.1-or-later
-Dependencias: glibc, json-c, libcap, libmnl, libsodium, libuecc>=6, openssl
+Dependencias: glibc, json-c, libjson-c.so=5-64, libcap, libcap.so=2-64, libmnl, libsodium, libsodium.so=26-64, libuecc>=6, openssl, libcrypto.so=4-64
 Opcionales: —
 Compilación: meson
 Pruebas: cmocka
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. fetchmail
 Paquete: fetchmail
 Repositorio: extra
-Versión: 6.6.9-1
+Versión: 6.6.9-2
 Arquitectura: x86_64
 Descripción: A remote-mail retrieval utility
 Upstream: https://www.fetchmail.info
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. getdns
 Paquete: getdns
 Repositorio: extra
-Versión: 1.7.3-2
+Versión: 1.7.3-3
 Arquitectura: x86_64
 Descripción: Modern asynchronous DNS API
 Upstream: https://getdnsapi.net
@@ -496,7 +496,7 @@ Estado SST: [ ]
 34. openimagedenoise
 Paquete: openimagedenoise
 Repositorio: extra
-Versión: 2.4.1-2
+Versión: 2.5.1-1
 Arquitectura: x86_64
 Descripción: Intel(R) Open Image Denoise library
 Upstream: https://openimagedenoise.github.io
@@ -556,7 +556,7 @@ Estado SST: [ ]
 38. php mongodb
 Paquete: php-mongodb
 Repositorio: extra
-Versión: 2.5.7-1
+Versión: 2.5.7-2
 Arquitectura: x86_64
 Descripción: MongoDB driver for PHP
 Upstream: https://pecl.php.net/package/mongodb
@@ -826,7 +826,7 @@ Estado SST: [ ]
 56. websocat
 Paquete: websocat
 Repositorio: extra
-Versión: 1.14.1-2
+Versión: 1.14.1-4
 Arquitectura: x86_64
 Descripción: Command-line client for web sockets, like netcat/curl/socat for ws://
 Upstream: https://github.com/vi/websocat/

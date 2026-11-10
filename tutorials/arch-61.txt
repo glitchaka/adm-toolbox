@@ -46,14 +46,14 @@ Estado SST: [ ]
 4. dotnet sdk 6 0
 Paquete: dotnet-sdk-6.0
 Repositorio: extra
-Versión: 6.0.36.sdk136-3
+Versión: 6.0.36.sdk136-4
 Arquitectura: x86_64
 Descripción: The .NET Core SDK
 Upstream: https://www.microsoft.com/net/core
 Licencia: MIT
 Dependencias: dotnet-runtime-6.0, dotnet-targeting-pack-6.0, glibc, gcc-libs, netstandard-targeting-pack
 Opcionales: aspnet-targeting-pack-6.0: Build ASP.NET Core applications
-Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl, patchutils, systemd, zlib
+Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl-3, patchutils, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-sdk=6.0
 Estado SST: [ ]
@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. erlang megaco
 Paquete: erlang-megaco
 Repositorio: extra
-Versión: 29.1.1-1
+Versión: 29.1.1-2
 Arquitectura: x86_64
 Descripción: Megaco/H.248 support library
 Upstream: https://erlang.org/
@@ -211,12 +211,12 @@ Estado SST: [ ]
 15. gst plugins bad libs
 Paquete: gst-plugins-bad-libs
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - bad
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-base-libs=1.28.8-1, gstreamer=1.28.8-1, glib2, glibc, libdrm, libgcc, libglvnd, libgudev, libnice, libstdc++, libusb, libva, libx11, libxcb, libxkbcommon, libxkbcommon-x11, mesa, orc, vulkan-icd-loader, wayland, vmaf, zlib
+Dependencias: gst-plugins-base-libs=1.28.9-1, gstreamer=1.28.9-1, glib2, glibc, libdrm, libgcc, libglvnd, libgudev, libnice, libstdc++, libusb, libva, libx11, libxcb, libxkbcommon, libxkbcommon-x11, mesa, orc, vulkan-icd-loader, wayland, vmaf, zlib
 Opcionales: —
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. libwebsockets
 Paquete: libwebsockets
 Repositorio: extra
-Versión: 4.5.8-3
+Versión: 4.5.8-4
 Arquitectura: x86_64
 Descripción: C library for websocket clients and servers
 Upstream: https://libwebsockets.org
@@ -541,12 +541,12 @@ Estado SST: [ ]
 37. live media
 Paquete: live-media
 Repositorio: extra
-Versión: 2025.05.24-1
+Versión: 2026.10.24-1
 Arquitectura: x86_64
 Descripción: Set of C++ libraries for multimedia streaming
 Upstream: http://live555.com/liveMedia
 Licencia: LGPL
-Dependencias: gcc-libs, openssl
+Dependencias: libgcc, libstdc++, openssl
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. pcp pmda libvirt
 Paquete: pcp-pmda-libvirt
 Repositorio: extra
-Versión: 7.2.2-2
+Versión: 7.2.2-3
 Arquitectura: x86_64
 Descripción: PCP Performance Metrics Domain Agent (PMDA) for collecting metrics from libvirt virtual machines
 Upstream: https://pcp.io
@@ -706,7 +706,7 @@ Estado SST: [ ]
 48. php legacy
 Paquete: php-legacy
 Repositorio: extra
-Versión: 8.3.36-3
+Versión: 8.3.36-4
 Arquitectura: x86_64
 Descripción: A general-purpose scripting language that is especially suited to web development
 Upstream: https://www.php.net/
@@ -721,7 +721,7 @@ Estado SST: [ ]
 49. polyphone
 Paquete: polyphone
 Repositorio: extra
-Versión: 2.6.0-1
+Versión: 2.6.0-2
 Arquitectura: x86_64
 Descripción: A soundfont editor for quickly designing musical instruments
 Upstream: https://polyphone-soundfonts.com/en/

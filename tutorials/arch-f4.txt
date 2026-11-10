@@ -1,12 +1,12 @@
 1. acme redirect
 Paquete: acme-redirect
 Repositorio: extra
-Versión: 0.8.1-1
+Versión: 0.8.1-2
 Arquitectura: x86_64
 Descripción: Tiny http daemon that answers acme challenges and redirects everything else to https
 Upstream: https://github.com/kpcyrd/acme-redirect
 Licencia: GPL-3.0-or-later
-Dependencias: glibc, libgcc, libgcc_s.so=1-64, openssl, libssl.so=3-64
+Dependencias: glibc, libgcc, libgcc_s.so=1-64, openssl, libssl.so=4-64
 Opcionales: —
 Compilación: cargo, scdoc
 Pruebas: —
@@ -31,7 +31,7 @@ Estado SST: [ ]
 3. android file transfer
 Paquete: android-file-transfer
 Repositorio: extra
-Versión: 4.6-1
+Versión: 4.6-2
 Arquitectura: x86_64
 Descripción: Android MTP client with minimalistic UI
 Upstream: https://whoozle.github.io/android-file-transfer-linux
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. gambas3 gb term
 Paquete: gambas3-gb-term
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Terminal management component
 Upstream: http://gambas.sourceforge.net/
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gst plugin rsaudiofx
 Paquete: gst-plugin-rsaudiofx
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - rsaudiofx plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell coinbase pro
 Paquete: haskell-coinbase-pro
 Repositorio: extra
-Versión: 0.9.3.2-570
+Versión: 0.9.3.2-571
 Arquitectura: x86_64
 Descripción: Client for Coinbase Pro
 Upstream: https://github.com/mdunnio/coinbase-pro#readme
@@ -481,7 +481,7 @@ Estado SST: [ ]
 33. nginx mod image filter
 Paquete: nginx-mod-image-filter
 Repositorio: extra
-Versión: 1.30.6-2
+Versión: 1.30.6-3
 Arquitectura: x86_64
 Descripción: Module for nginx that transforms images in JPEG, GIF, PNG, and WebP formats
 Upstream: https://nginx.org
@@ -508,7 +508,22 @@ Pruebas: —
 Proporciona: libnpth.so=0-64
 Estado SST: [ ]
 
-35. perl image info
+35. openssl 3
+Paquete: openssl-3
+Repositorio: core
+Versión: 3.5.9-2
+Arquitectura: x86_64
+Descripción: The Open Source toolkit for cryptography and Transport Layer Security; Version 3.5 LTS
+Upstream: https://www.openssl.org
+Licencia: Apache-2.0
+Dependencias: brotli, glibc, zlib, zstd
+Opcionales: —
+Compilación: perl
+Pruebas: —
+Proporciona: libcrypto.so=3-64, libssl.so=3-64
+Estado SST: [ ]
+
+36. perl image info
 Paquete: perl-image-info
 Repositorio: extra
 Versión: 1.45-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. perl netaddr ip
+37. perl netaddr ip
 Paquete: perl-netaddr-ip
 Repositorio: extra
 Versión: 4.079-18
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. perl syntax keyword try
+38. perl syntax keyword try
 Paquete: perl-syntax-keyword-try
 Repositorio: extra
 Versión: 0.31-2
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. piper
+39. piper
 Paquete: piper
 Repositorio: extra
 Versión: 0.8-5
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. python asn1crypto
+40. python asn1crypto
 Paquete: python-asn1crypto
 Repositorio: extra
 Versión: 1.5.1-6
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python crayons
+41. python crayons
 Paquete: python-crayons
 Repositorio: extra
 Versión: 0.4.0-8
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. python flask mailman
+42. python flask mailman
 Paquete: python-flask-mailman
 Repositorio: extra
 Versión: 1.1.1-2
@@ -613,7 +628,7 @@ Pruebas: python-aiosmtpd, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-42. python loguru
+43. python loguru
 Paquete: python-loguru
 Repositorio: extra
 Versión: 0.7.3-3
@@ -628,7 +643,7 @@ Pruebas: python-colorama, python-freezegun, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-43. python mysqlclient
+44. python mysqlclient
 Paquete: python-mysqlclient
 Repositorio: extra
 Versión: 2.3.0-1
@@ -643,7 +658,7 @@ Pruebas: pifpaf, python-pytest, python-tblib
 Proporciona: —
 Estado SST: [ ]
 
-44. python netcdf4 openmpi
+45. python netcdf4 openmpi
 Paquete: python-netcdf4-openmpi
 Repositorio: extra
 Versión: 1.7.2-5
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: python-netcdf4
 Estado SST: [ ]
 
-45. rhvoice voice aleksandr hq
+46. rhvoice voice aleksandr hq
 Paquete: rhvoice-voice-aleksandr-hq
 Repositorio: extra
 Versión: 1.16.5-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. rocm hip runtime
+47. rocm hip runtime
 Paquete: rocm-hip-runtime
 Repositorio: extra
 Versión: 7.2.4-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. rocminfo
+48. rocminfo
 Paquete: rocminfo
 Repositorio: extra
 Versión: 7.2.4-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby samovar
+49. ruby samovar
 Paquete: ruby-samovar
 Repositorio: extra
 Versión: 2.5.1-1
@@ -718,7 +733,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bake-test-external, ruby-covered, ruby-
 Proporciona: —
 Estado SST: [ ]
 
-49. sarg
+50. sarg
 Paquete: sarg
 Repositorio: extra
 Versión: 2.4.0-4
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. stress
+51. stress
 Paquete: stress
 Repositorio: extra
 Versión: 1.0.7-3
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. tesseract data fao
+52. tesseract data fao
 Paquete: tesseract-data-fao
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-52. tl expected
+53. tl expected
 Paquete: tl-expected
 Repositorio: extra
 Versión: 1.3.1-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. util linux
+54. util linux
 Paquete: util-linux
 Repositorio: core
 Versión: 2.42.4-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: rfkill, hardlink
 Estado SST: [ ]
 
-54. wasm pkg tools
+55. wasm pkg tools
 Paquete: wasm-pkg-tools
 Repositorio: extra
 Versión: 0.16.1-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. xorg sessreg
+56. xorg sessreg
 Paquete: xorg-sessreg
 Repositorio: extra
 Versión: 1.1.4-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. zathura pdf poppler
+57. zathura pdf poppler
 Paquete: zathura-pdf-poppler
 Repositorio: extra
 Versión: 2026.07.18-3

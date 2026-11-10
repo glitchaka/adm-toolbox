@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. glusterfs
 Paquete: glusterfs
 Repositorio: extra
-Versión: 1:11.2-2
+Versión: 1:11.2-3
 Arquitectura: x86_64
 Descripción: a cluster file-system capable of scaling to several peta-bytes.
 Upstream: https://www.gluster.org/
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. gst plugin skia
 Paquete: gst-plugin-skia
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - skia plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -301,7 +301,7 @@ Estado SST: [ ]
 21. haskell hsopenssl
 Paquete: haskell-hsopenssl
 Repositorio: extra
-Versión: 0.11.7.11-16
+Versión: 0.11.7.11-17
 Arquitectura: x86_64
 Descripción: Partial OpenSSL binding for Haskell
 Upstream: https://github.com/haskell-cryptography/HsOpenSSL
@@ -886,12 +886,12 @@ Estado SST: [ ]
 60. tickrs
 Paquete: tickrs
 Repositorio: extra
-Versión: 2:0.15.0-2
+Versión: 2:0.15.0-3
 Arquitectura: x86_64
 Descripción: Realtime ticker data in your terminal
 Upstream: https://github.com/tarkah/tickrs
 Licencia: MIT
-Dependencias: libgcc, openssl, zlib
+Dependencias: curl, libgcc, openssl, zlib
 Opcionales: —
 Compilación: cargo
 Pruebas: —
@@ -916,7 +916,7 @@ Estado SST: [ ]
 62. wireplumber docs
 Paquete: wireplumber-docs
 Repositorio: extra
-Versión: 0.5.18-1
+Versión: 0.5.19-1
 Arquitectura: x86_64
 Descripción: Session / policy manager implementation for PipeWire - documentation
 Upstream: https://pipewire.pages.freedesktop.org/wireplumber/
@@ -946,7 +946,7 @@ Estado SST: [ ]
 64. xorg server devel
 Paquete: xorg-server-devel
 Repositorio: extra
-Versión: 21.1.25-2
+Versión: 21.1.26-1
 Arquitectura: x86_64
 Descripción: Development files for the X.Org X server
 Upstream: https://xorg.freedesktop.org
@@ -976,12 +976,12 @@ Estado SST: [ ]
 66. zerotier one full
 Paquete: zerotier-one-full
 Repositorio: extra
-Versión: 1.16.2-1
+Versión: 1.16.2-2
 Arquitectura: x86_64
 Descripción: Creates virtual Ethernet networks of almost unlimited size, with nonfree controller.
 Upstream: https://www.zerotier.com/
 Licencia: custom: ZeroTier SOURCE-AVAILABLE LICENSE
-Dependencias: glibc, libgcc, libgcc_s.so=1-64, libnatpmp, libstdc++, libstdc++.so=6-64, miniupnpc, libminiupnpc.so=21-64, openssl, libcrypto.so=3-64, libssl.so=3-64
+Dependencias: glibc, libgcc, libgcc_s.so=1-64, libnatpmp, libstdc++, libstdc++.so=6-64, miniupnpc, libminiupnpc.so=21-64, openssl, libcrypto.so=4-64, libssl.so=4-64
 Opcionales: —
 Compilación: rust
 Pruebas: —

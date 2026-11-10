@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. erlang headless
 Paquete: erlang-headless
 Repositorio: extra
-Versión: 29.1.1-1
+Versión: 29.1.1-2
 Arquitectura: x86_64
 Descripción: General-purpose concurrent functional programming language developed by Ericsson (headless, replaces erlang-nox)
 Upstream: https://erlang.org/
@@ -466,12 +466,12 @@ Estado SST: [ ]
 32. openssh
 Paquete: openssh
 Repositorio: core
-Versión: 10.6p1-2
+Versión: 10.6p1-3
 Arquitectura: x86_64
 Descripción: SSH protocol implementation for remote login, command execution and file transfer
 Upstream: https://www.openssh.com/portable.html
 Licencia: 0BSD, BSD-2-Clause, BSD-3-Clause, ISC, LicenseRef-Public-Domain, MIT
-Dependencias: glibc, krb5, libkrb5.so=3-64, libgssapi_krb5.so=2-64, libedit, libedit.so=0-64, libxcrypt, libcrypt.so=2-64, openssl, libcrypto.so=3-64, pam, libpam.so=0-64, zlib, libz.so=1-64
+Dependencias: glibc, krb5, libkrb5.so=3-64, libgssapi_krb5.so=2-64, libedit, libedit.so=0-64, libxcrypt, libcrypt.so=2-64, openssl, libcrypto.so=4-64, pam, libpam.so=0-64, zlib, libz.so=1-64
 Opcionales: libfido2: FIDO/U2F support, sh: for ssh-copy-id and findssl.sh, x11-ssh-askpass: input passphrase in X, xorg-xauth: X11 forwarding
 Compilación: krb5, libedit, libfido2, libxcrypt, linux-headers, openssl, pam, zlib
 Pruebas: —
@@ -481,14 +481,14 @@ Estado SST: [ ]
 33. pantheon photos
 Paquete: pantheon-photos
 Repositorio: extra
-Versión: 8.0.2-1
+Versión: 8.0.2-2
 Arquitectura: x86_64
 Descripción: The Pantheon Photos Manager
 Upstream: https://github.com/elementary/photos
 Licencia: GPL-3.0-only
-Dependencias: cairo, dconf, gdk-pixbuf2, geocode-glib-2, glib2, glibc, gst-plugins-base-libs, gstreamer, gtk3, hicolor-icon-theme, libexif, libgee, libgexiv2, libgphoto2, libgranite.so=6-64, libgudev-1.0.so=0-64, libhandy-1.so=0-64, libportal, libportal-gtk3, libraw, libwebp, pango, sqlite
+Dependencias: cairo, dconf, elementary-icon-theme, gdk-pixbuf2, geocode-glib-2, glib2, glibc, gst-plugins-base-libs, gstreamer, gtk-theme-elementary, gtk3, hicolor-icon-theme, libexif, libgee, libgexiv2, libgphoto2, libgranite.so=6-64, libgudev-1.0.so=0-64, libhandy-1.so=0-64, libportal, libportal-gtk3, libraw, libwebp, pango, sqlite
 Opcionales: —
-Compilación: git, intltool, meson, vala
+Compilación: git, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -856,7 +856,7 @@ Estado SST: [ ]
 58. sscg
 Paquete: sscg
 Repositorio: extra
-Versión: 4.0.4-1
+Versión: 4.0.4-2
 Arquitectura: x86_64
 Descripción: Simple Signed Certificate Generator
 Upstream: https://github.com/sgallagher/sscg

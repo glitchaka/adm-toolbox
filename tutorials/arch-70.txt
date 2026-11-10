@@ -31,12 +31,12 @@ Estado SST: [ ]
 3. authoscope
 Paquete: authoscope
 Repositorio: extra
-Versión: 0.9.0-1
+Versión: 0.9.0-2
 Arquitectura: x86_64
 Descripción: Scriptable network authentication cracker
 Upstream: https://github.com/kpcyrd/authoscope
 Licencia: GPL-3.0-or-later
-Dependencias: glibc, libgcc, lua52, openssl, libssl.so=3-64, zlib
+Dependencias: glibc, libgcc, lua52, openssl, libssl.so=4-64, zlib
 Opcionales: —
 Compilación: cargo
 Pruebas: —
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. cargo generate
 Paquete: cargo-generate
 Repositorio: extra
-Versión: 0.25.1-1
+Versión: 0.25.1-2
 Arquitectura: x86_64
 Descripción: Use pre-existing git repositories as templates
 Upstream: https://github.com/cargo-generate/cargo-generate
@@ -196,14 +196,14 @@ Estado SST: [ ]
 14. dotnet host
 Paquete: dotnet-host
 Repositorio: extra
-Versión: 10.0.14.sdk114-1
+Versión: 10.0.14.sdk114-2
 Arquitectura: x86_64
 Descripción: A generic driver for the .NET Core Command Line Interface
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
 Dependencias: glibc, libgcc, libstdc++
 Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang20, cmake, dotnet-sdk, dotnet-source-built-artifacts, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk, dotnet-source-built-artifacts, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -241,12 +241,12 @@ Estado SST: [ ]
 17. flashrom
 Paquete: flashrom
 Repositorio: extra
-Versión: 1.8.0-1
+Versión: 1.8.0-2
 Arquitectura: x86_64
 Descripción: Utility for reading, writing, erasing and verifying flash ROM chips
 Upstream: https://www.flashrom.org/
 Licencia: GPL-2.0-or-later
-Dependencias: libcrypto.so=3-64, libftdi, libusb, pciutils
+Dependencias: libcrypto.so=4-64, libftdi, libusb, pciutils
 Opcionales: dmidecode: for SMBIOS/DMI table decoder support
 Compilación: cmocka, git, meson, python-sphinx
 Pruebas: —
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. libevent docs
 Paquete: libevent-docs
 Repositorio: core
-Versión: 2.1.13-2
+Versión: 2.1.13-3
 Arquitectura: x86_64
 Descripción: Event notification library (documentation)
 Upstream: https://libevent.org/
@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. libu2f server
 Paquete: libu2f-server
 Repositorio: extra
-Versión: 1.1.0-7
+Versión: 1.1.0-8
 Arquitectura: x86_64
 Descripción: Yubico Universal 2nd Factor (U2F) Server C Library
 Upstream: https://github.com/Yubico/libu2f-server
@@ -646,7 +646,7 @@ Estado SST: [ ]
 44. opensips
 Paquete: opensips
 Repositorio: extra
-Versión: 4.0.2-1
+Versión: 4.0.3-1
 Arquitectura: x86_64
 Descripción: An Open Source SIP Server able to act as a SIP proxy, registrar, location server, redirect server ...
 Upstream: https://www.opensips.org

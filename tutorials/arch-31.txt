@@ -121,14 +121,14 @@ Estado SST: [ ]
 9. dotnet runtime 9 0
 Paquete: dotnet-runtime-9.0
 Repositorio: extra
-Versión: 9.0.22.sdk123-1
+Versión: 9.0.22.sdk123-2
 Arquitectura: x86_64
 Descripción: The .NET Core runtime
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
-Dependencias: dotnet-host, glibc, libgcc, libstdc++, icu, krb5, libunwind, zlib, openssl
+Dependencias: dotnet-host, glibc, libgcc, libstdc++, icu, krb5, libunwind, zlib, openssl-3
 Opcionales: lttng-ust2.12: CoreCLR tracing
-Compilación: bash, clang20, cmake, dotnet-sdk-9.0, dotnet-source-built-artifacts-9.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk-9.0, dotnet-source-built-artifacts-9.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-runtime=9.0
 Estado SST: [ ]
@@ -136,14 +136,14 @@ Estado SST: [ ]
 10. dotnet source built artifacts 6 0
 Paquete: dotnet-source-built-artifacts-6.0
 Repositorio: extra
-Versión: 6.0.36.sdk136-3
+Versión: 6.0.36.sdk136-4
 Arquitectura: x86_64
 Descripción: Internal package for building the .NET Core SDK
 Upstream: https://www.microsoft.com/net/core
 Licencia: MIT
 Dependencias: —
 Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl, patchutils, systemd, zlib
+Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl-3, patchutils, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-source-built-artifacts=6.0
 Estado SST: [ ]
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. espup
 Paquete: espup
 Repositorio: extra
-Versión: 0.18.0-1
+Versión: 0.18.0-2
 Arquitectura: x86_64
 Descripción: Tool for installing and maintaining ESP Rust ecosystem
 Upstream: https://github.com/esp-rs/espup
@@ -391,7 +391,7 @@ Estado SST: [ ]
 27. mise
 Paquete: mise
 Repositorio: extra
-Versión: 2026.11.5-1
+Versión: 2026.11.5-2
 Arquitectura: x86_64
 Descripción: The front-end to your dev env
 Upstream: https://github.com/jdx/mise
@@ -586,7 +586,7 @@ Estado SST: [ ]
 40. podofo tools
 Paquete: podofo-tools
 Repositorio: extra
-Versión: 0.10.6-1
+Versión: 0.10.6-2
 Arquitectura: x86_64
 Descripción: A C++ library to work with the PDF file format
 Upstream: http://podofo.sourceforge.net
@@ -841,7 +841,7 @@ Estado SST: [ ]
 57. sofia sip
 Paquete: sofia-sip
 Repositorio: extra
-Versión: 1.13.18-1
+Versión: 1.13.19-1
 Arquitectura: x86_64
 Descripción: An open-source SIP User-Agent library
 Upstream: http://sofia-sip.sourceforge.net
@@ -991,12 +991,12 @@ Estado SST: [ ]
 67. worker build
 Paquete: worker-build
 Repositorio: extra
-Versión: 0.8.7-1
+Versión: 0.8.7-2
 Arquitectura: x86_64
 Descripción: Custom build command for a Cloudflare Workers project
 Upstream: https://github.com/cloudflare/workers-rs/tree/main/worker-build
 Licencia: Apache-2.0
-Dependencias: esbuild, glibc, libgcc, libgcc_s.so=1-64, openssl, libcrypto.so=3-64, libssl.so=3-64, wasm-bindgen, wasm-pack
+Dependencias: esbuild, glibc, libgcc, libgcc_s.so=1-64, openssl, libcrypto.so=4-64, libssl.so=4-64, wasm-bindgen, wasm-pack
 Opcionales: —
 Compilación: cargo
 Pruebas: —

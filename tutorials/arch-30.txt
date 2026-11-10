@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. ettercap gtk
 Paquete: ettercap-gtk
 Repositorio: extra
-Versión: 0.8.4.1-1
+Versión: 0.8.4.1-2
 Arquitectura: x86_64
 Descripción: Network sniffer/interceptor/logger for ethernet LANs - GTK frontend
 Upstream: https://www.ettercap-project.org/
@@ -466,12 +466,12 @@ Estado SST: [ ]
 32. nodejs lts jod
 Paquete: nodejs-lts-jod
 Repositorio: extra
-Versión: 22.23.4-1
+Versión: 22.23.4-2
 Arquitectura: x86_64
 Descripción: Evented I/O for V8 javascript (LTS release: Jod)
 Upstream: https://nodejs.org/
 Licencia: MIT
-Dependencias: openssl, zlib, icu, libuv, c-ares, brotli, libnghttp2, zstd
+Dependencias: openssl-3, zlib, icu, libuv, c-ares, brotli, libnghttp2, zstd
 Opcionales: npm: nodejs package manager
 Compilación: python, procps-ng, ninja
 Pruebas: —
@@ -586,7 +586,7 @@ Estado SST: [ ]
 40. php legacy embed
 Paquete: php-legacy-embed
 Repositorio: extra
-Versión: 8.3.36-3
+Versión: 8.3.36-4
 Arquitectura: x86_64
 Descripción: Embedded PHP SAPI library
 Upstream: https://www.php.net/
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. php legacy sqlite
 Paquete: php-legacy-sqlite
 Repositorio: extra
-Versión: 8.3.36-3
+Versión: 8.3.36-4
 Arquitectura: x86_64
 Descripción: sqlite module for PHP
 Upstream: https://www.php.net/
@@ -916,12 +916,12 @@ Estado SST: [ ]
 62. tcpdump
 Paquete: tcpdump
 Repositorio: extra
-Versión: 4.99.7-1
+Versión: 4.99.7-2
 Arquitectura: x86_64
 Descripción: Powerful command-line packet analyzer
 Upstream: https://www.tcpdump.org/
 Licencia: BSD-3-Clause
-Dependencias: glibc, libpcap, libpcap.so=1-64, libcap-ng, libcap-ng.so=0-64, openssl, libcrypto.so=3-64
+Dependencias: glibc, libpcap, libpcap.so=1-64, libcap-ng, libcap-ng.so=0-64, openssl, libcrypto.so=4-64
 Opcionales: —
 Compilación: cmake, libpcap, libcap-ng, openssl
 Pruebas: —

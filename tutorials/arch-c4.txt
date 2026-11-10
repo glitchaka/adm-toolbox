@@ -301,22 +301,22 @@ Estado SST: [ ]
 21. lib32 openssl
 Paquete: lib32-openssl
 Repositorio: multilib
-Versión: 1:3.6.5-1
+Versión: 1:4.1.0-2
 Arquitectura: x86_64
 Descripción: The Open Source toolkit for Secure Sockets Layer and Transport Layer Security (32-bit)
 Upstream: https://www.openssl.org
-Licencia: Apache
-Dependencias: lib32-glibc, openssl
+Licencia: Apache-2.0
+Dependencias: lib32-brotli, lib32-glibc, lib32-zlib, lib32-zstd, openssl
 Opcionales: ca-certificates
-Compilación: —
+Compilación: perl
 Pruebas: —
-Proporciona: libcrypto.so=3-32, libssl.so=3-32
+Proporciona: libcrypto.so=4-32, libssl.so=4-32
 Estado SST: [ ]
 
 22. libcupsfilters
 Paquete: libcupsfilters
 Repositorio: extra
-Versión: 2.2.1.r57.g9fcc4bf4-1
+Versión: 2.2.1.r80.ge1dde819-1
 Arquitectura: x86_64
 Descripción: OpenPrinting CUPS Filters - contains all the code of the filters of the former cups-filters package as library functions
 Upstream: https://github.com/OpenPrinting/libcupsfilters
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. ppp
 Paquete: ppp
 Repositorio: core
-Versión: 2.5.5-1
+Versión: 2.5.5-2
 Arquitectura: x86_64
 Descripción: A daemon which implements the Point-to-Point Protocol for dial-up networking
 Upstream: https://www.samba.org/ppp/
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. python jsonpatch
 Paquete: python-jsonpatch
 Repositorio: extra
-Versión: 1.43-1
+Versión: 1.44-1
 Arquitectura: any
 Descripción: An implementation of the JSON Patch format
 Upstream: https://github.com/stefankoegl/python-json-patch
@@ -706,7 +706,7 @@ Estado SST: [ ]
 48. qca qt5
 Paquete: qca-qt5
 Repositorio: extra
-Versión: 2.3.12-1
+Versión: 2.3.12-2
 Arquitectura: x86_64
 Descripción: Qt Cryptographic Architecture
 Upstream: https://userbase.kde.org/QCA
@@ -751,7 +751,7 @@ Estado SST: [ ]
 51. ruby default gems
 Paquete: ruby-default-gems
 Repositorio: extra
-Versión: 3.4.12-1
+Versión: 3.4.12-2
 Arquitectura: x86_64
 Descripción: Default gems which are part of Ruby StdLib
 Upstream: https://www.ruby-lang.org/en/
@@ -766,7 +766,7 @@ Estado SST: [ ]
 52. strongswan
 Paquete: strongswan
 Repositorio: extra
-Versión: 6.1.0-2
+Versión: 6.1.0-3
 Arquitectura: x86_64
 Descripción: Open source IPsec implementation
 Upstream: https://www.strongswan.org

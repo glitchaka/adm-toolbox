@@ -91,12 +91,12 @@ Estado SST: [ ]
 7. curl
 Paquete: curl
 Repositorio: core
-Versión: 8.23.0-1
+Versión: 8.23.0-2
 Arquitectura: x86_64
 Descripción: command line tool and library for transferring data with URLs
 Upstream: https://curl.se/
 Licencia: curl
-Dependencias: ca-certificates, brotli, libbrotlidec.so=1-64, krb5, libgssapi_krb5.so=2-64, libidn2, libidn2.so=0-64, libnghttp2, libnghttp2.so=14-64, libnghttp3, libnghttp3.so=9-64, libngtcp2, libngtcp2.so=16-64, libpsl, libpsl.so=5-64, libssh2, libssh2.so=1-64, openssl, libcrypto.so=3-64, libssl.so=3-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
+Dependencias: ca-certificates, brotli, libbrotlidec.so=1-64, krb5, libgssapi_krb5.so=2-64, libidn2, libidn2.so=0-64, libnghttp2, libnghttp2.so=14-64, libnghttp3, libnghttp3.so=9-64, libngtcp2, libngtcp2.so=16-64, libpsl, libpsl.so=5-64, libssh2, libssh2.so=1-64, openssl, libcrypto.so=4-64, libssl.so=4-64, zlib, libz.so=1-64, zstd, libzstd.so=1-64
 Opcionales: —
 Compilación: git, patchelf, ca-certificates, brotli, gnutls, krb5, libidn2, libnghttp2, libnghttp3, libngtcp2, libpsl, libssh2, nettle, zlib, zstd
 Pruebas: valgrind
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. gambas3 gb image effect
 Paquete: gambas3-gb-image-effect
 Repositorio: extra
-Versión: 3.22.2-2
+Versión: 3.22.2-3
 Arquitectura: x86_64
 Descripción: Image effect component
 Upstream: http://gambas.sourceforge.net/
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. gst plugin whisper
 Paquete: gst-plugin-whisper
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - whisper plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. lib32 libldap
 Paquete: lib32-libldap
 Repositorio: multilib
-Versión: 2.7.2-1
+Versión: 2.7.2-2
 Arquitectura: x86_64
 Descripción: Lightweight Directory Access Protocol (LDAP) client libraries (32-bit)
 Upstream: https://www.openldap.org/
@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. libpulse
 Paquete: libpulse
 Repositorio: extra
-Versión: 17.0+r134+g77d25a1e6-1
+Versión: 17.0+r134+g77d25a1e6-2
 Arquitectura: x86_64
 Descripción: A featureful, general-purpose sound server (client library)
 Upstream: https://www.freedesktop.org/wiki/Software/PulseAudio/
@@ -646,7 +646,7 @@ Estado SST: [ ]
 44. postfix ldap
 Paquete: postfix-ldap
 Repositorio: extra
-Versión: 3.11.7-1
+Versión: 3.11.7-2
 Arquitectura: x86_64
 Descripción: Fast, easy to administer, secure mail server (LDAP integration)
 Upstream: https://www.postfix.org/
@@ -796,12 +796,12 @@ Estado SST: [ ]
 54. rqbit
 Paquete: rqbit
 Repositorio: extra
-Versión: 9.0.1-1
+Versión: 9.0.1-2
 Arquitectura: x86_64
 Descripción: A bittorrent client in Rust
 Upstream: https://github.com/ikatson/rqbit
 Licencia: Apache-2.0
-Dependencias: glibc, libgcc, libssl.so=3-64
+Dependencias: glibc, libgcc, libssl.so=4-64
 Opcionales: —
 Compilación: cairo, libcairo.so, cargo, cargo-tauri, dbus, libdbus-1.so, gdk-pixbuf2, libgdk_pixbuf-2.0.so, glib2, libglib-2.0.so, gtk3, libgtk-3.so, libsoup3, libsoup-3.0.so, npm, openssl, libssl.so, typescript, webkit2gtk-4.1, libwebkit2gtk-4.1.so
 Pruebas: —
@@ -871,7 +871,7 @@ Estado SST: [ ]
 59. syslog ng snmp
 Paquete: syslog-ng-snmp
 Repositorio: extra
-Versión: 4.12.0-3
+Versión: 4.12.0-4
 Arquitectura: x86_64
 Descripción: Next-generation syslogd with advanced networking and filtering capabilities (SNMP module)
 Upstream: https://github.com/syslog-ng/syslog-ng
@@ -931,7 +931,7 @@ Estado SST: [ ]
 63. vsftpd
 Paquete: vsftpd
 Repositorio: extra
-Versión: 3.0.5-2
+Versión: 3.0.5-3
 Arquitectura: x86_64
 Descripción: Very Secure FTP daemon
 Upstream: https://security.appspot.com/vsftpd.html

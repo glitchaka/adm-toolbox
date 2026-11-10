@@ -1,7 +1,7 @@
 1. apr util
 Paquete: apr-util
 Repositorio: extra
-Versión: 1.6.6-1
+Versión: 1.6.6-2
 Arquitectura: x86_64
 Descripción: The Apache Portable Runtime
 Upstream: https://apr.apache.org/
@@ -388,7 +388,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. pantheon screenshot
+27. pantheon feedback
+Paquete: pantheon-feedback
+Repositorio: extra
+Versión: 8.1.1-1
+Arquitectura: x86_64
+Descripción: GitHub Issue Reporter for Pantheon
+Upstream: https://github.com/elementary/feedback
+Licencia: GPL-3.0-or-later
+Dependencias: appstream, dconf, glib2, glibc, granite7, gtk4, hicolor-icon-theme, libadwaita
+Opcionales: —
+Compilación: git, meson, vala
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+28. pantheon screenshot
 Paquete: pantheon-screenshot
 Repositorio: extra
 Versión: 9.0.0-2
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. pastebinit
+29. pastebinit
 Paquete: pastebinit
 Repositorio: extra
 Versión: 1.5.1-2
@@ -418,10 +433,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. php legacy enchant
+30. php legacy enchant
 Paquete: php-legacy-enchant
 Repositorio: extra
-Versión: 8.3.36-3
+Versión: 8.3.36-4
 Arquitectura: x86_64
 Descripción: enchant module for PHP
 Upstream: https://www.php.net/
@@ -433,7 +448,7 @@ Pruebas: procps-ng
 Proporciona: php-enchant-interpreter=8.3
 Estado SST: [ ]
 
-30. plasma camera
+31. plasma camera
 Paquete: plasma-camera
 Repositorio: extra
 Versión: 26.08.3-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. prettyping
+32. prettyping
 Paquete: prettyping
 Repositorio: extra
 Versión: 1:1.1.0-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. python geoip2
+33. python geoip2
 Paquete: python-geoip2
 Repositorio: extra
 Versión: 5.3.0-1
@@ -478,7 +493,7 @@ Pruebas: python-pytest, python-pytest-httpserver
 Proporciona: —
 Estado SST: [ ]
 
-33. python graph tool opt
+34. python graph tool opt
 Paquete: python-graph-tool-opt
 Repositorio: extra
 Versión: 3.9-1
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: python-graph-tool=3.9
 Estado SST: [ ]
 
-34. python heatclient
+35. python heatclient
 Paquete: python-heatclient
 Repositorio: extra
 Versión: 5.3.0-1
@@ -508,7 +523,7 @@ Pruebas: python-stestr, python-testscenarios, python-requests-mock
 Proporciona: —
 Estado SST: [ ]
 
-35. python hidapi
+36. python hidapi
 Paquete: python-hidapi
 Repositorio: extra
 Versión: 0.14.0-7
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. python pytest xprocess
+37. python pytest xprocess
 Paquete: python-pytest-xprocess
 Repositorio: extra
 Versión: 1.0.2-1
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. python scikit build
+38. python scikit build
 Paquete: python-scikit-build
 Repositorio: extra
 Versión: 0.19.1-1
@@ -553,7 +568,7 @@ Pruebas: cython, gcc, gcc-fortran, ninja, python-build, python-path, python-pyte
 Proporciona: —
 Estado SST: [ ]
 
-38. python smmap
+39. python smmap
 Paquete: python-smmap
 Repositorio: extra
 Versión: 1:6.0.0-3
@@ -568,7 +583,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-39. python tensorflow serving api
+40. python tensorflow serving api
 Paquete: python-tensorflow-serving-api
 Repositorio: extra
 Versión: 2.21.0-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python terminado
+41. python terminado
 Paquete: python-terminado
 Repositorio: extra
 Versión: 0.18.1-4
@@ -598,7 +613,7 @@ Pruebas: python-pytest, python-pytest-timeout
 Proporciona: —
 Estado SST: [ ]
 
-41. ruby regexp parser
+42. ruby regexp parser
 Paquete: ruby-regexp_parser
 Repositorio: extra
 Versión: 2.13.1-1
@@ -613,7 +628,7 @@ Pruebas: ruby-benchmark-ips, ruby-ice_nine, ruby-leto, ruby-regexp_property_valu
 Proporciona: —
 Estado SST: [ ]
 
-42. smpeg
+43. smpeg
 Paquete: smpeg
 Repositorio: extra
 Versión: 2.0.0-4
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. sn0int
+44. sn0int
 Paquete: sn0int
 Repositorio: extra
 Versión: 0.26.1-2
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. superlu dist
+45. superlu dist
 Paquete: superlu_dist
 Repositorio: extra
 Versión: 9.3.2-1
@@ -658,7 +673,7 @@ Pruebas: python-mpi4py, python-numpy, python-scipy
 Proporciona: —
 Estado SST: [ ]
 
-45. tdf
+46. tdf
 Paquete: tdf
 Repositorio: extra
 Versión: 0.5.0-3
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. tesseract data eus
+47. tesseract data eus
 Paquete: tesseract-data-eus
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-47. tinysparql docs
+48. tinysparql docs
 Paquete: tinysparql-docs
 Repositorio: extra
 Versión: 3.12.0-1
@@ -703,7 +718,7 @@ Pruebas: man-db
 Proporciona: —
 Estado SST: [ ]
 
-48. tldr
+49. tldr
 Paquete: tldr
 Repositorio: extra
 Versión: 3.4.4-1
@@ -718,7 +733,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-49. ttf gentium book
+50. ttf gentium book
 Paquete: ttf-gentium-book
 Repositorio: extra
 Versión: 7.000-2
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: gentium-book-font=7.000
 Estado SST: [ ]
 
-50. unicorn
+51. unicorn
 Paquete: unicorn
 Repositorio: extra
 Versión: 2.1.4-2
@@ -748,7 +763,7 @@ Pruebas: cmocka, python-pytest
 Proporciona: libunicorn.so=2-64
 Estado SST: [ ]
 
-51. vlc plugin png
+52. vlc plugin png
 Paquete: vlc-plugin-png
 Repositorio: extra
 Versión: 3.0.24-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. vnstat
+53. vnstat
 Paquete: vnstat
 Repositorio: extra
 Versión: 2.14-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. vorta
+54. vorta
 Paquete: vorta
 Repositorio: extra
 Versión: 0.11.6-1
@@ -793,7 +808,7 @@ Pruebas: dbus, openssh, python-pytest, python-pytest-mock, python-pytest-qt, xor
 Proporciona: —
 Estado SST: [ ]
 
-54. wipe
+55. wipe
 Paquete: wipe
 Repositorio: extra
 Versión: 2.3.1-6
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. xfce4 screensaver
+56. xfce4 screensaver
 Paquete: xfce4-screensaver
 Repositorio: extra
 Versión: 4.20.2-1

@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. chawan
 Paquete: chawan
 Repositorio: extra
-Versión: 0.5.1-1
+Versión: 0.5.1-2
 Arquitectura: x86_64
 Descripción: A text-mode web browser and pager for Unix-like systems
 Upstream: https://chawan.net/
@@ -61,12 +61,12 @@ Estado SST: [ ]
 5. contour
 Paquete: contour
 Repositorio: extra
-Versión: 0.7.0.8982-1
+Versión: 0.7.0.8982-2
 Arquitectura: x86_64
 Descripción: Modern C++ Terminal Emulator
 Upstream: https://github.com/contour-terminal/contour
 Licencia: Apache-2.0
-Dependencias: fontconfig, freetype2, glibc, harfbuzz, libgcc, libssh2, libstdc++, libunicode, libutempter, libxcb, qt6-5compat, qt6-base, qt6-declarative, qt6-multimedia, qt6-shadertools, wayland, yaml-cpp
+Dependencias: fontconfig, freetype2, glibc, harfbuzz, libgcc, libssh2, libstdc++, libunicode, libutempter, libxcb, openssl-3, qt6-5compat, qt6-base, qt6-declarative, qt6-multimedia, qt6-shadertools, wayland, yaml-cpp
 Opcionales: ncurses: for contour terminfo database
 Compilación: boxed-cpp, catch2, cmake, extra-cmake-modules, git, libxml2, microsoft-gsl, ninja, python, range-v3, reflection-cpp
 Pruebas: —
@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. gst plugin qsv
 Paquete: gst-plugin-qsv
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - qsv plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-bad-libs=1.28.8-1, gst-plugins-base-libs=1.28.8-1, gstreamer=1.28.8-1, glib2, glibc, libgcc, libstdc++
+Dependencias: gst-plugins-bad-libs=1.28.9-1, gst-plugins-base-libs=1.28.9-1, gstreamer=1.28.9-1, glib2, glibc, libgcc, libstdc++
 Opcionales: intel-media-sdk: runtime for legacy Intel GPUs, onevpl-intel-gpu: runtime for Tiger Lake and newer GPUs
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. gst plugin rsaudioparsers
 Paquete: gst-plugin-rsaudioparsers
 Repositorio: extra
-Versión: 0.15.4-1
+Versión: 0.15.4-2
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - rsaudioparsers plugin
 Upstream: https://gstreamer.freedesktop.org/
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. libgmobile
 Paquete: libgmobile
 Repositorio: extra
-Versión: 0.7.4-1
+Versión: 0.7.5-1
 Arquitectura: x86_64
 Descripción: Functions useful in mobile related, glib based projects
 Upstream: https://gitlab.gnome.org/World/Phosh/gmobile
@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. lua54 lux
 Paquete: lua54-lux
 Repositorio: extra
-Versión: 0.53.3-1
+Versión: 0.54.0-1
 Arquitectura: x86_64
 Descripción: A luxurious package manager for Lua (Rock for Lua 5.4)
 Upstream: https://lux.lumen-labs.org
@@ -496,7 +496,7 @@ Estado SST: [ ]
 34. open vm tools
 Paquete: open-vm-tools
 Repositorio: extra
-Versión: 6:13.1.0-3
+Versión: 6:13.1.0-4
 Arquitectura: x86_64
 Descripción: The Open Virtual Machine Tools (open-vm-tools) are the open source implementation of VMware Tools
 Upstream: https://github.com/vmware/open-vm-tools
@@ -586,7 +586,7 @@ Estado SST: [ ]
 40. pnpm
 Paquete: pnpm
 Repositorio: extra
-Versión: 12.17.0-1
+Versión: 12.19.0-1
 Arquitectura: x86_64
 Descripción: Fast, disk space efficient package manager
 Upstream: https://pnpm.io
@@ -781,7 +781,7 @@ Estado SST: [ ]
 53. syslog ng smtp
 Paquete: syslog-ng-smtp
 Repositorio: extra
-Versión: 4.12.0-3
+Versión: 4.12.0-4
 Arquitectura: x86_64
 Descripción: Next-generation syslogd with advanced networking and filtering capabilities (SMTP module)
 Upstream: https://github.com/syslog-ng/syslog-ng

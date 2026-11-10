@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. alsa scarlett gui
 Paquete: alsa-scarlett-gui
 Repositorio: extra
-Versión: 0.5.1-2
+Versión: 0.5.1-3
 Arquitectura: x86_64
 Descripción: GUI for the ALSA controls presented by the Focusrite Scarlett Gen 2/3 mixer driver
 Upstream: https://github.com/geoffreybennett/alsa-scarlett-gui
@@ -706,7 +706,7 @@ Estado SST: [ ]
 48. php legacy phpdbg
 Paquete: php-legacy-phpdbg
 Repositorio: extra
-Versión: 8.3.36-3
+Versión: 8.3.36-4
 Arquitectura: x86_64
 Descripción: Interactive PHP debugger
 Upstream: https://www.php.net/
@@ -721,12 +721,12 @@ Estado SST: [ ]
 49. pulseaudio bluetooth
 Paquete: pulseaudio-bluetooth
 Repositorio: extra
-Versión: 17.0+r134+g77d25a1e6-1
+Versión: 17.0+r134+g77d25a1e6-2
 Arquitectura: x86_64
 Descripción: Bluetooth support for PulseAudio
 Upstream: https://www.freedesktop.org/wiki/Software/PulseAudio/
 Licencia: LGPL-2.1-or-later
-Dependencias: libpulse=17.0+r134+g77d25a1e6-1, pulseaudio=17.0+r134+g77d25a1e6-1, bluez, bluez-libs, dbus, glib2, glibc, gst-plugins-base-libs, gstreamer, sbc
+Dependencias: libpulse=17.0+r134+g77d25a1e6-2, pulseaudio=17.0+r134+g77d25a1e6-2, bluez, bluez-libs, dbus, glib2, glibc, gst-plugins-base-libs, gstreamer, sbc
 Opcionales: gst-plugins-bad: AptX and LDAC support
 Compilación: alsa-lib, attr, avahi, bash, bluez, bluez-libs, check, dbus, doxygen, fftw, git, glib2, glibc, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gstreamer, gtk3, jack2, libasyncns, libcap, libgcc, libice, libltdl, libsm, libsndfile, libsoxr, libx11, libxcb, libxtst, lirc, meson, openssl, orc, python, python-dbus, python-pyqt5, rtkit, sbc, speexdsp, systemd, systemd-libs, tdb, valgrind, webrtc-audio-processing-1, xmltoman
 Pruebas: —
@@ -736,12 +736,12 @@ Estado SST: [ ]
 50. pulseaudio lirc
 Paquete: pulseaudio-lirc
 Repositorio: extra
-Versión: 17.0+r134+g77d25a1e6-1
+Versión: 17.0+r134+g77d25a1e6-2
 Arquitectura: x86_64
 Descripción: IR (lirc) support for PulseAudio
 Upstream: https://www.freedesktop.org/wiki/Software/PulseAudio/
 Licencia: LGPL-2.1-or-later
-Dependencias: pulseaudio=17.0+r134+g77d25a1e6-1, glibc, lirc
+Dependencias: pulseaudio=17.0+r134+g77d25a1e6-2, glibc, lirc
 Opcionales: —
 Compilación: alsa-lib, attr, avahi, bash, bluez, bluez-libs, check, dbus, doxygen, fftw, git, glib2, glibc, gst-plugins-base, gst-plugins-base-libs, gst-plugins-good, gstreamer, gtk3, jack2, libasyncns, libcap, libgcc, libice, libltdl, libsm, libsndfile, libsoxr, libx11, libxcb, libxtst, lirc, meson, openssl, orc, python, python-dbus, python-pyqt5, rtkit, sbc, speexdsp, systemd, systemd-libs, tdb, valgrind, webrtc-audio-processing-1, xmltoman
 Pruebas: —

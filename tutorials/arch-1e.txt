@@ -76,14 +76,14 @@ Estado SST: [ ]
 6. dotnet targeting pack
 Paquete: dotnet-targeting-pack
 Repositorio: extra
-Versión: 10.0.14.sdk114-1
+Versión: 10.0.14.sdk114-2
 Arquitectura: x86_64
 Descripción: The .NET Core targeting pack
 Upstream: https://dotnet.microsoft.com
 Licencia: MIT
 Dependencias: —
 Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang20, cmake, dotnet-sdk, dotnet-source-built-artifacts, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl, systemd, zlib
+Compilación: bash, clang20, cmake, dotnet-sdk, dotnet-source-built-artifacts, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
 Pruebas: —
 Proporciona: dotnet-targeting-pack=10.0, dotnet-targeting-pack-10.0
 Estado SST: [ ]
@@ -166,12 +166,12 @@ Estado SST: [ ]
 12. gst editing services
 Paquete: gst-editing-services
 Repositorio: extra
-Versión: 1.28.8-1
+Versión: 1.28.9-1
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - editing services
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-devtools-libs=1.28.8-1, gst-plugins-base-libs=1.28.8-1, gst-python=1.28.8-1, gstreamer=1.28.8-1, glib2, glibc, json-glib, libxml2, orc, python, python-gobject, zlib
+Dependencias: gst-devtools-libs=1.28.9-1, gst-plugins-base-libs=1.28.9-1, gst-python=1.28.9-1, gstreamer=1.28.9-1, glib2, glibc, json-glib, libxml2, orc, python, python-gobject, zlib
 Opcionales: opentimelineio: Support for the OpenTimelineIO format
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. jose
 Paquete: jose
 Repositorio: extra
-Versión: 15-2
+Versión: 15-3
 Arquitectura: x86_64
 Descripción: C-language implementation of Javascript Object Signing and Encryption
 Upstream: https://github.com/latchset/jose
@@ -436,7 +436,7 @@ Estado SST: [ ]
 30. nginx mod perl
 Paquete: nginx-mod-perl
 Repositorio: extra
-Versión: 1.30.6-2
+Versión: 1.30.6-3
 Arquitectura: x86_64
 Descripción: Module for nginx to implement location and variable handlers in Perl
 Upstream: https://nginx.org
@@ -676,7 +676,7 @@ Estado SST: [ ]
 46. ruby bundled gems
 Paquete: ruby-bundled-gems
 Repositorio: extra
-Versión: 3.4.12-1
+Versión: 3.4.12-2
 Arquitectura: x86_64
 Descripción: Bundled gems which are part of Ruby StdLib
 Upstream: https://www.ruby-lang.org/en/
