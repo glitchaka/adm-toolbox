@@ -121,16 +121,16 @@ Estado SST: [ ]
 9. firefox i18n en gb
 Paquete: firefox-i18n-en-gb
 Repositorio: extra
-Versión: 159.0.1-1
+Versión: 160.0-1
 Arquitectura: any
 Descripción: English (British) language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=159.0.1
+Dependencias: firefox>=160.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=159.0.1-1
+Proporciona: firefox-i18n=160.0-1
 Estado SST: [ ]
 
 10. glibc
@@ -826,14 +826,14 @@ Estado SST: [ ]
 56. wingpanel indicator power
 Paquete: wingpanel-indicator-power
 Repositorio: extra
-Versión: 8.0.2-2
+Versión: 8.0.2-3
 Arquitectura: x86_64
 Descripción: Wingpanel Power Indicator
 Upstream: https://github.com/elementary/wingpanel-indicator-power
 Licencia: GPL-3.0-only
-Dependencias: dconf, glib2, glibc, granite7, gtk4, libgee, libgtop, libnotify, systemd-libs, wingpanel
+Dependencias: dconf, glib2, glibc, granite7, gtk4, libgee, libnotify, systemd-libs, wingpanel
 Opcionales: —
-Compilación: git, intltool, meson, vala
+Compilación: git, libgtop, meson, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

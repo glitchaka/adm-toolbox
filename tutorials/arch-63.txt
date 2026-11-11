@@ -166,31 +166,31 @@ Estado SST: [ ]
 12. firefox i18n hu
 Paquete: firefox-i18n-hu
 Repositorio: extra
-Versión: 159.0.1-1
+Versión: 160.0-1
 Arquitectura: any
 Descripción: Hungarian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=159.0.1
+Dependencias: firefox>=160.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=159.0.1-1
+Proporciona: firefox-i18n=160.0-1
 Estado SST: [ ]
 
 13. firefox i18n xh
 Paquete: firefox-i18n-xh
 Repositorio: extra
-Versión: 159.0.1-1
+Versión: 160.0-1
 Arquitectura: any
 Descripción: Xhosa language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=159.0.1
+Dependencias: firefox>=160.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=159.0.1-1
+Proporciona: firefox-i18n=160.0-1
 Estado SST: [ ]
 
 14. gambas3 gb opengl
@@ -301,14 +301,14 @@ Estado SST: [ ]
 21. libblockdev smart
 Paquete: libblockdev-smart
 Repositorio: extra
-Versión: 3.5.0-2
+Versión: 3.6.0-1
 Arquitectura: x86_64
 Descripción: A library for manipulating block devices - S.M.A.R.T. support
 Upstream: https://github.com/storaged-project/libblockdev
 Licencia: LGPL-2.1-or-later
-Dependencias: glib2, libglib-2.0.so=0-64, glibc, json-glib, libatasmart, libblockdev=3.5.0, libbd_utils.so=3-64
+Dependencias: glib2, libglib-2.0.so=0-64, glibc, json-glib, libatasmart, libblockdev=3.6.0, libbd_utils.so=3-64
 Opcionales: smartmontools: for experimental smartmontools-based plugin
-Compilación: autoconf-archive, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
+Compilación: autoconf-archive, automake, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, git, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libtool, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
 Pruebas: —
 Proporciona: libbd_smart.so=3-64, libbd_smartmontools.so=3-64
 Estado SST: [ ]

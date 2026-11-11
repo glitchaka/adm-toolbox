@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. dtk6widget
 Paquete: dtk6widget
 Repositorio: extra
-Versión: 1:6.7.52-1
+Versión: 1:6.7.53-1
 Arquitectura: x86_64
 Descripción: Deepin base graphical widgets library (Qt6 build)
 Upstream: https://github.com/linuxdeepin/dtkwidget
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell hls refactor plugin
 Paquete: haskell-hls-refactor-plugin
 Repositorio: extra
-Versión: 2.4.0.0-35
+Versión: 2.4.0.0-40
 Arquitectura: x86_64
 Descripción: Exactprint refactorings for Haskell Language Server
 Upstream: https://github.com/haskell/haskell-language-server.git
@@ -553,7 +553,22 @@ Pruebas: —
 Proporciona: libpango-1.0.so=0-64, libpangocairo-1.0.so=0-64, libpangoft2-1.0.so=0-64, libpangoxft-1.0.so=0-64
 Estado SST: [ ]
 
-38. perl sub identify
+38. pantheon quick settings
+Paquete: pantheon-quick-settings
+Repositorio: extra
+Versión: 1.4.0-1
+Arquitectura: x86_64
+Descripción: Quick Settings Indicator
+Upstream: https://github.com/elementary/quick-settings
+Licencia: GPL-3.0-or-later
+Dependencias: accountsservice, dconf, glib2, glibc, gnome-settings-daemon, granite7, gtk4, libadwaita, libpackagekit-glib, pantheon-settings-daemon, wayland, wingpanel
+Opcionales: —
+Compilación: git, libportal, meson, vala
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+39. perl sub identify
 Paquete: perl-sub-identify
 Repositorio: extra
 Versión: 0.14-15
@@ -568,7 +583,7 @@ Pruebas: perl-test-pod
 Proporciona: —
 Estado SST: [ ]
 
-39. perl sys meminfo
+40. perl sys meminfo
 Paquete: perl-sys-meminfo
 Repositorio: extra
 Versión: 0.99-9
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. perl test memory cycle
+41. perl test memory cycle
 Paquete: perl-test-memory-cycle
 Repositorio: extra
 Versión: 1.06-3
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. png
+42. png
 Paquete: png++
 Repositorio: extra
 Versión: 0.2.10-3
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python feedgen
+43. python feedgen
 Paquete: python-feedgen
 Repositorio: extra
 Versión: 1.0.0-4
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. python graphql server core
+44. python graphql server core
 Paquete: python-graphql-server-core
 Repositorio: extra
 Versión: 2.0.0-8
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python hatch jupyter builder
+45. python hatch jupyter builder
 Paquete: python-hatch-jupyter-builder
 Repositorio: extra
 Versión: 0.10.0-1
@@ -658,7 +673,7 @@ Pruebas: python-pytest, python-pytest-mock
 Proporciona: —
 Estado SST: [ ]
 
-45. python pyperclip
+46. python pyperclip
 Paquete: python-pyperclip
 Repositorio: extra
 Versión: 1.11.0-2
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. python sortedcontainers
+47. python sortedcontainers
 Paquete: python-sortedcontainers
 Repositorio: extra
 Versión: 2.4.0-8
@@ -688,7 +703,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-47. qddbconv
+48. qddbconv
 Paquete: qddbconv
 Repositorio: extra
 Versión: 1.3.1-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. ramalama
+49. ramalama
 Paquete: ramalama
 Repositorio: extra
 Versión: 0.26.0-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. ruby fuubar
+50. ruby fuubar
 Paquete: ruby-fuubar
 Repositorio: extra
 Versión: 2.5.1-5
@@ -733,7 +748,7 @@ Pruebas: ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-50. ruby rake
+51. ruby rake
 Paquete: ruby-rake
 Repositorio: extra
 Versión: 13.4.2-1
@@ -748,7 +763,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit
 Proporciona: rake
 Estado SST: [ ]
 
-51. simutrans
+52. simutrans
 Paquete: simutrans
 Repositorio: extra
 Versión: 125.0.1-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. stk docs
+53. stk docs
 Paquete: stk-docs
 Repositorio: extra
 Versión: 5.0.1-4
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. suitesparse
+54. suitesparse
 Paquete: suitesparse
 Repositorio: extra
 Versión: 7.14.1-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. syslog ng mongodb
+55. syslog ng mongodb
 Paquete: syslog-ng-mongodb
 Repositorio: extra
 Versión: 4.12.0-4
@@ -808,7 +823,7 @@ Pruebas: criterion, python-pytest, python-pytest-mock, qpdf
 Proporciona: —
 Estado SST: [ ]
 
-55. tesseract data lao
+56. tesseract data lao
 Paquete: tesseract-data-lao
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-56. tesseract data spa old
+57. tesseract data spa old
 Paquete: tesseract-data-spa_old
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-57. vim spell pt
+58. vim spell pt
 Paquete: vim-spell-pt
 Repositorio: extra
 Versión: 20220628-2

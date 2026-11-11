@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. dtk6gui
 Paquete: dtk6gui
 Repositorio: extra
-Versión: 1:6.7.52-1
+Versión: 1:6.7.53-1
 Arquitectura: x86_64
 Descripción: Deepin Toolkit, gui module for DDE look and feel (Qt6 build)
 Upstream: https://github.com/linuxdeepin/dtkgui
@@ -181,14 +181,14 @@ Estado SST: [ ]
 13. ghidra
 Paquete: ghidra
 Repositorio: extra
-Versión: 12.1.2-2
+Versión: 12.2-1
 Arquitectura: x86_64
 Descripción: Software reverse engineering framework
 Upstream: https://ghidra-sre.org/
 Licencia: Apache-2.0
-Dependencias: java-environment>=21, bash, glibc, libgcc, libstdc++, python, python-packaging
+Dependencias: bash, glibc, libgcc, libstdc++, python, python-packaging, java-environment>=25
 Opcionales: pam: GhidraServer support
-Compilación: java-environment=21, git, gradle, grep, python-build, python-flit-core, python-installer, python-pip, python-setuptools, z3, z3-java
+Compilación: java-environment=25, git, gradle, grep, python-build, python-flit-core, python-installer, python-pip, python-setuptools, z3, z3-java
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell hls explicit fixity plugin
 Paquete: haskell-hls-explicit-fixity-plugin
 Repositorio: extra
-Versión: 2.4.0.0-33
+Versión: 2.4.0.0-38
 Arquitectura: x86_64
 Descripción: Show fixity explicitly while hovering
 Upstream: https://github.com/haskell/haskell-language-server.git

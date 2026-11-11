@@ -256,14 +256,14 @@ Estado SST: [ ]
 18. libblockdev btrfs
 Paquete: libblockdev-btrfs
 Repositorio: extra
-Versión: 3.5.0-2
+Versión: 3.6.0-1
 Arquitectura: x86_64
 Descripción: A library for manipulating block devices - BTRFS support
 Upstream: https://github.com/storaged-project/libblockdev
 Licencia: LGPL-2.1-or-later
-Dependencias: btrfs-progs, glib2, libglib-2.0.so=0-64, glibc, libblockdev=3.5.0, libbd_utils.so=3-64, libbytesize
+Dependencias: btrfs-progs, glib2, libglib-2.0.so=0-64, glibc, libblockdev=3.6.0, libbd_utils.so=3-64, libbytesize
 Opcionales: —
-Compilación: autoconf-archive, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
+Compilación: autoconf-archive, automake, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, git, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libtool, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
 Pruebas: —
 Proporciona: libbd_btrfs.so=3-64
 Estado SST: [ ]
@@ -721,7 +721,7 @@ Estado SST: [ ]
 49. skopeo
 Paquete: skopeo
 Repositorio: extra
-Versión: 1.24.1-1
+Versión: 1.25.1-1
 Arquitectura: x86_64
 Descripción: A command line utility for various operations on container images and image repositories.
 Upstream: https://github.com/containers/skopeo

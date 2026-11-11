@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. grafana alloy
 Paquete: grafana-alloy
 Repositorio: extra
-Versión: 1.21.1-1
+Versión: 1.21.3-1
 Arquitectura: x86_64
 Descripción: OpenTelemetry Collector distribution with programmable pipelines
 Upstream: https://grafana.com/oss/alloy-opentelemetry-collector/
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell hadrian
 Paquete: haskell-hadrian
 Repositorio: extra
-Versión: 0.1.0.0+9.6.7-32
+Versión: 0.1.0.0+9.6.7-37
 Arquitectura: x86_64
 Descripción: GHC build system
 Upstream: https://gitlab.haskell.org/ghc/ghc
@@ -346,14 +346,14 @@ Estado SST: [ ]
 24. libblockdev swap
 Paquete: libblockdev-swap
 Repositorio: extra
-Versión: 3.5.0-2
+Versión: 3.6.0-1
 Arquitectura: x86_64
 Descripción: A library for manipulating block devices - swap device support
 Upstream: https://github.com/storaged-project/libblockdev
 Licencia: LGPL-2.1-or-later
-Dependencias: glib2, libglib-2.0.so=0-64, glibc, libblockdev=3.5.0, libbd_utils.so=3-64, libgcc, util-linux-libs, libblkid.so=1-64
+Dependencias: glib2, libglib-2.0.so=0-64, glibc, libblockdev=3.6.0, libbd_utils.so=3-64, libgcc, util-linux-libs, libblkid.so=1-64
 Opcionales: —
-Compilación: autoconf-archive, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
+Compilación: autoconf-archive, automake, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, git, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libtool, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
 Pruebas: —
 Proporciona: libbd_swap.so=3-64
 Estado SST: [ ]
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. python fastmcp
 Paquete: python-fastmcp
 Repositorio: extra
-Versión: 4.1.7-1
+Versión: 4.1.8-1
 Arquitectura: any
 Descripción: The fast, Pythonic way to build MCP servers and clients
 Upstream: https://github.com/PrefectHQ/fastmcp

@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. exploitdb
 Paquete: exploitdb
 Repositorio: extra
-Versión: 20261002-1
+Versión: 20261027-1
 Arquitectura: any
 Descripción: Offensive Security’s Exploit Database Archive
 Upstream: https://www.exploit-db.com/
@@ -136,16 +136,16 @@ Estado SST: [ ]
 10. firefox i18n en us
 Paquete: firefox-i18n-en-us
 Repositorio: extra
-Versión: 159.0.1-1
+Versión: 160.0-1
 Arquitectura: any
 Descripción: English (US) language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=159.0.1
+Dependencias: firefox>=160.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=159.0.1-1
+Proporciona: firefox-i18n=160.0-1
 Estado SST: [ ]
 
 11. geoip database
@@ -241,14 +241,14 @@ Estado SST: [ ]
 17. haskell wai logger
 Paquete: haskell-wai-logger
 Repositorio: extra
-Versión: 2.5.0-215
+Versión: 2.5.1-1
 Arquitectura: x86_64
 Descripción: A logging system for WAI
 Upstream: https://hackage.haskell.org/package/wai-logger
-Licencia: BSD
+Licencia: BSD-3-Clause
 Dependencias: ghc-libs, haskell-byteorder, haskell-fast-logger, haskell-http-types, haskell-network, haskell-wai
 Opcionales: —
-Compilación: ghc
+Compilación: ghc, haskell-fast-logger, haskell-hspec, haskell-hspec-discover
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

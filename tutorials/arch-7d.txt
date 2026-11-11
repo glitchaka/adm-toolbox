@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. haskell optparse simple
 Paquete: haskell-optparse-simple
 Repositorio: extra
-Versión: 0.1.1.4-639
+Versión: 0.1.1.4-644
 Arquitectura: x86_64
 Descripción: Simple interface to optparse-applicative
 Upstream: https://hackage.haskell.org/package/optparse-simple
@@ -481,14 +481,14 @@ Estado SST: [ ]
 33. libblockdev
 Paquete: libblockdev
 Repositorio: extra
-Versión: 3.5.0-2
+Versión: 3.6.0-1
 Arquitectura: x86_64
 Descripción: A library for manipulating block devices
 Upstream: https://github.com/storaged-project/libblockdev
 Licencia: LGPL-2.1-or-later
 Dependencias: glib2, libglib-2.0.so=0-64, libgio-2.0.so=0-64, libgobject-2.0.so=0-64, glibc, kmod, libkmod.so=2-64, systemd-libs, libudev.so=1-64
 Opcionales: libblockdev-btrfs: for BTRFS support, libblockdev-crypto: for crypto support, libblockdev-dm: for device-mapper support, libblockdev-fs: for filesystem support, libblockdev-loop: for loop device support, libblockdev-lvm: for LVM support, libblockdev-mdraid: for MDRAID support, libblockdev-mpath: for multipath support, libblockdev-nvdimm: for NVDIMM support, libblockdev-nvme: for NVME support, libblockdev-part: for partitioning support, libblockdev-smart: for S.M.A.R.T. support, libblockdev-swap: for swap support, python-libblockdev: for Python support
-Compilación: autoconf-archive, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
+Compilación: autoconf-archive, automake, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, git, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libtool, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
 Pruebas: —
 Proporciona: libbd_utils.so=3-64, libblockdev.so=3-64
 Estado SST: [ ]
@@ -646,7 +646,7 @@ Estado SST: [ ]
 44. mermaid cli
 Paquete: mermaid-cli
 Repositorio: extra
-Versión: 12.0.0-1
+Versión: 12.2.0-1
 Arquitectura: any
 Descripción: Generate images from Mermaid files
 Upstream: https://github.com/mermaid-js/mermaid-cli
@@ -841,7 +841,7 @@ Estado SST: [ ]
 57. python pdm
 Paquete: python-pdm
 Repositorio: extra
-Versión: 2.29.4-1
+Versión: 2.29.5-1
 Arquitectura: any
 Descripción: A modern Python package and dependency manager supporting the latest PEP standards
 Upstream: https://github.com/pdm-project/pdm

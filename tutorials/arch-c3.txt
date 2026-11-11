@@ -301,14 +301,14 @@ Estado SST: [ ]
 21. libblockdev crypto
 Paquete: libblockdev-crypto
 Repositorio: extra
-Versión: 3.5.0-2
+Versión: 3.6.0-1
 Arquitectura: x86_64
 Descripción: A library for manipulating block devices - crypto support
 Upstream: https://github.com/storaged-project/libblockdev
 Licencia: LGPL-2.1-or-later
-Dependencias: cryptsetup, libcryptsetup.so=12-64, glib2, libglib-2.0.so=0-64, glibc, keyutils, libkeyutils.so=1-64, libblockdev=3.5.0, libbd_utils.so=3-64, libgcc, nss, util-linux-libs, libblkid.so=1-64, volume_key
+Dependencias: cryptsetup, libcryptsetup.so=12-64, device-mapper, libdevmapper.so=1.02-64, glib2, libglib-2.0.so=0-64, glibc, keyutils, libkeyutils.so=1-64, libblockdev=3.6.0, libbd_utils.so=3-64, libgcc, nss, util-linux-libs, libblkid.so=1-64, volume_key
 Opcionales: —
-Compilación: autoconf-archive, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
+Compilación: autoconf-archive, automake, btrfs-progs, cryptsetup, device-mapper, dosfstools, e2fsprogs, exfatprogs, glib2, glibc, git, gobject-introspection, gtk-doc, json-glib, kmod, keyutils, libatasmart, libbytesize, libgcc, libtool, libnvme, libyaml, lvm2, mdadm, ndctl, nss, parted, python, systemd-libs, util-linux, util-linux-libs, volume_key
 Pruebas: —
 Proporciona: libbd_crypto.so=3-64
 Estado SST: [ ]
@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. openbve
 Paquete: openbve
 Repositorio: extra
-Versión: 1.14.1.2-1
+Versión: 1.14.1.4-1
 Arquitectura: any
 Descripción: 3D cab based train simulator
 Upstream: https://openbve-project.net/
