@@ -1,30 +1,29 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.60",
+  "version": "0.1.9-blue.64",
   "channel": "blue",
-  "published_at": "2026-11-11T16:14:20.6055632+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.60/sst.exe",
-  "sha256": "4571ad038b32c757cef20487dd2e76437fa6600a75ab2a3c4429ffcd6bca8d58",
-  "size": 55619072,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.60/sst-updater.exe",
-  "updater_sha256": "19db88f11514ed4eb7fd90eae940e6e8df8bd2beb34535aff1a65f40ce26e9a3",
+  "published_at": "2026-11-11T17:49:32.8656212+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.64/sst.exe",
+  "sha256": "456fed7443534bc66f585eae1fb0d5b3173f903fd025cb9c52dd09e6d5c2f9f7",
+  "size": 55639040,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.64/sst-updater.exe",
+  "updater_sha256": "c7f5bfa978105d604cd255339b79d1814e7a4479f27b0ea9690474629e6a25ee",
   "updater_size": 423424,
   "changes": [
-    "El instalador oficial reconoce una instalación existente cuando se abre desde la misma carpeta que `sst.exe` y activa el modo de reparación sin ejecutar la consola averiada.",
-    "La reparación extrae el paquete en una carpeta temporal aislada, conserva el ejecutable anterior y sustituye solamente SST y su actualizador.",
-    "Los datos del usuario, paquetes instalados, preferencias, imágenes de fondo y logo se conservan sin sobrescrituras.",
-    "Si Windows rechaza iniciar el SST reparado, se restaura la versión anterior y el instalador informa del error. No se desactivan ni eluden protecciones de Windows.",
-    "Se sustituye `ReplaceFileW` por un intercambio de archivos en el mismo volumen, con restauración ante fallo. El archivo nuevo no hereda ACL ni flujos NTFS del viejo.",
-    "Se conserva una copia recuperable del ejecutable anterior y se mantiene el control de integridad SHA-256.",
-    "La validación de Windows comprueba que los flujos NTFS del ejecutable antiguo no contaminan el nuevo.",
-    "El instalador tiene una prueba independiente que repara una instalación inaccesible, comprueba el respaldo y verifica que los datos del usuario se mantienen."
+    "El punto compartido de salida interactiva reconoce automáticamente estructuras, títulos, campos y tablas, sin listas de nombres de comandos ni tratamiento individual de utilidades.",
+    "Los nuevos comandos pueden emitir informes de texto normal y obtener diseño Gruvbox Dark sin incorporar secuencias de escape ni crear renderizadores propios.",
+    "Los encabezados de tabla reciben tratamiento neutral y los colores de estado se aplican únicamente cuando el valor ocupa una columna explícita ESTADO, STATUS, SALUD, HEALTH o RESULTADO.",
+    "Los campos etiquetados conservan los estados semánticos: rojo crítico/error, naranja advertencia, verde correcto y azul exclusivamente óptimo.",
+    "Preservación exacta de datos en CSV/JSON/plain, pipes, redirecciones, salidas UNIX y secuencias ANSI ya coloreadas.",
+    "Pruebas de regresión añadidas para comandos nuevos no registrados explícitamente y estados en columnas de tablas.",
+    "Incluye Gruvbox Dark global y la corrección de las cabeceras vectoriales de blue.63."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.60.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.60/SST-Setup-0.1.9-blue.60.exe",
-    "sha256": "8172ac548845926c02ddf4d37975f1de70b14c2475720b587ac5de2b4e1d48c5",
-    "size": 56624351,
+    "name": "SST-Setup-0.1.9-blue.64.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.64/SST-Setup-0.1.9-blue.64.exe",
+    "sha256": "e92cad2732f4c9d06cbeaa9abf987e7ab895ec5968ae9c17567b41b6c2cd1aba",
+    "size": 56644319,
     "single_use": true,
-    "package_id": "322db382d5630cc5300a3fe1fc5136d2"
+    "package_id": "49cf0e4c0a646bd4f1b79803b37410e5"
   }
 }
