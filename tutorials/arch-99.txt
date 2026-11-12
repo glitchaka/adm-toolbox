@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. firefox developer edition i18n da
 Paquete: firefox-developer-edition-i18n-da
 Repositorio: extra
-Versión: 160.0b5-1
+Versión: 161.0b2-1
 Arquitectura: any
 Descripción: Danish language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b5
+Dependencias: firefox-developer-edition>=161.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell hls explicit record fields plugin
 Paquete: haskell-hls-explicit-record-fields-plugin
 Repositorio: extra
-Versión: 2.4.0.0-38
+Versión: 2.4.0.0-42
 Arquitectura: x86_64
 Descripción: Explicit record fields plugin for Haskell Language Server
 Upstream: https://github.com/haskell/haskell-language-server
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell hookup
 Paquete: haskell-hookup
 Repositorio: extra
-Versión: 0.8-188
+Versión: 0.8-190
 Arquitectura: x86_64
 Descripción: Abstraction over creating network connections with SOCKS5 and TLS
 Upstream: https://github.com/glguy/irc-core
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell iospec
 Paquete: haskell-iospec
 Repositorio: extra
-Versión: 0.3.1.2-190
+Versión: 0.3.1.2-191
 Arquitectura: x86_64
 Descripción: A pure specification of the IO monad.
 Upstream: https://github.com/lambdabot/IOSpec
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell src exts simple
 Paquete: haskell-src-exts-simple
 Repositorio: extra
-Versión: 1.23.1.0-153
+Versión: 1.23.1.0-154
 Arquitectura: x86_64
 Descripción: A simplified view on the haskell-src-exts AST
 Upstream: https://github.com/int-e/haskell-src-exts-simple
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. python google api python client
 Paquete: python-google-api-python-client
 Repositorio: extra
-Versión: 2.201.0-1
+Versión: 2.202.0-1
 Arquitectura: any
 Descripción: Google API Client Library for Python
 Upstream: https://github.com/google/google-api-python-client
@@ -688,7 +688,22 @@ Pruebas: python-pytest, python-beautifulsoup4
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby rubydns
+47. python tibs
+Paquete: python-tibs
+Repositorio: extra
+Versión: 0.5.7-1
+Arquitectura: x86_64
+Descripción: Python library for binary data: fast bit arrays, bitfields and bitsets
+Upstream: https://github.com/scott-griffiths/tibs
+Licencia: MIT
+Dependencias: glibc, libgcc, python
+Opcionales: —
+Compilación: cargo, python-build, python-installer, python-maturin
+Pruebas: python-hypothesis, python-pytest, python-pytest-benchmark
+Proporciona: —
+Estado SST: [ ]
+
+48. ruby rubydns
 Paquete: ruby-rubydns
 Repositorio: extra
 Versión: 2.1.1-1
@@ -703,7 +718,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bake-test-external, ruby-bundler, ruby-
 Proporciona: —
 Estado SST: [ ]
 
-48. rust src
+49. rust src
 Paquete: rust-src
 Repositorio: extra
 Versión: 1:1.99.1-2
@@ -718,7 +733,7 @@ Pruebas: gdb, procps-ng
 Proporciona: —
 Estado SST: [ ]
 
-49. shared mime info
+50. shared mime info
 Paquete: shared-mime-info
 Repositorio: extra
 Versión: 2.5.1-2
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. smlnj
+51. smlnj
 Paquete: smlnj
 Repositorio: extra
 Versión: 110.99.9-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: sml
 Estado SST: [ ]
 
-51. tesseract data bod
+52. tesseract data bod
 Paquete: tesseract-data-bod
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-52. tesseract data bos
+53. tesseract data bos
 Paquete: tesseract-data-bos
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-53. tlsh
+54. tlsh
 Paquete: tlsh
 Repositorio: extra
 Versión: 4.12.0-2
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: libtlsh.so=4-64
 Estado SST: [ ]
 
-54. uwsgi
+55. uwsgi
 Paquete: uwsgi
 Repositorio: extra
 Versión: 2.0.31-5
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. vimix cursors
+56. vimix cursors
 Paquete: vimix-cursors
 Repositorio: extra
 Versión: 2020_02_24-6
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. voa verifiers arch
+57. voa verifiers arch
 Paquete: voa-verifiers-arch
 Repositorio: core
 Versión: 20260909-1
@@ -838,7 +853,7 @@ Pruebas: python-coverage, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-57. wev
+58. wev
 Paquete: wev
 Repositorio: extra
 Versión: 1.1.0-1
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. xcursor comix
+59. xcursor comix
 Paquete: xcursor-comix
 Repositorio: extra
 Versión: 0.10.1-1
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. xorg fonts alias misc
+60. xorg fonts alias misc
 Paquete: xorg-fonts-alias-misc
 Repositorio: extra
 Versión: 1.0.6-1
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. xorg xkill
+61. xorg xkill
 Paquete: xorg-xkill
 Repositorio: extra
 Versión: 1.0.7-1

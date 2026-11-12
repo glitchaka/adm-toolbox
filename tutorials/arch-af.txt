@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell ghc syntax highlighter
 Paquete: haskell-ghc-syntax-highlighter
 Repositorio: extra
-Versión: 0.0.10.0-73
+Versión: 0.0.10.0-74
 Arquitectura: x86_64
 Descripción: Syntax highlighter for Haskell using the lexer of GHC
 Upstream: https://github.com/mrkkrp/ghc-syntax-highlighter
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell monad memo
 Paquete: haskell-monad-memo
 Repositorio: extra
-Versión: 0.5.4-251
+Versión: 0.5.4-252
 Arquitectura: x86_64
 Descripción: Memoization monad transformer
 Upstream: https://github.com/EduardSergeev/monad-memo
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell text short
 Paquete: haskell-text-short
 Repositorio: extra
-Versión: 0.1.6.1-133
+Versión: 0.1.6.1-135
 Arquitectura: x86_64
 Descripción: Memory-efficient representation of Unicode text strings
 Upstream: https://github.com/hvr/text-short
@@ -898,7 +898,22 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-61. vim spell bg
+61. ukui interface
+Paquete: ukui-interface
+Repositorio: extra
+Versión: 4.10.0.0-1
+Arquitectura: x86_64
+Descripción: UKUI interface for system configuration and related libraries
+Upstream: https://gitee.com/openkylin/ukui-interface
+Licencia: Apache-2.0, GPL-3.0-or-later
+Dependencias: dconf, glib2, glibc, gsettings-qt6, iniparser, libgcc, libstdc++, qt6-base, systemd
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+62. vim spell bg
 Paquete: vim-spell-bg
 Repositorio: extra
 Versión: 20220628-2
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. xloadimage
+63. xloadimage
 Paquete: xloadimage
 Repositorio: extra
 Versión: 4.1-18
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. xorg xkbevd
+64. xorg xkbevd
 Paquete: xorg-xkbevd
 Repositorio: extra
 Versión: 1.1.6-1

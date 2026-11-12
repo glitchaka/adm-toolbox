@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. firefox developer edition i18n ar
 Paquete: firefox-developer-edition-i18n-ar
 Repositorio: extra
-Versión: 160.0b5-1
+Versión: 161.0b2-1
 Arquitectura: any
 Descripción: Arabic language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b5
+Dependencias: firefox-developer-edition>=161.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -166,12 +166,12 @@ Estado SST: [ ]
 12. firefox developer edition i18n pa in
 Paquete: firefox-developer-edition-i18n-pa-in
 Repositorio: extra
-Versión: 160.0b5-1
+Versión: 161.0b2-1
 Arquitectura: any
 Descripción: Punjabi (India) language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b5
+Dependencias: firefox-developer-edition>=161.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell cryptohash sha256
 Paquete: haskell-cryptohash-sha256
 Repositorio: extra
-Versión: 0.11.102.1-260
+Versión: 0.11.102.1-261
 Arquitectura: x86_64
 Descripción: Fast, pure and practical SHA-256 implementation
 Upstream: https://github.com/hvr/cryptohash-sha256
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell fuzzy
 Paquete: haskell-fuzzy
 Repositorio: extra
-Versión: 0.1.1.0-224
+Versión: 0.1.1.0-225
 Arquitectura: x86_64
 Descripción: Filters a list based on a fuzzy string search.
 Upstream: https://github.com/joom/fuzzy
@@ -301,7 +301,7 @@ Estado SST: [ ]
 21. haskell hsopenssl
 Paquete: haskell-hsopenssl
 Repositorio: extra
-Versión: 0.11.7.11-17
+Versión: 0.11.7.11-19
 Arquitectura: x86_64
 Descripción: Partial OpenSSL binding for Haskell
 Upstream: https://github.com/haskell-cryptography/HsOpenSSL
@@ -691,7 +691,7 @@ Estado SST: [ ]
 47. python logfire api
 Paquete: python-logfire-api
 Repositorio: extra
-Versión: 5.5.0-1
+Versión: 5.6.0-1
 Arquitectura: any
 Descripción: Pydantic Logfire API shim
 Upstream: https://github.com/pydantic/logfire
@@ -699,7 +699,7 @@ Licencia: MIT
 Dependencias: python
 Opcionales: python-logfire-sdk: Logfire SDK integration
 Compilación: git, python-build, python-hatchling, python-installer
-Pruebas: python-aiohttp, python-aiosqlite, python-anthropic, python-anyio, python-asyncpg, python-attrs, python-beartype, python-boto3, python-botocore, python-cloudpickle, python-dirty-equals, python-django, python-elasticsearch, python-fastapi, python-flask, python-genai-prices, python-httpx, python-httpx2, python-inline-snapshot, python-langchain, python-langchain-openai, python-langgraph, python-loguru, python-mcp, python-numpy, python-openai, python-opentelemetry-instrumentation-aiohttp-client, python-opentelemetry-instrumentation-aiohttp-server, python-opentelemetry-instrumentation-asgi, python-opentelemetry-instrumentation-asyncpg, python-opentelemetry-instrumentation-aws-lambda, python-opentelemetry-instrumentation-botocore, python-opentelemetry-instrumentation-django, python-opentelemetry-instrumentation-fastapi, python-opentelemetry-instrumentation-flask, python-opentelemetry-instrumentation-httpx, python-opentelemetry-instrumentation-psycopg, python-opentelemetry-instrumentation-psycopg2, python-opentelemetry-instrumentation-pymongo, python-opentelemetry-instrumentation-requests, python-opentelemetry-instrumentation-sqlalchemy, python-opentelemetry-instrumentation-sqlite3, python-opentelemetry-instrumentation-starlette, python-opentelemetry-instrumentation-system-metrics, python-opentelemetry-instrumentation-wsgi, python-packaging, python-pandas, python-psutil, python-psycopg, python-psycopg2, python-pyarrow, python-pydantic, python-pydantic-handlebars, python-pymongo, python-pymysql, python-pytest, python-pytest-asyncio, python-pytest-django, python-pytest-examples, python-pytest-recording, python-pytest-timeout, python-pytest-xdist, python-requests-mock, python-sqlalchemy, python-sqlmodel, python-starlette, python-structlog, python-wrapt, ruff, uv, uvicorn
+Pruebas: python-aiohttp, python-aiosqlite, python-anthropic, python-anyio, python-asyncpg, python-attrs, python-beartype, python-boto3, python-botocore, python-cloudpickle, python-dirty-equals, python-django, python-elasticsearch, python-fastapi, python-flask, python-genai-prices, python-grpcio, python-httpx, python-httpx2, python-inline-snapshot, python-langchain, python-langchain-openai, python-langgraph, python-loguru, python-mcp, python-numpy, python-openai, python-opentelemetry-instrumentation-aiohttp-client, python-opentelemetry-instrumentation-aiohttp-server, python-opentelemetry-instrumentation-asgi, python-opentelemetry-instrumentation-asyncpg, python-opentelemetry-instrumentation-aws-lambda, python-opentelemetry-instrumentation-botocore, python-opentelemetry-instrumentation-django, python-opentelemetry-instrumentation-fastapi, python-opentelemetry-instrumentation-flask, python-opentelemetry-instrumentation-httpx, python-opentelemetry-instrumentation-psycopg, python-opentelemetry-instrumentation-psycopg2, python-opentelemetry-instrumentation-pymongo, python-opentelemetry-instrumentation-requests, python-opentelemetry-instrumentation-sqlalchemy, python-opentelemetry-instrumentation-sqlite3, python-opentelemetry-instrumentation-starlette, python-opentelemetry-instrumentation-system-metrics, python-opentelemetry-instrumentation-wsgi, python-packaging, python-pandas, python-psutil, python-psycopg, python-psycopg2, python-pyarrow, python-pydantic, python-pydantic-handlebars, python-pydantic-monty, python-pymongo, python-pymysql, python-pytest, python-pytest-asyncio, python-pytest-django, python-pytest-examples, python-pytest-recording, python-pytest-timeout, python-pytest-xdist, python-requests-mock, python-sqlalchemy, python-sqlmodel, python-starlette, python-structlog, python-wrapt, ruff, uv, uvicorn
 Proporciona: —
 Estado SST: [ ]
 

@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. haskell commonmark extensions
 Paquete: haskell-commonmark-extensions
 Repositorio: extra
-Versión: 0.2.7.3-21
+Versión: 0.2.7.3-22
 Arquitectura: x86_64
 Descripción: Pure Haskell commonmark parser
 Upstream: https://github.com/jgm/commonmark-hs
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. haskell generically
 Paquete: haskell-generically
 Repositorio: extra
-Versión: 0.1.1-158
+Versión: 0.1.1-159
 Arquitectura: x86_64
 Descripción: Generically newtype to use with DerivingVia
 Upstream: https://github.com/haskell-compat/generically.git
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. haskell rio
 Paquete: haskell-rio
 Repositorio: extra
-Versión: 0.1.25.0-26
+Versión: 0.1.25.0-27
 Arquitectura: x86_64
 Descripción: A standard library for Haskell
 Upstream: https://github.com/commercialhaskell/rio
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. haskell unicode show
 Paquete: haskell-unicode-show
 Repositorio: extra
-Versión: 0.1.1.1-235
+Versión: 0.1.1.1-236
 Arquitectura: x86_64
 Descripción: Print and show in unicode
 Upstream: https://github.com/nushio3/unicode-show#readme
@@ -223,7 +223,22 @@ Pruebas: —
 Proporciona: libcamera.so=0.7-64, libcamera-base.so=0.7-64
 Estado SST: [ ]
 
-16. libnetfilter queue
+16. libkysdk genai
+Paquete: libkysdk-genai
+Repositorio: extra
+Versión: 1.2.0.4-1
+Arquitectura: x86_64
+Descripción: Kylin generative AI text and vision client libraries
+Upstream: https://gitee.com/openkylin/libkysdk-genai
+Licencia: GPL-3.0-or-later
+Dependencias: glib2, glibc, jsoncpp, kysdk-ai-common, libgcc, libstdc++
+Opcionales: —
+Compilación: cmake, git, glib2-devel, gtest, libkylin-ai-system-private, ninja, python
+Pruebas: —
+Proporciona: libkysdk-genai-nlp.so=1-64, libkysdk-genai-vision.so=1-64
+Estado SST: [ ]
+
+17. libnetfilter queue
 Paquete: libnetfilter_queue
 Repositorio: extra
 Versión: 1.0.5-2
@@ -238,7 +253,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-17. libpeas demos
+18. libpeas demos
 Paquete: libpeas-demos
 Repositorio: extra
 Versión: 1.38.1-2
@@ -253,7 +268,7 @@ Pruebas: xorg-server-xvfb
 Proporciona: —
 Estado SST: [ ]
 
-18. libtool
+19. libtool
 Paquete: libtool
 Repositorio: core
 Versión: 2.6.2-5
@@ -268,7 +283,7 @@ Pruebas: gcc-fortran
 Proporciona: libltdl=2.6.2, libtool-multilib=2.6.2
 Estado SST: [ ]
 
-19. llvm julia libs
+20. llvm julia libs
 Paquete: llvm-julia-libs
 Repositorio: extra
 Versión: 20.1.8.3-1
@@ -283,7 +298,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-20. mhash
+21. mhash
 Paquete: mhash
 Repositorio: extra
 Versión: 0.9.9.9-7
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-21. mtxclient
+22. mtxclient
 Paquete: mtxclient
 Repositorio: extra
 Versión: 0.10.1-6
@@ -313,7 +328,7 @@ Pruebas: gmock, gtest
 Proporciona: libmatrix_client.so=0.10.1-64
 Estado SST: [ ]
 
-22. obs studio
+23. obs studio
 Paquete: obs-studio
 Repositorio: extra
 Versión: 33.0.1-1
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: obs-studio-plugin-browser=33.0.1
 Estado SST: [ ]
 
-23. openbao plugin auth aws
+24. openbao plugin auth aws
 Paquete: openbao-plugin-auth-aws
 Repositorio: extra
 Versión: 0.1.1-2
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. openh264
+25. openh264
 Paquete: openh264
 Repositorio: extra
 Versión: 2.7.0-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: libopenh264.so=8-64
 Estado SST: [ ]
 
-25. perl html scrubber
+26. perl html scrubber
 Paquete: perl-html-scrubber
 Repositorio: extra
 Versión: 0.19-8
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. python flask migrate
+27. python flask migrate
 Paquete: python-flask-migrate
 Repositorio: extra
 Versión: 4.1.0-2
@@ -388,7 +403,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-27. python rcssmin
+28. python rcssmin
 Paquete: python-rcssmin
 Repositorio: extra
 Versión: 1.3.0-1
@@ -403,7 +418,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-28. python requests file
+29. python requests file
 Paquete: python-requests-file
 Repositorio: extra
 Versión: 2.1.0-3
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. python sgmllib3k
+30. python sgmllib3k
 Paquete: python-sgmllib3k
 Repositorio: extra
 Versión: 1.0.0-8
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: python-sgmllib
 Estado SST: [ ]
 
-30. python sphinx prompt
+31. python sphinx prompt
 Paquete: python-sphinx-prompt
 Repositorio: extra
 Versión: 1.10.2-2
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. rhvoice voice zdenek
+32. rhvoice voice zdenek
 Paquete: rhvoice-voice-zdenek
 Repositorio: extra
 Versión: 1.16.5-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. ruby cucumber tag expressions
+33. ruby cucumber tag expressions
 Paquete: ruby-cucumber-tag-expressions
 Repositorio: extra
 Versión: 11.0.1-1
@@ -478,7 +493,7 @@ Pruebas: ruby-bundler
 Proporciona: —
 Estado SST: [ ]
 
-33. source highlight
+34. source highlight
 Paquete: source-highlight
 Repositorio: extra
 Versión: 3.1.9-19
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. svgcleaner
+35. svgcleaner
 Paquete: svgcleaner
 Repositorio: extra
 Versión: 0.9.5-5
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. systemctl tui
+36. systemctl tui
 Paquete: systemctl-tui
 Repositorio: extra
 Versión: 0.8.0-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. tesseract data fas
+37. tesseract data fas
 Paquete: tesseract-data-fas
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -538,10 +553,10 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-37. thunderbird i18n fr
+38. thunderbird i18n fr
 Paquete: thunderbird-i18n-fr
 Repositorio: extra
-Versión: 159.0-1
+Versión: 159.0-2
 Arquitectura: x86_64
 Descripción: French language pack for Thunderbird
 Upstream: https://www.thunderbird.net/
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. umu launcher
+39. umu launcher
 Paquete: umu-launcher
 Repositorio: multilib
 Versión: 1.4.4-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. vulkan html docs
+40. vulkan html docs
 Paquete: vulkan-html-docs
 Repositorio: extra
 Versión: 1:1.4.363-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. wp cli
+41. wp cli
 Paquete: wp-cli
 Repositorio: extra
 Versión: 2.12.0-1
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. xorg fonts alias 100dpi
+42. xorg fonts alias 100dpi
 Paquete: xorg-fonts-alias-100dpi
 Repositorio: extra
 Versión: 1.0.6-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. xorg fonts misc
+43. xorg fonts misc
 Paquete: xorg-fonts-misc
 Repositorio: extra
 Versión: 1.0.4-2
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: font-misc-ethiopic, font-misc-meltho
 Estado SST: [ ]
 
-43. xorg xrandr
+44. xorg xrandr
 Paquete: xorg-xrandr
 Repositorio: extra
 Versión: 1.5.4-1

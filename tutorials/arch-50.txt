@@ -181,12 +181,12 @@ Estado SST: [ ]
 13. firefox developer edition i18n ca valencia
 Paquete: firefox-developer-edition-i18n-ca-valencia
 Repositorio: extra
-Versión: 160.0b5-1
+Versión: 161.0b2-1
 Arquitectura: any
 Descripción: Catalan (Valencian) language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b5
+Dependencias: firefox-developer-edition>=161.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell data fix
 Paquete: haskell-data-fix
 Repositorio: extra
-Versión: 0.3.4-289
+Versión: 0.3.4-291
 Arquitectura: x86_64
 Descripción: Fixpoint data types
 Upstream: https://github.com/spell-music/data-fix
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. haskell show
 Paquete: haskell-show
 Repositorio: extra
-Versión: 0.6-316
+Versión: 0.6-317
 Arquitectura: x86_64
 Descripción: 'Show' instances for Lambdabot
 Upstream: https://github.com/mokus0/show.git
@@ -301,7 +301,7 @@ Estado SST: [ ]
 21. haskell simple sendfile
 Paquete: haskell-simple-sendfile
 Repositorio: extra
-Versión: 0.2.33-1
+Versión: 0.2.33-5
 Arquitectura: x86_64
 Descripción: Cross platform library for the sendfile system call
 Upstream: https://github.com/kazu-yamamoto/simple-sendfile
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. haskell tomland
 Paquete: haskell-tomland
 Repositorio: extra
-Versión: 1.3.3.3-193
+Versión: 1.3.3.3-194
 Arquitectura: x86_64
 Descripción: Implementation of bidirectional TOML serialization.
 Upstream: https://github.com/kowainik/tomland
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. haskell yaml
 Paquete: haskell-yaml
 Repositorio: extra
-Versión: 0.11.11.2-290
+Versión: 0.11.11.2-293
 Arquitectura: x86_64
 Descripción: Support for parsing and rendering YAML documents.
 Upstream: https://github.com/snoyberg/yaml/
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. haskell yesod auth
 Paquete: haskell-yesod-auth
 Repositorio: extra
-Versión: 1.6.12.1-9
+Versión: 1.6.12.1-13
 Arquitectura: x86_64
 Descripción: Authentication for Yesod.
 Upstream: http://www.yesodweb.com/
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. nodejs lts krypton
 Paquete: nodejs-lts-krypton
 Repositorio: extra
-Versión: 24.22.2-2
+Versión: 24.22.3-1
 Arquitectura: x86_64
 Descripción: Evented I/O for V8 javascript ("Active LTS" release: Krypton)
 Upstream: https://nodejs.org/
@@ -520,7 +520,7 @@ Dependencias: ada, brotli, c-ares, icu, libnghttp2, libnghttp3, libngtcp2, libuv
 Opcionales: npm: nodejs package manager
 Compilación: git, ninja, procps-ng, python
 Pruebas: —
-Proporciona: nodejs=24.22.2, nodejs-lts
+Proporciona: nodejs=24.22.3, nodejs-lts
 Estado SST: [ ]
 
 36. nwg drawer
@@ -883,7 +883,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. xfce4 taskmanager
+60. ukui search
+Paquete: ukui-search
+Repositorio: extra
+Versión: 4.25.0.0-1
+Arquitectura: x86_64
+Descripción: Desktop search, file indexing, and search libraries for UKUI
+Upstream: https://gitee.com/openkylin/ukui-search
+Licencia: GPL-3.0-or-later, BSD-3-Clause, MIT, RSA-MD
+Dependencias: coreutils, dbus, glib2, glibc, gsettings-qt6, kysdk-ai-common, libgcc, libkysdk-ai-private, libkysdk-applications, libkysdk-genai, libkysdk-system, libqtxdg, libstdc++, qt6-base, qt6-declarative, qt6-remoteobjects, sqlite, ukui-file-metadata, ukui-quick, ukui-service-manager, xapian-core
+Opcionales: —
+Compilación: boost, cmake, git, ninja, qt6-shadertools, qt6-tools
+Pruebas: bubblewrap
+Proporciona: libchinese-segmentation.so=1-64, libukui-search.so=2-64
+Estado SST: [ ]
+
+61. xfce4 taskmanager
 Paquete: xfce4-taskmanager
 Repositorio: extra
 Versión: 1.6.0-1

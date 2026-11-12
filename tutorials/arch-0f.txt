@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. haskell crypton x509 validation
 Paquete: haskell-crypton-x509-validation
 Repositorio: extra
-Versión: 1.6.14-127
+Versión: 1.6.14-129
 Arquitectura: x86_64
 Descripción: X.509 Certificate and CRL validation
 Upstream: https://github.com/kazu-yamamoto/crypton-certificate
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. haskell doclayout
 Paquete: haskell-doclayout
 Repositorio: extra
-Versión: 0.5.0.3-26
+Versión: 0.5.0.3-27
 Arquitectura: x86_64
 Descripción: A prettyprinting library for laying out text documents
 Upstream: https://github.com/jgm/doclayout
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. haskell should not typecheck
 Paquete: haskell-should-not-typecheck
 Repositorio: extra
-Versión: 2.1.0-432
+Versión: 2.1.0-433
 Arquitectura: x86_64
 Descripción: A HUnit/hspec assertion library to verify that an expression does not typecheck
 Upstream: https://github.com/CRogers/should-not-typecheck
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell tasty golden
 Paquete: haskell-tasty-golden
 Repositorio: extra
-Versión: 2.3.6-171
+Versión: 2.3.6-174
 Arquitectura: x86_64
 Descripción: Golden tests support for tasty
 Upstream: https://github.com/feuerbach/tasty-golden
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. libmupdf
 Paquete: libmupdf
 Repositorio: extra
-Versión: 1.28.5-3
+Versión: 1.28.6-1
 Arquitectura: x86_64
 Descripción: Library for Lightweight PDF and XPS viewer
 Upstream: https://mupdf.com
@@ -556,7 +556,7 @@ Estado SST: [ ]
 38. python fastapi
 Paquete: python-fastapi
 Repositorio: extra
-Versión: 0.162.2-1
+Versión: 0.162.4-1
 Arquitectura: any
 Descripción: FastAPI framework, high performance, easy to learn, fast to code, ready for production
 Upstream: https://github.com/fastapi/fastapi
@@ -564,7 +564,7 @@ Licencia: MIT
 Dependencias: python, python-annotated-doc, python-anyio, python-pydantic, python-pydantic-core, python-pydantic-extra-types, python-pydantic-settings, python-starlette, python-typing_extensions, python-opentelemetry-api
 Opcionales: hypercorn: for Hypercorn as ASGI server, python-email-validator: for email validation, python-itsdangerous: for SessionMiddleware support, python-jinja: for default starlette template configuration, python-opentelemetry-sdk: OpenTelemetry instrumentation and telemetry processing, python-opentelemetry-exporter-otlp-proto-http: export telemetry over OTLP/HTTP, python-orjson: for ORJSONResponse, python-python-multipart: for form parsing support, python-pyyaml: for starlette SchemaGenerator support, python-httpx: for TestClient support, python-strawberry-graphql: for GraphQL support, python-ujson: for faster JSON parsing and UJSONResponse, uvicorn: for Uvicorn as ASGI server
 Compilación: python-build, python-dirty-equals, python-installer, python-pdm-backend, python-wheel
-Pruebas: git, python-aiosqlite, python-a2wsgi, python-anyio, python-flask, python-httpx, python-httpx2, python-inline-snapshot, python-peewee, python-pytest, python-pytest-timeout, python-pytest-xdist, python-sentry_sdk, python-sqlalchemy, python-sqlmodel, python-trio, python-typer, python-email-validator, python-itsdangerous, python-jinja, python-opentelemetry-sdk, python-opentelemetry-exporter-otlp-proto-http, python-orjson, python-python-multipart, python-pyyaml, python-strawberry-graphql, python-ujson, uvicorn, python-argon2-cffi, python-cryptography, python-pyjwt, python-pwdlib
+Pruebas: git, python-aiosqlite, python-a2wsgi, python-anyio, python-flask, python-httpx, python-httpx2, python-inline-snapshot, python-peewee, python-pytest, python-pytest-timeout, python-pytest-xdist, python-sentry_sdk, python-slugify, python-sqlalchemy, python-sqlmodel, python-trio, python-typer, python-email-validator, python-itsdangerous, python-jinja, python-opentelemetry-sdk, python-opentelemetry-exporter-otlp-proto-http, python-orjson, python-python-multipart, python-pyyaml, python-strawberry-graphql, python-ujson, uvicorn, python-argon2-cffi, python-cryptography, python-pyjwt, python-pwdlib
 Proporciona: —
 Estado SST: [ ]
 
@@ -586,15 +586,15 @@ Estado SST: [ ]
 40. python logfire sdk
 Paquete: python-logfire-sdk
 Repositorio: extra
-Versión: 5.5.0-1
+Versión: 5.6.0-1
 Arquitectura: any
 Descripción: Pydantic Logfire Python SDK
 Upstream: https://github.com/pydantic/logfire
 Licencia: MIT
 Dependencias: python, python-certifi, python-executing, python-opentelemetry-api, python-opentelemetry-exporter-otlp-proto-http, python-opentelemetry-instrumentation, python-opentelemetry-sdk, python-opentelemetry-semantic-conventions, python-protobuf, python-requests, python-rich, python-typing_extensions
-Opcionales: python-anthropic: Anthropic instrumentation, python-genai-prices: LLM usage cost calculation, python-httpx: query clients and gateway support, python-loguru: Loguru logging integration, python-mcp: MCP 1 instrumentation, python-openai: OpenAI instrumentation, python-opentelemetry-instrumentation-aiohttp-client: aiohttp client instrumentation, python-opentelemetry-instrumentation-aiohttp-server: aiohttp server instrumentation, python-opentelemetry-instrumentation-asgi: ASGI instrumentation, python-opentelemetry-instrumentation-asyncpg: asyncpg instrumentation, python-opentelemetry-instrumentation-aws-lambda: AWS Lambda instrumentation, python-opentelemetry-instrumentation-django: Django instrumentation, python-opentelemetry-instrumentation-fastapi: FastAPI instrumentation, python-opentelemetry-instrumentation-flask: Flask instrumentation, python-opentelemetry-instrumentation-httpx: HTTPX instrumentation, python-opentelemetry-instrumentation-psycopg: Psycopg 3 instrumentation, python-opentelemetry-instrumentation-psycopg2: Psycopg 2 instrumentation, python-opentelemetry-instrumentation-pymongo: PyMongo instrumentation, python-opentelemetry-instrumentation-requests: Requests instrumentation, python-opentelemetry-instrumentation-sqlalchemy: SQLAlchemy instrumentation, python-opentelemetry-instrumentation-sqlite3: SQLite3 instrumentation, python-opentelemetry-instrumentation-starlette: Starlette instrumentation, python-opentelemetry-instrumentation-system-metrics: system metrics, python-opentelemetry-instrumentation-wsgi: WSGI instrumentation, python-pyarrow: Arrow query results, python-pydantic: Pydantic validation instrumentation, python-pydantic-handlebars: managed variables and templates, python-pytest: pytest fixtures and instrumentation, python-starlette: gateway and ASGI forwarding support, python-structlog: structlog logging integration, uvicorn: gateway server
+Opcionales: python-anthropic: Anthropic instrumentation, python-genai-prices: LLM usage cost calculation, python-httpx: query clients and gateway support, python-loguru: Loguru logging integration, python-mcp: MCP 1 instrumentation, python-openai: OpenAI instrumentation, python-opentelemetry-instrumentation-aiohttp-client: aiohttp client instrumentation, python-opentelemetry-instrumentation-aiohttp-server: aiohttp server instrumentation, python-opentelemetry-instrumentation-asgi: ASGI instrumentation, python-opentelemetry-instrumentation-asyncpg: asyncpg instrumentation, python-opentelemetry-instrumentation-aws-lambda: AWS Lambda instrumentation, python-opentelemetry-instrumentation-django: Django instrumentation, python-opentelemetry-instrumentation-fastapi: FastAPI instrumentation, python-opentelemetry-instrumentation-flask: Flask instrumentation, python-opentelemetry-instrumentation-httpx: HTTPX instrumentation, python-opentelemetry-instrumentation-psycopg: Psycopg 3 instrumentation, python-opentelemetry-instrumentation-psycopg2: Psycopg 2 instrumentation, python-opentelemetry-instrumentation-pymongo: PyMongo instrumentation, python-opentelemetry-instrumentation-requests: Requests instrumentation, python-opentelemetry-instrumentation-sqlalchemy: SQLAlchemy instrumentation, python-opentelemetry-instrumentation-sqlite3: SQLite3 instrumentation, python-opentelemetry-instrumentation-starlette: Starlette instrumentation, python-opentelemetry-instrumentation-system-metrics: system metrics, python-opentelemetry-instrumentation-wsgi: WSGI instrumentation, python-pyarrow: Arrow query results, python-pydantic: Pydantic validation instrumentation, python-pydantic-handlebars: managed variables and templates, python-pydantic-monty-client: Monty instrumentation and Agent Sandboxes support, python-pytest: pytest fixtures and instrumentation, python-starlette: gateway and ASGI forwarding support, python-structlog: structlog logging integration, uvicorn: gateway server
 Compilación: git, python-build, python-hatchling, python-installer
-Pruebas: python-aiohttp, python-aiosqlite, python-anthropic, python-anyio, python-asyncpg, python-attrs, python-beartype, python-boto3, python-botocore, python-cloudpickle, python-dirty-equals, python-django, python-elasticsearch, python-fastapi, python-flask, python-genai-prices, python-httpx, python-httpx2, python-inline-snapshot, python-langchain, python-langchain-openai, python-langgraph, python-loguru, python-mcp, python-numpy, python-openai, python-opentelemetry-instrumentation-aiohttp-client, python-opentelemetry-instrumentation-aiohttp-server, python-opentelemetry-instrumentation-asgi, python-opentelemetry-instrumentation-asyncpg, python-opentelemetry-instrumentation-aws-lambda, python-opentelemetry-instrumentation-botocore, python-opentelemetry-instrumentation-django, python-opentelemetry-instrumentation-fastapi, python-opentelemetry-instrumentation-flask, python-opentelemetry-instrumentation-httpx, python-opentelemetry-instrumentation-psycopg, python-opentelemetry-instrumentation-psycopg2, python-opentelemetry-instrumentation-pymongo, python-opentelemetry-instrumentation-requests, python-opentelemetry-instrumentation-sqlalchemy, python-opentelemetry-instrumentation-sqlite3, python-opentelemetry-instrumentation-starlette, python-opentelemetry-instrumentation-system-metrics, python-opentelemetry-instrumentation-wsgi, python-packaging, python-pandas, python-psutil, python-psycopg, python-psycopg2, python-pyarrow, python-pydantic, python-pydantic-handlebars, python-pymongo, python-pymysql, python-pytest, python-pytest-asyncio, python-pytest-django, python-pytest-examples, python-pytest-recording, python-pytest-timeout, python-pytest-xdist, python-requests-mock, python-sqlalchemy, python-sqlmodel, python-starlette, python-structlog, python-wrapt, ruff, uv, uvicorn
+Pruebas: python-aiohttp, python-aiosqlite, python-anthropic, python-anyio, python-asyncpg, python-attrs, python-beartype, python-boto3, python-botocore, python-cloudpickle, python-dirty-equals, python-django, python-elasticsearch, python-fastapi, python-flask, python-genai-prices, python-grpcio, python-httpx, python-httpx2, python-inline-snapshot, python-langchain, python-langchain-openai, python-langgraph, python-loguru, python-mcp, python-numpy, python-openai, python-opentelemetry-instrumentation-aiohttp-client, python-opentelemetry-instrumentation-aiohttp-server, python-opentelemetry-instrumentation-asgi, python-opentelemetry-instrumentation-asyncpg, python-opentelemetry-instrumentation-aws-lambda, python-opentelemetry-instrumentation-botocore, python-opentelemetry-instrumentation-django, python-opentelemetry-instrumentation-fastapi, python-opentelemetry-instrumentation-flask, python-opentelemetry-instrumentation-httpx, python-opentelemetry-instrumentation-psycopg, python-opentelemetry-instrumentation-psycopg2, python-opentelemetry-instrumentation-pymongo, python-opentelemetry-instrumentation-requests, python-opentelemetry-instrumentation-sqlalchemy, python-opentelemetry-instrumentation-sqlite3, python-opentelemetry-instrumentation-starlette, python-opentelemetry-instrumentation-system-metrics, python-opentelemetry-instrumentation-wsgi, python-packaging, python-pandas, python-psutil, python-psycopg, python-psycopg2, python-pyarrow, python-pydantic, python-pydantic-handlebars, python-pydantic-monty, python-pymongo, python-pymysql, python-pytest, python-pytest-asyncio, python-pytest-django, python-pytest-examples, python-pytest-recording, python-pytest-timeout, python-pytest-xdist, python-requests-mock, python-sqlalchemy, python-sqlmodel, python-starlette, python-structlog, python-wrapt, ruff, uv, uvicorn
 Proporciona: —
 Estado SST: [ ]
 
@@ -766,7 +766,7 @@ Estado SST: [ ]
 52. thunderbird i18n lt
 Paquete: thunderbird-i18n-lt
 Repositorio: extra
-Versión: 159.0-1
+Versión: 159.0-2
 Arquitectura: x86_64
 Descripción: Lithuanian language pack for Thunderbird
 Upstream: https://www.thunderbird.net/

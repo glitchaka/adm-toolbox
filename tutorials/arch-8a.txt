@@ -151,13 +151,13 @@ Estado SST: [ ]
 11. gimp
 Paquete: gimp
 Repositorio: extra
-Versión: 3.2.6-2
+Versión: 3.2.8-1
 Arquitectura: x86_64
 Descripción: GNU Image Manipulation Program
 Upstream: https://www.gimp.org/
 Licencia: GPL-3.0-or-later
 Dependencias: appstream, babl, libbabl-0.1.so=0-64, cairo, libcairo.so=2-64, fontconfig, libfontconfig.so=1-64, freetype2, libfreetype.so=6-64, gdk-pixbuf2, libgdk_pixbuf-2.0.so=0-64, gegl, libgegl-0.4.so=0-64, libgegl-npd-0.4.so=libgegl-npd-0.4.so-64, glib2, libgio-2.0.so=0-64, libglib-2.0.so=0-64, libgmodule-2.0.so=0-64, libgobject-2.0.so=0-64, glibc, gtk3, libgdk-3.so=0-64, libgtk-3.so=0-64, harfbuzz, libharfbuzz.so=0-64, hicolor-icon-theme, iso-codes, json-glib, libjson-glib-1.0.so=0-64, lcms2, liblcms2.so=2-64, libgcc, libgcc_s.so=1-64, libgexiv2, libgexiv2.so=2-64, libgirepository, libgirepository-1.0.so=1-64, libgomp, libgomp.so=1-64, libmypaint, libstdc++, libstdc++.so=6-64, libunwind, libunwind.so=8-64, mypaint-brushes, pango, libpango-1.0.so=0-64, libpangocairo-1.0.so=0-64, libpangoft2-1.0.so=0-64, python-gobject, python-cairo, zlib, libz.so=1-64, aalib, bzip2, libbz2.so=1.0-64, libarchive, libarchive.so=13-64, libgudev, libgudev-1.0.so=0-64, libheif, libheif.so=1-64, libjpeg-turbo, libjpeg.so=8-64, libjxl, libjxl.so=0.12-64, libjxl_threads.so=0.12-64, libmng, libpng, libpng16.so=16-64, librsvg, librsvg-2.so=2-64, libtiff, libtiff.so=6-64, libwebp, libwebpdemux.so=2-64, libwebpmux.so=3-64, libwebp.so=7-64, libwmf, libx11, libxcursor, libxext, libxfixes, libxmu, libxpm, openexr, openjpeg2, poppler-data, poppler-glib, libpoppler-glib.so=8-64, xz, liblcms2.so=2-64
-Opcionales: alsa-lib: for MIDI event controller module, bash-completion: for bash completion support, cfitsio: for FITS support, ghostscript: for PostScript support, gjs: for JavaScript scripting support, gutenprint: for sophisticated printing only as gimp has built-in cups print support, gvfs: for HTTP/S support (and many other schemes)
+Opcionales: alsa-lib: for MIDI event controller module, bash-completion: for bash completion support, cfitsio: for FITS support, ghostscript: for PostScript support, gimp-help: for offline help support, gjs: for JavaScript scripting support, gutenprint: for sophisticated printing only as gimp has built-in cups print support, gvfs: for HTTP/S support (and many other schemes)
 Compilación: alsa-lib, bash-completion, cfitsio, ghostscript, gi-docgen, git, gjs, glib2-devel, gobject-introspection, gtk-doc, gvfs, intltool, meson, qoi, vala
 Pruebas: —
 Proporciona: —
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell ansi wl pprint
 Paquete: haskell-ansi-wl-pprint
 Repositorio: extra
-Versión: 1.1.1-82
+Versión: 1.1.1-86
 Arquitectura: x86_64
 Descripción: The Wadler/Leijen Pretty Printer for colored ANSI terminal output
 Upstream: https://github.com/ekmett/ansi-wl-pprint
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell base16 bytestring
 Paquete: haskell-base16-bytestring
 Repositorio: extra
-Versión: 1.0.2.0-250
+Versión: 1.0.2.0-251
 Arquitectura: x86_64
 Descripción: RFC 4648-compliant Base16 encodings for ByteStrings
 Upstream: https://github.com/haskell/base16-bytestring
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell http client restricted
 Paquete: haskell-http-client-restricted
 Repositorio: extra
-Versión: 0.1.1-51
+Versión: 0.1.1-55
 Arquitectura: x86_64
 Descripción: Restricting the servers that http-client will use
 Upstream: https://hackage.haskell.org/package/http-client-restricted
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell pandoc
 Paquete: haskell-pandoc
 Repositorio: extra
-Versión: 3.11-42
+Versión: 3.11-46
 Arquitectura: x86_64
 Descripción: Conversion between markup formats
 Upstream: https://pandoc.org
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell ram
 Paquete: haskell-ram
 Repositorio: extra
-Versión: 0.22.1-27
+Versión: 0.22.1-28
 Arquitectura: x86_64
 Descripción: memory and related abstraction stuff
 Upstream: https://github.com/jappeace/ram
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell split
 Paquete: haskell-split
 Repositorio: extra
-Versión: 0.2.5.1-43
+Versión: 0.2.5.1-45
 Arquitectura: x86_64
 Descripción: Combinator library for splitting lists.
 Upstream: https://hackage.haskell.org/package/split
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. haskell tasty inspection testing
 Paquete: haskell-tasty-inspection-testing
 Repositorio: extra
-Versión: 0.2.1-568
+Versión: 0.2.1-572
 Arquitectura: x86_64
 Descripción: Inspection testing support for tasty
 Upstream: https://github.com/Bodigrim/tasty-inspection-testing
@@ -301,7 +301,7 @@ Estado SST: [ ]
 21. haskell xss sanitize
 Paquete: haskell-xss-sanitize
 Repositorio: extra
-Versión: 0.3.7.2-196
+Versión: 0.3.7.2-197
 Arquitectura: x86_64
 Descripción: sanitize untrusted HTML to prevent XSS attacks
 Upstream: https://github.com/yesodweb/haskell-xss-sanitize
@@ -631,7 +631,7 @@ Estado SST: [ ]
 43. python cmd2
 Paquete: python-cmd2
 Repositorio: extra
-Versión: 4.4.1-1
+Versión: 4.4.2-1
 Arquitectura: any
 Descripción: A tool for building interactive command line apps
 Upstream: https://github.com/python-cmd2/cmd2

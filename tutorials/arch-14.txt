@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell lambdahack
 Paquete: haskell-lambdahack
 Repositorio: extra
-Versión: 0.11.0.1-295
+Versión: 0.11.0.1-298
 Arquitectura: x86_64
 Descripción: A game engine library for tactical squad ASCII roguelike dungeon crawlers
 Upstream: https://lambdahack.github.io
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell terminal progress bar
 Paquete: haskell-terminal-progress-bar
 Repositorio: extra
-Versión: 0.4.2-191
+Versión: 0.4.2-192
 Arquitectura: x86_64
 Descripción: A progress bar in the terminal
 Upstream: https://github.com/roelvandijk/terminal-progress-bar
@@ -691,15 +691,15 @@ Estado SST: [ ]
 47. python pypcode
 Paquete: python-pypcode
 Repositorio: extra
-Versión: 3.3.3-1
+Versión: 4.1.0-1
 Arquitectura: x86_64
 Descripción: Python bindings to Ghidra's SLEIGH library for disassembly and lifting to p-code IR
 Upstream: https://github.com/angr/pypcode
 Licencia: BSD-2-Clause
-Dependencias: gcc-libs, glibc, nanobind, python, python-cffi
+Dependencias: libgcc, libstdc++, glibc, python
 Opcionales: —
-Compilación: cmake, python-build, python-installer, python-setuptools, python-wheel
-Pruebas: python-pytest
+Compilación: cmake, nanobind, python-build, python-installer, python-setuptools
+Pruebas: python-pytest, python-pytest-cov
 Proporciona: —
 Estado SST: [ ]
 

@@ -31,14 +31,14 @@ Estado SST: [ ]
 3. cef
 Paquete: cef
 Repositorio: extra
-Versión: 154.0.34-2
+Versión: 156.0.27-2
 Arquitectura: x86_64
 Descripción: Chromium Embedded Framework (CEF), simple framework for embedding Chromium-based browsers in other applications
 Upstream: https://chromiumembedded.github.io/cef
 Licencia: BSD-3-Clause
-Dependencias: alsa-lib, at-spi2-core, dbus, libdrm, libffi, libpulse, libxcomposite, libxdamage, libxkbcommon, libxrandr, mesa, nss, pango, systemd-libs, fontconfig, brotli, libjpeg-turbo, openh264, highway, dav1d, flac, libdrm, libxml2, zstd, libwebp, minizip, opus, libxslt, harfbuzz, freetype2
+Dependencias: alsa-lib, at-spi2-core, dbus, libdrm, libffi, libpulse, libxcomposite, libxdamage, libxkbcommon, libxrandr, mesa, nss, pango, systemd-libs, fontconfig, brotli, libjpeg-turbo, openh264, simdutf, highway, dav1d, flac, libdrm, libxml2, zstd, libwebp, minizip, opus, double-conversion, libxslt, harfbuzz, freetype2
 Opcionales: —
-Compilación: clang, compiler-rt, esbuild, git, gn, go, gperf, java-runtime-headless, lld, ninja, nodejs, npm, opus, pipewire, python, python-httplib2, python-pyparsing, python-six, rsync, rust, rust-bindgen, typescript, vulkan-headers, libxtst
+Compilación: clang, compiler-rt, esbuild, git, gn, go, gperf, java-runtime-headless, lld, ninja, nodejs, npm, opus, pipewire, python, python-httplib2, python-pyparsing, rsync, rust, rust-bindgen, typescript, vulkan-headers, libxtst
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell crypton socks
 Paquete: haskell-crypton-socks
 Repositorio: extra
-Versión: 0.6.2-86
+Versión: 0.6.2-88
 Arquitectura: x86_64
 Descripción: SOCKS Protocol Version 5
 Upstream: http://github.com/mpilgrem/crypton-socks

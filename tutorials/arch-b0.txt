@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. darcs
 Paquete: darcs
 Repositorio: extra
-Versión: 2.18.5-322
+Versión: 2.18.5-326
 Arquitectura: x86_64
 Descripción: A distributed, interactive, smart revision control system
 Upstream: http://darcs.net
@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. docker compose
 Paquete: docker-compose
 Repositorio: extra
-Versión: 5.7.0-1
+Versión: 5.7.1-1
 Arquitectura: x86_64
 Descripción: Fast, isolated development environments using Docker
 Upstream: https://www.docker.com/
@@ -106,12 +106,12 @@ Estado SST: [ ]
 8. firefox developer edition i18n an
 Paquete: firefox-developer-edition-i18n-an
 Repositorio: extra
-Versión: 160.0b5-1
+Versión: 161.0b2-1
 Arquitectura: any
 Descripción: Aragonese language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=160.0b5
+Dependencias: firefox-developer-edition>=161.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell hspec api
 Paquete: haskell-hspec-api
 Repositorio: extra
-Versión: 2.11.10-7
+Versión: 2.11.10-8
 Arquitectura: x86_64
 Descripción: A Testing Framework for Haskell
 Upstream: https://hspec.github.io/
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. hedgewars
 Paquete: hedgewars
 Repositorio: extra
-Versión: 1.0.3-108
+Versión: 1.0.3-112
 Arquitectura: x86_64
 Descripción: Turn-based strategy artillery game similiar to Worms
 Upstream: https://hedgewars.org
@@ -541,15 +541,15 @@ Estado SST: [ ]
 37. python cle
 Paquete: python-cle
 Repositorio: extra
-Versión: 9.2.160-2
+Versión: 10.0.6-1
 Arquitectura: any
 Descripción: Loads binaries and their libraries, resolves imports and provides an abstraction of process memory
 Upstream: https://github.com/angr/cle
-Licencia: custom:BSD
-Dependencias: python, python-pyelftools, python-cffi, python-pyvex, python-pefile, python-sortedcontainers
+Licencia: BSD-2-Clause
+Dependencias: python, python-archinfo, python-arpy, python-cart, python-cffi, python-minidump, python-pefile, python-pyelftools, python-pyvex, python-pyxbe, python-pyxdia, python-sortedcontainers, python-uefi-firmware
 Opcionales: python-claripy: symbolic constraints, python-minidump: minidump, python-pyxbe: xbe, python-arpy: ar, python-pyaxmlparser: apk
-Compilación: python-build, python-installer, python-wheel, python-setuptools
-Pruebas: python-pytest, python-minidump, python-pyxbe, python-arpy, python-claripy, python-pyaxmlparser, python-cart
+Compilación: python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-arpy, python-cart, python-claripy, python-minidump, python-pyaxmlparser, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
@@ -631,7 +631,7 @@ Estado SST: [ ]
 43. python highspy
 Paquete: python-highspy
 Repositorio: extra
-Versión: 1.15.1-2
+Versión: 1.16.0-1
 Arquitectura: x86_64
 Descripción: Linear optimization software
 Upstream: https://highs.dev/
@@ -886,7 +886,7 @@ Estado SST: [ ]
 60. thunderbird i18n kab
 Paquete: thunderbird-i18n-kab
 Repositorio: extra
-Versión: 159.0-1
+Versión: 159.0-2
 Arquitectura: x86_64
 Descripción: Kabyle language pack for Thunderbird
 Upstream: https://www.thunderbird.net/

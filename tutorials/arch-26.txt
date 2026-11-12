@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. deepin util dfm
 Paquete: deepin-util-dfm
 Repositorio: extra
-Versión: 1:1.3.39-1
+Versión: 1:1.3.40-1
 Arquitectura: x86_64
 Descripción: Utilities of deepin file manager
 Upstream: https://github.com/linuxdeepin/util-dfm
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell data functor logistic
 Paquete: haskell-data-functor-logistic
 Repositorio: extra
-Versión: 0.0-213
+Versión: 0.0-214
 Arquitectura: x86_64
 Descripción: Updatable analogue of Distributive functors
 Upstream: https://github.com/fumieval/data-functor-logistic
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell free
 Paquete: haskell-free
 Repositorio: extra
-Versión: 5.2-194
+Versión: 5.2-195
 Arquitectura: x86_64
 Descripción: Monads for free
 Upstream: https://github.com/ekmett/free/
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell hspec expectations
 Paquete: haskell-hspec-expectations
 Repositorio: extra
-Versión: 0.8.4-148
+Versión: 0.8.4-150
 Arquitectura: x86_64
 Descripción: Catchy combinators for HUnit
 Upstream: https://github.com/sol/hspec-expectations
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell streaming commons
 Paquete: haskell-streaming-commons
 Repositorio: extra
-Versión: 0.2.3.1-76
+Versión: 0.2.3.1-78
 Arquitectura: x86_64
 Descripción: Common lower-level functions needed by various streaming data libraries
 Upstream: https://github.com/fpco/streaming-commons
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell unix time
 Paquete: haskell-unix-time
 Repositorio: extra
-Versión: 0.4.17-141
+Versión: 0.4.17-142
 Arquitectura: x86_64
 Descripción: Unix time parser/formatter and utilities
 Upstream: https://hackage.haskell.org/package/unix-time
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. makedumpfile
 Paquete: makedumpfile
 Repositorio: extra
-Versión: 1.7.9-1
+Versión: 1.8.0-1
 Arquitectura: x86_64
 Descripción: A tool to generate smaller dumpfiles from kdump memory dumps
 Upstream: https://github.com/makedumpfile/makedumpfile
@@ -568,7 +568,22 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-39. python pyflakes
+39. python pydemumble
+Paquete: python-pydemumble
+Repositorio: extra
+Versión: 0.1.3-1
+Arquitectura: x86_64
+Descripción: Library for demumble, a tool to demangle C++, Rust, and Swift symbol names
+Upstream: https://github.com/angr/pydemumble
+Licencia: BSD-2-Clause
+Dependencias: glibc, libgcc, libstdc++, python
+Opcionales: —
+Compilación: nanobind, python-build, python-installer, python-scikit-build-core
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+40. python pyflakes
 Paquete: python-pyflakes
 Repositorio: extra
 Versión: 4.1.0-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python pyproj
+41. python pyproj
 Paquete: python-pyproj
 Repositorio: extra
 Versión: 3.8.0-1
@@ -598,7 +613,7 @@ Pruebas: python-pytest, python-numpy, python-pandas, python-shapely, python-xarr
 Proporciona: —
 Estado SST: [ ]
 
-41. python pytest pacman
+42. python pytest pacman
 Paquete: python-pytest-pacman
 Repositorio: extra
 Versión: 0.1.1-4
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python standard sunau
+43. python standard sunau
 Paquete: python-standard-sunau
 Repositorio: extra
 Versión: 3.13.0-4
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: python-standard-sunau, python-sunau
 Estado SST: [ ]
 
-43. python txaio
+44. python txaio
 Paquete: python-txaio
 Repositorio: extra
 Versión: 26.6.1-1
@@ -643,7 +658,7 @@ Pruebas: python-pytest, python-twisted, python-tests
 Proporciona: —
 Estado SST: [ ]
 
-44. python wassima
+45. python wassima
 Paquete: python-wassima
 Repositorio: extra
 Versión: 2.1.5-1
@@ -658,7 +673,7 @@ Pruebas: python-pytest, python-urllib3-future
 Proporciona: —
 Estado SST: [ ]
 
-45. qmltermwidget
+46. qmltermwidget
 Paquete: qmltermwidget
 Repositorio: extra
 Versión: 2.0.0.git1-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. svelte language server
+47. svelte language server
 Paquete: svelte-language-server
 Repositorio: extra
 Versión: 0.18.4-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. teal
+48. teal
 Paquete: teal
 Repositorio: extra
 Versión: 0.24.8-4
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: tl
 Estado SST: [ ]
 
-48. tesseract data tam
+49. tesseract data tam
 Paquete: tesseract-data-tam
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -718,10 +733,10 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-49. thunderbird i18n br
+50. thunderbird i18n br
 Paquete: thunderbird-i18n-br
 Repositorio: extra
-Versión: 159.0-1
+Versión: 159.0-2
 Arquitectura: x86_64
 Descripción: Breton language pack for Thunderbird
 Upstream: https://www.thunderbird.net/
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. traceroute
+51. traceroute
 Paquete: traceroute
 Repositorio: extra
 Versión: 2.1.6-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. upload symbols
+52. upload symbols
 Paquete: upload-symbols
 Repositorio: extra
 Versión: 0.3.1-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. vlc plugin gme
+53. vlc plugin gme
 Paquete: vlc-plugin-gme
 Repositorio: extra
 Versión: 3.0.24-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. wolf shaper lv2
+54. wolf shaper lv2
 Paquete: wolf-shaper-lv2
 Repositorio: extra
 Versión: 1.0.2-3
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. xdg desktop portal xapp
+55. xdg desktop portal xapp
 Paquete: xdg-desktop-portal-xapp
 Repositorio: extra
 Versión: 1.2.0-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: xdg-desktop-portal-impl
 Estado SST: [ ]
 
-55. zaproxy
+56. zaproxy
 Paquete: zaproxy
 Repositorio: extra
 Versión: 2.17.0-4
