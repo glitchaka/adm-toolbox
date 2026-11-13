@@ -31,12 +31,12 @@ Estado SST: [ ]
 3. autossh
 Paquete: autossh
 Repositorio: extra
-Versión: 1.4g-4
+Versión: 1.4g-5
 Arquitectura: x86_64
 Descripción: Automatically restart SSH sessions and tunnels
 Upstream: https://www.harding.motd.ca/autossh/
-Licencia: custom
-Dependencias: libnsl, openssh
+Licencia: LicenseRef-autossh
+Dependencias: glibc, libnsl, openssh
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell magic
 Paquete: haskell-magic
 Repositorio: extra
-Versión: 2.0.0-10
+Versión: 2.0.0-11
 Arquitectura: x86_64
 Descripción: Interface to C file/magic library
 Upstream: https://github.com/philippedev101/magic-haskell
@@ -766,11 +766,11 @@ Estado SST: [ ]
 52. tuntox
 Paquete: tuntox
 Repositorio: extra
-Versión: 0.0.10.1-2
+Versión: 0.0.10.1-3
 Arquitectura: x86_64
 Descripción: Tunnel TCP connections over the Tox protocol
 Upstream: https://github.com/gjedeer/tuntox
-Licencia: GPL3
+Licencia: GPL-3.0-only
 Dependencias: toxcore
 Opcionales: —
 Compilación: git, libnsl

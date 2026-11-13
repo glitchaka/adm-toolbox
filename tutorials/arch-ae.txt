@@ -136,14 +136,14 @@ Estado SST: [ ]
 10. gthumb
 Paquete: gthumb
 Repositorio: extra
-Versión: 3.12.12-1
+Versión: 4.0.2-1
 Arquitectura: x86_64
 Descripción: Image browser and viewer for the GNOME Desktop
 Upstream: https://wiki.gnome.org/Apps/Gthumb
 Licencia: GPL-2.0-or-later
-Dependencias: cairo, dconf, exiv2, gdk-pixbuf2, glib2, glibc, gsettings-desktop-schemas, gst-plugin-gtk, gst-plugins-base-libs, gstreamer, gtk3, hicolor-icon-theme, lcms2, libcolord, libgcc, libheif, libjpeg-turbo, libjxl, libpng, libstdc++, librsvg, libtiff, libwebp, libx11, pango, zlib
-Opcionales: brasero: burn discs, libraw: read RAW files
-Compilación: appstream, brasero, docbook-xsl, git, glib2-devel, libraw, meson, yelp-tools
+Dependencias: cairo, dconf, exiv2, gdk-pixbuf2, giflib, glib2, glibc, graphene, gsettings-desktop-schemas, gst-plugin-gtk4, gst-plugins-bad-libs, gst-plugins-base-libs, gst-plugins-good, gstreamer, gtk4, hicolor-icon-theme, lcms2, libadwaita, libcolord, libgcc, libheif, libjpeg-turbo, libjxl, libpng, libportal, libportal-gtk4, libraw, librsvg, libstdc++, libtiff, libwebp, pango, zlib
+Opcionales: —
+Compilación: appstream, git, glib2-devel, meson, vala, yelp-tools
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell generic lens
 Paquete: haskell-generic-lens
 Repositorio: extra
-Versión: 2.3.0.0-56
+Versión: 2.3.0.0-57
 Arquitectura: x86_64
 Descripción: Generically derive traversals, lenses and prisms
 Upstream: https://github.com/kcsongor/generic-lens
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell gi wireplumber
 Paquete: haskell-gi-wireplumber
 Repositorio: extra
-Versión: 0.5.14.2-39
+Versión: 0.5.14.2-40
 Arquitectura: x86_64
 Descripción: WirePlumber bindings
 Upstream: https://github.com/taffybar/taffybar
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell libbf
 Paquete: haskell-libbf
 Repositorio: extra
-Versión: 0.6.9-2
+Versión: 0.6.9-3
 Arquitectura: x86_64
 Descripción: A binding to the libBF library
 Upstream: https://github.com/GaloisInc/libBF-hs
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell miniutter
 Paquete: haskell-miniutter
 Repositorio: extra
-Versión: 0.5.1.2-215
+Versión: 0.5.1.2-216
 Arquitectura: x86_64
 Descripción: Simple English clause creation from arbitrary words
 Upstream: https://github.com/Mikolaj/miniutter
@@ -301,12 +301,12 @@ Estado SST: [ ]
 21. lib32 nvidia utils
 Paquete: lib32-nvidia-utils
 Repositorio: multilib
-Versión: 615.78.08-1
+Versión: 620.70.06-1
 Arquitectura: x86_64
 Descripción: NVIDIA drivers utilities (32-bit)
 Upstream: http://www.nvidia.com/
 Licencia: custom
-Dependencias: lib32-zlib, lib32-gcc-libs, lib32-libglvnd, nvidia-utils=615.78.08
+Dependencias: lib32-zlib, lib32-gcc-libs, lib32-libglvnd, nvidia-utils=620.70.06
 Opcionales: lib32-opencl-nvidia
 Compilación: —
 Pruebas: —

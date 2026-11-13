@@ -181,13 +181,13 @@ Estado SST: [ ]
 13. gnome commander
 Paquete: gnome-commander
 Repositorio: extra
-Versión: 2.0.3-1
+Versión: 2.2.3-1
 Arquitectura: x86_64
 Descripción: Graphical two-pane filemanager for GNOME
 Upstream: https://gnome.pages.gitlab.gnome.org/gnome-commander/
 Licencia: GPL-3.0-or-later
-Dependencias: cairo, dconf, exiv2, gdk-pixbuf2, glib2, glibc, graphene, gtk4, hicolor-icon-theme, libgcc, libgsf, libstdc++, pango, poppler-glib, taglib, vte4
-Opcionales: —
+Dependencias: cairo, dconf, gdk-pixbuf2, glib2, glibc, graphene, gtk4, hicolor-icon-theme, libgcc, pango, vte4
+Opcionales: python-exifread: Image Metadata plugin, python-mutagen: Multimedia Metadata plugin, python-pypdf: Document Metadata plugin
 Compilación: appstream, gi-docgen, git, glib2-devel, gobject-introspection, gtest, itstool, meson, rust, smbclient
 Pruebas: —
 Proporciona: —
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell config schema
 Paquete: haskell-config-schema
 Repositorio: extra
-Versión: 1.3.0.0-310
+Versión: 1.3.0.0-311
 Arquitectura: x86_64
 Descripción: Schema definitions for the config-value package
 Upstream: https://github.com/glguy/config-schema
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell filepattern
 Paquete: haskell-filepattern
 Repositorio: extra
-Versión: 0.1.3-292
+Versión: 0.1.3-293
 Arquitectura: x86_64
 Descripción: File path glob-like matching
 Upstream: https://github.com/ndmitchell/filepattern
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell tasty lua
 Paquete: haskell-tasty-lua
 Repositorio: extra
-Versión: 1.1.2-29
+Versión: 1.1.2-30
 Arquitectura: x86_64
 Descripción: Write tests in Lua, integrate into tasty.
 Upstream: https://github.com/hslua/tasty-lua
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell zlib bindings
 Paquete: haskell-zlib-bindings
 Repositorio: extra
-Versión: 0.1.1.5-330
+Versión: 0.1.1.5-331
 Arquitectura: x86_64
 Descripción: Low-level bindings to the zlib package.
 Upstream: https://github.com/snapframework/zlib-bindings
@@ -391,7 +391,7 @@ Estado SST: [ ]
 27. mise
 Paquete: mise
 Repositorio: extra
-Versión: 2026.11.5-2
+Versión: 2026.11.7-1
 Arquitectura: x86_64
 Descripción: The front-end to your dev env
 Upstream: https://github.com/jdx/mise
@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. python pytest tap
 Paquete: python-pytest-tap
 Repositorio: extra
-Versión: 3.5-2
+Versión: 3.6-1
 Arquitectura: any
 Descripción: Test Anything Protocol (TAP) reporting plugin for pytest.
 Upstream: https://github.com/python-tap/pytest-tap

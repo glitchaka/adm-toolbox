@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. haskell base16
 Paquete: haskell-base16
 Repositorio: extra
-Versión: 2.0-2
+Versión: 2.0-3
 Arquitectura: x86_64
 Descripción: Fast RFC 4648-compliant Base16 encoding
 Upstream: https://github.com/emilypi/base16
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. haskell hls stylish haskell plugin
 Paquete: haskell-hls-stylish-haskell-plugin
 Repositorio: extra
-Versión: 2.4.0.0-42
+Versión: 2.4.0.0-44
 Arquitectura: x86_64
 Descripción: Integration with the Stylish Haskell code formatter
 Upstream: https://hackage.haskell.org/package/hls-stylish-haskell-plugin
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. haskell pcre light
 Paquete: haskell-pcre-light
 Repositorio: extra
-Versión: 0.4.1.3-221
+Versión: 0.4.1.3-222
 Arquitectura: x86_64
 Descripción: Portable regex library for Perl 5 compatible regular expressions
 Upstream: https://gitlab.com/daniel-casanueva/haskell/pcre-light
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. hasktags
 Paquete: hasktags
 Repositorio: extra
-Versión: 0.73.0-207
+Versión: 0.73.0-208
 Arquitectura: x86_64
 Descripción: Produces ctags "tags" and etags "TAGS" files for Haskell programs
 Upstream: https://github.com/MarcWeber/hasktags
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. lua54 luautf8
 Paquete: lua54-luautf8
 Repositorio: extra
-Versión: 0.2.1-2
+Versión: 0.3.0-1
 Arquitectura: x86_64
 Descripción: Add UTF-8 support to Lua, compatible with Lua string module
 Upstream: https://github.com/starwing/luautf8
@@ -610,7 +610,7 @@ Dependencias: lua54
 Opcionales: —
 Compilación: lua, lua51, lua52, lua53, lua54, luarocks
 Pruebas: —
-Proporciona: lua54-utf8=0.2.1
+Proporciona: lua54-utf8=0.3.0
 Estado SST: [ ]
 
 42. luajit
@@ -1138,7 +1138,22 @@ Pruebas: ruby-rake, ruby-minitest, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-77. systembus notify
+77. rustc dev
+Paquete: rustc-dev
+Repositorio: extra
+Versión: 1:1.99.1-4
+Arquitectura: x86_64
+Descripción: Compiler libraries for Rust
+Upstream: https://www.rust-lang.org/
+Licencia: Apache-2.0 OR MIT
+Dependencias: glibc, libgcc, rust
+Opcionales: —
+Compilación: clang=23.1.5, llvm=23.1.5, cmake, libffi, musl, ninja, perl, python, rust, wasi-libc, wasm-component-ld, aarch64-linux-gnu-gcc, aarch64-linux-gnu-glibc, lib32-gcc-libs, lib32-glibc, musl-aarch64
+Pruebas: gdb, procps-ng
+Proporciona: —
+Estado SST: [ ]
+
+78. systembus notify
 Paquete: systembus-notify
 Repositorio: extra
 Versión: 1.1-4
@@ -1153,7 +1168,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-78. tesseract data ron
+79. tesseract data ron
 Paquete: tesseract-data-ron
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -1168,7 +1183,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-79. vim spell sw
+80. vim spell sw
 Paquete: vim-spell-sw
 Repositorio: extra
 Versión: 20220628-2
@@ -1183,7 +1198,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-80. vlc plugin fluidsynth
+81. vlc plugin fluidsynth
 Paquete: vlc-plugin-fluidsynth
 Repositorio: extra
 Versión: 3.0.24-1
@@ -1198,7 +1213,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-81. wxsqlite3
+82. wxsqlite3
 Paquete: wxsqlite3
 Repositorio: extra
 Versión: 4.12.7-1
@@ -1213,7 +1228,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-82. xfce4 xkb plugin
+83. xfce4 xkb plugin
 Paquete: xfce4-xkb-plugin
 Repositorio: extra
 Versión: 0.9.0-1

@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. dhall bash
 Paquete: dhall-bash
 Repositorio: extra
-Versión: 1.0.41-289
+Versión: 1.0.41-290
 Arquitectura: x86_64
 Descripción: Compile Dhall to Bash
 Upstream: https://dhall-lang.org
@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. dhall docs
 Paquete: dhall-docs
 Repositorio: extra
-Versión: 1.0.12-278
+Versión: 1.0.12-279
 Arquitectura: x86_64
 Descripción: Generate HTML docs from a dhall package
 Upstream: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-docs
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell hls gadt plugin
 Paquete: haskell-hls-gadt-plugin
 Repositorio: extra
-Versión: 2.4.0.0-44
+Versión: 2.4.0.0-46
 Arquitectura: x86_64
 Descripción: Convert to GADT syntax plugin
 Upstream: https://github.com/haskell/haskell-language-server.git
@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. haskell mime mail
 Paquete: haskell-mime-mail
 Repositorio: extra
-Versión: 0.5.1-309
+Versión: 0.5.1-310
 Arquitectura: x86_64
 Descripción: Compose MIME email messages.
 Upstream: https://github.com/snoyberg/mime-mail
@@ -376,12 +376,12 @@ Estado SST: [ ]
 26. lib32 pipewire jack
 Paquete: lib32-pipewire-jack
 Repositorio: multilib
-Versión: 1:1.6.10-1
+Versión: 1:1.6.11-1
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - 32-bit - JACK support
 Upstream: https://pipewire.org
 Licencia: MIT, GPL-2.0-only, LGPL-2.1-or-later
-Dependencias: lib32-libpipewire=1:1.6.10-1, libpipewire-0.3.so=0-32, lib32-pipewire=1:1.6.10-1, lib32-glibc, pipewire-jack
+Dependencias: lib32-libpipewire=1:1.6.11-1, libpipewire-0.3.so=0-32, lib32-pipewire=1:1.6.11-1, lib32-glibc, pipewire-jack
 Opcionales: —
 Compilación: git, lib32-alsa-lib, lib32-dbus, lib32-glib2, lib32-opus, lib32-systemd, meson, systemd
 Pruebas: —
@@ -661,7 +661,7 @@ Estado SST: [ ]
 45. python langgraph
 Paquete: python-langgraph
 Repositorio: extra
-Versión: 1.2.20-1
+Versión: 1.2.21-1
 Arquitectura: any
 Descripción: Building stateful, multi-actor applications with LLMs
 Upstream: https://github.com/langchain-ai/langgraph/tree/main/libs/langgraph
@@ -886,7 +886,7 @@ Estado SST: [ ]
 60. vulkan intel
 Paquete: vulkan-intel
 Repositorio: extra
-Versión: 1:26.2.6-1
+Versión: 1:26.2.7-1
 Arquitectura: x86_64
 Descripción: Open-source Vulkan driver for Intel GPUs
 Upstream: https://www.mesa3d.org/

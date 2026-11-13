@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell arch web
 Paquete: haskell-arch-web
 Repositorio: extra
-Versión: 0.3.3-11
+Versión: 0.3.3-13
 Arquitectura: x86_64
 Descripción: Arch Linux official and AUR web interface binding
 Upstream: https://github.com/berberman/arch-web
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell doctest exitcode stdio
 Paquete: haskell-doctest-exitcode-stdio
 Repositorio: extra
-Versión: 0.0.0.1-134
+Versión: 0.0.0.1-135
 Arquitectura: x86_64
 Descripción: Run doctest's in a Cabal.Test.exitcode-stdio environment
 Upstream: https://hub.darcs.net/thielema/doctest-exitcode-stdio/
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell tagstream conduit
 Paquete: haskell-tagstream-conduit
 Repositorio: extra
-Versión: 0.5.6-628
+Versión: 0.5.6-629
 Arquitectura: x86_64
 Descripción: Streamlined html tag parser
 Upstream: https://github.com/yihuang/tagstream-conduit
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell tzdata
 Paquete: haskell-tzdata
 Repositorio: extra
-Versión: 0.2.20260911.0-17
+Versión: 0.2.20260911.0-18
 Arquitectura: x86_64
 Descripción: Haskell package that distributes the standard time zone database
 Upstream: https://github.com/ysangkok/haskell-tzdata
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell yi rope
 Paquete: haskell-yi-rope
 Repositorio: extra
-Versión: 0.11-191
+Versión: 0.11-192
 Arquitectura: x86_64
 Descripción: A rope data structure used by Yi
 Upstream: https://github.com/yi-editor/yi-rope.git
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. hledger iadd
 Paquete: hledger-iadd
 Repositorio: extra
-Versión: 1.3.23-27
+Versión: 1.3.23-28
 Arquitectura: x86_64
 Descripción: A terminal UI as drop-in replacement for hledger add
 Upstream: https://github.com/hpdeifel/hledger-iadd#readme
@@ -328,7 +328,22 @@ Pruebas: —
 Proporciona: kubectx, kubens
 Estado SST: [ ]
 
-23. libabw
+23. kylin calendar
+Paquete: kylin-calendar
+Repositorio: extra
+Versión: 5.0.0.1-1
+Arquitectura: x86_64
+Descripción: Calendar and event reminders for the UKUI desktop
+Upstream: https://gitee.com/openkylin/kylin-calendar
+Licencia: GPL-3.0-or-later, LGPL-2.1-or-later
+Dependencias: bash, coreutils, cron, glib2, glibc, gsettings-qt6, kwindowsystem, libgcc, libkysdk-applications, libkysdk-system, libnotify, libstdc++, qt6-base, qt6-svg, ukui-interface
+Opcionales: —
+Compilación: cmake, extra-cmake-modules, git, libqtxdg, ninja, qt6-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+24. libabw
 Paquete: libabw
 Repositorio: extra
 Versión: 0.1.4-1
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. libreoffice fresh pl
+25. libreoffice fresh pl
 Paquete: libreoffice-fresh-pl
 Repositorio: extra
 Versión: 26.8.2-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: libreoffice-pl, libreoffice-fresh-i18n=26.8.2-1
 Estado SST: [ ]
 
-25. lua52 lub
+26. lua52 lub
 Paquete: lua52-lub
 Repositorio: extra
 Versión: 1.1.0-7
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. marble maps
+27. marble maps
 Paquete: marble-maps
 Repositorio: extra
 Versión: 26.08.3-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. neovim decasify
+28. neovim decasify
 Paquete: neovim-decasify
 Repositorio: extra
 Versión: 0.11.4-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. nextcloud app mail
+29. nextcloud app mail
 Paquete: nextcloud-app-mail
 Repositorio: extra
 Versión: 5.13.2-1
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. opensearch dashboards maps plugin
+30. opensearch dashboards maps plugin
 Paquete: opensearch-dashboards-maps-plugin
 Repositorio: extra
 Versión: 3.9.0.0-2
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. perl file readbackwards
+31. perl file readbackwards
 Paquete: perl-file-readbackwards
 Repositorio: extra
 Versión: 1.06-8
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. poppler data
+32. poppler data
 Paquete: poppler-data
 Repositorio: extra
 Versión: 0.4.12-2
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. python autocommand
+33. python autocommand
 Paquete: python-autocommand
 Repositorio: extra
 Versión: 2.2.2-9
@@ -478,7 +493,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-33. python dask
+34. python dask
 Paquete: python-dask
 Repositorio: extra
 Versión: 2026.8.0-1
@@ -493,7 +508,7 @@ Pruebas: ipython, python-pytest, python-pytest-mock, python-pytest-rerunfailures
 Proporciona: —
 Estado SST: [ ]
 
-34. python electrum ecc
+35. python electrum ecc
 Paquete: python-electrum-ecc
 Repositorio: extra
 Versión: 0.0.8-1
@@ -508,7 +523,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-35. python legacy cgi
+36. python legacy cgi
 Paquete: python-legacy-cgi
 Repositorio: extra
 Versión: 2.6.4-2
@@ -523,7 +538,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-36. python mypy extensions
+37. python mypy extensions
 Paquete: python-mypy_extensions
 Repositorio: extra
 Versión: 1.1.0-2
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. python nose2
+38. python nose2
 Paquete: python-nose2
 Repositorio: extra
 Versión: 0.16.0-1
@@ -553,7 +568,7 @@ Pruebas: python-coverage
 Proporciona: —
 Estado SST: [ ]
 
-38. python phitigra
+39. python phitigra
 Paquete: python-phitigra
 Repositorio: extra
 Versión: 0.2.6-5
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. python pipenv to requirements
+40. python pipenv to requirements
 Paquete: python-pipenv-to-requirements
 Repositorio: extra
 Versión: 0.9.0-12
@@ -583,7 +598,7 @@ Pruebas: python-pyfakefs, python-pytest-mock
 Proporciona: —
 Estado SST: [ ]
 
-40. python pygdbmi
+41. python pygdbmi
 Paquete: python-pygdbmi
 Repositorio: extra
 Versión: 0.11.0.0-6
@@ -598,7 +613,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-41. python testresources
+42. python testresources
 Paquete: python-testresources
 Repositorio: extra
 Versión: 2.1.2-1
@@ -613,7 +628,7 @@ Pruebas: python-fixtures, python-testtools
 Proporciona: —
 Estado SST: [ ]
 
-42. radicle
+43. radicle
 Paquete: radicle
 Repositorio: extra
 Versión: 1.10.3-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: radicle-node, radicle-cli
 Estado SST: [ ]
 
-43. rhvoice voice pavel
+44. rhvoice voice pavel
 Paquete: rhvoice-voice-pavel
 Repositorio: extra
 Versión: 1.16.5-1
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. rhvoice voice seva
+45. rhvoice voice seva
 Paquete: rhvoice-voice-seva
 Repositorio: extra
 Versión: 1.16.5-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. ruby paint
+46. ruby paint
 Paquete: ruby-paint
 Repositorio: extra
 Versión: 2.3.0-6
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby term ansicolor
+47. ruby term ansicolor
 Paquete: ruby-term-ansicolor
 Repositorio: extra
 Versión: 1.11.3-1
@@ -688,7 +703,7 @@ Pruebas: ruby-test-unit, ruby-simplecov
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby thread order
+48. ruby thread order
 Paquete: ruby-thread_order
 Repositorio: extra
 Versión: 1.1.1-4
@@ -703,7 +718,7 @@ Pruebas: ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-48. sticky
+49. sticky
 Paquete: sticky
 Repositorio: extra
 Versión: 1.33-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. tesseract data cym
+50. tesseract data cym
 Paquete: tesseract-data-cym
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-50. ttf adwaitamono nerd
+51. ttf adwaitamono nerd
 Paquete: ttf-adwaitamono-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-51. typescript
+52. typescript
 Paquete: typescript
 Repositorio: extra
 Versión: 6.0.3-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. unace
+53. unace
 Paquete: unace
 Repositorio: extra
 Versión: 2.5-12
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. uriparser
+54. uriparser
 Paquete: uriparser
 Repositorio: extra
 Versión: 1.0.3-1
@@ -793,10 +808,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. vhba module
+55. vhba module
 Paquete: vhba-module
 Repositorio: extra
-Versión: 20260313-59
+Versión: 20260313-60
 Arquitectura: x86_64
 Descripción: Virtual SCSI adapter - Linux modules
 Upstream: https://cdemu.sourceforge.io/

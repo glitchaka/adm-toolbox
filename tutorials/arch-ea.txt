@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell bitwise
 Paquete: haskell-bitwise
 Repositorio: extra
-Versión: 1.0.0.1-362
+Versión: 1.0.0.1-363
 Arquitectura: x86_64
 Descripción: Fast multi-dimensional unboxed bit packed Bool arrays
 Upstream: https://code.mathr.co.uk/bitwise
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell foldl
 Paquete: haskell-foldl
 Repositorio: extra
-Versión: 1.4.18-167
+Versión: 1.4.18-168
 Arquitectura: x86_64
 Descripción: Composable, streaming, and efficient left folds
 Upstream: https://github.com/Gabriella439/foldl
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell securemem
 Paquete: haskell-securemem
 Repositorio: extra
-Versión: 0.1.10-458
+Versión: 0.1.10-459
 Arquitectura: x86_64
 Descripción: abstraction to an auto scrubbing and const time eq, memory chunk.
 Upstream: https://github.com/vincenthz/hs-securemem
@@ -286,14 +286,14 @@ Estado SST: [ ]
 20. lib32 clang
 Paquete: lib32-clang
 Repositorio: multilib
-Versión: 23.1.4-1
+Versión: 23.1.5-1
 Arquitectura: x86_64
 Descripción: C language family frontend for LLVM (32-bit)
 Upstream: https://clang.llvm.org/
 Licencia: Apache-2.0 WITH LLVM-exception
 Dependencias: lib32-llvm-libs, clang
 Opcionales: lib32-llvm: referenced by some clang headers
-Compilación: lib32-llvm=1:23.1.4, cmake, ninja, python
+Compilación: lib32-llvm=1:23.1.5, cmake, ninja, python
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -301,7 +301,7 @@ Estado SST: [ ]
 21. libclc
 Paquete: libclc
 Repositorio: extra
-Versión: 23.1.4-1
+Versión: 23.1.5-1
 Arquitectura: x86_64
 Descripción: Library requirements of the OpenCL C programming language
 Upstream: https://llvm.org/
@@ -553,7 +553,22 @@ Pruebas: python-arrow, python-cloudpickle, python-lz4, python-numpy, python-pyte
 Proporciona: —
 Estado SST: [ ]
 
-38. python lark parser
+38. python exifread
+Paquete: python-exifread
+Repositorio: extra
+Versión: 3.5.1-1
+Arquitectura: any
+Descripción: Easy to use Python module to extract Exif metadata from digital image files
+Upstream: https://github.com/ianare/exif-py
+Licencia: BSD-3-Clause
+Dependencias: python
+Opcionales: —
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
+Pruebas: python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+39. python lark parser
 Paquete: python-lark-parser
 Repositorio: extra
 Versión: 1.3.1-2
@@ -568,7 +583,7 @@ Pruebas: python-tzlocal, python-atomicwrites, python-regex
 Proporciona: python-lark
 Estado SST: [ ]
 
-39. python lazr delegates
+40. python lazr delegates
 Paquete: python-lazr.delegates
 Repositorio: extra
 Versión: 2.1.1-3
@@ -583,7 +598,7 @@ Pruebas: python-zope-testrunner
 Proporciona: —
 Estado SST: [ ]
 
-40. python magic filter
+41. python magic filter
 Paquete: python-magic-filter
 Repositorio: extra
 Versión: 1.0.12-5
@@ -598,7 +613,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-41. python pycosat
+42. python pycosat
 Paquete: python-pycosat
 Repositorio: extra
 Versión: 0.6.6-4
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python pydicom
+43. python pydicom
 Paquete: python-pydicom
 Repositorio: extra
 Versión: 3.0.2-1
@@ -628,7 +643,7 @@ Pruebas: python-pytest, python-numpy, python-pillow, python-pyfakefs
 Proporciona: —
 Estado SST: [ ]
 
-43. python pylibmc
+44. python pylibmc
 Paquete: python-pylibmc
 Repositorio: extra
 Versión: 1.6.3-6
@@ -643,7 +658,7 @@ Pruebas: memcached, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-44. python pytest datafiles
+45. python pytest datafiles
 Paquete: python-pytest-datafiles
 Repositorio: extra
 Versión: 3.0.1-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. python urwid
+46. python urwid
 Paquete: python-urwid
 Repositorio: extra
 Versión: 1:4.2.5-1
@@ -673,7 +688,7 @@ Pruebas: python-gobject, python-pytest, python-pyzmq, python-tornado, python-tri
 Proporciona: —
 Estado SST: [ ]
 
-46. qemu hw display virtio gpu pci
+47. qemu hw display virtio gpu pci
 Paquete: qemu-hw-display-virtio-gpu-pci
 Repositorio: extra
 Versión: 11.1.3-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. qemu system ppc
+48. qemu system ppc
 Paquete: qemu-system-ppc
 Repositorio: extra
 Versión: 11.1.3-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. rate mirrors
+49. rate mirrors
 Paquete: rate-mirrors
 Repositorio: extra
 Versión: 0.33.0-2
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. rofi rbw
+50. rofi rbw
 Paquete: rofi-rbw
 Repositorio: extra
 Versión: 1.7.0-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. ruby path expander
+51. ruby path expander
 Paquete: ruby-path_expander
 Repositorio: extra
 Versión: 2.0.1-1
@@ -748,7 +763,7 @@ Pruebas: ruby-minitest
 Proporciona: —
 Estado SST: [ ]
 
-51. ttc iosevka ss08
+52. ttc iosevka ss08
 Paquete: ttc-iosevka-ss08
 Repositorio: extra
 Versión: 34.9.0-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. uwsgi plugin cgi
+53. uwsgi plugin cgi
 Paquete: uwsgi-plugin-cgi
 Repositorio: extra
 Versión: 2.0.31-5
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. valuta
+54. valuta
 Paquete: valuta
 Repositorio: extra
 Versión: 1.4.2-3
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. vim spell cs
+55. vim spell cs
 Paquete: vim-spell-cs
 Repositorio: extra
 Versión: 20220628-2
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. vim spell nb
+56. vim spell nb
 Paquete: vim-spell-nb
 Repositorio: extra
 Versión: 20220628-2
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. yubikey manager
+57. yubikey manager
 Paquete: yubikey-manager
 Repositorio: extra
 Versión: 1:5.9.2-1
