@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell persistent sqlite
 Paquete: haskell-persistent-sqlite
 Repositorio: extra
-Versión: 2.13.3.0-62
+Versión: 2.13.3.0-63
 Arquitectura: x86_64
 Descripción: Backend for the persistent library using sqlite3
 Upstream: https://www.yesodweb.com/book/persistent
@@ -646,7 +646,7 @@ Estado SST: [ ]
 44. python langgraph prebuilt
 Paquete: python-langgraph-prebuilt
 Repositorio: extra
-Versión: 1.1.1-1
+Versión: 1.1.2-2
 Arquitectura: any
 Descripción: Library with high-level APIs for creating and executing LangGraph agents and tools
 Upstream: https://github.com/langchain-ai/langgraph/tree/main/libs/prebuilt
@@ -654,7 +654,7 @@ Licencia: MIT
 Dependencias: python, python-langchain-core, python-langgraph-checkpoint, python-pydantic, python-typing_extensions
 Opcionales: —
 Compilación: git, python-build, python-hatchling, python-installer, python-wheel
-Pruebas: python-anyio, python-langgraph-checkpoint-postgres, python-langgraph-sdk, python-pytest, python-pytest-asyncio, python-pytest-mock, python-syrupy, python-xxhash
+Pruebas: pifpaf, postgresql, python-anyio, python-langgraph-checkpoint-postgres, python-langgraph-checkpoint-sqlite, python-langgraph-sdk, python-pytest, python-pytest-asyncio, python-pytest-mock, python-syrupy, python-xxhash
 Proporciona: —
 Estado SST: [ ]
 

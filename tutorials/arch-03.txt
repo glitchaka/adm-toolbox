@@ -46,14 +46,14 @@ Estado SST: [ ]
 4. asymptote
 Paquete: asymptote
 Repositorio: extra
-Versión: 3.15-1
+Versión: 3.16-1
 Arquitectura: x86_64
 Descripción: A vector graphics language (like metapost)
 Upstream: http://asymptote.sourceforge.net/
 Licencia: GPL-3.0-only
 Dependencias: curl, fftw, glfw, glibc, gsl, libgcc, libglvnd, libsigsegv, libstdc++, libtirpc, ncurses, readline, texlive-basic, zlib
-Opcionales: pyside6: for the xasy GUI, python-cson: for the xasy GUI, ghostscript: PDF output
-Compilación: boost, cmake, doxygen, ghostscript, git, glm, glu, imagemagick, python, texlive-binextra, texlive-fontutils, texlive-latexextra, texlive-plaingeneric, vulkan-headers
+Opcionales: ghostscript: PDF output, glslang: Vulkan backend, pyside6: for the xasy GUI, python-cson: for the xasy GUI, vulkan-icd-loader: Vulkan backend
+Compilación: boost, cmake, doxygen, ghostscript, git, glm, glslang, glu, imagemagick, python, texlive-binextra, texlive-fontutils, texlive-latexextra, texlive-plaingeneric, vulkan-headers, vulkan-icd-loader
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell scotty
 Paquete: haskell-scotty
 Repositorio: extra
-Versión: 0.30-65
+Versión: 0.30-66
 Arquitectura: x86_64
 Descripción: Haskell web framework inspired by Ruby's Sinatra, using WAI and Warp
 Upstream: https://github.com/scotty-web/scotty

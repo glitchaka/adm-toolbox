@@ -568,7 +568,22 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-39. python lsp black
+39. python langgraph checkpoint sqlite
+Paquete: python-langgraph-checkpoint-sqlite
+Repositorio: extra
+Versión: 3.1.3-1
+Arquitectura: any
+Descripción: Library with a SQLite implementation of LangGraph checkpoint saver
+Upstream: https://github.com/langchain-ai/langgraph/tree/main/libs/checkpoint-sqlite
+Licencia: MIT
+Dependencias: python, python-aiosqlite, python-langgraph-checkpoint, python-orjson
+Opcionales: python-sqlite-vec: vector search in SQLite stores
+Compilación: git, python-build, python-hatchling, python-installer, python-wheel
+Pruebas: python-anyio, python-langgraph, python-langgraph-checkpoint-conformance, python-pytest, python-pytest-asyncio, python-pytest-mock, python-pytest-retry
+Proporciona: —
+Estado SST: [ ]
+
+40. python lsp black
 Paquete: python-lsp-black
 Repositorio: extra
 Versión: 2.0.0-6
@@ -583,7 +598,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-40. python minidb
+41. python minidb
 Paquete: python-minidb
 Repositorio: extra
 Versión: 2.0.8-3
@@ -598,7 +613,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-41. python pygments
+42. python pygments
 Paquete: python-pygments
 Repositorio: extra
 Versión: 2.21.0-1
@@ -613,7 +628,7 @@ Pruebas: python-lxml, python-pytest
 Proporciona: pygmentize
 Estado SST: [ ]
 
-42. python pytest deadfixtures
+43. python pytest deadfixtures
 Paquete: python-pytest-deadfixtures
 Repositorio: extra
 Versión: 3.1.0-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. python sqlitedict
+44. python sqlitedict
 Paquete: python-sqlitedict
 Repositorio: extra
 Versión: 2.1.0-8
@@ -643,7 +658,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-44. python uncertainties
+45. python uncertainties
 Paquete: python-uncertainties
 Repositorio: extra
 Versión: 3.2.4-1
@@ -658,7 +673,22 @@ Pruebas: python-pytest, python-numpy, python-scipy
 Proporciona: —
 Estado SST: [ ]
 
-45. qt5 graphicaleffects
+46. qrtfreader
+Paquete: qrtfreader
+Repositorio: extra
+Versión: 1.0.0-1
+Arquitectura: x86_64
+Descripción: A library for reading Rtf documents
+Upstream: https://invent.kde.org/libraries/qrtfreader
+Licencia: LGPL-2.1-or-later
+Dependencias: glibc, libstdc++, qt6-base
+Opcionales: —
+Compilación: extra-cmake-modules
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+47. qt5 graphicaleffects
 Paquete: qt5-graphicaleffects
 Repositorio: extra
 Versión: 5.15.19-1
@@ -673,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. qt6 webview
+48. qt6 webview
 Paquete: qt6-webview
 Repositorio: extra
 Versión: 6.12.0-1
@@ -688,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. rubocop
+49. rubocop
 Paquete: rubocop
 Repositorio: extra
 Versión: 1.82.0-2
@@ -703,7 +733,7 @@ Pruebas: asciidoctor, procps-ng, ruby-bundler, ruby-irb, ruby-lsp, ruby-memory_p
 Proporciona: ruby-rubocop
 Estado SST: [ ]
 
-48. ruby globalid
+50. ruby globalid
 Paquete: ruby-globalid
 Repositorio: extra
 Versión: 1.4.0-1
@@ -718,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. simutrans pak64
+51. simutrans pak64
 Paquete: simutrans-pak64
 Repositorio: extra
 Versión: 125.0-1
@@ -733,7 +763,7 @@ Pruebas: —
 Proporciona: simutrans-pak
 Estado SST: [ ]
 
-50. switchboard plug applications
+52. switchboard plug applications
 Paquete: switchboard-plug-applications
 Repositorio: extra
 Versión: 8.3.0-1
@@ -748,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. television
+53. television
 Paquete: television
 Repositorio: extra
 Versión: 0.15.9-1
@@ -763,7 +793,7 @@ Pruebas: fd, bat
 Proporciona: —
 Estado SST: [ ]
 
-52. thunderbird i18n ms
+54. thunderbird i18n ms
 Paquete: thunderbird-i18n-ms
 Repositorio: extra
 Versión: 159.0-2
@@ -778,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. ttf monaspace frozen
+55. ttf monaspace frozen
 Paquete: ttf-monaspace-frozen
 Repositorio: extra
 Versión: 1.400-1
@@ -793,7 +823,7 @@ Pruebas: —
 Proporciona: monaspace-font
 Estado SST: [ ]
 
-54. urjtag
+56. urjtag
 Paquete: urjtag
 Repositorio: extra
 Versión: 2021.03-6
@@ -808,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. vim nerdtree
+57. vim nerdtree
 Paquete: vim-nerdtree
 Repositorio: extra
 Versión: 7.1.3-1
@@ -823,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. xorg xauth
+58. xorg xauth
 Paquete: xorg-xauth
 Repositorio: extra
 Versión: 1.1.5-1

@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. bootconfig
 Paquete: bootconfig
 Repositorio: extra
-Versión: 7.3.1-1
+Versión: 7.3.4-1
 Arquitectura: x86_64
 Descripción: Apply, delete or show boot config to initrd
 Upstream: https://www.kernel.org
@@ -61,12 +61,12 @@ Estado SST: [ ]
 5. certbot dns digitalocean
 Paquete: certbot-dns-digitalocean
 Repositorio: extra
-Versión: 5.9.0-1
+Versión: 5.10.0-1
 Arquitectura: any
 Descripción: DigitalOcean DNS Authenticator plugin for Certbot
 Upstream: https://pypi.python.org/pypi/certbot-dns-digitalocean
 Licencia: Apache-2.0
-Dependencias: certbot=5.9.0, python-acme=5.9.0, python-digitalocean
+Dependencias: certbot=5.10.0, python-acme=5.10.0, python-digitalocean
 Opcionales: —
 Compilación: git, python-build, python-installer, python-setuptools, python-wheel
 Pruebas: python-pytest
@@ -511,12 +511,12 @@ Estado SST: [ ]
 35. nim
 Paquete: nim
 Repositorio: extra
-Versión: 2.2.12-1
+Versión: 2.4.2-1
 Arquitectura: x86_64
 Descripción: Imperative, multi-paradigm, compiled programming language
 Upstream: https://nim-lang.org/
 Licencia: MIT
-Dependencias: bash, gcc, libgcc, glibc
+Dependencias: bash, gcc, libgcc, glibc, pcre
 Opcionales: —
 Compilación: git, nodejs, help2man
 Pruebas: —
