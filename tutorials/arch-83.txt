@@ -241,14 +241,14 @@ Estado SST: [ ]
 17. hipblas common
 Paquete: hipblas-common
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: any
 Descripción: Common files shared by hipBLAS and hipBLASLt
 Upstream: https://rocm.docs.amd.com/projects/hipBLAS/en/latest/index.html
 Licencia: MIT
 Dependencias: rocm-core
 Opcionales: —
-Compilación: cmake, git, hip-runtime-amd, rocm-cmake
+Compilación: cmake, hip-runtime-amd, rocm-cmake
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -766,16 +766,16 @@ Estado SST: [ ]
 52. rocr debug agent
 Paquete: rocr-debug-agent
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: ROCr Debug Agent Library
 Upstream: https://rocm.docs.amd.com/projects/rocr_debug_agent/en/latest/
 Licencia: NCSA
-Dependencias: rocm-core, hip-runtime-amd, rocm-dbgapi
+Dependencias: rocm-core, hip-runtime-amd, rocm-dbgapi, hsa-rocr, libelf
 Opcionales: —
 Compilación: cmake
 Pruebas: —
-Proporciona: rocm-debug-agent=7.2.4
+Proporciona: rocm-debug-agent=10.1
 Estado SST: [ ]
 
 53. ruby memory

@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. haskell githash
 Paquete: haskell-githash
 Repositorio: extra
-Versión: 0.1.7.0-81
+Versión: 0.1.7.0-83
 Arquitectura: x86_64
 Descripción: Some handy Template Haskell splices for including the current git hash and branch in the code of your project
 Upstream: https://github.com/snoyberg/githash
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. haskell pandoc lua engine
 Paquete: haskell-pandoc-lua-engine
 Repositorio: extra
-Versión: 0.5.4.1-45
+Versión: 0.5.4.1-49
 Arquitectura: x86_64
 Descripción: Lua engine to power custom pandoc conversions
 Upstream: https://pandoc.org
@@ -421,16 +421,16 @@ Estado SST: [ ]
 29. hip runtime amd
 Paquete: hip-runtime-amd
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Heterogeneous Interface for Portability (AMD runtime)
 Upstream: https://rocm.docs.amd.com/projects/HIP/en/latest/
 Licencia: MIT
 Dependencias: rocm-core, bash, perl, glibc, libgcc, numactl, mesa, comgr, rocminfo, rocm-llvm, libelf, rocprofiler-register
 Opcionales: inetutils: Print hostname in hipconfig, cuda: Cross compile for nvidia
-Compilación: git, cmake, python, python-cppheaderparser, rocm-core, bash, perl, glibc, libgcc, numactl, mesa, comgr, rocminfo, rocm-llvm, libelf, rocprofiler-register, cuda
+Compilación: git, cmake, python, python-cppheaderparser, rocm-llvm-static, rocm-core, bash, perl, glibc, libgcc, numactl, mesa, comgr, rocminfo, rocm-llvm, libelf, rocprofiler-register, cuda
 Pruebas: —
-Proporciona: hip=7.2.4
+Proporciona: hip=10.1
 Estado SST: [ ]
 
 30. ihaskell

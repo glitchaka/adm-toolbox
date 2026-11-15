@@ -151,14 +151,14 @@ Estado SST: [ ]
 11. haskell what4
 Paquete: haskell-what4
 Repositorio: extra
-Versión: 1.7-9
+Versión: 1.7.1.0-1
 Arquitectura: x86_64
 Descripción: Solver-agnostic symbolic values support for issuing queries
 Upstream: https://github.com/GaloisInc/what4
 Licencia: BSD-3-Clause
-Dependencias: ghc-libs, haskell-async, haskell-attoparsec, haskell-bimap, haskell-bifunctors, haskell-boundedchan, haskell-bv-sized, haskell-concurrent-extra, haskell-config-value, haskell-deriving-compat, haskell-fingertree, haskell-hashable, haskell-hashtables, haskell-hedgehog, haskell-io-streams, haskell-lens, haskell-libbf, haskell-megaparsec, haskell-ordered-containers, haskell-panic, haskell-parameterized-utils, haskell-prettyprinter, haskell-s-cargot, haskell-scientific, haskell-tasty, haskell-tasty-hedgehog, haskell-tasty-hunit, haskell-temporary, haskell-th-lift, haskell-th-lift-instances, haskell-unliftio, haskell-unordered-containers, haskell-utf8-string, haskell-vector, haskell-versions, haskell-zenc
+Dependencias: ghc-libs, haskell-async, haskell-attoparsec, haskell-bimap, haskell-bifunctors, haskell-boundedchan, haskell-bv-sized, haskell-concurrent-extra, haskell-config-value, haskell-deriving-compat, haskell-fingertree, haskell-hashable, haskell-hashtables, haskell-hedgehog, haskell-io-streams, haskell-lens, haskell-libbf, haskell-megaparsec, haskell-ordered-containers, haskell-panic, haskell-parameterized-utils, haskell-prettyprinter, haskell-s-cargot, haskell-scientific, haskell-tasty, haskell-tasty-hedgehog, haskell-tasty-hunit, haskell-th-lift, haskell-th-lift-instances, haskell-unliftio, haskell-unordered-containers, haskell-vector, haskell-versions, haskell-zenc
 Opcionales: cvc4, yices, z3
-Compilación: ghc, uusi, haskell-contravariant, haskell-lumberjack, haskell-quickcheck, haskell-tasty-checklist, haskell-tasty-expected-failure, haskell-tasty-quickcheck, haskell-tasty-sugar
+Compilación: ghc, uusi, haskell-contravariant, haskell-lumberjack, haskell-quickcheck, haskell-tasty-checklist, haskell-tasty-expected-failure, haskell-tasty-quickcheck, haskell-tasty-sugar, haskell-temporary
 Pruebas: cvc4, yices, z3
 Proporciona: —
 Estado SST: [ ]
@@ -706,14 +706,14 @@ Estado SST: [ ]
 48. rocal
 Paquete: rocal
 Repositorio: extra
-Versión: 7.2.4-7
+Versión: 7.2.4-9
 Arquitectura: x86_64
 Descripción: A high-performance jpeg decode library for AMD’s GPUs
 Upstream: https://rocm.docs.amd.com/projects/rocAL/en/latest/
 Licencia: MIT
-Dependencias: ffmpeg, glibc, hip-runtime-amd, libgcc, libva, lmdb, mesa, mivisionx, opencv, openmp, protobuf, python-setuptools, rocdecode, rocjpeg, rocm-core, rpp
+Dependencias: ffmpeg, glibc, hip-runtime-amd, libgcc, libjpeg-turbo, libsndfile, lmdb, mivisionx, openmp, protobuf, python-numpy, rocdecode, rocjpeg, rocm-core, rpp
 Opcionales: —
-Compilación: cmake, git, half, pybind11, rocm-cmake, rocm-llvm
+Compilación: cmake, git, half, pybind11, python-setuptools, rocm-cmake, rocm-llvm
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

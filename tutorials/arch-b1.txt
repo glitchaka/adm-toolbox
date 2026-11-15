@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. haskell http3
 Paquete: haskell-http3
 Repositorio: extra
-Versión: 0.0.14-22
+Versión: 0.0.14-23
 Arquitectura: x86_64
 Descripción: HTTP/3 library
 Upstream: https://github.com/kazu-yamamoto/http3
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell shake
 Paquete: haskell-shake
 Repositorio: extra
-Versión: 0.19.9-46
+Versión: 0.19.9-47
 Arquitectura: x86_64
 Descripción: Build system library, like Make, but more accurate dependencies.
 Upstream: https://shakebuild.com
@@ -676,15 +676,15 @@ Estado SST: [ ]
 46. python langsmith
 Paquete: python-langsmith
 Repositorio: extra
-Versión: 0.14.9-1
+Versión: 0.14.10-1
 Arquitectura: any
 Descripción: Client library to connect to the LangSmith Observability and Evaluation Platform
-Upstream: https://github.com/langchain-ai/langsmith-sdk
+Upstream: https://github.com/langchain-ai/langsmith-python
 Licencia: MIT
 Dependencias: python, python-anyio, python-distro, python-httpx2, python-orjson, python-packaging, python-pydantic, python-requests, python-requests-toolbelt, python-sniffio, python-typing_extensions, python-uuid-utils, python-websockets, python-xxhash, python-zstandard
-Opcionales: python-langchain-core: LangChain runnable integration support, python-cachetools: LiveKit and Pipecat tracing support, python-pytest: LangSmith pytest plugin support, python-rich: enhanced pytest output support, python-vcrpy: VCR support, python-opentelemetry-api: OpenTelemetry tracing support, python-opentelemetry-sdk: OpenTelemetry tracing support, python-opentelemetry-exporter-otlp-proto-http: OpenTelemetry export support
-Compilación: git, python-build, python-hatchling, python-installer, python-wheel
-Pruebas: python-attrs, python-cachetools, python-cryptography, python-dataclasses-json, python-httpx, python-langchain-core, python-multipart, python-opentelemetry-api, python-opentelemetry-exporter-otlp-proto-http, python-opentelemetry-sdk, python-pyjwt, python-pytest, python-pytest-asyncio, python-pytest-httpx, python-pytest-rerunfailures, python-pytest-retry, python-pytest-socket, python-pytest-timeout, python-rich, python-vcrpy
+Opcionales: python-httpx-aiohttp: aiohttp HTTP backend, python-langchain-core: LangChain runnable integration support, python-cachetools: LiveKit and Pipecat tracing support, python-pytest: LangSmith pytest plugin support, python-rich: enhanced pytest output support, python-vcrpy: VCR support, python-opentelemetry-api: OpenTelemetry tracing support, python-opentelemetry-sdk: OpenTelemetry tracing support, python-opentelemetry-exporter-otlp-proto-http: OpenTelemetry export support
+Compilación: git, python-build, python-hatch-fancy-pypi-readme, python-hatchling, python-installer, python-wheel
+Pruebas: python-aiohttp, python-attrs, python-cachetools, python-cryptography, python-dataclasses-json, python-dirty-equals, python-httpx, python-httpx-aiohttp, python-langchain-core, python-multipart, python-opentelemetry-api, python-opentelemetry-exporter-otlp-proto-http, python-opentelemetry-sdk, python-pyjwt, python-pytest, python-pytest-asyncio, python-pytest-httpx, python-pytest-rerunfailures, python-pytest-retry, python-pytest-socket, python-pytest-timeout, python-pytest-xdist, python-respx, python-rich, python-vcrpy
 Proporciona: —
 Estado SST: [ ]
 
@@ -751,7 +751,7 @@ Estado SST: [ ]
 51. rocm dbgapi
 Paquete: rocm-dbgapi
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Support library necessary for a debugger of AMD's GPUs
 Upstream: https://rocm.docs.amd.com/projects/ROCdbgapi/en/latest/

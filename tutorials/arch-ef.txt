@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. amd container toolkit
 Paquete: amd-container-toolkit
 Repositorio: extra
-Versión: 1.3.0-1
+Versión: 1.4.0-1
 Arquitectura: x86_64
 Descripción: Tools that streamline the use of AMD GPUs with containers.
 Upstream: https://github.com/ROCm/container-toolkit
@@ -706,14 +706,14 @@ Estado SST: [ ]
 48. python pytorch rocm
 Paquete: python-pytorch-rocm
 Repositorio: extra
-Versión: 2.15.0-1
+Versión: 2.15.0-2
 Arquitectura: x86_64
 Descripción: Tensors and Dynamic neural networks in Python with strong GPU acceleration (with ROCm)
 Upstream: https://pytorch.org
 Licencia: BSD-3-Clause-Modification
-Dependencias: abseil-cpp, cpuinfo, eigen, gflags, glibc, google-glog, intel-oneapi-mkl, libgcc, libgomp, libstdc++, libuv, numactl, openmp, openmpi, protobuf, pybind11, python, python-filelock, python-fsspec, python-jinja, python-networkx, python-numpy, python-scikit-build-core, python-sympy, python-typing_extensions, python-yaml, qt6-base, vulkan-icd-loader, amdsmi, rocm-hip-sdk, hipblaslt, rocprofiler, roctracer, miopen-hip, onednn, python-triton, python-aotriton
+Dependencias: abseil-cpp, cpuinfo, eigen, gflags, glibc, google-glog, intel-oneapi-mkl, libgcc, libgomp, libstdc++, libuv, numactl, openmp, openmpi, protobuf, pybind11, python, python-filelock, python-fsspec, python-jinja, python-networkx, python-numpy, python-scikit-build-core, python-sympy, python-typing_extensions, python-yaml, qt6-base, vulkan-icd-loader, amdsmi, rocm-hip-sdk, hipblaslt, hipsparselt, rocprofiler-sdk, roctracer, miopen-hip, onednn, python-triton, python-aotriton
 Opcionales: python-onnxscript: for the ONNX exporter
-Compilación: amdsmi, cmake, cuda, cudnn, doxygen, git, hipblaslt, miopen-hip, nccl, ninja, onednn, pkgconfig, python-aotriton, python-build, python-installer, python-setuptools, python-triton, python-yaml, rocm-hip-sdk, rocm-toolchain, rocprofiler, roctracer, procps-ng, oneccl, onedpl, level-zero-headers, level-zero-loader, intel-oneapi-common, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-pti, intel-compute-runtime, shaderc, vulkan-headers
+Compilación: amdsmi, cmake, cuda, cudnn, doxygen, git, hipblaslt, hipsparselt, miopen-hip, nccl, ninja, onednn, pkgconfig, python-aotriton, python-build, python-installer, python-setuptools, python-triton, python-yaml, rocm-hip-sdk, rocm-toolchain, rocprofiler-sdk, rocshmem, roctracer, procps-ng, oneccl, onedpl, level-zero-headers, level-zero-loader, intel-oneapi-common, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-pti, intel-compute-runtime, shaderc, vulkan-headers
 Pruebas: —
 Proporciona: python-pytorch=2.15.0
 Estado SST: [ ]
@@ -841,7 +841,7 @@ Estado SST: [ ]
 57. rocm ml sdk
 Paquete: rocm-ml-sdk
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: any
 Descripción: develop and run Machine Learning applications optimized for AMD platforms
 Upstream: https://rocm.docs.amd.com/en/latest/
@@ -868,7 +868,22 @@ Pruebas: —
 Proporciona: coq
 Estado SST: [ ]
 
-59. ruby async dns
+59. rocshmem
+Paquete: rocshmem
+Repositorio: extra
+Versión: 10.1-1
+Arquitectura: x86_64
+Descripción: ROCm OpenSHMEM, GPU-centric networking from inside HIP kernels
+Upstream: https://rocm.docs.amd.com/projects/rocSHMEM/en/latest/
+Licencia: MIT
+Dependencias: glibc, hip-runtime-amd, hsa-rocr, libgcc, libstdc++, rocm-core, rocprofiler-register
+Opcionales: openmpi: reverse offload backend and MPI bootstrap, amdsmi: detection of GPU fabric (pod) topology
+Compilación: amdsmi, cmake, ninja, rocm-cmake, rocm-llvm
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+60. ruby async dns
 Paquete: ruby-async-dns
 Repositorio: extra
 Versión: 1.4.1-3
@@ -883,7 +898,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bake-test-external, ruby-bundler, ruby-
 Proporciona: —
 Estado SST: [ ]
 
-60. sassc
+61. sassc
 Paquete: sassc
 Repositorio: extra
 Versión: 3.6.2-5
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. tesseract data nep
+62. tesseract data nep
 Paquete: tesseract-data-nep
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-62. timezonemap
+63. timezonemap
 Paquete: timezonemap
 Repositorio: extra
 Versión: 0.4.5.4-1
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. ttf gentium plus
+64. ttf gentium plus
 Paquete: ttf-gentium-plus
 Repositorio: extra
 Versión: 7.000-2
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: gentium-plus-font=7.000
 Estado SST: [ ]
 
-64. union
+65. union
 Paquete: union
 Repositorio: extra
 Versión: 6.8.2-1
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. vulkan tools
+66. vulkan tools
 Paquete: vulkan-tools
 Repositorio: extra
 Versión: 1.4.363.0-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. warsow
+67. warsow
 Paquete: warsow
 Repositorio: extra
 Versión: 2.1.2-4
@@ -988,7 +1003,7 @@ Pruebas: —
 Proporciona: warsow
 Estado SST: [ ]
 
-67. xdg desktop portal hyprland
+68. xdg desktop portal hyprland
 Paquete: xdg-desktop-portal-hyprland
 Repositorio: extra
 Versión: 1.5.0-1
@@ -1003,7 +1018,7 @@ Pruebas: —
 Proporciona: xdg-desktop-portal-impl
 Estado SST: [ ]
 
-68. xmonk lv2
+69. xmonk lv2
 Paquete: xmonk.lv2
 Repositorio: extra
 Versión: 0.4-2
@@ -1018,7 +1033,7 @@ Pruebas: lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-69. xorg x11perf
+70. xorg x11perf
 Paquete: xorg-x11perf
 Repositorio: extra
 Versión: 1.7.0-1
@@ -1033,7 +1048,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-70. xsimd
+71. xsimd
 Paquete: xsimd
 Repositorio: extra
 Versión: 14.3.0-1
@@ -1048,7 +1063,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-71. zh autoconvert
+72. zh autoconvert
 Paquete: zh-autoconvert
 Repositorio: extra
 Versión: 0.3.16-6

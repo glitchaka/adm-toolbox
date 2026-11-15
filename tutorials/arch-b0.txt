@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. darcs
 Paquete: darcs
 Repositorio: extra
-Versión: 2.18.5-329
+Versión: 2.18.5-331
 Arquitectura: x86_64
 Descripción: A distributed, interactive, smart revision control system
 Upstream: http://darcs.net
@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. deepin anything dkms
 Paquete: deepin-anything-dkms
 Repositorio: extra
-Versión: 7.0.11-1
+Versión: 7.0.12-1
 Arquitectura: x86_64
 Descripción: Deepin Anything file search tool
 Upstream: https://github.com/linuxdeepin/deepin-anything
@@ -811,14 +811,14 @@ Estado SST: [ ]
 55. rocrand
 Paquete: rocrand
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Pseudo-random and quasi-random number generator on ROCm
 Upstream: https://rocm.docs.amd.com/projects/rocRAND/en/latest/index.html
 Licencia: MIT
 Dependencias: rocm-core, hip-runtime-amd, glibc, libgcc
-Opcionales: gcc-fortran: Use Fortran wrapper
-Compilación: rocm-cmake, rocm-toolchain, rocm-llvm, gcc-fortran, python, git
+Opcionales: —
+Compilación: cmake, ninja, rocm-cmake, rocm-toolchain, rocm-llvm, python
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

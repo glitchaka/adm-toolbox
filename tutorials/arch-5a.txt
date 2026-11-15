@@ -76,14 +76,14 @@ Estado SST: [ ]
 6. blender
 Paquete: blender
 Repositorio: extra
-Versión: 17:5.2.3-5
+Versión: 17:5.3.0-1
 Arquitectura: x86_64
 Descripción: A fully integrated 3D graphics creation suite
 Upstream: https://www.blender.org
 Licencia: Apache-2.0, BSD-2-Clause, BSD-3-Clause, GPL-2.0-or-later, GPL-3.0-or-later, LGPL-2.1-or-later, MIT, MPL-2.0, Zlib
-Dependencias: alembic, bash, boost-libs, ceres-solver, draco, embree, expat, ffmpeg, fftw, fmt, freetype2, glew, glibc, gmp, hicolor-icon-theme, imath, intel-oneapi-compiler-dpcpp-cpp-runtime-libs, intel-oneapi-compiler-shared-runtime-libs, jack, jemalloc, level-zero-loader, libepoxy, libgcc, libharu, libjpeg-turbo, libpng, libsndfile, libspnav, libstdc++, libtiff, libwebp, libx11, libxfixes, libxi, libxkbcommon, libxml2, libxrender, libxxf86vm, llvm-libs, manifold, materialx, onetbb, openal, opencolorio, openexr, openimagedenoise, openimageio, openjpeg2, openpgl, openshadinglanguage, opensubdiv, openvdb, openxr, potrace, pugixml, pystring, python, python-cattrs, python-numpy, python-requests, sdl2, shared-mime-info, usd, xdg-utils, yaml-cpp, zlib, zstd
-Opcionales: cuda: Cycles renderer CUDA support, intel-compute-runtime: Cycles renderer Intel OneAPI support, intel-level-zero-raytracing-support: Cycles renderer Intel OneAPI Raytracing Support, hip-runtime-amd: Cycles renderer AMD ROCm support, hiprt: Ray tracing AMD ROCm support, libdecor: wayland support
-Compilación: boost, cmake, cuda, eigen, git, git-lfs, hip-runtime-amd, hiprt, intel-oneapi-compiler-shared-runtime, intel-oneapi-dpcpp-cpp, intel-compute-runtime, level-zero-headers, libdecor, mold, llvm, mesa, ninja, subversion, wayland-protocols, vulkan-headers
+Dependencias: alembic, bash, boost-libs, ceres-solver, draco, embree, expat, ffmpeg, fftw, fmt, freetype2, glew, glibc, gmp, hicolor-icon-theme, hiprt, imath, intel-oneapi-compiler-dpcpp-cpp-runtime-libs, intel-oneapi-compiler-shared-runtime-libs, jack, jemalloc, level-zero-loader, libepoxy, libgcc, libharu, libjpeg-turbo, libpng, libsndfile, libspnav, libstdc++, libtiff, libwebp, libx11, libxfixes, libxi, libxkbcommon, libxml2, libxrender, libxxf86vm, llvm-libs, manifold, materialx, onetbb, openal, opencolorio, openexr, openimagedenoise, openimageio, openjpeg2, openpgl, openshadinglanguage, opensubdiv, openvdb, openxr, potrace, pugixml, pystring, python, python-cattrs, python-numpy, python-requests, sdl2, shared-mime-info, usd, xdg-utils, yaml-cpp, zlib, zstd
+Opcionales: cuda: Cycles renderer CUDA support, intel-compute-runtime: Cycles renderer Intel OneAPI support, intel-level-zero-raytracing-support: Cycles renderer Intel OneAPI Raytracing Support, hip-runtime-amd: Cycles renderer AMD ROCm support, libdecor: wayland support
+Compilación: boost, cmake, cuda, eigen, git, git-lfs, hip-runtime-amd, hiprt, intel-oneapi-compiler-shared-runtime, intel-oneapi-dpcpp-cpp, intel-compute-runtime, level-zero-headers, libdecor, mold, llvm, mesa, ninja, spirv-headers, subversion, wayland-protocols, vulkan-headers
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. haskell hls retrie plugin
 Paquete: haskell-hls-retrie-plugin
 Repositorio: extra
-Versión: 2.4.0.0-47
+Versión: 2.4.0.0-48
 Arquitectura: x86_64
 Descripción: Retrie integration plugin for Haskell Language Server
 Upstream: https://hackage.haskell.org/package/hls-retrie-plugin
@@ -1108,7 +1108,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-75. ruby websocket extensions
+75. rocm llvm tools
+Paquete: rocm-llvm-tools
+Repositorio: extra
+Versión: 2:10.1-3
+Arquitectura: x86_64
+Descripción: Radeon Open Compute - LLVM development tools
+Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
+Licencia: Apache-2.0 WITH LLVM-exception
+Dependencias: rocm-llvm=2:10.1-3, rocm-llvm-libs, rocm-mlir-libs
+Opcionales: —
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+76. ruby websocket extensions
 Paquete: ruby-websocket-extensions
 Repositorio: extra
 Versión: 0.1.5-6
@@ -1123,7 +1138,7 @@ Pruebas: ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-76. rutabaga ffi
+77. rutabaga ffi
 Paquete: rutabaga-ffi
 Repositorio: extra
 Versión: 0.1.85-1
@@ -1138,7 +1153,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-77. scratch
+78. scratch
 Paquete: scratch
 Repositorio: extra
 Versión: 1.4.0.7-8
@@ -1153,7 +1168,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-78. stp
+79. stp
 Paquete: stp
 Repositorio: extra
 Versión: 2.4.1-3
@@ -1168,7 +1183,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-79. talosctl
+80. talosctl
 Paquete: talosctl
 Repositorio: extra
 Versión: 1.14.6-1
@@ -1183,7 +1198,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-80. todoman
+81. todoman
 Paquete: todoman
 Repositorio: extra
 Versión: 4.7.0-1
@@ -1198,7 +1213,7 @@ Pruebas: python-freezegun, python-hypothesis, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-81. ttf junicode variable
+82. ttf junicode variable
 Paquete: ttf-junicode-variable
 Repositorio: extra
 Versión: 2.226-1
@@ -1213,7 +1228,7 @@ Pruebas: —
 Proporciona: junicode-font-variable
 Estado SST: [ ]
 
-82. ttf space mono nerd
+83. ttf space mono nerd
 Paquete: ttf-space-mono-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -1228,7 +1243,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-83. vlc plugin cddb
+84. vlc plugin cddb
 Paquete: vlc-plugin-cddb
 Repositorio: extra
 Versión: 3.0.24-1
@@ -1243,7 +1258,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-84. waydroid
+85. waydroid
 Paquete: waydroid
 Repositorio: extra
 Versión: 1.6.3-1
@@ -1258,7 +1273,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-85. xorg xrefresh
+86. xorg xrefresh
 Paquete: xorg-xrefresh
 Repositorio: extra
 Versión: 1.1.1-1
@@ -1273,7 +1288,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-86. yt dlp
+87. yt dlp
 Paquete: yt-dlp
 Repositorio: extra
 Versión: 2026.10.26-1
@@ -1288,7 +1303,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-87. yubihsm auth
+88. yubihsm auth
 Paquete: yubihsm-auth
 Repositorio: extra
 Versión: 2.8.0-3
@@ -1303,7 +1318,7 @@ Pruebas: bats
 Proporciona: —
 Estado SST: [ ]
 
-88. zeal
+89. zeal
 Paquete: zeal
 Repositorio: extra
 Versión: 0.9.2-1

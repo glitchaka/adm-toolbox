@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell pandoc
 Paquete: haskell-pandoc
 Repositorio: extra
-Versión: 3.11-47
+Versión: 3.11-50
 Arquitectura: x86_64
 Descripción: Conversion between markup formats
 Upstream: https://pandoc.org
@@ -316,14 +316,14 @@ Estado SST: [ ]
 22. hyperqueue
 Paquete: hyperqueue
 Repositorio: extra
-Versión: 0.26.2-1
+Versión: 0.27.0-1
 Arquitectura: x86_64
 Descripción: Scheduler for sub-node tasks for HPC systems with batch scheduling
 Upstream: https://github.com/It4innovations/hyperqueue/
 Licencia: MIT
-Dependencias: glibc, libgcc
+Dependencias: glibc, highs, libgcc
 Opcionales: —
-Compilación: cargo, maturin, python-installer, python-cloudpickle, python-tqdm, python-pydot
+Compilación: cargo, clang, git, highs, maturin, python-installer, python-cloudpickle, python-tqdm, python-pydot
 Pruebas: python-pytest, python-pytest-xdist, python-iso8601, python-schema, python-maturin, python-psutil, python-requests, python-aiohttp, python-inline-snapshot, python-typing_extensions, python-ruff
 Proporciona: —
 Estado SST: [ ]

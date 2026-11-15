@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. deepin movie
 Paquete: deepin-movie
 Repositorio: extra
-Versión: 1:6.5.38-1
+Versión: 1:6.5.39-1
 Arquitectura: x86_64
 Descripción: Movie player based on mpv
 Upstream: https://github.com/linuxdeepin/deepin-movie-reborn
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. haskell recaptcha
 Paquete: haskell-recaptcha
 Repositorio: extra
-Versión: 0.1.0.4-508
+Versión: 0.1.0.4-509
 Arquitectura: x86_64
 Descripción: Functions for using the reCAPTCHA service in web applications.
 Upstream: https://github.com/jgm/recaptcha/tree/master
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. haskell servant server
 Paquete: haskell-servant-server
 Repositorio: extra
-Versión: 0.20.3.0-205
+Versión: 0.20.3.0-207
 Arquitectura: x86_64
 Descripción: A family of combinators for defining webservices APIs and serving them
 Upstream: https://haskell-servant.readthedocs.org/
@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. haskell warp tls
 Paquete: haskell-warp-tls
 Repositorio: extra
-Versión: 3.4.9-321
+Versión: 3.4.9-323
 Arquitectura: x86_64
 Descripción: HTTP over TLS support for Warp via the TLS package
 Upstream: https://github.com/yesodweb/wai
@@ -916,7 +916,7 @@ Estado SST: [ ]
 62. python pyqt6 canvaspainter
 Paquete: python-pyqt6-canvaspainter
 Repositorio: extra
-Versión: 6.12.0-1
+Versión: 6.12.1-1
 Arquitectura: x86_64
 Descripción: Python bindings for QtCanvasPainter
 Upstream: https://www.riverbankcomputing.com/software/pyqtcanvaspainter/intro
@@ -931,14 +931,14 @@ Estado SST: [ ]
 63. python pytorch cuda
 Paquete: python-pytorch-cuda
 Repositorio: extra
-Versión: 2.15.0-1
+Versión: 2.15.0-2
 Arquitectura: x86_64
 Descripción: Tensors and Dynamic neural networks in Python with strong GPU acceleration (with CUDA)
 Upstream: https://pytorch.org
 Licencia: BSD-3-Clause-Modification
 Dependencias: abseil-cpp, cpuinfo, eigen, gflags, glibc, google-glog, intel-oneapi-mkl, libgcc, libgomp, libstdc++, libuv, numactl, openmp, openmpi, protobuf, pybind11, python, python-filelock, python-fsspec, python-jinja, python-networkx, python-numpy, python-scikit-build-core, python-sympy, python-typing_extensions, python-yaml, qt6-base, vulkan-icd-loader, cuda, nccl, cudnn, onednn
 Opcionales: python-onnxscript: for the ONNX exporter
-Compilación: amdsmi, cmake, cuda, cudnn, doxygen, git, hipblaslt, miopen-hip, nccl, ninja, onednn, pkgconfig, python-aotriton, python-build, python-installer, python-setuptools, python-triton, python-yaml, rocm-hip-sdk, rocm-toolchain, rocprofiler, roctracer, procps-ng, oneccl, onedpl, level-zero-headers, level-zero-loader, intel-oneapi-common, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-pti, intel-compute-runtime, shaderc, vulkan-headers
+Compilación: amdsmi, cmake, cuda, cudnn, doxygen, git, hipblaslt, hipsparselt, miopen-hip, nccl, ninja, onednn, pkgconfig, python-aotriton, python-build, python-installer, python-setuptools, python-triton, python-yaml, rocm-hip-sdk, rocm-toolchain, rocprofiler-sdk, rocshmem, roctracer, procps-ng, oneccl, onedpl, level-zero-headers, level-zero-loader, intel-oneapi-common, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-pti, intel-compute-runtime, shaderc, vulkan-headers
 Pruebas: —
 Proporciona: python-pytorch=2.15.0
 Estado SST: [ ]

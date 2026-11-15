@@ -31,12 +31,12 @@ Estado SST: [ ]
 3. amdsmi
 Paquete: amdsmi
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: AMD System Management Interface library
 Upstream: https://rocm.docs.amd.com/projects/amdsmi/en/latest/
-Licencia: MIT, NCSA
-Dependencias: rocm-core, glibc, libgcc, libdrm, libstdc++, python, python-yaml
+Licencia: MIT, NCSA, GPL-2.0-only WITH Linux-syscall-note
+Dependencias: rocm-core, libnl, libmnl, glibc, libgcc, libdrm, libstdc++, python, python-yaml
 Opcionales: —
 Compilación: cmake, python-wheel, python-setuptools, python-build, python-installer, python-wheel
 Pruebas: —
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. haskell hls test utils
 Paquete: haskell-hls-test-utils
 Repositorio: extra
-Versión: 2.4.0.0-45
+Versión: 2.4.0.0-46
 Arquitectura: x86_64
 Descripción: Utilities used in the tests of Haskell Language Server
 Upstream: https://github.com/haskell/haskell-language-server#readme
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. linux rt docs
 Paquete: linux-rt-docs
 Repositorio: extra
-Versión: 7.2.15.rt3.arch1-3
+Versión: 7.2.15.rt3.arch1-4
 Arquitectura: x86_64
 Descripción: Documentation for the Linux RT kernel
 Upstream: https://gitlab.archlinux.org/archlinux/packaging/upstream/linux-rt
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. pari
 Paquete: pari
 Repositorio: extra
-Versión: 2.19.0-4
+Versión: 2.19.1-1
 Arquitectura: x86_64
 Descripción: Computer algebra system designed for fast computations in number theory
 Upstream: https://pari.math.u-bordeaux.fr/

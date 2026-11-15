@@ -526,12 +526,12 @@ Estado SST: [ ]
 36. postgresql old upgrade
 Paquete: postgresql-old-upgrade
 Repositorio: extra
-Versión: 17.11-4
+Versión: 17.12-1
 Arquitectura: x86_64
 Descripción: Older PostgreSQL for migrating major versions with pg_upgrade
 Upstream: https://www.postgresql.org/
 Licencia: PostgreSQL
-Dependencias: glibc, icu, libicui18n.so=78-64, libicuuc.so=78-64, krb5, libgssapi_krb5.so=2-64, libgcc, libgcc_s.so=1-64, libldap, libstdc++, libstdc++.so=6-64, libxml2, libxml2.so=16-64, llvm-libs, lz4, liblz4.so=1-64, openssl, libcrypto.so=4-64, libssl.so=4-64, pam, libpam.so=0-64, systemd-libs, libsystemd.so=0-64, util-linux-libs, zlib, libz.so=1-64, zstd, libzstd.so=1-64, postgresql-libs>=17.11
+Dependencias: glibc, icu, libicui18n.so=78-64, libicuuc.so=78-64, krb5, libgssapi_krb5.so=2-64, libgcc, libgcc_s.so=1-64, libldap, libstdc++, libstdc++.so=6-64, libxml2, libxml2.so=16-64, llvm-libs, lz4, liblz4.so=1-64, openssl, libcrypto.so=4-64, libssl.so=4-64, pam, libpam.so=0-64, systemd-libs, libsystemd.so=0-64, util-linux-libs, zlib, libz.so=1-64, zstd, libzstd.so=1-64, postgresql-libs>=17.12
 Opcionales: perl: for PL/Perl support, python: for PL/Python 3 support, tcl: for PL/Tcl support
 Compilación: clang, llvm, perl, python, systemd, tcl, util-linux
 Pruebas: —
@@ -646,14 +646,14 @@ Estado SST: [ ]
 44. python pytorch opt xpu
 Paquete: python-pytorch-opt-xpu
 Repositorio: extra
-Versión: 2.15.0-1
+Versión: 2.15.0-2
 Arquitectura: x86_64
 Descripción: Tensors and Dynamic neural networks in Python with strong GPU acceleration (with Intel XPU and AVX2 CPU optimizations)
 Upstream: https://pytorch.org
 Licencia: BSD-3-Clause-Modification
 Dependencias: abseil-cpp, cpuinfo, eigen, gflags, glibc, google-glog, intel-oneapi-mkl, libgcc, libgomp, libstdc++, libuv, numactl, openmp, openmpi, protobuf, pybind11, python, python-filelock, python-fsspec, python-jinja, python-networkx, python-numpy, python-scikit-build-core, python-sympy, python-typing_extensions, python-yaml, qt6-base, vulkan-icd-loader, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-compute-runtime, intel-pti, level-zero-loader, onednn, oneccl
 Opcionales: python-onnxscript: for the ONNX exporter
-Compilación: amdsmi, cmake, cuda, cudnn, doxygen, git, hipblaslt, miopen-hip, nccl, ninja, onednn, pkgconfig, python-aotriton, python-build, python-installer, python-setuptools, python-triton, python-yaml, rocm-hip-sdk, rocm-toolchain, rocprofiler, roctracer, procps-ng, oneccl, onedpl, level-zero-headers, level-zero-loader, intel-oneapi-common, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-pti, intel-compute-runtime, shaderc, vulkan-headers
+Compilación: amdsmi, cmake, cuda, cudnn, doxygen, git, hipblaslt, hipsparselt, miopen-hip, nccl, ninja, onednn, pkgconfig, python-aotriton, python-build, python-installer, python-setuptools, python-triton, python-yaml, rocm-hip-sdk, rocm-toolchain, rocprofiler-sdk, rocshmem, roctracer, procps-ng, oneccl, onedpl, level-zero-headers, level-zero-loader, intel-oneapi-common, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl-sycl, intel-pti, intel-compute-runtime, shaderc, vulkan-headers
 Pruebas: —
 Proporciona: python-pytorch=2.15.0, python-pytorch-xpu=2.15.0
 Estado SST: [ ]

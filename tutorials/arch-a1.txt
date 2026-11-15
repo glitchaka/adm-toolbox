@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. lib32 rust libs
 Paquete: lib32-rust-libs
 Repositorio: extra
-Versión: 1:1.99.1-4
+Versión: 1:1.100.0-1
 Arquitectura: x86_64
 Descripción: 32-bit target and libraries for Rust
 Upstream: https://www.rust-lang.org/
@@ -421,14 +421,14 @@ Estado SST: [ ]
 29. migraphx
 Paquete: migraphx
 Repositorio: extra
-Versión: 7.2.3-7
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: AMD's graph optimization engine
 Upstream: https://rocm.docs.amd.com/projects/AMDMIGraphX/en/latest/
 Licencia: MIT AND (Apache-2.0 WITH LLVM-exception OR NCSA)
 Dependencias: rocm-core, miopen-hip, rocblas, hip-runtime-amd, protobuf, msgpack-cxx, sqlite
 Opcionales: —
-Compilación: git, cmake, ninja, rocm-cmake, rocm-toolchain, rocm-llvm, half, nlohmann-json
+Compilación: git, cmake, ninja, rocm-cmake, rocm-toolchain, rocm-llvm, eigen, nlohmann-json, pybind11
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

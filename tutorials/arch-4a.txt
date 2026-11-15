@@ -283,7 +283,22 @@ Pruebas: —
 Proporciona: libgexiv2.so=2-64
 Estado SST: [ ]
 
-20. libmateweather
+20. libhipcxx
+Paquete: libhipcxx
+Repositorio: extra
+Versión: 10.1-1
+Arquitectura: any
+Descripción: Header-only C++ standard library for HIP host and device code
+Upstream: https://github.com/ROCm/libhipcxx
+Licencia: Apache-2.0 WITH LLVM-exception, MIT
+Dependencias: rocm-core, hip-runtime-amd
+Opcionales: —
+Compilación: cmake, ninja, rocm-cmake
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+21. libmateweather
 Paquete: libmateweather
 Repositorio: extra
 Versión: 1.28.2-3
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-21. libreoffice fresh kok
+22. libreoffice fresh kok
 Paquete: libreoffice-fresh-kok
 Repositorio: extra
 Versión: 26.8.2-1
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: libreoffice-kok, libreoffice-fresh-i18n=26.8.2-1
 Estado SST: [ ]
 
-22. linux firmware qcom
+23. linux firmware qcom
 Paquete: linux-firmware-qcom
 Repositorio: core
 Versión: 20261019-1
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. lua52 alt getopt
+24. lua52 alt getopt
 Paquete: lua52-alt-getopt
 Repositorio: extra
 Versión: 0.8.0-3
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. lua53 std normalize
+25. lua53 std normalize
 Paquete: lua53-std-normalize
 Repositorio: extra
 Versión: 4-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. menyoki
+26. menyoki
 Paquete: menyoki
 Repositorio: extra
 Versión: 1.8.0-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. opensc
+27. opensc
 Paquete: opensc
 Repositorio: extra
 Versión: 0.27.1-3
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. ot urchin standalone
+28. ot urchin standalone
 Paquete: ot-urchin-standalone
 Repositorio: extra
 Versión: 1.0.2-2
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. otf hasklig nerd
+29. otf hasklig nerd
 Paquete: otf-hasklig-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-29. pantheon notifications
+30. pantheon notifications
 Paquete: pantheon-notifications
 Repositorio: extra
 Versión: 8.1.2-2
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. pipewire jack
+31. pipewire jack
 Paquete: pipewire-jack
 Repositorio: extra
 Versión: 1:1.6.11-1
@@ -448,7 +463,7 @@ Pruebas: desktop-file-utils, openal
 Proporciona: jack, libjack.so=0-64, libjacknet.so=0-64, libjackserver.so=0-64
 Estado SST: [ ]
 
-31. prometheus nut exporter
+32. prometheus nut exporter
 Paquete: prometheus-nut-exporter
 Repositorio: extra
 Versión: 3.3.0-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. python cram
+33. python cram
 Paquete: python-cram
 Repositorio: extra
 Versión: 0.7-14
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. python keyrings alt
+34. python keyrings alt
 Paquete: python-keyrings-alt
 Repositorio: extra
 Versión: 1:5.0.2-3
@@ -493,7 +508,7 @@ Pruebas: python-pycryptodome, python-keyring, python-pytest-enabler
 Proporciona: —
 Estado SST: [ ]
 
-34. python managesieve
+35. python managesieve
 Paquete: python-managesieve
 Repositorio: extra
 Versión: 0.8.1-2
@@ -508,7 +523,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-35. python markups
+36. python markups
 Paquete: python-markups
 Repositorio: extra
 Versión: 4.1.1-2
@@ -523,7 +538,7 @@ Pruebas: python-pymdown-extensions, python-yaml
 Proporciona: —
 Estado SST: [ ]
 
-36. python opentelemetry distro
+37. python opentelemetry distro
 Paquete: python-opentelemetry-distro
 Repositorio: extra
 Versión: 0.66b2-1
@@ -538,7 +553,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-37. python polars runtime 32
+38. python polars runtime 32
 Paquete: python-polars-runtime-32
 Repositorio: extra
 Versión: 2.0.0-1
@@ -553,7 +568,7 @@ Pruebas: python-pytest, python-pytest-xdist, python-matplotlib, python-hypothesi
 Proporciona: python-polars-runtime
 Estado SST: [ ]
 
-38. python pytest lazy fixtures
+39. python pytest lazy fixtures
 Paquete: python-pytest-lazy-fixtures
 Repositorio: extra
 Versión: 1.4.1-1
@@ -568,7 +583,7 @@ Pruebas: python-pytest-deadfixtures, python-pytest-fixture-classes
 Proporciona: —
 Estado SST: [ ]
 
-39. python setuptools git versioning
+40. python setuptools git versioning
 Paquete: python-setuptools-git-versioning
 Repositorio: extra
 Versión: 3.2.2-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python vosk
+41. python vosk
 Paquete: python-vosk
 Repositorio: extra
 Versión: 0.3.50-7
@@ -598,7 +613,7 @@ Pruebas: ffmpeg, python-numpy
 Proporciona: —
 Estado SST: [ ]
 
-41. python yaspin
+42. python yaspin
 Paquete: python-yaspin
 Repositorio: extra
 Versión: 3.5.1-1
@@ -613,7 +628,7 @@ Pruebas: python-pytest, python-pytest-mock
 Proporciona: —
 Estado SST: [ ]
 
-42. rubberband
+43. rubberband
 Paquete: rubberband
 Repositorio: extra
 Versión: 4.0.0-2
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: librubberband.so=3-64, librubberband-jni.so=librubberband-jni.so-64
 Estado SST: [ ]
 
-43. synfigstudio
+44. synfigstudio
 Paquete: synfigstudio
 Repositorio: extra
 Versión: 1.4.5-2
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. teamspeak3 server
+45. teamspeak3 server
 Paquete: teamspeak3-server
 Repositorio: extra
 Versión: 3.13.9-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. treeify
+46. treeify
 Paquete: treeify
 Repositorio: extra
 Versión: r7958.90292b20-3
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. xorg xkbcomp
+47. xorg xkbcomp
 Paquete: xorg-xkbcomp
 Repositorio: extra
 Versión: 1.5.0-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. zip
+48. zip
 Paquete: zip
 Repositorio: extra
 Versión: 3.0-14
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. zvbi
+49. zvbi
 Paquete: zvbi
 Repositorio: extra
 Versión: 0.2.46-1

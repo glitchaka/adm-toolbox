@@ -271,14 +271,14 @@ Estado SST: [ ]
 19. hipsparselt
 Paquete: hipsparselt
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: SPARSE marshalling library with AMD GPU backend
 Upstream: https://rocm.docs.amd.com/projects/hipSPARSELt/en/latest/
 Licencia: MIT
-Dependencias: glibc, hip-runtime-amd, hipsparse, lapack, libgcc, msgpack-cxx, rocm-core, rocm-smi-lib, rocminfo, roctracer
+Dependencias: glibc, hip-runtime-amd, hipsparse, libgcc, libstdc++, rocm-core, rocm-openmp, roctracer, zlib
 Opcionales: —
-Compilación: git, cmake, ninja, gtest, gcc-fortran, rocm-cmake, rocm-toolchain, rocm-llvm, python, python-setuptools, python-joblib, python-pyyaml, python-msgpack
+Compilación: cmake, git, msgpack-cxx, ninja, python, python-joblib, python-msgpack, python-orjson, python-packaging, python-pyaml, python-pyyaml, python-setuptools, python-simplejson, python-ujson, robin-map, rocm-cmake, rocm-toolchain, rocm-llvm
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

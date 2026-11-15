@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell cheapskate
 Paquete: haskell-cheapskate
 Repositorio: extra
-Versión: 0.1.1.2-993
+Versión: 0.1.1.2-995
 Arquitectura: x86_64
 Descripción: Experimental markdown processor.
 Upstream: https://github.com/jgm/cheapskate
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell wai extra
 Paquete: haskell-wai-extra
 Repositorio: extra
-Versión: 3.1.18-173
+Versión: 3.1.18-175
 Arquitectura: x86_64
 Descripción: Provides some basic WAI handlers and middleware.
 Upstream: https://github.com/yesodweb/wai
@@ -226,16 +226,16 @@ Estado SST: [ ]
 16. hsa rocr
 Paquete: hsa-rocr
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: HSA Runtime API and runtime for ROCm
 Upstream: https://github.com/ROCm/rocm-systems
 Licencia: NCSA
 Dependencias: glibc, libdrm, libelf, libgcc, numactl, pciutils, rocm-core, rocm-device-libs, rocprofiler-register
 Opcionales: —
-Compilación: cmake, rocm-llvm, xxd
+Compilación: cmake, rocm-llvm, rocm-llvm-static, xxd
 Pruebas: —
-Proporciona: hsakmt-roct=7.2.4
+Proporciona: hsakmt-roct=10.1
 Estado SST: [ ]
 
 17. htop

@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. python cupy rocm gfx10
 Paquete: python-cupy-rocm-gfx10
 Repositorio: extra
-Versión: 14.2.0-1
+Versión: 14.2.0-2
 Arquitectura: x86_64
 Descripción: NumPy/SciPy-compatible array library for GPU-accelerated computing with Python (ROCm gfx10 targets)
 Upstream: https://github.com/cupy/cupy
@@ -541,14 +541,14 @@ Estado SST: [ ]
 37. python hyperqueue
 Paquete: python-hyperqueue
 Repositorio: extra
-Versión: 0.26.2-1
+Versión: 0.27.0-1
 Arquitectura: x86_64
 Descripción: Scheduler for sub-node tasks for HPC systems with batch scheduling - Python bindings
 Upstream: https://github.com/It4innovations/hyperqueue/
 Licencia: MIT
-Dependencias: glibc, hyperqueue, libgcc, python, python-cloudpickle, python-tqdm
+Dependencias: glibc, highs, hyperqueue, libgcc, python, python-cloudpickle, python-tqdm
 Opcionales: python-pydot: task graph visualization
-Compilación: cargo, maturin, python-installer, python-cloudpickle, python-tqdm, python-pydot
+Compilación: cargo, clang, git, highs, maturin, python-installer, python-cloudpickle, python-tqdm, python-pydot
 Pruebas: python-pytest, python-pytest-xdist, python-iso8601, python-schema, python-maturin, python-psutil, python-requests, python-aiohttp, python-inline-snapshot, python-typing_extensions, python-ruff
 Proporciona: —
 Estado SST: [ ]

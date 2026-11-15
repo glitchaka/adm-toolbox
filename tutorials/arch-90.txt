@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. arch hs
 Paquete: arch-hs
 Repositorio: extra
-Versión: 0.16.2-31
+Versión: 0.16.2-34
 Arquitectura: x86_64
 Descripción: Distribute hackage packages to archlinux
 Upstream: https://github.com/berberman/arch-hs
@@ -76,14 +76,14 @@ Estado SST: [ ]
 6. comgr
 Paquete: comgr
 Repositorio: extra
-Versión: 2:7.2.4-2
+Versión: 2:10.1-3
 Arquitectura: x86_64
 Descripción: AMDGPU GPU Code Object Manager
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: NCSA
-Dependencias: glibc, libgcc, libstdc++, zstd, zlib, ncurses, rocm-core, rocm-llvm, rocm-device-libs
+Dependencias: glibc, libgcc, libstdc++, zstd, zlib, ncurses, rocm-core, rocm-llvm, rocm-llvm-libs, rocm-device-libs
 Opcionales: —
-Compilación: git, cmake, python, ninja, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -316,12 +316,12 @@ Estado SST: [ ]
 22. haskell tls session manager
 Paquete: haskell-tls-session-manager
 Repositorio: extra
-Versión: 0.0.7-8
+Versión: 0.0.8-1
 Arquitectura: x86_64
 Descripción: In-memory TLS session DB and session ticket
 Upstream: https://hackage.haskell.org/package/tls-session-manager
 Licencia: BSD-3-Clause
-Dependencias: ghc-libs, haskell-auto-update, haskell-basement, haskell-clock, haskell-crypto-token, haskell-memory, haskell-psqueues, haskell-serialise, haskell-tls
+Dependencias: ghc-libs, haskell-auto-update, haskell-clock, haskell-crypto-token, haskell-memory, haskell-psqueues, haskell-serialise, haskell-tls
 Opcionales: —
 Compilación: ghc
 Pruebas: —

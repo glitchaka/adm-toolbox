@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell gi gtk
 Paquete: haskell-gi-gtk
 Repositorio: extra
-Versión: 4.0.11-126
+Versión: 4.0.11-128
 Arquitectura: x86_64
 Descripción: Gtk bindings
 Upstream: https://github.com/haskell-gi/haskell-gi
@@ -616,14 +616,14 @@ Estado SST: [ ]
 42. rocm openmp
 Paquete: rocm-openmp
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Radeon Open Compute - OpenMP host runtime and GPU target offloading
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: Apache-2.0 WITH LLVM-exception
 Dependencias: rocm-core, rocm-llvm, rocm-device-libs, hsa-rocr, glibc, gcc-libs, zlib, zstd, libffi, libxml2, ncurses
-Opcionales: —
-Compilación: git, cmake, ninja, python, perl, rocm-cmake
+Opcionales: rocm-flang: Fortran GPU offloading
+Compilación: git, cmake, ninja, python, perl, rocm-cmake, rocm-flang, rocm-llvm-static, rocm-llvm-headers
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

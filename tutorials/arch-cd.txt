@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. haskell hls stylish haskell plugin
 Paquete: haskell-hls-stylish-haskell-plugin
 Repositorio: extra
-Versión: 2.4.0.0-45
+Versión: 2.4.0.0-46
 Arquitectura: x86_64
 Descripción: Integration with the Stylish Haskell code formatter
 Upstream: https://hackage.haskell.org/package/hls-stylish-haskell-plugin
@@ -646,13 +646,13 @@ Estado SST: [ ]
 44. mivisionx
 Paquete: mivisionx
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 7.2.4-3
 Arquitectura: x86_64
 Descripción: Set of comprehensive computer vision and machine intelligence libraries
 Upstream: https://rocm.docs.amd.com/projects/MIVisionX/en/latest/
 Licencia: MIT
-Dependencias: ffmpeg, hip-runtime-amd, miopen-hip, opencv, protobuf, rocblas, rocm-core, rpp
-Opcionales: —
+Dependencias: ffmpeg, hip-runtime-amd, miopen-hip, opencv, openssl, rocblas, rocm-core, rpp
+Opcionales: python-protobuf: model compiler for Caffe models
 Compilación: cmake, half, rocm-cmake, rocm-llvm
 Pruebas: —
 Proporciona: —
@@ -1141,7 +1141,7 @@ Estado SST: [ ]
 77. rustc dev
 Paquete: rustc-dev
 Repositorio: extra
-Versión: 1:1.99.1-4
+Versión: 1:1.100.0-1
 Arquitectura: x86_64
 Descripción: Compiler libraries for Rust
 Upstream: https://www.rust-lang.org/

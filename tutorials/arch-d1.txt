@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell gi freetype2
 Paquete: haskell-gi-freetype2
 Repositorio: extra
-Versión: 2.0.5-136
+Versión: 2.0.5-137
 Arquitectura: x86_64
 Descripción: freetype2 bindings
 Upstream: https://github.com/haskell-gi/haskell-gi
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell tidal
 Paquete: haskell-tidal
 Repositorio: extra
-Versión: 1.10.0-15
+Versión: 1.10.0-16
 Arquitectura: x86_64
 Descripción: A domain specific language for live coding pattern.
 Upstream: https://tidalcycles.org/
@@ -286,12 +286,12 @@ Estado SST: [ ]
 20. hiptensor
 Paquete: hiptensor
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: AMD’s C++ library for accelerating tensor primitives
 Upstream: https://rocm.docs.amd.com/projects/hipTensor/en/latest/
 Licencia: MIT
-Dependencias: rocm-core, hip-runtime-amd, composable-kernel, glibc, gcc-libs
+Dependencias: rocm-core, hip-runtime-amd, composable-kernel, glibc, libgcc, libstdc++
 Opcionales: —
 Compilación: cmake, ninja, rocm-llvm, rocm-cmake, rocm-toolchain
 Pruebas: —

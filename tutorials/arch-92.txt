@@ -286,7 +286,7 @@ Estado SST: [ ]
 20. haskell hls call hierarchy plugin
 Paquete: haskell-hls-call-hierarchy-plugin
 Repositorio: extra
-Versión: 2.4.0.0-45
+Versión: 2.4.0.0-46
 Arquitectura: x86_64
 Descripción: Call hierarchy plugin for Haskell Language Server
 Upstream: https://hackage.haskell.org/package/hls-call-hierarchy-plugin
@@ -646,7 +646,7 @@ Estado SST: [ ]
 44. python cross web
 Paquete: python-cross-web
 Repositorio: extra
-Versión: 0.8.0-1
+Versión: 0.9.0-1
 Arquitectura: any
 Descripción: A universal web framework adapter for Python that lets you write code once and use it across multiple web frameworks
 Upstream: https://github.com/usecross/cross-web
@@ -808,7 +808,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. ruby bake bundler
+55. rocjitsu
+Paquete: rocjitsu
+Repositorio: extra
+Versión: 10.1-1
+Arquitectura: x86_64
+Descripción: An emulation toolkit for running AMD GPU applications on simulated or real hardware
+Upstream: https://github.com/ROCm/rocm-systems/tree/develop/emulation/rocjitsu
+Licencia: MIT
+Dependencias: flatbuffers, glibc, libgcc, libstdc++, rocm-core
+Opcionales: —
+Compilación: cmake, gtest, ninja, rocm-llvm
+Pruebas: git, hip-runtime-amd, hsa-rocr, rccl, rocminfo
+Proporciona: —
+Estado SST: [ ]
+
+56. ruby bake bundler
 Paquete: ruby-bake-bundler
 Repositorio: extra
 Versión: 0.3.5-5
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. ruby chef utils
+57. ruby chef utils
 Paquete: ruby-chef-utils
 Repositorio: extra
 Versión: 19.4.46-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. ruby dry types
+58. ruby dry types
 Paquete: ruby-dry-types
 Repositorio: extra
 Versión: 1.9.1-2
@@ -853,7 +868,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-rspec, ruby-warning, ruby-yard
 Proporciona: —
 Estado SST: [ ]
 
-58. ruby spdx licenses
+59. ruby spdx licenses
 Paquete: ruby-spdx-licenses
 Repositorio: extra
 Versión: 1.4.0-1
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. seatd
+60. seatd
 Paquete: seatd
 Repositorio: extra
 Versión: 0.9.3-1
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: libseat.so=1-64
 Estado SST: [ ]
 
-60. shfs utils
+61. shfs utils
 Paquete: shfs-utils
 Repositorio: extra
 Versión: 0.35-8
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. tesseract data ell
+62. tesseract data ell
 Paquete: tesseract-data-ell
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-62. tesseract data eng
+63. tesseract data eng
 Paquete: tesseract-data-eng
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-63. thunderbird i18n cak
+64. thunderbird i18n cak
 Paquete: thunderbird-i18n-cak
 Repositorio: extra
 Versión: 159.0-2
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. thunderbird i18n nb no
+65. thunderbird i18n nb no
 Paquete: thunderbird-i18n-nb-no
 Repositorio: extra
 Versión: 159.0-2
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. vlc plugin dvb
+66. vlc plugin dvb
 Paquete: vlc-plugin-dvb
 Repositorio: extra
 Versión: 3.0.24-1
@@ -973,7 +988,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. xorg server xvfb
+67. xorg server xvfb
 Paquete: xorg-server-xvfb
 Repositorio: extra
 Versión: 21.1.26-1

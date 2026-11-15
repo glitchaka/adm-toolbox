@@ -181,14 +181,14 @@ Estado SST: [ ]
 13. hipfort
 Paquete: hipfort
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Fortran interfaces for ROCm libraries
 Upstream: https://rocm.docs.amd.com/projects/hipfort/en/latest/
 Licencia: MIT
-Dependencias: gcc-fortran, git, hip-runtime-amd, rocm-core
-Opcionales: hipblas: Fortran bindings, hipfft: Fortran bindings, hiprand: Fortran bindings, hipsolver: Fortran bindings, hipsparse: Fortran bindings, rocfft: Fortran bindings, rocrand: Fortran bindings, rocsolver: Fortran bindings
-Compilación: cmake, hipblas, hipfft, hiprand, hipsolver, hipsparse, rocblas, rocfft, rocm-cmake, rocrand, rocsolver, rocsparse
+Dependencias: gcc-fortran, hip-runtime-amd, rocm-core
+Opcionales: hipblas: Fortran bindings, hipfft: Fortran bindings, hiprand: Fortran bindings, hipsolver: Fortran bindings, hipsparse: Fortran bindings, rocfft: Fortran bindings, rocprofiler-sdk: Fortran bindings for roctx, rocrand: Fortran bindings, rocsolver: Fortran bindings
+Compilación: cmake, hipblas, hipfft, hiprand, hipsolver, hipsparse, rocblas, rocfft, rocm-cmake, rocprofiler-sdk, rocrand, rocsolver, rocsparse
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. python cupy
 Paquete: python-cupy
 Repositorio: extra
-Versión: 14.2.0-1
+Versión: 14.2.0-2
 Arquitectura: x86_64
 Descripción: NumPy/SciPy-compatible array library for GPU-accelerated computing with Python (CUDA version)
 Upstream: https://github.com/cupy/cupy

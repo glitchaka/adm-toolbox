@@ -841,14 +841,14 @@ Estado SST: [ ]
 57. rocm llvm
 Paquete: rocm-llvm
 Repositorio: extra
-Versión: 2:7.2.4-2
+Versión: 2:10.1-3
 Arquitectura: x86_64
-Descripción: Radeon Open Compute - LLVM toolchain (llvm, clang, lld, flang)
+Descripción: Radeon Open Compute - LLVM toolchain (clang, lld)
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: Apache-2.0 WITH LLVM-exception
-Dependencias: rocm-core, perl, glibc, libgcc, libstdc++, zlib, zstd, libffi, libedit, ncurses, libxml2
-Opcionales: rocm-openmp: OpenMP host runtime and GPU offloading
-Compilación: git, cmake, python, ninja, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Dependencias: rocm-llvm-libs, rocm-core, perl, glibc, libgcc, libstdc++, zlib, zstd, libffi, libedit, ncurses, libxml2
+Opcionales: rocm-flang: Fortran compiler, rocm-llvm-headers: LLVM headers, rocm-llvm-static: LLVM static libraries and CMake config, rocm-llvm-tools: LLVM development tools, rocm-openmp: OpenMP host runtime and GPU offloading
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

@@ -631,7 +631,7 @@ Estado SST: [ ]
 43. python langchain
 Paquete: python-langchain
 Repositorio: extra
-Versión: 1.4.7-1
+Versión: 1.4.8-1
 Arquitectura: any
 Descripción: Building applications with LLMs through composability
 Upstream: https://github.com/langchain-ai/langchain
@@ -736,14 +736,14 @@ Estado SST: [ ]
 50. rocprofiler
 Paquete: rocprofiler
 Repositorio: extra
-Versión: 7.2.4-2
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: ROC profiler library. Profiling with perf-counters and derived metrics.
 Upstream: https://rocm.docs.amd.com/projects/rocprofiler/en/latest/index.html
 Licencia: MIT
-Dependencias: hip-runtime-amd, hsa-amd-aqlprofile, python, python-lxml, rocm-core, fmt, google-glog, yaml-cpp
+Dependencias: bash, comgr, fmt, glibc, hip-runtime-amd, hsa-amd-aqlprofile, hsa-rocr, libelf, libgcc, libpciaccess, libstdc++, numactl, python, python-lxml, python-numpy, rocm-core
 Opcionales: —
-Compilación: cmake, git, gtest, hsa-rocr, python-barectf, python-cppheaderparser, python-pandas, python-yaml, rocm-dbgapi, rocm-llvm, rocm-smi-lib, rocm-toolchain, roctracer, pybind11, ninja
+Compilación: cmake, git, gtest, python-barectf, python-cppheaderparser, python-pandas, python-yaml, rocm-dbgapi, rocm-llvm, rocm-llvm-static, rocm-smi-lib, roctracer
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

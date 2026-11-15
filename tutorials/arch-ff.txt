@@ -238,7 +238,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-17. hunspell fr classical
+17. hipthreads
+Paquete: hipthreads
+Repositorio: extra
+Versión: 10.1-1
+Arquitectura: x86_64
+Descripción: C++ std::thread-like API to launch and manage GPU threads with HIP
+Upstream: https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipthreads
+Licencia: Apache-2.0 WITH LLVM-exception
+Dependencias: rocm-core, hip-runtime-amd, libhipcxx
+Opcionales: —
+Compilación: cmake, rocm-cmake, rocm-toolchain, rocm-llvm
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. hunspell fr classical
 Paquete: hunspell-fr-classical
 Repositorio: extra
 Versión: 7.7-2
@@ -253,7 +268,7 @@ Pruebas: —
 Proporciona: hunspell-fr, hunspell-dictionary
 Estado SST: [ ]
 
-18. ibus hangul
+19. ibus hangul
 Paquete: ibus-hangul
 Repositorio: extra
 Versión: 1.5.5-5
@@ -268,7 +283,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-19. impacket
+20. impacket
 Paquete: impacket
 Repositorio: extra
 Versión: 0.13.1-1
@@ -283,7 +298,7 @@ Pruebas: python-cryptography, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-20. jack2
+21. jack2
 Paquete: jack2
 Repositorio: extra
 Versión: 1.9.22-2
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: jack, libjack.so=0-64, libjacknet.so=0-64, libjackserver.so=0-64
 Estado SST: [ ]
 
-21. kernel hardening checker
+22. kernel hardening checker
 Paquete: kernel-hardening-checker
 Repositorio: extra
 Versión: 0.6.17.1-2
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. keyd
+23. keyd
 Paquete: keyd
 Repositorio: extra
 Versión: 2.6.0-5
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. lasem
+24. lasem
 Paquete: lasem
 Repositorio: extra
 Versión: 0.6.0-4
@@ -343,7 +358,7 @@ Pruebas: librsvg
 Proporciona: —
 Estado SST: [ ]
 
-24. libnsutils
+25. libnsutils
 Paquete: libnsutils
 Repositorio: extra
 Versión: 0.1.1-2
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. lua54 busted
+26. lua54 busted
 Paquete: lua54-busted
 Repositorio: extra
 Versión: 2.3.0-3
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. mcfly
+27. mcfly
 Paquete: mcfly
 Repositorio: extra
 Versión: 0.9.4-2
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. mimetreeparser
+28. mimetreeparser
 Paquete: mimetreeparser
 Repositorio: extra
 Versión: 26.08.3-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. nheko
+29. nheko
 Paquete: nheko
 Repositorio: extra
 Versión: 0.12.1-7
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. opensearch dashboards index management plugin
+30. opensearch dashboards index management plugin
 Paquete: opensearch-dashboards-index-management-plugin
 Repositorio: extra
 Versión: 3.9.0.0-2
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. opensearch observability plugin
+31. opensearch observability plugin
 Paquete: opensearch-observability-plugin
 Repositorio: extra
 Versión: 3.9.0.0-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. opusfile
+32. opusfile
 Paquete: opusfile
 Repositorio: extra
 Versión: 0.12-5
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. paxtest
+33. paxtest
 Paquete: paxtest
 Repositorio: extra
 Versión: 0.9.15-4
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. perl xml twig
+34. perl xml twig
 Paquete: perl-xml-twig
 Repositorio: extra
 Versión: 3.55-1
@@ -493,7 +508,7 @@ Pruebas: perl-libwww, perl-test-pod, perl-xml-simple, perl-html-tree, perl-xml-x
 Proporciona: —
 Estado SST: [ ]
 
-34. pipewire system services
+35. pipewire system services
 Paquete: pipewire-system-services
 Repositorio: extra
 Versión: 1:1.6.11-1
@@ -508,7 +523,7 @@ Pruebas: desktop-file-utils, openal
 Proporciona: —
 Estado SST: [ ]
 
-35. pugixml
+36. pugixml
 Paquete: pugixml
 Repositorio: extra
 Versión: 1.16-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. python apsw
+37. python apsw
 Paquete: python-apsw
 Repositorio: extra
 Versión: 3.54.1.0-1
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. python json stream
+38. python json stream
 Paquete: python-json-stream
 Repositorio: extra
 Versión: 2.5.1-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. python langchain text splitters
+39. python langchain text splitters
 Paquete: python-langchain-text-splitters
 Repositorio: extra
 Versión: 1.1.3-1
@@ -568,7 +583,7 @@ Pruebas: python-beautifulsoup4, python-lxml, python-pytest, python-pytest-asynci
 Proporciona: —
 Estado SST: [ ]
 
-39. python lib3mf
+40. python lib3mf
 Paquete: python-lib3mf
 Repositorio: extra
 Versión: 2.5.0-1
@@ -583,7 +598,7 @@ Pruebas: gtest
 Proporciona: —
 Estado SST: [ ]
 
-40. python odfpy
+41. python odfpy
 Paquete: python-odfpy
 Repositorio: extra
 Versión: 1.4.2-7
@@ -598,7 +613,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-41. python onnxruntime opt cuda
+42. python onnxruntime opt cuda
 Paquete: python-onnxruntime-opt-cuda
 Repositorio: extra
 Versión: 1.29.0-3
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: python-onnxruntime=1.29.0
 Estado SST: [ ]
 
-42. python pypatchelf
+43. python pypatchelf
 Paquete: python-pypatchelf
 Repositorio: extra
 Versión: 0.9-9
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. python pytest click
+44. python pytest click
 Paquete: python-pytest-click
 Repositorio: extra
 Versión: 1.1.0-6
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python tiny proxy
+45. python tiny proxy
 Paquete: python-tiny-proxy
 Repositorio: extra
 Versión: 0.3.0-1
@@ -658,7 +673,7 @@ Pruebas: python-pytest, python-trustme, python-aiohttp, python-httpx
 Proporciona: —
 Estado SST: [ ]
 
-45. python zope component
+46. python zope component
 Paquete: python-zope-component
 Repositorio: extra
 Versión: 7.1-1
@@ -673,7 +688,7 @@ Pruebas: python-persistent, python-pytest, python-zope-configuration, python-zop
 Proporciona: —
 Estado SST: [ ]
 
-46. rcs
+47. rcs
 Paquete: rcs
 Repositorio: extra
 Versión: 5.10.1-3
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby json schema
+48. ruby json schema
 Paquete: ruby-json-schema
 Repositorio: extra
 Versión: 5.1.1-2
@@ -703,7 +718,7 @@ Pruebas: ruby-minitest, ruby-rake, ruby-test-unit, ruby-webmock
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby rspec its
+49. ruby rspec its
 Paquete: ruby-rspec-its
 Repositorio: extra
 Versión: 2.0.0-1
@@ -718,7 +733,7 @@ Pruebas: ruby-rake, ruby-minitest, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-49. smali
+50. smali
 Paquete: smali
 Repositorio: extra
 Versión: 2.5.2-3
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. syslinux
+51. syslinux
 Paquete: syslinux
 Repositorio: core
 Versión: 6.04.pre3.r3.g05ac953c-5
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. vaporizer2 vst3
+52. vaporizer2 vst3
 Paquete: vaporizer2-vst3
 Repositorio: extra
 Versión: 3.5.0-2
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. wingpanel indicator keyboard
+53. wingpanel indicator keyboard
 Paquete: wingpanel-indicator-keyboard
 Repositorio: extra
 Versión: 2.4.2-4

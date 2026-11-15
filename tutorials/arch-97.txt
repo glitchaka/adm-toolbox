@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell http conduit
 Paquete: haskell-http-conduit
 Repositorio: extra
-Versión: 2.3.9.1-328
+Versión: 2.3.9.1-330
 Arquitectura: x86_64
 Descripción: HTTP client package with conduit interface and HTTPS support
 Upstream: https://www.yesodweb.com/book/http-conduit
@@ -601,14 +601,14 @@ Estado SST: [ ]
 41. rccl
 Paquete: rccl
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: ROCm Communication Collectives Library
 Upstream: https://rocm.docs.amd.com/projects/rccl/en/latest/index.html
 Licencia: BSD-3-Clause
-Dependencias: rocm-core, glibc, libgcc, hip-runtime-amd, rocm-smi-lib
+Dependencias: rocm-core, glibc, libgcc, hip-runtime-amd, amdsmi, roctracer
 Opcionales: —
-Compilación: git, cmake, rocm-cmake, rocm-llvm, hipify-clang, python
+Compilación: cmake, ninja, rocm-cmake, rocm-llvm, rocm-llvm-static, hipify-clang, python, fmt
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

@@ -121,14 +121,14 @@ Estado SST: [ ]
 9. hipify clang
 Paquete: hipify-clang
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Convert CUDA to Portable C++ Code
 Upstream: https://rocm.docs.amd.com/projects/HIPIFY/en/latest
 Licencia: MIT
 Dependencias: bash, cuda, glibc, libgcc, ncurses, perl, rocm-llvm, zlib, zstd
 Opcionales: —
-Compilación: cmake
+Compilación: cmake, rocm-llvm-static
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -673,7 +673,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby async service supervisor
+46. rocm llvm libs
+Paquete: rocm-llvm-libs
+Repositorio: extra
+Versión: 2:10.1-3
+Arquitectura: x86_64
+Descripción: Radeon Open Compute - LLVM runtime libraries
+Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
+Licencia: Apache-2.0 WITH LLVM-exception
+Dependencias: glibc, libgcc, libstdc++, zlib, zstd, libffi, libedit, ncurses, libxml2
+Opcionales: —
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+47. ruby async service supervisor
 Paquete: ruby-async-service-supervisor
 Repositorio: extra
 Versión: 0.21.0-1
@@ -688,7 +703,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bundler, ruby-covered, ruby-metrics, ru
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby http parser rb
+48. ruby http parser rb
 Paquete: ruby-http_parser.rb
 Repositorio: extra
 Versión: 0.8.1-1
@@ -703,7 +718,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-rake-compiler, ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby rbtree
+49. ruby rbtree
 Paquete: ruby-rbtree
 Repositorio: extra
 Versión: 0.4.7-1
@@ -718,7 +733,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-49. ruby scanf
+50. ruby scanf
 Paquete: ruby-scanf
 Repositorio: extra
 Versión: 1.0.0-6
@@ -733,7 +748,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit
 Proporciona: —
 Estado SST: [ ]
 
-50. slumber
+51. slumber
 Paquete: slumber
 Repositorio: extra
 Versión: 5.4.4-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. staticcheck
+52. staticcheck
 Paquete: staticcheck
 Repositorio: extra
 Versión: 2026.2.2-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. unarj
+53. unarj
 Paquete: unarj
 Repositorio: extra
 Versión: 2.65-2
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. vpl gpu rt
+54. vpl gpu rt
 Paquete: vpl-gpu-rt
 Repositorio: extra
 Versión: 26.3.5-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: onevpl-intel-gpu, vpl-runtime
 Estado SST: [ ]
 
-54. xfce4 cpufreq plugin
+55. xfce4 cpufreq plugin
 Paquete: xfce4-cpufreq-plugin
 Repositorio: extra
 Versión: 1.3.0-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. zabbix web service
+56. zabbix web service
 Paquete: zabbix-web-service
 Repositorio: extra
 Versión: 8.0.0-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. zenity
+57. zenity
 Paquete: zenity
 Repositorio: extra
 Versión: 4.2.2-1

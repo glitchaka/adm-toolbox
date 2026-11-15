@@ -736,14 +736,14 @@ Estado SST: [ ]
 50. rocfft
 Paquete: rocfft
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Next generation FFT implementation for ROCm
 Upstream: https://rocm.docs.amd.com/projects/rocFFT/en/latest/index.html
 Licencia: MIT
-Dependencias: rocm-core, hip-runtime-amd, glibc, libgcc
+Dependencias: rocm-core, hip-runtime-amd, glibc, libgcc, sqlite
 Opcionales: —
-Compilación: cmake, rocm-cmake, rocm-toolchain, rocm-llvm
+Compilación: cmake, ninja, rocm-cmake, rocm-toolchain, rocm-llvm
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

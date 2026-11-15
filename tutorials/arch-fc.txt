@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell gi gsk
 Paquete: haskell-gi-gsk
 Repositorio: extra
-Versión: 4.0.8-149
+Versión: 4.0.8-151
 Arquitectura: x86_64
 Descripción: Gsk bindings
 Upstream: https://github.com/haskell-gi/haskell-gi
@@ -766,14 +766,14 @@ Estado SST: [ ]
 52. rocsolver
 Paquete: rocsolver
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Subset of LAPACK functionality on the ROCm platform
 Upstream: https://rocm.docs.amd.com/projects/rocSOLVER/en/latest/index.html
 Licencia: BSD-2-Clause
-Dependencias: glibc, hip-runtime-amd, libgcc, rocblas, rocm-core, rocsparse
+Dependencias: glibc, hip-runtime-amd, libgcc, libstdc++, rocblas, rocm-core, rocsparse
 Opcionales: —
-Compilación: fmt, python-pyaml, rocm-cmake, rocm-toolchain
+Compilación: cmake, fmt, ninja, rocm-cmake, rocm-llvm, rocm-toolchain, rocprim
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

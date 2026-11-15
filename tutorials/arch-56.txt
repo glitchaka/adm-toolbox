@@ -301,14 +301,14 @@ Estado SST: [ ]
 21. hip runtime nvidia
 Paquete: hip-runtime-nvidia
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Heterogeneous Interface for Portability (Nvidia runtime)
 Upstream: https://rocm.docs.amd.com/projects/HIP/en/latest/
 Licencia: MIT
 Dependencias: cuda
 Opcionales: —
-Compilación: git, cmake, python, python-cppheaderparser, rocm-core, bash, perl, glibc, libgcc, numactl, mesa, comgr, rocminfo, rocm-llvm, libelf, rocprofiler-register, cuda
+Compilación: git, cmake, python, python-cppheaderparser, rocm-llvm-static, rocm-core, bash, perl, glibc, libgcc, numactl, mesa, comgr, rocminfo, rocm-llvm, libelf, rocprofiler-register, cuda
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -496,7 +496,7 @@ Estado SST: [ ]
 34. linux rt lts
 Paquete: linux-rt-lts
 Repositorio: extra
-Versión: 6.18.63.rt9.arch1-2
+Versión: 6.18.63.rt9.arch1-3
 Arquitectura: x86_64
 Descripción: The Linux RT LTS kernel and modules
 Upstream: https://gitlab.archlinux.org/archlinux/packaging/upstream/linux-rt-lts

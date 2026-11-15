@@ -331,14 +331,14 @@ Estado SST: [ ]
 23. hipdnn
 Paquete: hipdnn
 Repositorio: extra
-Versión: 7.2.4-1
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: Graph-based deep learning library for AMD GPUs
 Upstream: https://github.com/ROCm/rocm-libraries/tree/develop/projects/hipdnn
 Licencia: MIT
-Dependencias: rocm-core, hip-runtime-amd, miopen-hip, glibc, gcc-libs, flatbuffers
+Dependencias: rocm-core, hip-runtime-amd, glibc, libgcc, libstdc++, flatbuffers, nlohmann-json
 Opcionales: —
-Compilación: cmake, ninja, rocm-cmake, rocm-llvm, rocm-toolchain, python, nlohmann-json, spdlog, gtest
+Compilación: cmake, ninja, rocm-cmake, rocm-llvm, rocm-toolchain, spdlog
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

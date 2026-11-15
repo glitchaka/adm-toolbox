@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. haskell hasql implicits
 Paquete: haskell-hasql-implicits
 Repositorio: extra
-Versión: 0.1.1.3-31
+Versión: 0.1.1.3-32
 Arquitectura: x86_64
 Descripción: Implicit definitions for Hasql, such as default codecs for standard types
 Upstream: https://github.com/nikita-volkov/hasql-implicits
@@ -358,7 +358,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. lib32 attr
+25. labwc tweaks
+Paquete: labwc-tweaks
+Repositorio: extra
+Versión: 0.2.0-1
+Arquitectura: x86_64
+Descripción: GUI settings application for labwc
+Upstream: https://github.com/labwc/labwc-tweaks
+Licencia: GPL-2.0-only
+Dependencias: glib2, glibc, hicolor-icon-theme, libgcc, libstdc++, libxml2, qt6-base
+Opcionales: labwc: compositor configured by this tool, labwc-themes: additional themes for labwc
+Compilación: cmake, git, qt6-tools
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+26. lib32 attr
 Paquete: lib32-attr
 Repositorio: multilib
 Versión: 2.6.0-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: libattr.so=1-32
 Estado SST: [ ]
 
-26. libhwasan
+27. libhwasan
 Paquete: libhwasan
 Repositorio: core
 Versión: 16.2.1+r23+gd564253eb6c8-1
@@ -388,7 +403,7 @@ Pruebas: dejagnu, expect, inetutils, python-pytest, tcl
 Proporciona: libhwasan.so=0-64
 Estado SST: [ ]
 
-27. libmesode
+28. libmesode
 Paquete: libmesode
 Repositorio: extra
 Versión: 0.10.1-4
@@ -403,7 +418,7 @@ Pruebas: check
 Proporciona: libmesode.so=0-64
 Estado SST: [ ]
 
-28. libplasma
+29. libplasma
 Paquete: libplasma
 Repositorio: extra
 Versión: 6.8.2-1
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. libtasn1
+30. libtasn1
 Paquete: libtasn1
 Repositorio: core
 Versión: 4.21.0-1
@@ -433,10 +448,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. linux zen headers
+31. linux zen headers
 Paquete: linux-zen-headers
 Repositorio: extra
-Versión: 7.3.4.zen2-1
+Versión: 7.3.4.zen2-2
 Arquitectura: x86_64
 Descripción: Headers and scripts for building modules for the Linux ZEN kernel
 Upstream: https://github.com/zen-kernel/zen-kernel
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: LINUX-HEADERS
 Estado SST: [ ]
 
-31. lua51 psl
+32. lua51 psl
 Paquete: lua51-psl
 Repositorio: extra
 Versión: 0.3-5
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. lua53 luassert
+33. lua53 luassert
 Paquete: lua53-luassert
 Repositorio: extra
 Versión: 1.9.0-3
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. menumaker
+34. menumaker
 Paquete: menumaker
 Repositorio: extra
 Versión: 0.99.14-4
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. mididings docs
+35. mididings docs
 Paquete: mididings-docs
 Repositorio: extra
 Versión: 20260601-2
@@ -508,7 +523,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-35. netstandard targeting pack
+36. netstandard targeting pack
 Paquete: netstandard-targeting-pack
 Repositorio: extra
 Versión: 1:2.1.0-2
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. oha
+37. oha
 Paquete: oha
 Repositorio: extra
 Versión: 1.17.0-1
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. optiimage
+38. optiimage
 Paquete: optiimage
 Repositorio: extra
 Versión: 1.0.0-4
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. pantheon applications menu
+39. pantheon applications menu
 Paquete: pantheon-applications-menu
 Repositorio: extra
 Versión: 8.0.4-2
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. perl io captureoutput
+40. perl io captureoutput
 Paquete: perl-io-captureoutput
 Repositorio: extra
 Versión: 1.1105-9
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. ptunnel
+41. ptunnel
 Paquete: ptunnel
 Repositorio: extra
 Versión: 0.72-7
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. python cython test exception raiser
+42. python cython test exception raiser
 Paquete: python-cython-test-exception-raiser
 Repositorio: extra
 Versión: 26.4.1-1
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python ephemeral port reserve
+43. python ephemeral port reserve
 Paquete: python-ephemeral-port-reserve
 Repositorio: extra
 Versión: 1.1.4-7
@@ -628,7 +643,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-43. python json5
+44. python json5
 Paquete: python-json5
 Repositorio: extra
 Versión: 0.17.3-1
@@ -643,7 +658,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-44. python mediafire
+45. python mediafire
 Paquete: python-mediafire
 Repositorio: extra
 Versión: 0.6.1-5
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. python pdfminer
+46. python pdfminer
 Paquete: python-pdfminer
 Repositorio: extra
 Versión: 20260107-1
@@ -673,7 +688,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-46. python podcastparser
+47. python podcastparser
 Paquete: python-podcastparser
 Repositorio: extra
 Versión: 0.6.11-1
@@ -688,7 +703,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-47. qemu system or1k
+48. qemu system or1k
 Paquete: qemu-system-or1k
 Repositorio: extra
 Versión: 11.1.3-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. rage
+49. rage
 Paquete: rage
 Repositorio: extra
 Versión: 0.4.0-2
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. ruby pathutil
+50. ruby pathutil
 Paquete: ruby-pathutil
 Repositorio: extra
 Versión: 0.16.2-6
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. ruby rexml
+51. ruby rexml
 Paquete: ruby-rexml
 Repositorio: extra
 Versión: 3.4.4-1
@@ -748,7 +763,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-test-unit, ruby-test-unit-ruby-core
 Proporciona: —
 Estado SST: [ ]
 
-51. ruby unf
+52. ruby unf
 Paquete: ruby-unf
 Repositorio: extra
 Versión: 0.2.0.beta2-12
@@ -763,7 +778,7 @@ Pruebas: ruby-rake
 Proporciona: —
 Estado SST: [ ]
 
-52. spawn fcgi
+53. spawn fcgi
 Paquete: spawn-fcgi
 Repositorio: extra
 Versión: 1.6.6-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. tailspin
+54. tailspin
 Paquete: tailspin
 Repositorio: extra
 Versión: 7.0.0-2
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. tectonic
+55. tectonic
 Paquete: tectonic
 Repositorio: extra
 Versión: 0.17.0-2
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. ttf go nerd
+56. ttf go nerd
 Paquete: ttf-go-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-56. ucarp
+57. ucarp
 Paquete: ucarp
 Repositorio: extra
 Versión: 1.5.2-9
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. vlc plugin lua
+58. vlc plugin lua
 Paquete: vlc-plugin-lua
 Repositorio: extra
 Versión: 3.0.24-1
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. wireshark qt
+59. wireshark qt
 Paquete: wireshark-qt
 Repositorio: extra
 Versión: 4.7.4-1
@@ -868,7 +883,7 @@ Pruebas: python-pytest, python-pytest-xdist
 Proporciona: —
 Estado SST: [ ]
 
-59. wvstreams
+60. wvstreams
 Paquete: wvstreams
 Repositorio: extra
 Versión: 4.6.1-22
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. xf86 video vesa
+61. xf86 video vesa
 Paquete: xf86-video-vesa
 Repositorio: extra
 Versión: 2.6.0-3
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. xorg xwininfo
+62. xorg xwininfo
 Paquete: xorg-xwininfo
 Repositorio: extra
 Versión: 1.1.7-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. zeroclaw
+63. zeroclaw
 Paquete: zeroclaw
 Repositorio: extra
 Versión: 0.8.7-1

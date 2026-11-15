@@ -811,12 +811,12 @@ Estado SST: [ ]
 55. rocdecode
 Paquete: rocdecode
 Repositorio: extra
-Versión: 7.2.4-2
+Versión: 10.1-1
 Arquitectura: x86_64
 Descripción: High performance video decode SDK for AMD hardware
 Upstream: https://rocm.docs.amd.com/projects/rocDecode/en/latest/
 Licencia: MIT
-Dependencias: ffmpeg, glibc, hip-runtime-amd, libgcc, libva, mesa, rocm-core
+Dependencias: ffmpeg, glibc, hip-runtime-amd, libdrm, libgcc, libva, mesa, rocm-core, rocprofiler-register
 Opcionales: —
 Compilación: cmake, rocm-cmake, rocm-llvm
 Pruebas: —
