@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. kxmlgui
 Paquete: kxmlgui
 Repositorio: extra
-Versión: 6.31.0-1
+Versión: 6.32.0-1
 Arquitectura: x86_64
 Descripción: User configurable main windows
 Upstream: https://develop.kde.org/products/frameworks/
@@ -391,14 +391,14 @@ Estado SST: [ ]
 27. phoc
 Paquete: phoc
 Repositorio: extra
-Versión: 0.57.0-2
+Versión: 0.59.0-1
 Arquitectura: x86_64
 Descripción: Display compositor designed for phones
 Upstream: https://gitlab.gnome.org/World/Phosh/phoc
 Licencia: GPL-3.0-or-later
-Dependencias: cairo, dconf, libgcc, glib2, glibc, gnome-desktop, gsettings-desktop-schemas, hicolor-icon-theme, libgmobile, libinput, libxcb, libxkbcommon, mutter, pango, pixman, systemd-libs, wayland, wlroots0.20, xorg-xwayland
+Dependencias: cairo, dconf, glib2, glibc, gnome-desktop, gsettings-desktop-schemas, hicolor-icon-theme, lcms2, libdisplay-info, libdrm, libgcc, libglvnd, libglvnd, libgmobile, libinput, libliftoff, libxcb, libxkbcommon, mesa, mutter, pango, pixman, seatd, systemd-libs, vulkan-icd-loader, wayland, xcb-util-errors, xcb-util-renderutil, xcb-util-wm, xorg-xwayland
 Opcionales: —
-Compilación: git, glib2-devel, meson, python-docutils, wayland-protocols
+Compilación: git, glib2-devel, glslang, meson, python-docutils, vulkan-headers, wayland-protocols
 Pruebas: xorg-server-xvfb
 Proporciona: —
 Estado SST: [ ]

@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell scotty
 Paquete: haskell-scotty
 Repositorio: extra
-Versión: 0.30-68
+Versión: 0.30-70
 Arquitectura: x86_64
 Descripción: Haskell web framework inspired by Ruby's Sinatra, using WAI and Warp
 Upstream: https://github.com/scotty-web/scotty
@@ -751,12 +751,12 @@ Estado SST: [ ]
 51. rocm llvm static
 Paquete: rocm-llvm-static
 Repositorio: extra
-Versión: 2:10.1-3
+Versión: 2:10.1-4
 Arquitectura: x86_64
 Descripción: Radeon Open Compute - LLVM static libraries and CMake configuration
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: Apache-2.0 WITH LLVM-exception
-Dependencias: rocm-llvm-headers=2:10.1-3, rocm-llvm-tools=2:10.1-3
+Dependencias: rocm-llvm-headers=2:10.1-4, rocm-llvm-tools=2:10.1-4
 Opcionales: rocm-flang: find_package(Flang)
 Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
 Pruebas: —

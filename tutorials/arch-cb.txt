@@ -661,12 +661,12 @@ Estado SST: [ ]
 45. phosh
 Paquete: phosh
 Repositorio: extra
-Versión: 0.57.0-2
+Versión: 0.59.0-1
 Arquitectura: x86_64
 Descripción: A Wayland shell for GNOME on mobile devices
 Upstream: https://gitlab.gnome.org/World/Phosh/phosh
 Licencia: GPL-3.0-or-later
-Dependencias: appstream, bash, cairo, callaudiod, dconf, evince, evolution-data-server, feedbackd, fribidi, gcr, gdk-pixbuf2, glib2, glibc, gnome-bluetooth-3.0, gnome-desktop, gnome-session, gnome-shell, gsettings-desktop-schemas, gtk3, gtk4, hicolor-icon-theme, iio-sensor-proxy, libadwaita, libgcc, libgmobile, libgudev, libhandy, libical, libmm-glib, libnm, libpulse, libsecret, libsoup3, pam, pango, phoc, phosh-osk-provider, polkit, qrcodegen, systemd-libs, upower, wayland, xdg-desktop-portal-gtk, xdg-desktop-portal-phosh, xdg-desktop-portal-wlr
+Dependencias: appstream, at-spi2-core, bash, cairo, callaudiod, dconf, evince, evolution-data-server, feedbackd, fribidi, gcr, gdk-pixbuf2, glib2, glibc, gnome-bluetooth-3.0, gnome-desktop, gnome-session, gnome-shell, gsettings-desktop-schemas, gtk3, gtk4, hicolor-icon-theme, iio-sensor-proxy, json-glib, libadwaita, libgcc, libgmobile, libgudev, libhandy, libical, libmm-glib, libnm, libpipewire, libpulse, libsecret, libsoup3, pam, pango, phoc, phosh-osk-provider, polkit, qrcodegen, systemd-libs, upower, wayland, xdg-desktop-portal-gtk, xdg-desktop-portal-phosh, xdg-desktop-portal-wlr
 Opcionales: —
 Compilación: git, glib2-devel, meson, python-docutils, wayland-protocols
 Pruebas: xmlstarlet, xorg-server-xvfb
@@ -676,12 +676,12 @@ Estado SST: [ ]
 46. poppler qt6
 Paquete: poppler-qt6
 Repositorio: extra
-Versión: 26.10.0-2
+Versión: 26.11.0-1
 Arquitectura: x86_64
 Descripción: Poppler Qt6 bindings
 Upstream: https://poppler.freedesktop.org/
 Licencia: GPL-2.0-only, GPL-3.0-or-later, LGPL-2.0-or-later, LGPL-2.1-or-later, MIT, HPND-sell-variant
-Dependencias: poppler=26.10.0, qt6-base, lcms2, freetype2, libgcc, libstdc++, glibc
+Dependencias: poppler=26.11.0, qt6-base, lcms2, freetype2, libgcc, libstdc++, glibc
 Opcionales: —
 Compilación: libjpeg-turbo, libgcc, libstdc++, cairo, fontconfig, openjpeg2, gtk3, pkgconfig, lcms2, gobject-introspection, icu, qt5-base, qt6-base, git, nss, gpgmepp, gtk-doc, curl, poppler-data, cmake, python, boost, glib2-devel
 Pruebas: noto-fonts-cjk

@@ -31,7 +31,7 @@ Estado SST: [ ]
 3. cabal plan
 Paquete: cabal-plan
 Repositorio: extra
-Versión: 0.7.6.1-5
+Versión: 0.7.6.1-6
 Arquitectura: x86_64
 Descripción: Library and utility for processing cabal's plan.json file
 Upstream: https://github.com/hvr/cabal-plan
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell floskell
 Paquete: haskell-floskell
 Repositorio: extra
-Versión: 0.11.1-37
+Versión: 0.11.1-38
 Arquitectura: x86_64
 Descripción: A flexible Haskell source code pretty printer
 Upstream: https://github.com/ennocramer/floskell
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell lens aeson
 Paquete: haskell-lens-aeson
 Repositorio: extra
-Versión: 1.2.3-297
+Versión: 1.2.3-298
 Arquitectura: x86_64
 Descripción: Law-abiding lenses for aeson
 Upstream: https://github.com/lens/lens-aeson/
@@ -286,14 +286,14 @@ Estado SST: [ ]
 20. hiprt
 Paquete: hiprt
 Repositorio: extra
-Versión: 3.2.0.ceba893-1
+Versión: 3.2.0.ceba893-2
 Arquitectura: x86_64
 Descripción: Ray Tracing Library for HIP
 Upstream: https://gpuopen.com/hiprt/
 Licencia: MIT
-Dependencias: rocm-core, hip-runtime-amd, glibc, libgcc, libstdc++
-Opcionales: —
-Compilación: git, python, cmake
+Dependencias: rocm-core, glibc, libgcc, libstdc++
+Opcionales: hip-runtime-amd: run on AMD GPUs
+Compilación: git, python, cmake, hip-runtime-amd
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

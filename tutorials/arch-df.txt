@@ -1,7 +1,7 @@
 1. baloo
 Paquete: baloo
 Repositorio: extra
-Versión: 6.31.0-2
+Versión: 6.32.0-1
 Arquitectura: x86_64
 Descripción: A framework for searching and managing metadata
 Upstream: https://develop.kde.org/products/frameworks/
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. hledger ui
 Paquete: hledger-ui
 Repositorio: extra
-Versión: 1.52.4-61
+Versión: 1.52.4-63
 Arquitectura: x86_64
 Descripción: Curses-style terminal interface for the hledger accounting system
 Upstream: http://hledger.org
@@ -301,14 +301,14 @@ Estado SST: [ ]
 21. lightdm pantheon greeter
 Paquete: lightdm-pantheon-greeter
 Repositorio: extra
-Versión: 8.1.2-2
+Versión: 8.1.2-3
 Arquitectura: x86_64
 Descripción: Pantheon greeter for LightDM
 Upstream: https://github.com/elementary/greeter
-Licencia: GPL-2.0-or-later
-Dependencias: accountsservice, cairo, dconf, gdk-pixbuf2, glib2, glibc, gnome-desktop, granite, graphene, gtk3, hicolor-icon-theme, libgee, libgl, libhandy, lightdm, libx11, mutter49, wayland, libgdk-3.so=0-64, libgtk-3.so=0-64, libgio-2.0.so=0-64, libglib-2.0.so=0-64, libgobject-2.0.so=0-64, libgranite.so=6-64, libhandy-1.so=0-64
+Licencia: GPL-3.0-or-later
+Dependencias: accountsservice, dconf, gdk-pixbuf2, glib2, glibc, granite7, gtk4, hicolor-icon-theme, libadwaita, libgee, lightdm, pantheon-session, wayland
 Opcionales: —
-Compilación: cmake, meson, git, libglvnd, vala
+Compilación: meson, git, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. blosc
 Paquete: blosc
 Repositorio: extra
-Versión: 1.21.6-2
+Versión: 1.21.7-1
 Arquitectura: x86_64
 Descripción: A blocking, shuffling and loss-less compression library
 Upstream: https://www.blosc.org
@@ -91,12 +91,12 @@ Estado SST: [ ]
 7. deepin anything
 Paquete: deepin-anything
 Repositorio: extra
-Versión: 7.0.12-1
+Versión: 7.0.13-1
 Arquitectura: x86_64
 Descripción: Deepin Anything file search tool
 Upstream: https://github.com/linuxdeepin/deepin-anything
 Licencia: GPL-3.0-or-later
-Dependencias: DEEPIN-ANYTHING-MODULE, qt6-base, libnl, lucene++, util-linux-libs, spdlog, glib2
+Dependencias: DEEPIN-ANYTHING-MODULE, deepin-app-services, qt6-base, libnl, lucene++, util-linux-libs, spdlog, glib2
 Opcionales: —
 Compilación: git, cmake, qt6-base, libnl, lucene++, util-linux, boost, spdlog, glib2
 Pruebas: —
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell hasql pool
 Paquete: haskell-hasql-pool
 Repositorio: extra
-Versión: 0.8.0.7-1
+Versión: 0.8.0.7-3
 Arquitectura: x86_64
 Descripción: A pool of connections for Hasql
 Upstream: https://github.com/nikita-volkov/hasql-pool
@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell xml conduit
 Paquete: haskell-xml-conduit
 Repositorio: extra
-Versión: 1.9.1.4-243
+Versión: 1.9.1.4-244
 Arquitectura: x86_64
 Descripción: Pure-Haskell utilities for dealing with XML with the conduit package.
 Upstream: https://github.com/snoyberg/xml
@@ -316,7 +316,7 @@ Estado SST: [ ]
 22. knighttime
 Paquete: knighttime
 Repositorio: extra
-Versión: 6.8.2-1
+Versión: 6.8.3-1
 Arquitectura: x86_64
 Descripción: Helpers for scheduling the dark-light cycle
 Upstream: https://kde.org/plasma-desktop/
@@ -676,7 +676,7 @@ Estado SST: [ ]
 46. ruby connection pool
 Paquete: ruby-connection_pool
 Repositorio: extra
-Versión: 3.0.2-1
+Versión: 3.0.3-1
 Arquitectura: any
 Descripción: Generic connection pool for Ruby
 Upstream: https://github.com/mperham/connection_pool
@@ -684,7 +684,7 @@ Licencia: MIT
 Dependencias: ruby
 Opcionales: —
 Compilación: git, ruby-rake
-Pruebas: ruby-bundler, ruby-maxitest
+Pruebas: ruby-bundler, ruby-maxitest, ruby-minitest-mock
 Proporciona: —
 Estado SST: [ ]
 

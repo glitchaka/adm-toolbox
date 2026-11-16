@@ -16,12 +16,12 @@ Estado SST: [ ]
 2. atftp
 Paquete: atftp
 Repositorio: extra
-Versión: 0.8.1-1
+Versión: 0.8.2-1
 Arquitectura: x86_64
 Descripción: Client/server implementation of the TFTP protocol that implements RFCs 1350, 2090, 2347, 2348, and 2349
 Upstream: https://sourceforge.net/projects/atftp/
-Licencia: GPL
-Dependencias: pcre2, readline
+Licencia: GPL-2.0-or-later
+Dependencias: glibc, pcre2, libpcre2-8.so=0-64, readline, libreadline.so=8-64
 Opcionales: —
 Compilación: git
 Pruebas: —
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell hackage db
 Paquete: haskell-hackage-db
 Repositorio: extra
-Versión: 2.1.3-284
+Versión: 2.1.3-285
 Arquitectura: x86_64
 Descripción: Access cabal-install's Hackage database via Data.Map
 Upstream: https://github.com/NixOS/cabal2nix/tree/master/hackage-db#readme
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. sonnet
 Paquete: sonnet
 Repositorio: extra
-Versión: 6.31.0-1
+Versión: 6.32.0-1
 Arquitectura: x86_64
 Descripción: Spelling framework for Qt
 Upstream: https://develop.kde.org/products/frameworks/

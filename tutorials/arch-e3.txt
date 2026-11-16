@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. libkscreen
 Paquete: libkscreen
 Repositorio: extra
-Versión: 6.8.2-1
+Versión: 6.8.3-1
 Arquitectura: x86_64
 Descripción: KDE screen management software
 Upstream: https://kde.org/plasma-desktop/
@@ -466,7 +466,7 @@ Estado SST: [ ]
 32. oneccl arc
 Paquete: oneccl-arc
 Repositorio: extra
-Versión: 2022.0.0-1
+Versión: 2022.2.0-1
 Arquitectura: x86_64
 Descripción: oneAPI Collective Communications Library for Intel ARC GPUs
 Upstream: https://uxlfoundation.github.io/oneCCL/index.html
@@ -475,7 +475,7 @@ Dependencias: intel-oneapi-common, level-zero-loader, intel-oneapi-openmp, glibc
 Opcionales: —
 Compilación: git, cmake, procps-ng, level-zero-headers, intel-oneapi-dpcpp-cpp
 Pruebas: —
-Proporciona: oneccl=2022.0.0
+Proporciona: oneccl=2022.2.0
 Estado SST: [ ]
 
 33. openbabel
@@ -571,14 +571,14 @@ Estado SST: [ ]
 39. phosh mobile settings
 Paquete: phosh-mobile-settings
 Repositorio: extra
-Versión: 0.57.0-1
+Versión: 0.59.0-1
 Arquitectura: x86_64
 Descripción: A settings app for mobile specific things
 Upstream: https://gitlab.gnome.org/World/Phosh/phosh-mobile-settings
 Licencia: GPL-3.0-or-later
-Dependencias: cellbroadcastd, dconf, feedbackd, glib2, glibc, gnome-desktop-4, gobject-introspection, gsound, gtk4, hicolor-icon-theme, json-glib, libadwaita, libgcc, libgmobile, libportal, libportal-gtk4, libpulse, libyaml, lm_sensors, pango, phoc, phosh, wayland
+Dependencias: accountsservice, cellbroadcastd, dconf, feedbackd, fontconfig, glib2, glibc, gnome-desktop-4, gsound, gtk4, hicolor-icon-theme, json-glib, libadwaita, libgcc, libgmobile, libportal, libportal-gtk4, libpulse, libyaml, lm_sensors, pango, phoc, phosh, polkit, wayland
 Opcionales: —
-Compilación: git, glib2-devel, meson, python-packaging, wayland-protocols
+Compilación: git, glib2-devel, gobject-introspection, meson, wayland-protocols
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -586,7 +586,7 @@ Estado SST: [ ]
 40. plasma firewall
 Paquete: plasma-firewall
 Repositorio: extra
-Versión: 6.8.2-1
+Versión: 6.8.3-1
 Arquitectura: x86_64
 Descripción: Control Panel for your system firewall
 Upstream: https://kde.org/plasma-desktop/
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. postgrest
 Paquete: postgrest
 Repositorio: extra
-Versión: 10.1.0-191
+Versión: 10.1.0-194
 Arquitectura: x86_64
 Descripción: REST API for any Postgres database
 Upstream: https://github.com/begriffs/postgrest
@@ -616,16 +616,16 @@ Estado SST: [ ]
 42. psi
 Paquete: psi
 Repositorio: extra
-Versión: 1.5-5
+Versión: 1.6_b1-2
 Arquitectura: x86_64
 Descripción: Powerful XMPP (Jabber) client (Qt, C++) designed for power users
 Upstream: https://psi-im.org
-Licencia: GPL2
-Dependencias: hunspell, minizip, qca-qt5, qt5-svg, qt5-x11extras, libidn
+Licencia: GPL-2.0-only
+Dependencias: zlib, openssl, hunspell, minizip, libomemo-c, libusrsctp, libx11, libxss, qt6-multimedia, qt6-webengine, qca-qt6, qt6-svg, qtkeychain-qt6
 Opcionales: —
-Compilación: cmake, qt5-multimedia
+Compilación: cmake, git
 Pruebas: —
-Proporciona: psi-nowebengine=1.5
+Proporciona: psi-nowebengine=1.6_b1
 Estado SST: [ ]
 
 43. python commentjson
