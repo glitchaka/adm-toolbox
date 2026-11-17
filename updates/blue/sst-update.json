@@ -1,29 +1,28 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.64",
+  "version": "0.1.9-blue.69",
   "channel": "blue",
-  "published_at": "2026-11-11T17:49:32.8656212+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.64/sst.exe",
-  "sha256": "456fed7443534bc66f585eae1fb0d5b3173f903fd025cb9c52dd09e6d5c2f9f7",
-  "size": 55639040,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.64/sst-updater.exe",
-  "updater_sha256": "c7f5bfa978105d604cd255339b79d1814e7a4479f27b0ea9690474629e6a25ee",
-  "updater_size": 423424,
+  "published_at": "2026-11-17T16:50:43.0870278+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.69/sst.exe",
+  "sha256": "77e4788ba290f87434589a4cc781721235da3761c89ba00b38a613666baf86c6",
+  "size": 56214528,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.69/sst-updater.exe",
+  "updater_sha256": "8382eb5b413790f28ebe0a766ee772219a44fd9fb31d53648ab6431270bbdf3b",
+  "updater_size": 431104,
   "changes": [
-    "El punto compartido de salida interactiva reconoce automáticamente estructuras, títulos, campos y tablas, sin listas de nombres de comandos ni tratamiento individual de utilidades.",
-    "Los nuevos comandos pueden emitir informes de texto normal y obtener diseño Gruvbox Dark sin incorporar secuencias de escape ni crear renderizadores propios.",
-    "Los encabezados de tabla reciben tratamiento neutral y los colores de estado se aplican únicamente cuando el valor ocupa una columna explícita ESTADO, STATUS, SALUD, HEALTH o RESULTADO.",
-    "Los campos etiquetados conservan los estados semánticos: rojo crítico/error, naranja advertencia, verde correcto y azul exclusivamente óptimo.",
-    "Preservación exacta de datos en CSV/JSON/plain, pipes, redirecciones, salidas UNIX y secuencias ANSI ya coloreadas.",
-    "Pruebas de regresión añadidas para comandos nuevos no registrados explícitamente y estados en columnas de tablas.",
-    "Incluye Gruvbox Dark global y la corrección de las cabeceras vectoriales de blue.63."
+    "sys domain join -d DOMINIO -u CUENTA [-ou RUTA_OU] -p",
+    "sys domain leave -u CUENTA -p",
+    "Pruebas unitarias del análisis de argumentos y limpieza de historial.",
+    "Prueba de regresión Windows que rechaza valores sensibles inline sin mostrarlos y comprueba que el payload UAC carece de contraseña.",
+    "Se conserva la ruta NetAPI nativa de Windows, sin PowerShell ni wrappers netdom.",
+    "Se incluyen los cambios de Blue.68, entre ellos el arranque con renderización Slint por software."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.64.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.64/SST-Setup-0.1.9-blue.64.exe",
-    "sha256": "e92cad2732f4c9d06cbeaa9abf987e7ab895ec5968ae9c17567b41b6c2cd1aba",
-    "size": 56644319,
+    "name": "SST-Setup-0.1.9-blue.69.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.69/SST-Setup-0.1.9-blue.69.exe",
+    "sha256": "f7a41d53a6a77d8a4f79231d2ff1cb42cdc768fb7325c0aeb67e14b95602f257",
+    "size": 57235688,
     "single_use": true,
-    "package_id": "49cf0e4c0a646bd4f1b79803b37410e5"
+    "package_id": "b562ca73d0001ac74ab4e68605371e37"
   }
 }
