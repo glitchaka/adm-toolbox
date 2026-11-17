@@ -283,7 +283,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-20. jaq
+20. intel pti tools
+Paquete: intel-pti-tools
+Repositorio: extra
+Versión: 1.2.0-2
+Arquitectura: x86_64
+Descripción: Profiling Tools Interfaces for Intel GPUs (unitrace)
+Upstream: https://intel.github.io/pti-gpu/
+Licencia: MIT, BSD-3-Clause
+Dependencias: glibc, libgcc, libstdc++, spdlog, fmt, level-zero-loader, intel-oneapi-compiler-shared-runtime-libs, python, openmpi, opencl-icd-loader, intel-oneapi-compiler-shared-runtime, intel-oneapi-openmp
+Opcionales: python-pandas: trace analysis scripts, python-matplotlib: trace analysis scripts
+Compilación: cmake, ninja, git, procps-ng, libdrm, python, openmpi, onedpl, oneccl, opencl-headers, intel-oneapi-dpcpp-cpp, intel-oneapi-mkl, intel-oneapi-mkl-sycl, intel-oneapi-dev-utilities, intel-graphics-compiler, intel-compute-runtime, level-zero-headers, intel-metrics-discovery, intel-metrics-library, gtpin
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+21. jaq
 Paquete: jaq
 Repositorio: extra
 Versión: 3.1.2-1
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-21. jitterentropy
+22. jitterentropy
 Paquete: jitterentropy
 Repositorio: extra
 Versión: 3.7.0-2
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. lib32 fakeroot
+23. lib32 fakeroot
 Paquete: lib32-fakeroot
 Repositorio: multilib
 Versión: 2:1.37.2-1
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. lib32 mesa utils
+24. lib32 mesa utils
 Paquete: lib32-mesa-utils
 Repositorio: multilib
 Versión: 9.0.0-4
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: glxinfo32, glxgears32, eglinfo32
 Estado SST: [ ]
 
-24. libdwarf
+25. libdwarf
 Paquete: libdwarf
 Repositorio: extra
 Versión: 1:2.3.3-1
@@ -358,7 +373,7 @@ Pruebas: python
 Proporciona: libdwarf.so=2-64
 Estado SST: [ ]
 
-25. libgig
+26. libgig
 Paquete: libgig
 Repositorio: extra
 Versión: 4.6.0-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: libgig.so=14-64
 Estado SST: [ ]
 
-26. libisoburn
+27. libisoburn
 Paquete: libisoburn
 Repositorio: extra
 Versión: 1.5.8.2-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: xorriso, xorriso-tcltk
 Estado SST: [ ]
 
-27. libmediainfo
+28. libmediainfo
 Paquete: libmediainfo
 Repositorio: extra
 Versión: 26.10-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. libmpcdec
+29. libmpcdec
 Paquete: libmpcdec
 Repositorio: extra
 Versión: 1:0.1+r475-6
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. libstaroffice doc
+30. libstaroffice doc
 Paquete: libstaroffice-doc
 Repositorio: extra
 Versión: 0.0.8-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. liquidsfz lv2
+31. liquidsfz lv2
 Paquete: liquidsfz-lv2
 Repositorio: extra
 Versión: 0.4.2-1
@@ -448,7 +463,7 @@ Pruebas: lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-31. lua52 fifo
+32. lua52 fifo
 Paquete: lua52-fifo
 Repositorio: extra
 Versión: 0.2-3
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. ly
+33. ly
 Paquete: ly
 Repositorio: extra
 Versión: 1.4.1-1
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. marked man
+34. marked man
 Paquete: marked-man
 Repositorio: extra
 Versión: 2.1.1-1
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. mididings
+35. mididings
 Paquete: mididings
 Repositorio: extra
 Versión: 20260601-2
@@ -508,7 +523,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-35. mk configure
+36. mk configure
 Paquete: mk-configure
 Repositorio: extra
 Versión: 0.40.3-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. monolith
+37. monolith
 Paquete: monolith
 Repositorio: extra
 Versión: 2.10.1-2
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. mqttui
+38. mqttui
 Paquete: mqttui
 Repositorio: extra
 Versión: 0.24.0-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. muse
+39. muse
 Paquete: muse
 Repositorio: extra
 Versión: 4.3.0-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: dssi-host, ladspa-host, lv2-host, vst-host
 Estado SST: [ ]
 
-39. newsboat
+40. newsboat
 Paquete: newsboat
 Repositorio: extra
 Versión: 2.45.1-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. nextcloud app calendar
+41. nextcloud app calendar
 Paquete: nextcloud-app-calendar
 Repositorio: extra
 Versión: 1:6.6.5-1
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. notmuch
+42. notmuch
 Paquete: notmuch
 Repositorio: extra
 Versión: 0.40-2
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. perl io tty
+43. perl io tty
 Paquete: perl-io-tty
 Repositorio: extra
 Versión: 1.31-2
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. perl json xs
+44. perl json xs
 Paquete: perl-json-xs
 Repositorio: extra
 Versión: 4.05-1
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. perl xml rsslite
+45. perl xml rsslite
 Paquete: perl-xml-rsslite
 Repositorio: extra
 Versión: 0.17-2
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. prometheus wireguard exporter
+46. prometheus wireguard exporter
 Paquete: prometheus-wireguard-exporter
 Repositorio: extra
 Versión: 3.6.6-2
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. python cryptography
+47. python cryptography
 Paquete: python-cryptography
 Repositorio: extra
 Versión: 50.0.2-2
@@ -688,7 +703,7 @@ Pruebas: python-certifi, python-hypothesis, python-pretend, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-47. python cylp
+48. python cylp
 Paquete: python-cylp
 Repositorio: extra
 Versión: 0.94.3-1
@@ -703,10 +718,10 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-48. python hishel
+49. python hishel
 Paquete: python-hishel
 Repositorio: extra
-Versión: 1.4.0-1
+Versión: 2.0.0-1
 Arquitectura: any
 Descripción: An elegant HTTP Cache implementation for HTTPX and HTTP Core
 Upstream: https://github.com/karpetrosyan/hishel
@@ -714,11 +729,11 @@ Licencia: BSD-3-Clause
 Dependencias: python, python-msgpack, python-typing_extensions
 Opcionales: python-anyio: for general async as well as httpx and httpx2 support, python-anysqlite: for general async as well as httpx and httpx2 support, python-boto3: for S3 support, python-fastapi: for FastAPI support, python-httpx: for HTTP support with httpx, python-httpx2: for HTTP support with httpx2, python-redis: for Redis support, python-requests: for requests support
 Compilación: python-build, python-hatchling, python-hatch-fancy-pypi-readme, python-installer
-Pruebas: python-anyio, python-anysqlite, python-fakeredis, python-httpx, python-httpx2, python-inline-snapshot, python-pytest, python-redis, python-requests, python-time-machine, python-trio
+Pruebas: python-anyio, python-anysqlite, python-fakeredis, python-fastapi, python-httpx, python-httpx2, python-inline-snapshot, python-pytest, python-redis, python-requests, python-time-machine, python-trio
 Proporciona: —
 Estado SST: [ ]
 
-49. python jsonlines
+50. python jsonlines
 Paquete: python-jsonlines
 Repositorio: extra
 Versión: 4.0.0-6
@@ -733,7 +748,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-50. python opentelemetry instrumentation requests
+51. python opentelemetry instrumentation requests
 Paquete: python-opentelemetry-instrumentation-requests
 Repositorio: extra
 Versión: 0.66b2-1
@@ -748,7 +763,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-51. python pdm backend
+52. python pdm backend
 Paquete: python-pdm-backend
 Repositorio: extra
 Versión: 2.5.0-1
@@ -763,7 +778,7 @@ Pruebas: git, mercurial, python-editables, python-pytest, python-setuptools
 Proporciona: —
 Estado SST: [ ]
 
-52. python pyopencl
+53. python pyopencl
 Paquete: python-pyopencl
 Repositorio: extra
 Versión: 1:2026.1.4-1
@@ -778,7 +793,7 @@ Pruebas: intel-compute-runtime, opencl-mesa, opencl-nvidia, python-pytest, rocm-
 Proporciona: —
 Estado SST: [ ]
 
-53. python shapely
+54. python shapely
 Paquete: python-shapely
 Repositorio: extra
 Versión: 2.2.0-1
@@ -793,7 +808,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-54. python test2ref
+55. python test2ref
 Paquete: python-test2ref
 Repositorio: extra
 Versión: 1.2.3-1
@@ -808,7 +823,7 @@ Pruebas: python-pytest, python-pytest-cov
 Proporciona: —
 Estado SST: [ ]
 
-55. rocm opencl sdk
+56. rocm opencl sdk
 Paquete: rocm-opencl-sdk
 Repositorio: extra
 Versión: 10.1-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. ruby thread local
+57. ruby thread local
 Paquete: ruby-thread-local
 Repositorio: extra
 Versión: 1.1.0-6
@@ -838,7 +853,7 @@ Pruebas: ruby-bundler, ruby-covered, ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-57. sherlock lv2
+58. sherlock lv2
 Paquete: sherlock.lv2
 Repositorio: extra
 Versión: 0.28.0-5
@@ -853,7 +868,7 @@ Pruebas: lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-58. sudo rs
+59. sudo rs
 Paquete: sudo-rs
 Repositorio: extra
 Versión: 0.2.15-1
@@ -868,7 +883,7 @@ Pruebas: procps-ng
 Proporciona: —
 Estado SST: [ ]
 
-59. swaylock
+60. swaylock
 Paquete: swaylock
 Repositorio: extra
 Versión: 1.8.6-1
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. tesseract data frm
+61. tesseract data frm
 Paquete: tesseract-data-frm
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-61. ttf input nerd
+62. ttf input nerd
 Paquete: ttf-input-nerd
 Repositorio: extra
 Versión: 3.5.1-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: ttf-font, ttf-font-nerd
 Estado SST: [ ]
 
-62. ttf libertinus
+63. ttf libertinus
 Paquete: ttf-libertinus
 Repositorio: extra
 Versión: 7.051-1
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: libertinus-font=7.051
 Estado SST: [ ]
 
-63. virtiofsd
+64. virtiofsd
 Paquete: virtiofsd
 Repositorio: extra
 Versión: 1.14.0-1
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. wxwidgets gtk3
+65. wxwidgets gtk3
 Paquete: wxwidgets-gtk3
 Repositorio: extra
 Versión: 3.2.12-1

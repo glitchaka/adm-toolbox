@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. cuda
 Paquete: cuda
 Repositorio: extra
-Versión: 13.4.3-1
+Versión: 13.5.0-1
 Arquitectura: x86_64
 Descripción: NVIDIA's GPU programming toolkit
 Upstream: https://developer.nvidia.com/cuda-zone
@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. percona server clients
 Paquete: percona-server-clients
 Repositorio: extra
-Versión: 9.7.2_2-2
+Versión: 9.7.2_3-1
 Arquitectura: x86_64
 Descripción: Percona Server client tools
 Upstream: https://www.percona.com/software/mysql-database/percona-server
@@ -430,7 +430,7 @@ Dependencias: glibc, libgcc, libstdc++, zlib, zstd, openssl, jemalloc, libfido2,
 Opcionales: libsasl: authentication_ldap_sasl_client plugin, krb5: authentication_kerberos_client plugin
 Compilación: cmake, zlib, lz4, zstd, libaio, systemd-tools, pam, numactl, jemalloc, openssl, rpcsvc-proto, doxygen, graphviz, libevent, libfido2, protobuf, editline
 Pruebas: —
-Proporciona: mysql-clients=9.7.2_2, mariadb-clients=9.7.2_2
+Proporciona: mysql-clients=9.7.2_3, mariadb-clients=9.7.2_3
 Estado SST: [ ]
 
 30. perl lingua preferred
@@ -703,22 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. signstar request signature
-Paquete: signstar-request-signature
-Repositorio: extra
-Versión: 0.3.0-1
-Arquitectura: x86_64
-Descripción: A commandline tool for creating, reading and writing of signing requests for files
-Upstream: https://signstar.archlinux.page/signstar-request-signature
-Licencia: Apache-2.0 OR MIT
-Dependencias: glibc, libgcc
-Opcionales: —
-Compilación: git, just, rust, rust-script
-Pruebas: cargo-nextest
-Proporciona: —
-Estado SST: [ ]
-
-49. sigrok firmware fx2lafw
+48. sigrok firmware fx2lafw
 Paquete: sigrok-firmware-fx2lafw
 Repositorio: extra
 Versión: 0.1.7-2
@@ -733,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. snapper fmt
+49. snapper fmt
 Paquete: snapper-fmt
 Repositorio: extra
 Versión: 0.11.11-1
@@ -748,7 +733,7 @@ Pruebas: git
 Proporciona: —
 Estado SST: [ ]
 
-51. step ca
+50. step ca
 Paquete: step-ca
 Repositorio: extra
 Versión: 0.30.2-2
@@ -763,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. systray x common
+51. systray x common
 Paquete: systray-x-common
 Repositorio: extra
 Versión: 0.9.12-1
@@ -778,7 +763,7 @@ Pruebas: —
 Proporciona: systray-x
 Estado SST: [ ]
 
-53. tesseract data sun
+52. tesseract data sun
 Paquete: tesseract-data-sun
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -793,22 +778,22 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-54. thunderbird i18n ja
+53. thunderbird i18n ja
 Paquete: thunderbird-i18n-ja
 Repositorio: extra
-Versión: 159.0-2
+Versión: 160.0-1
 Arquitectura: x86_64
 Descripción: Japanese language pack for Thunderbird
 Upstream: https://www.thunderbird.net/
 Licencia: MPL-2.0, GPL-2.0-only, LGPL-2.1-only
-Dependencias: thunderbird>=159.0
+Dependencias: thunderbird>=160.0
 Opcionales: —
 Compilación: unzip, zip, diffutils, python, nasm, mesa, libpulse, libice, libsm, rust, clang, llvm, cbindgen, nodejs, lld, gawk, perl, findutils, libotr, wasi-compiler-rt, wasi-libc, wasi-libc++, wasi-libc++abi
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. uv
+54. uv
 Paquete: uv
 Repositorio: extra
 Versión: 0.13.8-1
@@ -823,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. uwsgi plugin rack
+55. uwsgi plugin rack
 Paquete: uwsgi-plugin-rack
 Repositorio: extra
 Versión: 2.0.31-5
@@ -838,10 +823,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. vault
+56. vault
 Paquete: vault
 Repositorio: extra
-Versión: 2.2.1-1
+Versión: 2.2.2-1
 Arquitectura: x86_64
 Descripción: A tool for managing secrets
 Upstream: https://vaultproject.io/
@@ -853,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. virtme ng
+57. virtme ng
 Paquete: virtme-ng
 Repositorio: extra
 Versión: 1.42-1

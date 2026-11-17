@@ -661,15 +661,15 @@ Estado SST: [ ]
 45. python cachecontrol
 Paquete: python-cachecontrol
 Repositorio: extra
-Versión: 1:0.14.4-4
+Versión: 1:0.15.0-1
 Arquitectura: any
 Descripción: Port of the caching algorithms in httplib2 for use with requests session object
 Upstream: https://github.com/ionrock/cachecontrol
 Licencia: Apache-2.0
 Dependencias: python, python-msgpack, python-requests, python-urllib3
 Opcionales: python-filelock: for filecache, python-redis: for redis cache
-Compilación: python-build, python-uv-build, python-installer, python-wheel
-Pruebas: python-cherrypy, python-filelock, python-pytest, python-redis
+Compilación: git, python-build, python-uv-build, python-installer, python-wheel
+Pruebas: python-cherrypy, python-cheroot, python-filelock, python-pytest, python-redis
 Proporciona: —
 Estado SST: [ ]
 
@@ -781,7 +781,7 @@ Estado SST: [ ]
 53. python utils
 Paquete: python-utils
 Repositorio: extra
-Versión: 4.2.0-1
+Versión: 4.2.2-1
 Arquitectura: any
 Descripción: A module with some convenient utilities not included with the standard Python install
 Upstream: https://github.com/WoLpH/python-utils

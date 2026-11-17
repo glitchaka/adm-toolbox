@@ -16,15 +16,15 @@ Estado SST: [ ]
 2. cadical
 Paquete: cadical
 Repositorio: extra
-Versión: 3.0.1-2
+Versión: 3.1.0-1
 Arquitectura: x86_64
 Descripción: A simplified, fast and reliable CDCL SAT solver
 Upstream: https://github.com/arminbiere/cadical
 Licencia: MIT
 Dependencias: glibc, libgcc, libstdc++
-Opcionales: 7zip: 7z compressed input/output support, bzip2: bzip2 compressed input/output support, gzip: gzip compressed input/output support, xz: xz and LZMA compressed input support
+Opcionales: 7zip: 7z compressed input support, bzip2: bzip2 compressed input support, gzip: gzip compressed input support, xz: xz and LZMA compressed input support
 Compilación: git
-Pruebas: gzip, zlib
+Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell hls floskell plugin
 Paquete: haskell-hls-floskell-plugin
 Repositorio: extra
-Versión: 2.4.0.0-49
+Versión: 2.4.0.0-50
 Arquitectura: x86_64
 Descripción: Integration with the Floskell code formatter
 Upstream: https://hackage.haskell.org/package/hls-floskell-plugin
@@ -571,7 +571,7 @@ Estado SST: [ ]
 39. python typer
 Paquete: python-typer
 Repositorio: extra
-Versión: 0.29.0-1
+Versión: 0.29.1-1
 Arquitectura: any
 Descripción: Build great CLIs. Easy to code. Based on Python type hints
 Upstream: https://typer.tiangolo.com/
@@ -661,12 +661,12 @@ Estado SST: [ ]
 45. thunderbird i18n zh tw
 Paquete: thunderbird-i18n-zh-tw
 Repositorio: extra
-Versión: 159.0-2
+Versión: 160.0-1
 Arquitectura: x86_64
 Descripción: Chinese (Traditional) language pack for Thunderbird
 Upstream: https://www.thunderbird.net/
 Licencia: MPL-2.0, GPL-2.0-only, LGPL-2.1-only
-Dependencias: thunderbird>=159.0
+Dependencias: thunderbird>=160.0
 Opcionales: —
 Compilación: unzip, zip, diffutils, python, nasm, mesa, libpulse, libice, libsm, rust, clang, llvm, cbindgen, nodejs, lld, gawk, perl, findutils, libotr, wasi-compiler-rt, wasi-libc, wasi-libc++, wasi-libc++abi
 Pruebas: —

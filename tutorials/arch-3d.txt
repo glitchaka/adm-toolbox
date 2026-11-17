@@ -1,7 +1,7 @@
 1. alpm docs
 Paquete: alpm-docs
 Repositorio: extra
-Versión: 0.13.0-1
+Versión: 0.14.0-1
 Arquitectura: any
 Descripción: Specifications for Arch Linux Package Management
 Upstream: https://alpm.archlinux.page/
@@ -466,14 +466,14 @@ Estado SST: [ ]
 32. mesa amber
 Paquete: mesa-amber
 Repositorio: extra
-Versión: 21.3.9-6
+Versión: 21.3.9-8
 Arquitectura: x86_64
 Descripción: classic OpenGL (non-Gallium3D) drivers
 Upstream: https://www.mesa3d.org/
 Licencia: MIT AND BSD-3-Clause AND SGI-B-2.0
 Dependencias: libdrm, libglvnd, libxfixes, libxshmfence, libxxf86vm, wayland, zstd
 Opcionales: —
-Compilación: cmake, elfutils, libdrm, libglvnd, libunwind, libx11, libxdamage, libxml2, libxrandr, libxshmfence, libxxf86vm, meson, python-mako, valgrind, wayland, wayland-protocols, xorgproto, zstd
+Compilación: cmake, elfutils, libdrm, libglvnd, libunwind, libx11, libxdamage, libxml2, libxrandr, libxshmfence, libxxf86vm, meson, python-mako, python-packaging, valgrind, wayland, wayland-protocols, xorgproto, zstd
 Pruebas: —
 Proporciona: mesa=21.3.9, opengl-driver
 Estado SST: [ ]
@@ -676,7 +676,7 @@ Estado SST: [ ]
 46. python cuda core
 Paquete: python-cuda-core
 Repositorio: extra
-Versión: 1:1.2.2-1
+Versión: 1:1.3.0-1
 Arquitectura: x86_64
 Descripción: Pythonic access to CUDA core functionality
 Upstream: https://nvidia.github.io/cuda-python/cuda-core/latest/index.html

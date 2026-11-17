@@ -16,7 +16,7 @@ Estado SST: [ ]
 2. asar
 Paquete: asar
 Repositorio: extra
-Versión: 4.3.1-1
+Versión: 4.3.2-1
 Arquitectura: any
 Descripción: Creating Electron app packages
 Upstream: https://github.com/electron/asar
@@ -463,7 +463,22 @@ Pruebas: —
 Proporciona: python-nautilus=4.2.0
 Estado SST: [ ]
 
-32. nginx mod geoip
+32. nethsm
+Paquete: nethsm
+Repositorio: extra
+Versión: 0.12.2-1
+Arquitectura: x86_64
+Descripción: A command line interface (CLI) for the Nitrokey NetHSM
+Upstream: https://signstar.archlinux.page/nethsm
+Licencia: Apache-2.0 OR MIT
+Dependencias: glibc, libgcc
+Opcionales: —
+Compilación: git, just, mold, rust, rust-script
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+33. nginx mod geoip
 Paquete: nginx-mod-geoip
 Repositorio: extra
 Versión: 1.30.6-3
@@ -478,7 +493,7 @@ Pruebas: coreutils, ffmpeg, memcached, perl, perl-cache-memcached, perl-cryptx, 
 Proporciona: —
 Estado SST: [ ]
 
-33. perl business issn
+34. perl business issn
 Paquete: perl-business-issn
 Repositorio: extra
 Versión: 1.008-3
@@ -493,7 +508,7 @@ Pruebas: perl-test-pod, perl-test-pod-coverage
 Proporciona: —
 Estado SST: [ ]
 
-34. perl config autoconf
+35. perl config autoconf
 Paquete: perl-config-autoconf
 Repositorio: extra
 Versión: 0.320-7
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. perl moose
+36. perl moose
 Paquete: perl-moose
 Repositorio: extra
 Versión: 2.4001-2
@@ -523,7 +538,7 @@ Pruebas: perl-cpan-meta-check, perl-moo, perl-specio, perl-super, perl-test-deep
 Proporciona: —
 Estado SST: [ ]
 
-36. perl ref util xs
+37. perl ref util xs
 Paquete: perl-ref-util-xs
 Repositorio: extra
 Versión: 0.117-6
@@ -538,7 +553,7 @@ Pruebas: perl-readonly
 Proporciona: —
 Estado SST: [ ]
 
-37. perl rename
+38. perl rename
 Paquete: perl-rename
 Repositorio: extra
 Versión: 1.16.3-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. pipectl
+39. pipectl
 Paquete: pipectl
 Repositorio: extra
 Versión: 0.5.1-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. python olm
+40. python olm
 Paquete: python-olm
 Repositorio: extra
 Versión: 3.2.16-7
@@ -583,7 +598,7 @@ Pruebas: python-aspectlib, python-pytest, python-pytest-benchmark
 Proporciona: —
 Estado SST: [ ]
 
-40. python pprofile
+41. python pprofile
 Paquete: python-pprofile
 Repositorio: extra
 Versión: 2.2.0-3
@@ -598,10 +613,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. python pytest httpserver
+42. python pytest httpserver
 Paquete: python-pytest-httpserver
 Repositorio: extra
-Versión: 1.2.0-1
+Versión: 1.2.1-1
 Arquitectura: any
 Descripción: Http server for pytest to test http clients
 Upstream: https://github.com/csernazs/pytest-httpserver
@@ -613,7 +628,7 @@ Pruebas: python-pytest, python-requests
 Proporciona: —
 Estado SST: [ ]
 
-42. python seaborn
+43. python seaborn
 Paquete: python-seaborn
 Repositorio: extra
 Versión: 0.13.2-3
@@ -628,7 +643,7 @@ Pruebas: python-pytest, python-scipy, python-statsmodels
 Proporciona: —
 Estado SST: [ ]
 
-43. python sphinx hawkmoth
+44. python sphinx hawkmoth
 Paquete: python-sphinx-hawkmoth
 Repositorio: extra
 Versión: 0.22.0-3
@@ -643,7 +658,7 @@ Pruebas: python-pytest, python-pytest-xdist, python-strictyaml
 Proporciona: —
 Estado SST: [ ]
 
-44. python teamcity messages
+45. python teamcity messages
 Paquete: python-teamcity-messages
 Repositorio: extra
 Versión: 1.33-2
@@ -658,22 +673,22 @@ Pruebas: python-pytest, python-virtualenv
 Proporciona: —
 Estado SST: [ ]
 
-45. python torrentool
+46. python torrentool
 Paquete: python-torrentool
 Repositorio: extra
-Versión: 1.2.0-4
+Versión: 1.3.0-1
 Arquitectura: any
 Descripción: The tool to work with torrent files
 Upstream: https://github.com/idlesign/torrentool
 Licencia: BSD-3-Clause
 Dependencias: python
 Opcionales: python-click: for torrentool, python-requests: for some torrentool subcommands
-Compilación: python-build, python-installer, python-setuptools, python-wheel
-Pruebas: python-pytest, python-pytest-datafixtures, python-pytest-responsemock
+Compilación: python-build, python-hatchling, python-installer
+Pruebas: python-click, python-pytest, python-pytest-datafixtures, python-pytest-responsemock, python-requests
 Proporciona: —
 Estado SST: [ ]
 
-46. qt5 xcb private headers
+47. qt5 xcb private headers
 Paquete: qt5-xcb-private-headers
 Repositorio: extra
 Versión: 5.15.19+kde+r97-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. qt6 quicktimeline
+48. qt6 quicktimeline
 Paquete: qt6-quicktimeline
 Repositorio: extra
 Versión: 6.12.0-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. rime cantonese
+49. rime cantonese
 Paquete: rime-cantonese
 Repositorio: extra
 Versión: 0.0.0.20260813-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. rubiks
+50. rubiks
 Paquete: rubiks
 Repositorio: extra
 Versión: 20070912-6
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. ruby text
+51. ruby text
 Paquete: ruby-text
 Repositorio: extra
 Versión: 1.3.1-11
@@ -748,7 +763,7 @@ Pruebas: ruby-test-unit, ruby-rake
 Proporciona: —
 Estado SST: [ ]
 
-51. rxvt unicode
+52. rxvt unicode
 Paquete: rxvt-unicode
 Repositorio: extra
 Versión: 9.31-11
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. secrets
+53. secrets
 Paquete: secrets
 Repositorio: extra
 Versión: 14.0-1
@@ -778,7 +793,7 @@ Pruebas: python-pytest
 Proporciona: gnome-passwordsafe
 Estado SST: [ ]
 
-53. spice up
+54. spice up
 Paquete: spice-up
 Repositorio: extra
 Versión: 1.9.1-4
@@ -793,7 +808,7 @@ Pruebas: xorg-server-xvfb
 Proporciona: —
 Estado SST: [ ]
 
-54. tesseract data mlt
+55. tesseract data mlt
 Paquete: tesseract-data-mlt
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-55. vco plugins
+56. vco plugins
 Paquete: vco-plugins
 Repositorio: extra
 Versión: 0.3.0-9
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. zeroc ice java
+57. zeroc ice java
 Paquete: zeroc-ice-java
 Repositorio: extra
 Versión: 3.7.10-4
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. zziplib
+58. zziplib
 Paquete: zziplib
 Repositorio: extra
 Versión: 0.13.80-1

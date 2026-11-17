@@ -241,14 +241,14 @@ Estado SST: [ ]
 17. lib32 mesa amber
 Paquete: lib32-mesa-amber
 Repositorio: multilib
-Versión: 21.3.9-6
+Versión: 21.3.9-8
 Arquitectura: x86_64
 Descripción: classic OpenGL (non-Gallium3D) drivers (32-bit)
 Upstream: https://www.mesa3d.org/
 Licencia: MIT AND BSD-3-Clause AND SGI-B-2.0
 Dependencias: lib32-libdrm, lib32-libglvnd, lib32-libxfixes, lib32-libxshmfence, lib32-libxxf86vm, lib32-wayland, lib32-zstd, mesa-amber
 Opcionales: —
-Compilación: cmake, lib32-libdrm, lib32-libelf, lib32-libglvnd, lib32-libunwind, lib32-libx11, lib32-libxdamage, lib32-libxml2, lib32-libxrandr, lib32-libxshmfence, lib32-libxxf86vm, lib32-wayland, lib32-zstd, meson, python-mako, wayland-protocols, xorgproto
+Compilación: cmake, lib32-libdrm, lib32-libelf, lib32-libglvnd, lib32-libunwind, lib32-libx11, lib32-libxdamage, lib32-libxml2, lib32-libxrandr, lib32-libxshmfence, lib32-libxxf86vm, lib32-wayland, lib32-zstd, meson, python-mako, python-packaging, wayland-protocols, xorgproto
 Pruebas: —
 Proporciona: lib32-mesa=21.3.9, lib32-opengl-driver
 Estado SST: [ ]
@@ -766,12 +766,12 @@ Estado SST: [ ]
 52. thunderbird i18n hy am
 Paquete: thunderbird-i18n-hy-am
 Repositorio: extra
-Versión: 159.0-2
+Versión: 160.0-1
 Arquitectura: x86_64
 Descripción: Armenian language pack for Thunderbird
 Upstream: https://www.thunderbird.net/
 Licencia: MPL-2.0, GPL-2.0-only, LGPL-2.1-only
-Dependencias: thunderbird>=159.0
+Dependencias: thunderbird>=160.0
 Opcionales: —
 Compilación: unzip, zip, diffutils, python, nasm, mesa, libpulse, libice, libsm, rust, clang, llvm, cbindgen, nodejs, lld, gawk, perl, findutils, libotr, wasi-compiler-rt, wasi-libc, wasi-libc++, wasi-libc++abi
 Pruebas: —

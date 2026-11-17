@@ -556,14 +556,14 @@ Estado SST: [ ]
 38. podofo
 Paquete: podofo
 Repositorio: extra
-Versión: 1.1.2-2
+Versión: 1.1.2-4
 Arquitectura: x86_64
 Descripción: A C++ library to work with the PDF file format
 Upstream: https://github.com/podofo/podofo
 Licencia: LGPL-2.1-only
-Dependencias: fontconfig, glibc, libstdc++, libgcc, chrono-date, fast_float, fmt, utf8cpp, freetype2, libidn, libjpeg-turbo, libpng, libtiff, libxml2, lua, openssl, zlib
+Dependencias: fontconfig, glibc, libstdc++, libgcc, fmt, freetype2, libjpeg-turbo, libpng, libtiff, libxml2, openssl, zlib
 Opcionales: —
-Compilación: cmake, git
+Compilación: cmake, git, fast_float, chrono-date, utf8cpp
 Pruebas: —
 Proporciona: libpodofo.so=4-64
 Estado SST: [ ]
