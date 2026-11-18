@@ -1,28 +1,30 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.69",
+  "version": "0.1.9-blue.70",
   "channel": "blue",
-  "published_at": "2026-11-17T16:50:43.0870278+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.69/sst.exe",
-  "sha256": "77e4788ba290f87434589a4cc781721235da3761c89ba00b38a613666baf86c6",
-  "size": 56214528,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.69/sst-updater.exe",
-  "updater_sha256": "8382eb5b413790f28ebe0a766ee772219a44fd9fb31d53648ab6431270bbdf3b",
+  "published_at": "2026-11-17T20:16:16.6556724+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.70/sst.exe",
+  "sha256": "8456ff156dcd03455a82175e2f3a44836ff532e944340e6195eb0fdff994e7cb",
+  "size": 56215552,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.70/sst-updater.exe",
+  "updater_sha256": "d71760db69e6d1de5c5bc4040284678f3b63cabb0b28d6829a309e5dac456aae",
   "updater_size": 431104,
   "changes": [
-    "sys domain join -d DOMINIO -u CUENTA [-ou RUTA_OU] -p",
-    "sys domain leave -u CUENTA -p",
-    "Pruebas unitarias del análisis de argumentos y limpieza de historial.",
-    "Prueba de regresión Windows que rechaza valores sensibles inline sin mostrarlos y comprueba que el payload UAC carece de contraseña.",
-    "Se conserva la ruta NetAPI nativa de Windows, sin PowerShell ni wrappers netdom.",
-    "Se incluyen los cambios de Blue.68, entre ellos el arranque con renderización Slint por software."
+    "Domain solicita contraseñas mediante CredUI, después de UAC cuando corresponde, sin incluir secretos en argumentos.",
+    "Autologon usa APIs nativas de Windows para capturar credenciales con CredUI y almacenarlas como secreto LSA.",
+    "Autologon disable apaga AutoAdminLogon y elimina las credenciales de inicio automático almacenadas.",
+    "SST rechaza contraseñas introducidas después de -p, incluso tras expansión de comandos, sin registrarlas en el historial ni en xtrace.",
+    "La consola bloquea escritura y autocompletado al llegar al modificador protegido -p.",
+    "Fetch, neofetch y fastfetch muestran SST como texto real y compacto, no como una matriz de píxeles ni letras gigantes.",
+    "El arranque gráfico utiliza el renderizador de software de Slint, sin exigir OpenGL ni FemtoVG.",
+    "Las pruebas de Windows comprueban el rechazo de credenciales en línea, el renderizado y los flujos de actualización."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.69.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.69/SST-Setup-0.1.9-blue.69.exe",
-    "sha256": "f7a41d53a6a77d8a4f79231d2ff1cb42cdc768fb7325c0aeb67e14b95602f257",
-    "size": 57235688,
+    "name": "SST-Setup-0.1.9-blue.70.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.70/SST-Setup-0.1.9-blue.70.exe",
+    "sha256": "e7c8669b572315bdaafdbcc0f7b51969d59a65096a430769da2640faa37b0b9c",
+    "size": 57232367,
     "single_use": true,
-    "package_id": "b562ca73d0001ac74ab4e68605371e37"
+    "package_id": "98704cd664567d60e6644e254e28bf6c"
   }
 }
