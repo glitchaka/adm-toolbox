@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. dprint
 Paquete: dprint
 Repositorio: extra
-Versión: 0.64.3-1
+Versión: 0.65.0-1
 Arquitectura: x86_64
 Descripción: Pluggable and configurable code formatting platform
 Upstream: https://github.com/dprint/dprint
@@ -196,16 +196,16 @@ Estado SST: [ ]
 14. firefox i18n sr
 Paquete: firefox-i18n-sr
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Serbian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 15. gambas3 gb net smtp
@@ -286,12 +286,12 @@ Estado SST: [ ]
 20. gst plugin opencv
 Paquete: gst-plugin-opencv
 Repositorio: extra
-Versión: 1.28.9-2
+Versión: 1.28.9-3
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - opencv plugin and library
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-base-libs=1.28.9-2, gstreamer=1.28.9-2, glib2, glibc, libgcc, libstdc++, opencv
+Dependencias: gst-plugins-base-libs=1.28.9-3, gstreamer=1.28.9-3, glib2, glibc, libgcc, libstdc++, opencv
 Opcionales: —
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. haskell io streams haproxy
 Paquete: haskell-io-streams-haproxy
 Repositorio: extra
-Versión: 1.0.1.0-453
+Versión: 1.0.1.0-454
 Arquitectura: x86_64
 Descripción: HAProxy protocol 1.5 support for io-streams
 Upstream: https://github.com/snapframework/io-streams-haproxy
@@ -616,7 +616,7 @@ Estado SST: [ ]
 42. libreoffice fresh dsb
 Paquete: libreoffice-fresh-dsb
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Sorbian: Lower Sorbian / Dolnoserbski language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -625,7 +625,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-dsb, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-dsb, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 43. libretro sameboy
@@ -751,16 +751,16 @@ Estado SST: [ ]
 51. openjdk17 src
 Paquete: openjdk17-src
 Repositorio: extra
-Versión: 17.0.21.0.3.u1-1
+Versión: 17.0.21.1.u2-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 17 sources
 Upstream: https://openjdk.java.net/
 Licencia: LicenseRef-Java
-Dependencias: jdk17-openjdk=17.0.21.0.3.u1-1
+Dependencias: jdk17-openjdk=17.0.21.1.u2-1
 Opcionales: gvfs: open links e.g. hyperlinks
 Compilación: java-environment=17, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libgcc, libjpeg-turbo, libnet, libpng, libstdc++, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: openjdk17-src=17.0.21.0.3.u1-1
+Proporciona: openjdk17-src=17.0.21.1.u2-1
 Estado SST: [ ]
 
 52. osdbattery
@@ -781,7 +781,7 @@ Estado SST: [ ]
 53. passenger
 Paquete: passenger
 Repositorio: extra
-Versión: 6.2.2-1
+Versión: 6.2.2-2
 Arquitectura: x86_64
 Descripción: Fast and robust web server and application server for Ruby, Python and Node.js
 Upstream: https://www.phusionpassenger.com

@@ -31,7 +31,7 @@ Estado SST: [ ]
 3. deepin log viewer
 Paquete: deepin-log-viewer
 Repositorio: extra
-Versión: 6.5.43-1
+Versión: 6.5.44-1
 Arquitectura: x86_64
 Descripción: Deepin system and application log viewer
 Upstream: https://github.com/linuxdeepin/deepin-log-viewer
@@ -91,12 +91,12 @@ Estado SST: [ ]
 7. festival
 Paquete: festival
 Repositorio: extra
-Versión: 2.5.0-5
+Versión: 2.5.0-6
 Arquitectura: x86_64
 Descripción: A general multi-lingual speech synthesis system
 Upstream: http://festvox.org/festival/
-Licencia: BSD, GPL, custom
-Dependencias: perl, alsa-lib
+Licencia: MIT-Festival
+Dependencias: alsa-lib, bash, glibc, libgcc, libgomp, libstdc++, ncurses, perl
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -106,31 +106,31 @@ Estado SST: [ ]
 8. firefox i18n pa in
 Paquete: firefox-i18n-pa-in
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Punjabi (India) language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 9. firefox i18n ur
 Paquete: firefox-i18n-ur
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Urdu language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 10. gifsicle
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell gi gdk3x11
 Paquete: haskell-gi-gdk3x11
 Repositorio: extra
-Versión: 3.0.17-43
+Versión: 3.0.17-44
 Arquitectura: x86_64
 Descripción: GdkX11 bindings (GTK3)
 Upstream: https://github.com/haskell-gi/haskell-gi
@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. libreoffice fresh en za
 Paquete: libreoffice-fresh-en-za
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: English (ZA) language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -430,7 +430,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-en-ZA, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-en-ZA, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 30. lsp plugins gst
@@ -511,7 +511,7 @@ Estado SST: [ ]
 35. nemo share
 Paquete: nemo-share
 Repositorio: extra
-Versión: 6.8.0-1
+Versión: 6.8.1-1
 Arquitectura: x86_64
 Descripción: Samba extension for Nemo
 Upstream: https://github.com/linuxmint/nemo-extensions

@@ -46,7 +46,7 @@ Estado SST: [ ]
 4. dhall bash
 Paquete: dhall-bash
 Repositorio: extra
-Versión: 1.0.41-291
+Versión: 1.0.41-292
 Arquitectura: x86_64
 Descripción: Compile Dhall to Bash
 Upstream: https://dhall-lang.org
@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. dhall docs
 Paquete: dhall-docs
 Repositorio: extra
-Versión: 1.0.12-280
+Versión: 1.0.12-281
 Arquitectura: x86_64
 Descripción: Generate HTML docs from a dhall package
 Upstream: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-docs
@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. firefox developer edition i18n ka
 Paquete: firefox-developer-edition-i18n-ka
 Repositorio: extra
-Versión: 161.0b3-1
+Versión: 161.0b4-1
 Arquitectura: any
 Descripción: Georgian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b3
+Dependencias: firefox-developer-edition>=161.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -136,12 +136,12 @@ Estado SST: [ ]
 10. firefox developer edition i18n lt
 Paquete: firefox-developer-edition-i18n-lt
 Repositorio: extra
-Versión: 161.0b3-1
+Versión: 161.0b4-1
 Arquitectura: any
 Descripción: Lithuanian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b3
+Dependencias: firefox-developer-edition>=161.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -151,16 +151,16 @@ Estado SST: [ ]
 11. firefox i18n es cl
 Paquete: firefox-i18n-es-cl
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Spanish (Chile) language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 12. forge sparks
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell hls gadt plugin
 Paquete: haskell-hls-gadt-plugin
 Repositorio: extra
-Versión: 2.4.0.0-51
+Versión: 2.4.0.0-52
 Arquitectura: x86_64
 Descripción: Convert to GADT syntax plugin
 Upstream: https://github.com/haskell/haskell-language-server.git
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. jre21 openjdk
 Paquete: jre21-openjdk
 Repositorio: extra
-Versión: 21.0.13.0.3.u1-1
+Versión: 21.0.13.1.u2-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 21 full runtime environment
 Upstream: https://openjdk.java.net/
@@ -340,7 +340,7 @@ Dependencias: java-runtime-common>=3, ca-certificates-utils, freetype2, glibc, h
 Opcionales: alsa-lib: for basic sound support, gtk3: for the Gtk+ 3 look and feel - desktop usage
 Compilación: java-environment=21, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libgcc, libjpeg-turbo, libnet, libpng, libstdc++, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: java-runtime=21, java-runtime-openjdk=21, jre21-openjdk=21.0.13.0.3.u1-1, java-runtime-headless=21, java-runtime-headless-openjdk=21, jre21-openjdk-headless=21.0.13.0.3.u1-1
+Proporciona: java-runtime=21, java-runtime-openjdk=21, jre21-openjdk=21.0.13.1.u2-1, java-runtime-headless=21, java-runtime-headless-openjdk=21, jre21-openjdk-headless=21.0.13.1.u2-1
 Estado SST: [ ]
 
 24. js128

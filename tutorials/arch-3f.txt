@@ -136,16 +136,16 @@ Estado SST: [ ]
 10. firefox i18n it
 Paquete: firefox-i18n-it
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Italian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 11. foomatic db engine
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell vcr
 Paquete: haskell-vcr
 Repositorio: extra
-Versión: 0.1.0-33
+Versión: 0.1.0-34
 Arquitectura: x86_64
 Descripción: Record and replay HTTP interactions
 Upstream: https://github.com/assertible/vcr#readme
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. libreoffice fresh sa in
 Paquete: libreoffice-fresh-sa-in
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Sanskrit (India) language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -355,7 +355,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-sa-IN, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-sa-IN, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 25. libreoffice still af
@@ -481,12 +481,12 @@ Estado SST: [ ]
 33. pipewire ffado
 Paquete: pipewire-ffado
 Repositorio: extra
-Versión: 1:1.6.11-1
+Versión: 1:1.6.11-2
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - FireWire support
 Upstream: https://pipewire.org
 Licencia: MIT
-Dependencias: libpipewire=1:1.6.11-1, libpipewire-0.3.so=0-64, pipewire-audio=1:1.6.11-1, pipewire=1:1.6.11-1, glibc, libffado, libffado.so=2-64
+Dependencias: libpipewire=1:1.6.11-2, libpipewire-0.3.so=0-64, pipewire-audio=1:1.6.11-2, pipewire=1:1.6.11-2, glibc, libffado, libffado.so=2-64
 Opcionales: —
 Compilación: alsa-lib, avahi, bluez-libs, dbus, dconf, doxygen, fftw, git, glib2, glib2-devel, graphviz, gst-plugins-base, jack2, libcamera, libcanberra, libebur128, libfdk-aac, libffado, libfreeaptx, libgcc, liblc3, libldac, libmysofa, libpulse, libsndfile, libstdc++, libusb, libx11, libxfixes, lilv, meson, ncurses, onnxruntime, opus, python-docutils, readline, roc-toolkit, rtkit, sbc, sdl2, spandsp, systemd, valgrind, webrtc-audio-processing-1
 Pruebas: desktop-file-utils, openal
@@ -496,14 +496,14 @@ Estado SST: [ ]
 34. ponyc
 Paquete: ponyc
 Repositorio: extra
-Versión: 0.77.1-1
+Versión: 0.77.2-1
 Arquitectura: x86_64
 Descripción: An actor model, capabilities, high performance programming language
 Upstream: https://ponylang.org/
 Licencia: BSD-2-Clause
 Dependencias: glibc, libatomic, libgcc, openssl-3, zlib
 Opcionales: —
-Compilación: cmake, git, python
+Compilación: cmake, git, patchelf, python
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

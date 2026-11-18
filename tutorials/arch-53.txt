@@ -151,16 +151,16 @@ Estado SST: [ ]
 11. firefox i18n ja
 Paquete: firefox-i18n-ja
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Japanese language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 12. freeciv gtk4
@@ -391,7 +391,7 @@ Estado SST: [ ]
 27. jdk21 openjdk
 Paquete: jdk21-openjdk
 Repositorio: extra
-Versión: 21.0.13.0.3.u1-1
+Versión: 21.0.13.1.u2-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 21 development kit
 Upstream: https://openjdk.java.net/
@@ -400,7 +400,7 @@ Dependencias: java-runtime-common>=3, ca-certificates-utils, freetype2, glibc, h
 Opcionales: java-rhino: for some JavaScript support, alsa-lib: for basic sound support, gtk3: for the Gtk+ 3 look and feel - desktop usage
 Compilación: java-environment=21, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libgcc, libjpeg-turbo, libnet, libpng, libstdc++, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: java-environment=21, java-environment-openjdk=21, jdk21-openjdk=21.0.13.0.3.u1-1, java-runtime=21, java-runtime-openjdk=21, jre21-openjdk=21.0.13.0.3.u1-1, java-runtime-headless=21, java-runtime-headless-openjdk=21, jre21-openjdk-headless=21.0.13.0.3.u1-1
+Proporciona: java-environment=21, java-environment-openjdk=21, jdk21-openjdk=21.0.13.1.u2-1, java-runtime=21, java-runtime-openjdk=21, jre21-openjdk=21.0.13.1.u2-1, java-runtime-headless=21, java-runtime-headless-openjdk=21, jre21-openjdk-headless=21.0.13.1.u2-1
 Estado SST: [ ]
 
 28. kiwix tools
@@ -496,7 +496,7 @@ Estado SST: [ ]
 34. libreoffice fresh eu
 Paquete: libreoffice-fresh-eu
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Basque language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -505,7 +505,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-eu, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-eu, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 35. lxqt clip
@@ -556,12 +556,12 @@ Estado SST: [ ]
 38. nginx mod cache purge
 Paquete: nginx-mod-cache_purge
 Repositorio: extra
-Versión: 3.0.4-2
+Versión: 3.0.4-3
 Arquitectura: x86_64
 Descripción: Nginx module with ability to purge content from FastCGI, proxy, SCGI and uWSGI caches
 Upstream: https://github.com/nginx-modules/ngx_cache_purge
 Licencia: BSD-2-Clause
-Dependencias: nginx=1.30.6
+Dependencias: nginx=1.30.7
 Opcionales: —
 Compilación: nginx, nginx-src
 Pruebas: —

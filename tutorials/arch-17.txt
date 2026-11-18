@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell skylighting format blaze html
 Paquete: haskell-skylighting-format-blaze-html
 Repositorio: extra
-Versión: 0.1.2.2-31
+Versión: 0.1.2.2-32
 Arquitectura: x86_64
 Descripción: HTML formatter for skylighting syntax highlighting library
 Upstream: https://github.com/jgm/skylighting
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. jre17 openjdk headless
 Paquete: jre17-openjdk-headless
 Repositorio: extra
-Versión: 17.0.21.0.3.u1-1
+Versión: 17.0.21.1.u2-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 17 headless runtime environment
 Upstream: https://openjdk.java.net/
@@ -355,7 +355,7 @@ Dependencias: java-runtime-common>=3, ca-certificates-utils, freetype2, glibc, h
 Opcionales: java-rhino: for some JavaScript support
 Compilación: java-environment=17, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libgcc, libjpeg-turbo, libnet, libpng, libstdc++, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: java-runtime-headless=17, java-runtime-headless-openjdk=17, jre17-openjdk-headless=17.0.21.0.3.u1-1
+Proporciona: java-runtime-headless=17, java-runtime-headless-openjdk=17, jre17-openjdk-headless=17.0.21.1.u2-1
 Estado SST: [ ]
 
 25. libhomfly
@@ -496,12 +496,12 @@ Estado SST: [ ]
 34. nginx mainline mod stream
 Paquete: nginx-mainline-mod-stream
 Repositorio: extra
-Versión: 1.31.8-2
+Versión: 1.31.9-1
 Arquitectura: x86_64
 Descripción: Module for nginx-mainline to proxy TCP and UDP data streams
 Upstream: https://nginx.org
 Licencia: BSD-2-Clause
-Dependencias: nginx-mainline=1.31.8, glibc
+Dependencias: nginx-mainline=1.31.9, glibc
 Opcionales: —
 Compilación: findutils, gd, geoip, git, glibc, libxcrypt, libxml2, libxslt, mailcap, openssl, pcre2, rsync, zlib
 Pruebas: coreutils, ffmpeg, memcached, perl, perl-cache-memcached, perl-cryptx, perl-fcgi, perl-gd, perl-io-socket-ssl
@@ -586,12 +586,12 @@ Estado SST: [ ]
 40. pueue
 Paquete: pueue
 Repositorio: extra
-Versión: 4.0.4-1
+Versión: 4.0.5-1
 Arquitectura: x86_64
 Descripción: A CLI tool for managing long running shell commands
 Upstream: https://github.com/nukesor/pueue
 Licencia: MIT
-Dependencias: gcc-libs
+Dependencias: libgcc
 Opcionales: —
 Compilación: cargo
 Pruebas: —
@@ -628,7 +628,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. python markdown math
+43. python flydsl
+Paquete: python-flydsl
+Repositorio: extra
+Versión: 0.3.1-1
+Arquitectura: x86_64
+Descripción: Python DSL and MLIR compiler for ROCm GPU kernels
+Upstream: https://github.com/ROCm/FlyDSL
+Licencia: Apache-2.0, Apache-2.0 WITH LLVM-exception, BSD-3-Clause, MIT
+Dependencias: glibc, hip-runtime-amd, libgcc, libstdc++, python, python-numpy, rocm-llvm-libs, rocm-mlir-libs
+Opcionales: python-pytorch-rocm: JIT compilation with torch tensors
+Compilación: cmake, dlpack, git, ninja, patchelf, python-build, python-installer, python-setuptools, python-wheel, robin-map, rocm-llvm-static
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+44. python markdown math
 Paquete: python-markdown-math
 Repositorio: extra
 Versión: 0.9-2
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python pytest httpx
+45. python pytest httpx
 Paquete: python-pytest-httpx
 Repositorio: extra
 Versión: 0.36.2-1
@@ -658,7 +673,7 @@ Pruebas: python-pytest-asyncio
 Proporciona: —
 Estado SST: [ ]
 
-45. python pytest repeat
+46. python pytest repeat
 Paquete: python-pytest-repeat
 Repositorio: extra
 Versión: 0.9.4-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. quassel monolithic
+47. quassel monolithic
 Paquete: quassel-monolithic
 Repositorio: extra
 Versión: 0.14.0-4
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. rhit
+48. rhit
 Paquete: rhit
 Repositorio: extra
 Versión: 2.0.4-2
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby sys filesystem
+49. ruby sys filesystem
 Paquete: ruby-sys-filesystem
 Repositorio: extra
 Versión: 1.5.0-4
@@ -718,7 +733,7 @@ Pruebas: ruby-rake, ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-49. share preview
+50. share preview
 Paquete: share-preview
 Repositorio: extra
 Versión: 1.0.0-3
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. switcheroo
+51. switcheroo
 Paquete: switcheroo
 Repositorio: extra
 Versión: 2.6.0-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. t1utils
+52. t1utils
 Paquete: t1utils
 Repositorio: extra
 Versión: 1.42-3
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. tbtools
+53. tbtools
 Paquete: tbtools
 Repositorio: extra
 Versión: 0.8.0-2
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. ttc iosevka ss01
+54. ttc iosevka ss01
 Paquete: ttc-iosevka-ss01
 Repositorio: extra
 Versión: 34.9.0-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. vice sdl2
+55. vice sdl2
 Paquete: vice-sdl2
 Repositorio: extra
 Versión: 3.10-3

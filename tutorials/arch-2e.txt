@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. gst plugin qsv
 Paquete: gst-plugin-qsv
 Repositorio: extra
-Versión: 1.28.9-2
+Versión: 1.28.9-3
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - qsv plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-bad-libs=1.28.9-2, gst-plugins-base-libs=1.28.9-2, gstreamer=1.28.9-2, glib2, glibc, libgcc, libstdc++
+Dependencias: gst-plugins-bad-libs=1.28.9-3, gst-plugins-base-libs=1.28.9-3, gstreamer=1.28.9-3, glib2, glibc, libgcc, libstdc++
 Opcionales: intel-media-sdk: runtime for legacy Intel GPUs, onevpl-intel-gpu: runtime for Tiger Lake and newer GPUs
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell network bsd
 Paquete: haskell-network-bsd
 Repositorio: extra
-Versión: 2.8.1.0-384
+Versión: 2.8.1.0-385
 Arquitectura: x86_64
 Descripción: POSIX network database (<netdb.h>) API
 Upstream: https://github.com/haskell/network-bsd
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. libreoffice fresh ko
 Paquete: libreoffice-fresh-ko
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Korean language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -385,7 +385,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-ko, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-ko, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 27. libuecc
@@ -466,12 +466,12 @@ Estado SST: [ ]
 32. nginx mod modsecurity
 Paquete: nginx-mod-modsecurity
 Repositorio: extra
-Versión: 1:1.0.4-13
+Versión: 1:1.0.4-14
 Arquitectura: x86_64
 Descripción: ModSecurity v3 Nginx Connector (module for nginx)
 Upstream: https://github.com/SpiderLabs/ModSecurity-nginx
 Licencia: Apache-2.0
-Dependencias: libmodsecurity, nginx=1.30.6
+Dependencias: libmodsecurity, nginx=1.30.7
 Opcionales: —
 Compilación: nginx, nginx-src
 Pruebas: —

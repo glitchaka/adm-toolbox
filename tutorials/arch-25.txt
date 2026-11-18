@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. libreoffice fresh mai
 Paquete: libreoffice-fresh-mai
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Maithili language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -385,13 +385,13 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-mai, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-mai, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 27. libreoffice fresh zh tw
 Paquete: libreoffice-fresh-zh-tw
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Chinese (traditional) language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -400,7 +400,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-zh-TW, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-zh-TW, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 28. libreoffice still dz
@@ -451,16 +451,16 @@ Estado SST: [ ]
 31. openjdk doc
 Paquete: openjdk-doc
 Repositorio: extra
-Versión: 27.0.1.0.3.u1-1
+Versión: 27.0.1.1.u4-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 27 documentation
 Upstream: https://openjdk.java.net/
 Licencia: LicenseRef-Java
-Dependencias: jdk27-openjdk=27.0.1.0.3.u1-1
+Dependencias: jdk27-openjdk=27.0.1.1.u4-1
 Opcionales: gvfs: open links e.g. hyperlinks
 Compilación: java-environment>=22, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libgcc, libjpeg-turbo, libnet, libpng, libstdc++, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: openjdk27-doc=27.0.1.0.3.u1-1
+Proporciona: openjdk27-doc=27.0.1.1.u4-1
 Estado SST: [ ]
 
 32. opensearch store smb plugin
@@ -511,12 +511,12 @@ Estado SST: [ ]
 35. pipewire alsa
 Paquete: pipewire-alsa
 Repositorio: extra
-Versión: 1:1.6.11-1
+Versión: 1:1.6.11-2
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - ALSA configuration
 Upstream: https://pipewire.org
 Licencia: MIT
-Dependencias: pipewire-audio=1:1.6.11-1, pipewire=1:1.6.11-1, pipewire-session-manager
+Dependencias: pipewire-audio=1:1.6.11-2, pipewire=1:1.6.11-2, pipewire-session-manager
 Opcionales: —
 Compilación: alsa-lib, avahi, bluez-libs, dbus, dconf, doxygen, fftw, git, glib2, glib2-devel, graphviz, gst-plugins-base, jack2, libcamera, libcanberra, libebur128, libfdk-aac, libffado, libfreeaptx, libgcc, liblc3, libldac, libmysofa, libpulse, libsndfile, libstdc++, libusb, libx11, libxfixes, lilv, meson, ncurses, onnxruntime, opus, python-docutils, readline, roc-toolkit, rtkit, sbc, sdl2, spandsp, systemd, valgrind, webrtc-audio-processing-1
 Pruebas: desktop-file-utils, openal
@@ -676,7 +676,7 @@ Estado SST: [ ]
 46. python ytmusicapi
 Paquete: python-ytmusicapi
 Repositorio: extra
-Versión: 1.12.3-1
+Versión: 1.12.4-1
 Arquitectura: any
 Descripción: Unofficial API for YouTube Music
 Upstream: https://github.com/sigma67/ytmusicapi
@@ -811,12 +811,12 @@ Estado SST: [ ]
 55. xapp
 Paquete: xapp
 Repositorio: extra
-Versión: 3.4.0-1
+Versión: 3.4.2-1
 Arquitectura: x86_64
 Descripción: Common library for X-Apps project
 Upstream: https://github.com/linuxmint/xapp
 Licencia: GPL-3.0-only AND LGPL-3.0-only
-Dependencias: bash, cairo, dconf, gdk-pixbuf2, glib2, glibc, gtk-layer-shell, gtk3, hicolor-icon-theme, libdbusmenu-gtk3, libgcc, libgnomekbd, libx11, pango, python, python-gobject, python-setproctitle, xapp-symbolic-icons
+Dependencias: bash, cairo, dconf, gdk-pixbuf2, glib2, glibc, gtk-layer-shell, gtk3, hicolor-icon-theme, libdbusmenu-gtk3, libgcc, libgnomekbd, libx11, pango, python, python-gobject, python-setproctitle, wayland, xapp-symbolic-icons
 Opcionales: —
 Compilación: git, glib2-devel, gobject-introspection, meson, vala
 Pruebas: —

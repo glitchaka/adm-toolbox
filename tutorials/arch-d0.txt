@@ -76,12 +76,12 @@ Estado SST: [ ]
 6. bulky
 Paquete: bulky
 Repositorio: extra
-Versión: 4.2-2
+Versión: 4.4-2
 Arquitectura: any
 Descripción: Utility to rename files and directories
 Upstream: https://github.com/linuxmint/bulky
 Licencia: GPL-3.0-or-later
-Dependencias: bash, dconf, gdk-pixbuf2, glib2, gtk3, hicolor-icon-theme, python, python-gobject, python-setproctitle, python-unidecode, xapp-symbolic-icons
+Dependencias: bash, dconf, gdk-pixbuf2, glib2, gtk3, hicolor-icon-theme, python, python-gobject, python-setproctitle, python-unidecode, python-xapp
 Opcionales: —
 Compilación: git
 Pruebas: —
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell httpd shed
 Paquete: haskell-httpd-shed
 Repositorio: extra
-Versión: 0.4.1.2-181
+Versión: 0.4.1.2-182
 Arquitectura: x86_64
 Descripción: A simple web-server with an interact style API
 Upstream: https://github.com/andygill/httpd-shed/
@@ -526,16 +526,16 @@ Estado SST: [ ]
 36. mariadb lts
 Paquete: mariadb-lts
 Repositorio: extra
-Versión: 12.3.3-3
+Versión: 12.3.4-1
 Arquitectura: x86_64
 Descripción: Fast SQL database server, derived from MySQL (LTS)
 Upstream: https://mariadb.org/
 Licencia: GPL-2.0-only
-Dependencias: mariadb-lts-clients=12.3.3, bzip2, libbz2.so=1.0-64, coreutils, jemalloc, libxml2, libxml2.so=16-64, lz4, liblz4.so=1-64, systemd-libs, libsystemd.so=0-64, zstd, libzstd.so=1-64
+Dependencias: mariadb-lts-clients=12.3.4, bzip2, libbz2.so=1.0-64, coreutils, jemalloc, libxml2, libxml2.so=16-64, lz4, liblz4.so=1-64, systemd-libs, libsystemd.so=0-64, zstd, libzstd.so=1-64
 Opcionales: cracklib: for cracklib plugin, curl: for ha_s3 plugin, galera: for MariaDB cluster with Galera WSREP, judy: for Open Query GRAPH (OQGraph) computation engine, mariadb-lts-pam: for PAM authentication, perl-dbd-mariadb: for mariadb-hotcopy, mariadb-convert-table-format and mariadb-setpermission, python-mysqlclient: for myrocks_hotbackup, xz: lzma provider
 Compilación: git, boost, bzip2, cmake, cracklib, curl, jemalloc, judy, krb5, liburing, libxcrypt, libxml2, lz4, openssl, pcre2, systemd, zlib, zstd, xz
 Pruebas: —
-Proporciona: mariadb-server=12.3.3, mariadb=12.3.3, mysql
+Proporciona: mariadb-server=12.3.4, mariadb=12.3.4, mysql
 Estado SST: [ ]
 
 37. ncrack

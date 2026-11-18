@@ -301,16 +301,16 @@ Estado SST: [ ]
 21. gst libav
 Paquete: gst-libav
 Repositorio: extra
-Versión: 1.28.9-2
+Versión: 1.28.9-3
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - libav plugin
 Upstream: https://gstreamer.freedesktop.org/
 Licencia: LGPL-2.1-or-later
-Dependencias: gst-plugins-base-libs=1.28.9-2, gstreamer=1.28.9-2, ffmpeg, glib2, glibc
+Dependencias: gst-plugins-base-libs=1.28.9-3, gstreamer=1.28.9-3, ffmpeg, glib2, glibc
 Opcionales: —
 Compilación: a52dec, aalib, alsa-lib, aom, bash-completion, bluez-libs, bzip2, cairo, cdparanoia, chromaprint, curl, faac, faad2, ffmpeg, flac, fluidsynth, gdk-pixbuf2, git, glib2, glib2-devel, glibc, gobject-introspection, graphene, gsm, gtk3, hicolor-icon-theme, imath, iso-codes, jack2, json-glib, ladspa, lame, lcms2, libass, libavc1394, libavtp, libbs2b, libcaca, libcap, libcdio, libdc1394, libdca, libde265, libdrm, libdv, libdvdnav, libdvdread, libelf, libfdk-aac, libfreeaptx, libgcc, libglvnd, libgme, libgudev, libiec61883, libjpeg-turbo, liblc3, libldac, liblrdf, libltc, libmicrodns, libmodplug, libmpcdec, libmpeg2, libnice, libogg, libopenmpt, libpng, libpulse, libraw1394, librsvg, libshout, libsndfile, libsoup3, libsrtp, libstdc++, libtheora, libunwind, libusb, libva, libvorbis, libvpl, libvpx, libwebp, libx11, libxcb, libxdamage, libxext, libxfixes, libxi, libxkbcommon, libxkbcommon-x11, libxml2, libxrandr, libxtst, libxv, lilv, lv2, mesa, meson, mjpegtools, mpg123, nasm, neon, nettle, onnxruntime, openal, opencore-amr, opencv, openexr, openh264, openjpeg2, openssl, opentimelineio, opus, orc, pango, python, python-cairo, python-commonmark, python-gobject, python-lxml, python-setuptools, python-typing_extensions, qrencode, qt5-base, qt5-declarative, qt5-tools, qt5-wayland, qt5-x11extras, qt6-base, qt6-declarative, qt6-shadertools, qt6-tools, rtmpdump, rust, sbc, sdl2, shaderc, soundtouch, spandsp, speex, srt, svt-av1, systemd-libs, taglib, twolame, v4l-utils, valgrind, vmaf, vulkan-headers, vulkan-icd-loader, vulkan-validation-layers, wavpack, wayland, wayland-protocols, webrtc-audio-processing-1, wildmidi, wpewebkit, x264, x265, zbar, zlib, zvbi, zxing-cpp, svt-hevc
 Pruebas: xorg-server-xvfb
-Proporciona: gst-ffmpeg=1.28.9-2
+Proporciona: gst-ffmpeg=1.28.9-3
 Estado SST: [ ]
 
 22. gtksourceview3
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. haskell hls retrie plugin
 Paquete: haskell-hls-retrie-plugin
 Repositorio: extra
-Versión: 2.4.0.0-51
+Versión: 2.4.0.0-52
 Arquitectura: x86_64
 Descripción: Retrie integration plugin for Haskell Language Server
 Upstream: https://hackage.haskell.org/package/hls-retrie-plugin
@@ -616,7 +616,7 @@ Estado SST: [ ]
 42. libreoffice fresh gd
 Paquete: libreoffice-fresh-gd
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Gaelic (Scottish) language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -625,7 +625,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-gd, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-gd, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 43. libreoffice still nn
@@ -1111,14 +1111,14 @@ Estado SST: [ ]
 75. rocm llvm tools
 Paquete: rocm-llvm-tools
 Repositorio: extra
-Versión: 2:10.1-4
+Versión: 2:10.1-6
 Arquitectura: x86_64
 Descripción: Radeon Open Compute - LLVM development tools
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: Apache-2.0 WITH LLVM-exception
-Dependencias: rocm-llvm=2:10.1-4, rocm-llvm-libs, rocm-mlir-libs
+Dependencias: rocm-llvm=2:10.1-6, rocm-llvm-libs, rocm-mlir-libs
 Opcionales: —
-Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf, robin-map
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

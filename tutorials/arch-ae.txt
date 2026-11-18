@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell gi wireplumber
 Paquete: haskell-gi-wireplumber
 Repositorio: extra
-Versión: 0.5.14.2-42
+Versión: 0.5.14.2-43
 Arquitectura: x86_64
 Descripción: WirePlumber bindings
 Upstream: https://github.com/taffybar/taffybar
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. libreoffice fresh uz
 Paquete: libreoffice-fresh-uz
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Uzbek language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -385,7 +385,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-uz, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-uz, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 27. libreoffice still en gb
@@ -676,14 +676,14 @@ Estado SST: [ ]
 46. rocm device libs
 Paquete: rocm-device-libs
 Repositorio: extra
-Versión: 2:10.1-4
+Versión: 2:10.1-6
 Arquitectura: x86_64
 Descripción: AMD specific device-side language runtime libraries
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: NCSA
 Dependencias: rocm-core
 Opcionales: —
-Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf, robin-map
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

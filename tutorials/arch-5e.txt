@@ -301,7 +301,7 @@ Estado SST: [ ]
 21. libreoffice fresh dgo
 Paquete: libreoffice-fresh-dgo
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Dogri language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -310,7 +310,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-dgo, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-dgo, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 22. libreoffice still be
@@ -586,14 +586,14 @@ Estado SST: [ ]
 40. python xcffib
 Paquete: python-xcffib
 Repositorio: extra
-Versión: 1.7.1-1
+Versión: 1.8.0-1
 Arquitectura: any
 Descripción: xcffib is the XCB binding for python
 Upstream: https://pypi.python.org/pypi/xcffib
 Licencia: Apache-2.0
 Dependencias: python-cffi, libxcb
 Opcionales: —
-Compilación: git, python-build, python-installer, python-wheel, python-setuptools, haskell-xcffib
+Compilación: git, python-build, python-installer, python-wheel, python-setuptools, haskell-xcffib, ruff
 Pruebas: python-pytest, xorg-server-xvfb, xorg-xeyes
 Proporciona: —
 Estado SST: [ ]

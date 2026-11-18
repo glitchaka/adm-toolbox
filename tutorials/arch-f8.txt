@@ -391,14 +391,14 @@ Estado SST: [ ]
 27. libfontenc
 Paquete: libfontenc
 Repositorio: extra
-Versión: 1.1.9-1
+Versión: 1.1.10-1
 Arquitectura: x86_64
 Descripción: X11 font encoding library
 Upstream: https://gitlab.freedesktop.org/xorg/lib/libfontenc
 Licencia: MIT
 Dependencias: zlib, glibc, xorg-fonts-encodings
 Opcionales: —
-Compilación: pkgconfig, xorgproto, xorg-util-macros
+Compilación: git, pkgconfig, xorgproto, xorg-util-macros, xorg-font-util
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -421,7 +421,7 @@ Estado SST: [ ]
 29. libsrtp
 Paquete: libsrtp
 Repositorio: extra
-Versión: 1:2.8.1-1
+Versión: 1:2.8.2-1
 Arquitectura: x86_64
 Descripción: Library for SRTP (Secure Realtime Transport Protocol)
 Upstream: https://github.com/cisco/libsrtp
@@ -511,12 +511,12 @@ Estado SST: [ ]
 35. nginx mod brotli
 Paquete: nginx-mod-brotli
 Repositorio: extra
-Versión: 1:1.0.0rc-28
+Versión: 1:1.0.0rc-29
 Arquitectura: x86_64
 Descripción: Brotli compression filter module for nginx
 Upstream: https://github.com/google/ngx_brotli
 Licencia: BSD-2-Clause
-Dependencias: brotli, nginx=1.30.6
+Dependencias: brotli, nginx=1.30.7
 Opcionales: —
 Compilación: nginx, nginx-src
 Pruebas: —

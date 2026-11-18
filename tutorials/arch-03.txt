@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell scotty
 Paquete: haskell-scotty
 Repositorio: extra
-Versión: 0.30-71
+Versión: 0.30-72
 Arquitectura: x86_64
 Descripción: Haskell web framework inspired by Ruby's Sinatra, using WAI and Warp
 Upstream: https://github.com/scotty-web/scotty
@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. libreoffice fresh sr latn
 Paquete: libreoffice-fresh-sr-latn
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Serbian (Latin) language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -355,7 +355,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-sr-Latn, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-sr-Latn, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 25. lua51 zlib
@@ -751,14 +751,14 @@ Estado SST: [ ]
 51. rocm llvm static
 Paquete: rocm-llvm-static
 Repositorio: extra
-Versión: 2:10.1-4
+Versión: 2:10.1-6
 Arquitectura: x86_64
 Descripción: Radeon Open Compute - LLVM static libraries and CMake configuration
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: Apache-2.0 WITH LLVM-exception
-Dependencias: rocm-llvm-headers=2:10.1-4, rocm-llvm-tools=2:10.1-4
-Opcionales: rocm-flang: find_package(Flang)
-Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Dependencias: rocm-llvm-headers=2:10.1-6, rocm-llvm-tools=2:10.1-6
+Opcionales: rocm-flang: find_package(Flang), python-numpy: MLIR Python bindings
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf, robin-map
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

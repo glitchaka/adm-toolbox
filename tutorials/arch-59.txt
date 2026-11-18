@@ -136,14 +136,14 @@ Estado SST: [ ]
 10. dtk6gui
 Paquete: dtk6gui
 Repositorio: extra
-Versión: 1:6.7.53-1
+Versión: 1:6.7.54-1
 Arquitectura: x86_64
 Descripción: Deepin Toolkit, gui module for DDE look and feel (Qt6 build)
 Upstream: https://github.com/linuxdeepin/dtkgui
 Licencia: CC-BY-4.0, CC0-1.0, LGPL-3.0-or-later
 Dependencias: dtk6core, glib2, glibc, libgcc, libgomp, libqtxdg, librsvg, libstdc++, libx11, qt6-base, wayland
 Opcionales: —
-Compilación: git, cmake, ninja, extra-cmake-modules, qt5-tools, qt6-tools, gtest, doxygen, dtkcore, dtk6core, libqt5xdg, libqtxdg, librsvg, qt5-base, qt6-base, qt5-wayland, glib2, libx11, treeland-protocols
+Compilación: git, cmake, ninja, extra-cmake-modules, qt5-tools, qt6-tools, gtest, doxygen, dtkcore, dtk6core, libqt5xdg, libqtxdg, librsvg, qt5-base, qt6-base, qt5-wayland, glib2, libx11, treeland-protocols, wayland-protocols
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell hls explicit fixity plugin
 Paquete: haskell-hls-explicit-fixity-plugin
 Repositorio: extra
-Versión: 2.4.0.0-49
+Versión: 2.4.0.0-50
 Arquitectura: x86_64
 Descripción: Show fixity explicitly while hovering
 Upstream: https://github.com/haskell/haskell-language-server.git
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell network run
 Paquete: haskell-network-run
 Repositorio: extra
-Versión: 0.4.0-40
+Versión: 0.4.0-41
 Arquitectura: x86_64
 Descripción: Simple network runner library
 Upstream: https://github.com/kazu-yamamoto/network-run
@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. libreoffice fresh fr
 Paquete: libreoffice-fresh-fr
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: French language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -460,13 +460,13 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-fr, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-fr, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 32. libreoffice fresh km
 Paquete: libreoffice-fresh-km
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Khmer (Cambodia) language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -475,7 +475,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-km, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-km, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 33. lua51 compat53
@@ -571,12 +571,12 @@ Estado SST: [ ]
 39. nginx mod njs
 Paquete: nginx-mod-njs
 Repositorio: extra
-Versión: 1.0.2-6
+Versión: 1.0.2-7
 Arquitectura: x86_64
 Descripción: nginScript module for nginx
 Upstream: https://nginx.org/en/docs/njs_about.html
 Licencia: BSD-2-Clause
-Dependencias: glibc, libxslt, openssl, zlib, pcre2, libxml2, nginx=1.30.6
+Dependencias: glibc, libxslt, openssl, zlib, pcre2, libxml2, nginx=1.30.7
 Opcionales: —
 Compilación: nginx, nginx-src
 Pruebas: —

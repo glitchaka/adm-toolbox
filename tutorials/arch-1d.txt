@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. haskell skylighting format ansi
 Paquete: haskell-skylighting-format-ansi
 Repositorio: extra
-Versión: 0.1-390
+Versión: 0.1-391
 Arquitectura: x86_64
 Descripción: ANSI formatter for skylighting syntax highlighting library
 Upstream: https://github.com/jgm/skylighting
@@ -361,12 +361,12 @@ Estado SST: [ ]
 25. mariadb lts pam
 Paquete: mariadb-lts-pam
 Repositorio: extra
-Versión: 12.3.3-3
+Versión: 12.3.4-1
 Arquitectura: x86_64
 Descripción: MariaDB PAM support (LTS)
 Upstream: https://mariadb.org/
 Licencia: GPL-2.0-only
-Dependencias: mariadb-lts=12.3.3, pam, libpam.so=0-64
+Dependencias: mariadb-lts=12.3.4, pam, libpam.so=0-64
 Opcionales: —
 Compilación: git, boost, bzip2, cmake, cracklib, curl, jemalloc, judy, krb5, liburing, libxcrypt, libxml2, lz4, openssl, pcre2, systemd, zlib, zstd, xz
 Pruebas: —
@@ -646,12 +646,12 @@ Estado SST: [ ]
 44. rq
 Paquete: rq
 Repositorio: extra
-Versión: 1.0.4-2
+Versión: 1.0.4-3
 Arquitectura: x86_64
 Descripción: Record Query, a tool for record analysis and transformation
 Upstream: https://github.com/dflemstr/rq
 Licencia: Apache-2.0
-Dependencias: gcc-libs, glibc
+Dependencias: libgcc, glibc
 Opcionales: —
 Compilación: cargo
 Pruebas: —

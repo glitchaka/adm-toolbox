@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. firefox developer edition i18n oc
 Paquete: firefox-developer-edition-i18n-oc
 Repositorio: extra
-Versión: 161.0b3-1
+Versión: 161.0b4-1
 Arquitectura: any
 Descripción: Occitan language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b3
+Dependencias: firefox-developer-edition>=161.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -136,31 +136,31 @@ Estado SST: [ ]
 10. firefox i18n cak
 Paquete: firefox-i18n-cak
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Maya Kaqchikel language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 11. firefox i18n he
 Paquete: firefox-i18n-he
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Hebrew language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 12. fribidi
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. haskell io streams
 Paquete: haskell-io-streams
 Repositorio: extra
-Versión: 1.5.2.2-230
+Versión: 1.5.2.2-231
 Arquitectura: x86_64
 Descripción: Simple, composable, and easy-to-use stream I/O
 Upstream: https://github.com/snapframework/io-streams
@@ -631,15 +631,15 @@ Estado SST: [ ]
 43. python oslo log
 Paquete: python-oslo-log
 Repositorio: extra
-Versión: 8.3.2-1
+Versión: 8.4.0-1
 Arquitectura: any
 Descripción: Oslo Logging Library
-Upstream: https://pypi.python.org/pypi/oslo.log/8.3.2
+Upstream: https://pypi.python.org/pypi/oslo.log/8.4.0
 Licencia: Apache-2.0
 Dependencias: python-pbr, python-oslo-config, python-oslo-context, python-oslo-i18n, python-oslo-utils, python-oslo-serialization, python-debtcollector, python-dateutil
 Opcionales: —
 Compilación: git, python-build, python-installer
-Pruebas: python-stestr, python-testtools, python-oslotest, python-eventlet
+Pruebas: python-stestr, python-testtools, python-oslotest
 Proporciona: —
 Estado SST: [ ]
 
@@ -721,14 +721,14 @@ Estado SST: [ ]
 49. rocm flang
 Paquete: rocm-flang
 Repositorio: extra
-Versión: 2:10.1-4
+Versión: 2:10.1-6
 Arquitectura: x86_64
 Descripción: Radeon Open Compute - Fortran compiler
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: Apache-2.0 WITH LLVM-exception
-Dependencias: rocm-llvm=2:10.1-4, rocm-llvm-libs, rocm-mlir-libs, gcc-libs, glibc, libgcc, libstdc++
+Dependencias: rocm-llvm=2:10.1-6, rocm-llvm-libs, rocm-mlir-libs, gcc-libs, glibc, libgcc, libstdc++
 Opcionales: rocm-openmp: OpenMP GPU offloading from Fortran
-Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf, robin-map
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

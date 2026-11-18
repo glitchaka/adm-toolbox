@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. gitlab gitaly
 Paquete: gitlab-gitaly
 Repositorio: extra
-Versión: 19.5.6-1
+Versión: 19.6.0-1
 Arquitectura: x86_64
 Descripción: Speed up Git access using caching
 Upstream: https://gitlab.com/gitlab-org/gitaly
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. haskell dbus
 Paquete: haskell-dbus
 Repositorio: extra
-Versión: 1.3.6-1
+Versión: 1.3.6-2
 Arquitectura: x86_64
 Descripción: A client library for the D-Bus IPC system
 Upstream: https://john-millikin.com/software/haskell-dbus/
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. incrust
 Paquete: incrust
 Repositorio: extra
-Versión: 1.1.1-1
+Versión: 1.1.2-1
 Arquitectura: x86_64
 Descripción: A minimal incremental / idle terminal game about compiling stuff
 Upstream: https://github.com/Antiz96/incrust
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. jre21 openjdk headless
 Paquete: jre21-openjdk-headless
 Repositorio: extra
-Versión: 21.0.13.0.3.u1-1
+Versión: 21.0.13.1.u2-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 21 headless runtime environment
 Upstream: https://openjdk.java.net/
@@ -280,7 +280,7 @@ Dependencias: java-runtime-common>=3, ca-certificates-utils, freetype2, glibc, h
 Opcionales: java-rhino: for some JavaScript support
 Compilación: java-environment=21, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libgcc, libjpeg-turbo, libnet, libpng, libstdc++, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: java-runtime-headless=21, java-runtime-headless-openjdk=21, jre21-openjdk-headless=21.0.13.0.3.u1-1
+Proporciona: java-runtime-headless=21, java-runtime-headless-openjdk=21, jre21-openjdk-headless=21.0.13.1.u2-1
 Estado SST: [ ]
 
 20. keycloak archlinux theme
@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. libreoffice fresh mni
 Paquete: libreoffice-fresh-mni
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Manipuri language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -370,7 +370,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-mni, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-mni, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 26. libreoffice still am
@@ -421,12 +421,12 @@ Estado SST: [ ]
 29. nginx mainline mod perl
 Paquete: nginx-mainline-mod-perl
 Repositorio: extra
-Versión: 1.31.8-2
+Versión: 1.31.9-1
 Arquitectura: x86_64
 Descripción: Module for nginx-mainline to implement location and variable handlers in Perl
 Upstream: https://nginx.org
 Licencia: BSD-2-Clause
-Dependencias: nginx-mainline=1.31.8, glibc, perl
+Dependencias: nginx-mainline=1.31.9, glibc, perl
 Opcionales: —
 Compilación: findutils, gd, geoip, git, glibc, libxcrypt, libxml2, libxslt, mailcap, openssl, pcre2, rsync, zlib
 Pruebas: coreutils, ffmpeg, memcached, perl, perl-cache-memcached, perl-cryptx, perl-fcgi, perl-gd, perl-io-socket-ssl
@@ -481,12 +481,12 @@ Estado SST: [ ]
 33. pipewire onnx
 Paquete: pipewire-onnx
 Repositorio: extra
-Versión: 1:1.6.11-1
+Versión: 1:1.6.11-2
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - ONNX filter support
 Upstream: https://pipewire.org
 Licencia: MIT
-Dependencias: pipewire-audio=1:1.6.11-1, pipewire=1:1.6.11-1, glibc, onnxruntime
+Dependencias: pipewire-audio=1:1.6.11-2, pipewire=1:1.6.11-2, glibc, onnxruntime
 Opcionales: —
 Compilación: alsa-lib, avahi, bluez-libs, dbus, dconf, doxygen, fftw, git, glib2, glib2-devel, graphviz, gst-plugins-base, jack2, libcamera, libcanberra, libebur128, libfdk-aac, libffado, libfreeaptx, libgcc, liblc3, libldac, libmysofa, libpulse, libsndfile, libstdc++, libusb, libx11, libxfixes, lilv, meson, ncurses, onnxruntime, opus, python-docutils, readline, roc-toolkit, rtkit, sbc, sdl2, spandsp, systemd, valgrind, webrtc-audio-processing-1
 Pruebas: desktop-file-utils, openal

@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. deltachat rpc server
 Paquete: deltachat-rpc-server
 Repositorio: extra
-Versión: 2.65.0-2
+Versión: 2.69.0-1
 Arquitectura: x86_64
 Descripción: A JSON-RPC 2.0 interface to DeltaChat over standard I/O
 Upstream: https://github.com/deltachat/deltachat-core-rust/tree/main/deltachat-rpc-server
@@ -121,16 +121,16 @@ Estado SST: [ ]
 9. firefox i18n szl
 Paquete: firefox-i18n-szl
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Silesian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 10. geary
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gstreamer
 Paquete: gstreamer
 Repositorio: extra
-Versión: 1.28.9-2
+Versión: 1.28.9-3
 Arquitectura: x86_64
 Descripción: Multimedia graph framework - core
 Upstream: https://gstreamer.freedesktop.org/
@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. haskell cheapskate
 Paquete: haskell-cheapskate
 Repositorio: extra
-Versión: 0.1.1.2-998
+Versión: 0.1.1.2-999
 Arquitectura: x86_64
 Descripción: Experimental markdown processor.
 Upstream: https://github.com/jgm/cheapskate
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell turtle
 Paquete: haskell-turtle
 Repositorio: extra
-Versión: 1.6.2-240
+Versión: 1.6.2-241
 Arquitectura: x86_64
 Descripción: Shell programming, Haskell-style
 Upstream: https://github.com/Gabriel439/turtle
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. haskell wai extra
 Paquete: haskell-wai-extra
 Repositorio: extra
-Versión: 3.1.18-178
+Versión: 3.1.18-179
 Arquitectura: x86_64
 Descripción: Provides some basic WAI handlers and middleware.
 Upstream: https://github.com/yesodweb/wai
@@ -781,16 +781,16 @@ Estado SST: [ ]
 53. spandsp
 Paquete: spandsp
 Repositorio: extra
-Versión: 0.0.6-7
+Versión: 3.1.1-1
 Arquitectura: x86_64
 Descripción: Low-level signal processing library that modulates and demodulates signals commonly used in telephony
-Upstream: https://www.soft-switch.org/
+Upstream: https://github.com/freeswitch/spandsp
 Licencia: LGPL-2.1-only
-Dependencias: glibc, libtiff
+Dependencias: glibc, libjpeg-turbo, libtiff
 Opcionales: —
-Compilación: docbook-xsl, doxygen
+Compilación: docbook-xsl, doxygen, git
 Pruebas: —
-Proporciona: libspandsp.so=2-64
+Proporciona: libspandsp.so=4-64
 Estado SST: [ ]
 
 54. systemc

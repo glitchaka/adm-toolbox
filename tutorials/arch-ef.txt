@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. dhall yaml
 Paquete: dhall-yaml
 Repositorio: extra
-Versión: 1.2.12-288
+Versión: 1.2.12-289
 Arquitectura: x86_64
 Descripción: Convert between Dhall and YAML
 Upstream: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-yaml
@@ -181,16 +181,16 @@ Estado SST: [ ]
 13. firefox i18n ast
 Paquete: firefox-i18n-ast
 Repositorio: extra
-Versión: 160.0-1
+Versión: 160.0.1-1
 Arquitectura: any
 Descripción: Asturian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0
+Dependencias: firefox>=160.0.1
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0-1
+Proporciona: firefox-i18n=160.0.1-1
 Estado SST: [ ]
 
 14. fzf
@@ -331,7 +331,7 @@ Estado SST: [ ]
 23. haskell hackage security
 Paquete: haskell-hackage-security
 Repositorio: extra
-Versión: 0.6.4.0-15
+Versión: 0.6.4.0-16
 Arquitectura: x86_64
 Descripción: Hackage security library
 Upstream: https://github.com/well-typed/hackage-security
@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. haskell wai websockets
 Paquete: haskell-wai-websockets
 Repositorio: extra
-Versión: 3.0.1.2-676
+Versión: 3.0.1.2-677
 Arquitectura: x86_64
 Descripción: Provide a bridge between WAI and the websockets package.
 Upstream: https://github.com/yesodweb/wai
@@ -481,7 +481,7 @@ Estado SST: [ ]
 33. libreoffice fresh ast
 Paquete: libreoffice-fresh-ast
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Asturianu language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -490,7 +490,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-ast, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-ast, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 34. librsvg
@@ -1021,12 +1021,12 @@ Estado SST: [ ]
 69. xmonk lv2
 Paquete: xmonk.lv2
 Repositorio: extra
-Versión: 0.4-2
+Versión: 0.4-3
 Arquitectura: x86_64
 Descripción: A LV2 toy
 Upstream: https://github.com/brummer10/Xmonk.lv2
-Licencia: BSD
-Dependencias: cairo, gcc-libs, glibc, libx11
+Licencia: 0BSD
+Dependencias: cairo, libgcc, libstdc++, glibc, libx11
 Opcionales: —
 Compilación: lv2
 Pruebas: lv2lint

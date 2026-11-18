@@ -46,12 +46,12 @@ Estado SST: [ ]
 4. cjs
 Paquete: cjs
 Repositorio: extra
-Versión: 140.2-1
+Versión: 140.3-1
 Arquitectura: x86_64
 Descripción: JavaScript bindings for Cinnamon
 Upstream: https://github.com/linuxmint/cjs
 Licencia: LGPL-2.0-or-later
-Dependencias: cairo, glib2, glibc, gobject-introspection-runtime, js140, libffi, libgcc, libgirepository, libstdc++, libx11, readline
+Dependencias: cairo, glib2, glibc, gobject-introspection-runtime, js140, libffi, libgcc, libstdc++, libx11, readline
 Opcionales: —
 Compilación: dbus, git, glib2-devel, gobject-introspection, meson
 Pruebas: gtk3, xorg-server-xvfb
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. jdk11 openjdk
 Paquete: jdk11-openjdk
 Repositorio: extra
-Versión: 11.0.33.u10-1
+Versión: 11.0.33.1.u1-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 11 development kit
 Upstream: https://openjdk.java.net/
@@ -385,7 +385,7 @@ Dependencias: java-runtime-common>=3, ca-certificates-utils, freetype2, glibc, h
 Opcionales: java-rhino: for some JavaScript support, alsa-lib: for basic sound support, gtk3: for the Gtk+ 3 look and feel - desktop usage
 Compilación: java-environment=11, alsa-lib, bash, cpio, freetype2, giflib, glibc, graphviz, harfbuzz, lcms2, libcups, libelf, libjpeg-turbo, libnet, libpng, libx11, libxext, libxrandr, libxrender, libxt, libxtst, pandoc, unzip, zip
 Pruebas: —
-Proporciona: java-environment=11, java-environment-openjdk=11, jdk11-openjdk=11.0.33.u10-1, java-runtime=11, java-runtime-openjdk=11, jre11-openjdk=11.0.33.u10-1, java-runtime-headless=11, java-runtime-headless-openjdk=11, jre11-openjdk-headless=11.0.33.u10-1
+Proporciona: java-environment=11, java-environment-openjdk=11, jdk11-openjdk=11.0.33.1.u1-1, java-runtime=11, java-runtime-openjdk=11, jre11-openjdk=11.0.33.1.u1-1, java-runtime-headless=11, java-runtime-headless-openjdk=11, jre11-openjdk-headless=11.0.33.1.u1-1
 Estado SST: [ ]
 
 27. jedi language server
@@ -841,14 +841,14 @@ Estado SST: [ ]
 57. rocm llvm
 Paquete: rocm-llvm
 Repositorio: extra
-Versión: 2:10.1-4
+Versión: 2:10.1-6
 Arquitectura: x86_64
 Descripción: Radeon Open Compute - LLVM toolchain (clang, lld)
 Upstream: https://rocm.docs.amd.com/en/latest/reference/rocmcc.html
 Licencia: Apache-2.0 WITH LLVM-exception
 Dependencias: rocm-llvm-libs, rocm-core, perl, glibc, libgcc, libstdc++, zlib, zstd, libffi, libedit, ncurses, libxml2
 Opcionales: rocm-flang: Fortran compiler, rocm-llvm-headers: LLVM headers, rocm-llvm-static: LLVM static libraries and CMake config, rocm-llvm-tools: LLVM development tools, rocm-openmp: OpenMP host runtime and GPU offloading
-Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf
+Compilación: git, cmake, python, ninja, clang, rocm-core, rocm-cmake, perl, gcc-libs, zlib, zstd, libffi, libedit, ncurses, libxml2, patchelf, robin-map
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -916,14 +916,14 @@ Estado SST: [ ]
 62. spandsp docs
 Paquete: spandsp-docs
 Repositorio: extra
-Versión: 0.0.6-7
+Versión: 3.1.1-1
 Arquitectura: x86_64
 Descripción: Developer documentation for spandsp
-Upstream: https://www.soft-switch.org/
+Upstream: https://github.com/freeswitch/spandsp
 Licencia: LGPL-2.1-only
 Dependencias: —
 Opcionales: —
-Compilación: docbook-xsl, doxygen
+Compilación: docbook-xsl, doxygen, git
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

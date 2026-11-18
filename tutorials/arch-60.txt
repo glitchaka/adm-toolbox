@@ -61,12 +61,12 @@ Estado SST: [ ]
 5. cinnamon
 Paquete: cinnamon
 Repositorio: extra
-Versión: 6.8.0-3
+Versión: 6.8.2-1
 Arquitectura: x86_64
 Descripción: Desktop environment which provides advanced innovative features and a traditional user experience
 Upstream: https://github.com/linuxmint/cinnamon
 Licencia: GPL-2.0-or-later
-Dependencias: accountsservice, at-spi2-core, bash, cairo, cinnamon-control-center, cinnamon-desktop, cinnamon-menus, cinnamon-screensaver, cinnamon-session, cinnamon-settings-daemon, cinnamon-translations, cjs, dconf, evolution-data-server, gcr, gdk-pixbuf2, glib2, glibc, gnome-backgrounds, gnome-themes-extra, gsound, gstreamer, gtk3, gtk4-layer-shell, hicolor-icon-theme, libgcc, libgirepository, libglvnd, libibus, libical, libkeybinder3, libnm, libnotify, libsecret, libx11, libxfixes, libxml2, muffin, nemo, network-manager-applet, pango, papirus-icon-theme, polkit, python, python-cairo, python-gobject, python-pam, python-pexpect, python-pillow, python-psutil, python-pyinotify, python-pytz, python-requests, python-setproctitle, python-tinycss2, python-xapp, python-xkbcommon, sound-theme-freedesktop, timezonemap, upower, xapp, xdg-desktop-portal-xapp
+Dependencias: accountsservice, at-spi2-core, bash, cairo, cinnamon-control-center, cinnamon-desktop, cinnamon-menus, cinnamon-screensaver, cinnamon-session, cinnamon-settings-daemon, cinnamon-translations, cjs, dconf, evolution-data-server, gcr, gdk-pixbuf2, glib2, glibc, gnome-backgrounds, gnome-themes-extra, gsound, gstreamer, gtk3, gtk4, gtk4-layer-shell, hicolor-icon-theme, libgcc, libgirepository, libglvnd, libibus, libical, libkeybinder3, libnm, libnotify, libsecret, libx11, libxcomposite, libxext, libxfixes, muffin, nemo, network-manager-applet, pam, pango, papirus-icon-theme, polkit, python, python-cairo, python-gobject, python-pam, python-pexpect, python-pillow, python-psutil, python-requests, python-setproctitle, python-tinycss2, python-xapp, python-xkbcommon, sound-theme-freedesktop, timezonemap, upower, xapp, xdg-desktop-portal-xapp, xdotool
 Opcionales: blueman: Bluetooth support, gnome-keyring: Secrets service backend, ibus: input method support, switcheroo-control: GPU offloading, system-config-printer: printer settings, touchegg: touch gestures, wget: cover download support in audio applet
 Compilación: git, glib2-devel, gobject-introspection, gtk-doc, meson, sassc
 Pruebas: —
@@ -166,12 +166,12 @@ Estado SST: [ ]
 12. firefox developer edition i18n tl
 Paquete: firefox-developer-edition-i18n-tl
 Repositorio: extra
-Versión: 161.0b3-1
+Versión: 161.0b4-1
 Arquitectura: any
 Descripción: Tagalog language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b3
+Dependencias: firefox-developer-edition>=161.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. haskell githash
 Paquete: haskell-githash
 Repositorio: extra
-Versión: 0.1.7.0-87
+Versión: 0.1.7.0-88
 Arquitectura: x86_64
 Descripción: Some handy Template Haskell splices for including the current git hash and branch in the code of your project
 Upstream: https://github.com/snoyberg/githash
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. haskell pandoc lua engine
 Paquete: haskell-pandoc-lua-engine
 Repositorio: extra
-Versión: 0.5.4.1-53
+Versión: 0.5.4.1-54
 Arquitectura: x86_64
 Descripción: Lua engine to power custom pandoc conversions
 Upstream: https://pandoc.org
@@ -391,7 +391,7 @@ Estado SST: [ ]
 27. haskell project template
 Paquete: haskell-project-template
 Repositorio: extra
-Versión: 0.2.1.0-602
+Versión: 0.2.1.0-603
 Arquitectura: x86_64
 Descripción: Specify Haskell project templates and generate files
 Upstream: https://github.com/fpco/haskell-ide
@@ -436,7 +436,7 @@ Estado SST: [ ]
 30. ihaskell
 Paquete: ihaskell
 Repositorio: extra
-Versión: 0.13.0.0-120
+Versión: 0.13.0.0-121
 Arquitectura: x86_64
 Descripción: A Haskell backend kernel for the Jupyter project.
 Upstream: https://github.com/gibiansky/IHaskell
@@ -601,12 +601,12 @@ Estado SST: [ ]
 41. nginx mod geoip2
 Paquete: nginx-mod-geoip2
 Repositorio: extra
-Versión: 3.4-24
+Versión: 3.4-25
 Arquitectura: x86_64
 Descripción: Nginx GeoIP2 module
 Upstream: https://github.com/leev/ngx_http_geoip2_module
 Licencia: BSD-2-Clause
-Dependencias: libmaxminddb, nginx=1.30.6
+Dependencias: libmaxminddb, nginx=1.30.7
 Opcionales: —
 Compilación: nginx, nginx-src
 Pruebas: —
@@ -616,7 +616,7 @@ Estado SST: [ ]
 42. openjdk8 src
 Paquete: openjdk8-src
 Repositorio: extra
-Versión: 8.512.u09-1
+Versión: 8.514.u01-1
 Arquitectura: x86_64
 Descripción: OpenJDK Java 8 sources
 Upstream: https://openjdk.java.net/

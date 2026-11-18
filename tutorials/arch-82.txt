@@ -91,14 +91,14 @@ Estado SST: [ ]
 7. deepin screensaver
 Paquete: deepin-screensaver
 Repositorio: extra
-Versión: 6.5.11-2
+Versión: 6.5.13-1
 Arquitectura: x86_64
 Descripción: Deepin screensaver viewer and tools
 Upstream: https://github.com/linuxdeepin/deepin-screensaver
 Licencia: GPL-3.0-or-later
-Dependencias: dtk6core, dtk6gui, dtk6widget, qt6-base, qt6-declarative, qt6-5compat, libx11, libxcb, libxss, libxext, xscreensaver, glibc, libgcc, libstdc++
+Dependencias: dtk6core, dtk6gui, dtk6widget, qt6-base, qt6-declarative, qt6-5compat, qt6-wayland, libx11, libxcb, libxss, libxext, wayland, xscreensaver, glibc, libgcc, libstdc++
 Opcionales: —
-Compilación: git, cmake, ninja, qt6-tools
+Compilación: git, cmake, ninja, libxkbcommon, qt6-tools, wayland-protocols
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -121,7 +121,7 @@ Estado SST: [ ]
 9. dtk6widget
 Paquete: dtk6widget
 Repositorio: extra
-Versión: 1:6.7.53-1
+Versión: 1:6.7.54-1
 Arquitectura: x86_64
 Descripción: Deepin base graphical widgets library (Qt6 build)
 Upstream: https://github.com/linuxdeepin/dtkwidget
@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. haskell gtk sni tray
 Paquete: haskell-gtk-sni-tray
 Repositorio: extra
-Versión: 0.2.1.5-5
+Versión: 0.2.1.5-6
 Arquitectura: x86_64
 Descripción: A standalone StatusNotifierItem/AppIndicator tray
 Upstream: https://github.com/IvanMalison/gtk-sni-tray#readme
@@ -196,7 +196,7 @@ Estado SST: [ ]
 14. haskell hls refactor plugin
 Paquete: haskell-hls-refactor-plugin
 Repositorio: extra
-Versión: 2.4.0.0-51
+Versión: 2.4.0.0-52
 Arquitectura: x86_64
 Descripción: Exactprint refactorings for Haskell Language Server
 Upstream: https://github.com/haskell/haskell-language-server.git
@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. libreoffice fresh bn
 Paquete: libreoffice-fresh-bn
 Repositorio: extra
-Versión: 26.8.2-1
+Versión: 26.8.3-1
 Arquitectura: any
 Descripción: Bengali language pack for LibreOffice Fresh
 Upstream: https://www.documentfoundation.org
@@ -385,7 +385,7 @@ Dependencias: libreoffice-fresh
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libreoffice-bn, libreoffice-fresh-i18n=26.8.2-1
+Proporciona: libreoffice-bn, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
 27. libusrsctp

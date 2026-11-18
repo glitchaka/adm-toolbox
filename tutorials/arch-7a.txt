@@ -91,12 +91,12 @@ Estado SST: [ ]
 7. firefox developer edition i18n hsb
 Paquete: firefox-developer-edition-i18n-hsb
 Repositorio: extra
-Versión: 161.0b3-1
+Versión: 161.0b4-1
 Arquitectura: any
 Descripción: Upper Sorbian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b3
+Dependencias: firefox-developer-edition>=161.0b4
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. haskell casa types
 Paquete: haskell-casa-types
 Repositorio: extra
-Versión: 0.0.3-144
+Versión: 0.0.3-145
 Arquitectura: x86_64
 Descripción: Content Addressable Storage Archive types
 Upstream: https://github.com/commercialhaskell/casa
@@ -703,7 +703,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. yelp xsl
+48. velocitty
+Paquete: velocitty
+Repositorio: extra
+Versión: 1.0.9-1
+Arquitectura: any
+Descripción: Terminal emulator for Linux desktops
+Upstream: https://github.com/xapp-project/velocitty
+Licencia: GPL-3.0-or-later
+Dependencias: dconf, glib2, graphene, gtk4, hicolor-icon-theme, libadwaita, pango, python, python-gobject, python-setproctitle, python-xapp, vte4, xapp-symbolic-icons
+Opcionales: —
+Compilación: git, meson
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+49. yelp xsl
 Paquete: yelp-xsl
 Repositorio: extra
 Versión: 49.0-1
