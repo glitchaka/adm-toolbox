@@ -631,12 +631,12 @@ Estado SST: [ ]
 43. python flydsl
 Paquete: python-flydsl
 Repositorio: extra
-Versión: 0.3.1-1
+Versión: 0.3.1-2
 Arquitectura: x86_64
 Descripción: Python DSL and MLIR compiler for ROCm GPU kernels
 Upstream: https://github.com/ROCm/FlyDSL
 Licencia: Apache-2.0, Apache-2.0 WITH LLVM-exception, BSD-3-Clause, MIT
-Dependencias: glibc, hip-runtime-amd, libgcc, libstdc++, python, python-numpy, rocm-llvm-libs, rocm-mlir-libs
+Dependencias: glibc, hip-runtime-amd, libgcc, libstdc++, python, python-numpy, rocm-llvm, rocm-llvm-libs, rocm-mlir-libs
 Opcionales: python-pytorch-rocm: JIT compilation with torch tensors
 Compilación: cmake, dlpack, git, ninja, patchelf, python-build, python-installer, python-setuptools, python-wheel, robin-map, rocm-llvm-static
 Pruebas: —

@@ -91,12 +91,12 @@ Estado SST: [ ]
 7. firefox developer edition i18n uz
 Paquete: firefox-developer-edition-i18n-uz
 Repositorio: extra
-Versión: 161.0b4-1
+Versión: 161.0b5-1
 Arquitectura: any
 Descripción: Uzbek language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b4
+Dependencias: firefox-developer-edition>=161.0b5
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -571,14 +571,14 @@ Estado SST: [ ]
 39. profanity
 Paquete: profanity
 Repositorio: extra
-Versión: 1:0.19.0-1
+Versión: 1:0.20.0-2
 Arquitectura: x86_64
 Descripción: Console based XMPP client
 Upstream: https://profanity-im.github.io
 Licencia: GPL3
-Dependencias: expat, glib2, glibc, libassuan, libcurl.so=4-64, libgcrypt, libgpg-error, libgpgme.so=45-64, libncursesw.so=6-64, libnotify.so=4-64, libotr, libreadline.so=8-64, libsignal-protocol-c, libstrophe.so=0-64, python
+Dependencias: expat, glib2, glibc, libassuan, libcurl.so=4-64, libgcrypt, libgpg-error, libgpgme.so=45-64, libncursesw.so=6-64, libnotify.so, libotr, libreadline.so=8-64, libsignal-protocol-c, libstrophe.so=0-64, lua
 Opcionales: —
-Compilación: meson, expat, glib2, glibc, libassuan, libcurl.so, libgcrypt, libgpg-error, libgpgme.so, libncursesw.so, libnotify.so, libotr, libreadline.so, libsignal-protocol-c, libstrophe.so, python, cairo, gdk-pixbuf2, libgtk-3.so, libx11, libxss
+Compilación: meson, expat, glib2, glibc, libassuan, libcurl.so, libgcrypt, libgpg-error, libgpgme.so, libncursesw.so, libnotify.so, libotr, libreadline.so, libsignal-protocol-c, libstrophe.so, lua, cairo, enchant, gdk-pixbuf2, libgtk-3.so, libx11, libxss, qrencode
 Pruebas: cmocka
 Proporciona: —
 Estado SST: [ ]
@@ -616,7 +616,7 @@ Estado SST: [ ]
 42. python annotated doc
 Paquete: python-annotated-doc
 Repositorio: extra
-Versión: 0.0.6-1
+Versión: 0.0.7-1
 Arquitectura: any
 Descripción: Document parameters, class attributes, return types, and variables inline, with Annotated
 Upstream: https://github.com/fastapi/annotated-doc

@@ -316,14 +316,14 @@ Estado SST: [ ]
 22. ktextaddons
 Paquete: ktextaddons
 Repositorio: extra
-Versión: 2.2.0-1
+Versión: 2.3.0-1
 Arquitectura: x86_64
 Descripción: Various text handling addons
 Upstream: https://invent.kde.org/libraries/ktextaddons
 Licencia: GPL-2.0-or-later
 Dependencias: glibc, karchive, kcolorscheme, kconfig, kcoreaddons, ki18n, kiconthemes, kio, kitemviews, kservice, ktextwidgets, kwidgetsaddons, libstdc++, qt6-base, qt6-multimedia, qt6-speech, qtkeychain-qt6, sonnet, syntax-highlighting
-Opcionales: languagetool: Grammar checking, grammalecte: French grammar checking, libreoffice: Use autocorrection data from LibreOffice
-Compilación: extra-cmake-modules, qt6-tools
+Opcionales: grammalecte: French grammar checking, languagetool: Grammar checking, libreoffice: Use autocorrection data from LibreOffice, vosk-api: Speech to text plugin
+Compilación: extra-cmake-modules, qt6-tools, vosk-api
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. linux docs
 Paquete: linux-docs
 Repositorio: core
-Versión: 7.3.4.arch1-2
+Versión: 7.3.5.arch1-1
 Arquitectura: x86_64
 Descripción: Documentation for the Linux kernel
 Upstream: https://github.com/archlinux/linux
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. php odbc
 Paquete: php-odbc
 Repositorio: extra
-Versión: 8.5.12-4
+Versión: 8.5.13-1
 Arquitectura: x86_64
 Descripción: ODBC modules for PHP
 Upstream: https://www.php.net/

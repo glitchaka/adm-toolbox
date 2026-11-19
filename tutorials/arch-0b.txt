@@ -706,15 +706,15 @@ Estado SST: [ ]
 48. python paho mqtt
 Paquete: python-paho-mqtt
 Repositorio: extra
-Versión: 1.6.1-6
+Versión: 2.2.0-1
 Arquitectura: any
-Descripción: Python client library for MQTT v3.1 and v3.1.1
+Descripción: Python client library for MQTT v5.0, v3.1.1 and v3.1
 Upstream: https://www.eclipse.org/paho/clients/python
-Licencia: custom
+Licencia: EPL-2.0 OR BSD-3-Clause
 Dependencias: python
-Opcionales: —
-Compilación: python-setuptools
-Pruebas: python-pytest, python-six
+Opcionales: python-pysocks: SOCKS and HTTP proxy support, python-dnspython: DNS SRV lookup with connect_srv()
+Compilación: python-build, python-installer, python-hatchling
+Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 

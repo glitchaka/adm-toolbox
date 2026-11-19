@@ -721,15 +721,15 @@ Estado SST: [ ]
 49. python keystoneauth1
 Paquete: python-keystoneauth1
 Repositorio: extra
-Versión: 5.18.1-1
+Versión: 5.19.0-1
 Arquitectura: any
 Descripción: Authentication Library for OpenStack Identity
 Upstream: https://docs.openstack.org/keystoneauth/latest/
 Licencia: Apache-2.0
 Dependencias: python-iso8601, python-stevedore, python-os-service-types, python-requests, python-typing_extensions
-Opcionales: python-requests-kerberos: for kerberos support, python-lxml: for saml2 support, python-oauthlib: for oauth1 support, python-betamax: for betamax support, python-fixtures: for betamax support, python-yaml: for betamax support
+Opcionales: python-requests-kerberos: for kerberos support, python-lxml: for saml2 support, python-oauthlib: for oauth1 support, python-osprofiler: for profiling support, python-betamax: for betamax support, python-fixtures: for betamax support, python-yaml: for betamax support
 Compilación: git, python-build, python-installer, python-pbr, python-setuptools, python-wheel
-Pruebas: python-hacking, python-oslo-config, python-oslo-utils, python-oslotest, python-betamax, python-fixtures, python-requests-mock, python-stestr, python-testresources, python-testtools, python-yaml, python-requests-kerberos, python-lxml, python-oauthlib
+Pruebas: python-oslo-config, python-oslo-utils, python-oslotest, python-betamax, python-fixtures, python-requests-mock, python-stestr, python-testresources, python-testtools, python-yaml, python-requests-kerberos, python-lxml, python-oauthlib
 Proporciona: —
 Estado SST: [ ]
 

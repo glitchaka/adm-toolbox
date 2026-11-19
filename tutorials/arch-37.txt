@@ -181,12 +181,12 @@ Estado SST: [ ]
 13. firefox developer edition i18n fy nl
 Paquete: firefox-developer-edition-i18n-fy-nl
 Repositorio: extra
-Versión: 161.0b4-1
+Versión: 161.0b5-1
 Arquitectura: any
 Descripción: Frisian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b4
+Dependencias: firefox-developer-edition>=161.0b5
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -196,12 +196,12 @@ Estado SST: [ ]
 14. firefox developer edition i18n son
 Paquete: firefox-developer-edition-i18n-son
 Repositorio: extra
-Versión: 161.0b4-1
+Versión: 161.0b5-1
 Arquitectura: any
 Descripción: Songhai language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b4
+Dependencias: firefox-developer-edition>=161.0b5
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. haskell hls rename plugin
 Paquete: haskell-hls-rename-plugin
 Repositorio: extra
-Versión: 2.4.0.0-52
+Versión: 2.4.0.0-53
 Arquitectura: x86_64
 Descripción: Rename plugin for Haskell Language Server
 Upstream: https://hackage.haskell.org/package/hls-rename-plugin
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. php sqlite
 Paquete: php-sqlite
 Repositorio: extra
-Versión: 8.5.12-4
+Versión: 8.5.13-1
 Arquitectura: x86_64
 Descripción: sqlite module for PHP
 Upstream: https://www.php.net/
@@ -1003,7 +1003,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-68. virtualbox guest utils nox
+68. unfold
+Paquete: unfold
+Repositorio: extra
+Versión: 1.0.4-1
+Arquitectura: any
+Descripción: Archive manager for Linux desktops
+Upstream: https://github.com/xapp-project/unfold
+Licencia: GPL-3.0-or-later
+Dependencias: 7zip, gdk-pixbuf2, glib2, gtk3, hicolor-icon-theme, pango, python, python-gobject, python-setproctitle, python-xapp
+Opcionales: —
+Compilación: git, meson
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+69. virtualbox guest utils nox
 Paquete: virtualbox-guest-utils-nox
 Repositorio: extra
 Versión: 7.2.22-2
@@ -1018,7 +1033,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-69. zita jclient
+70. zita jclient
 Paquete: zita-jclient
 Repositorio: extra
 Versión: 0.5.2-2

@@ -166,12 +166,12 @@ Estado SST: [ ]
 12. firefox developer edition i18n az
 Paquete: firefox-developer-edition-i18n-az
 Repositorio: extra
-Versión: 161.0b4-1
+Versión: 161.0b5-1
 Arquitectura: any
 Descripción: Azerbaijani language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b4
+Dependencias: firefox-developer-edition>=161.0b5
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -571,16 +571,16 @@ Estado SST: [ ]
 39. mesa
 Paquete: mesa
 Repositorio: extra
-Versión: 1:26.2.7-1
+Versión: 1:26.3.1-1
 Arquitectura: x86_64
 Descripción: Open-source OpenGL drivers
 Upstream: https://www.mesa3d.org/
 Licencia: MIT AND BSD-3-Clause AND SGI-B-2.0
 Dependencias: expat, glibc, libdrm, libelf, libgcc, libglvnd, libstdc++, libx11, libxcb, libxext, libxshmfence, libxxf86vm, llvm-libs, lm_sensors, spirv-tools, wayland, zlib, zstd
 Opcionales: opengl-man-pages: for the OpenGL API man pages
-Compilación: clang, directx-headers, expat, glibc, libdisplay-info, libdrm, libelf, libgcc, libglvnd, libpng, libstdc++, libva, libx11, libxcb, libxext, libxml2, libxrandr, libxshmfence, libxxf86vm, llvm, llvm-libs, lm_sensors, rust, spirv-llvm-translator, spirv-tools, systemd-libs, vulkan-icd-loader, wayland, xcb-util-keysyms, zlib, zstd, cbindgen, clang, cmake, elfutils, glslang, libclc, meson, python-mako, python-packaging, python-ply, python-pycparser, python-yaml, rust-bindgen, wayland-protocols, xorgproto, valgrind, python-sphinx, python-sphinx-hawkmoth
+Compilación: clang-libs, directx-headers, expat, glibc, libdisplay-info, libdrm, libelf, libgcc, libglvnd, libpng, libstdc++, libva, libx11, libxcb, libxext, libxml2, libxrandr, libxshmfence, libxxf86vm, llvm, llvm-libs, lm_sensors, rust, spirv-llvm-translator, spirv-tools, systemd-libs, vulkan-icd-loader, wayland, xcb-util-keysyms, zlib, zstd, cbindgen, clang, cmake, elfutils, glslang, libclc, meson, python-lxml, python-mako, python-packaging, python-ply, python-pycparser, python-yaml, rust-bindgen, venus-protocol, wayland-protocols, xorgproto, valgrind, graphviz, python-sphinx, python-sphinx-hawkmoth
 Pruebas: —
-Proporciona: libva-mesa-driver=1:26.2.7-1, mesa-libgl=1:26.2.7-1, libva-driver, opengl-driver
+Proporciona: libva-mesa-driver=1:26.3.1-1, mesa-libgl=1:26.3.1-1, libva-driver, opengl-driver
 Estado SST: [ ]
 
 40. mkinitcpio busybox

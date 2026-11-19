@@ -346,7 +346,7 @@ Estado SST: [ ]
 24. lemonade server
 Paquete: lemonade-server
 Repositorio: extra
-Versión: 2026.46.2-1
+Versión: 2026.47.1-1
 Arquitectura: x86_64
 Descripción: Lemonade helps users discover and run local AI apps by serving optimized LLMs right from their own GPUs and NPUs
 Upstream: https://github.com/lemonade-sdk/lemonade
@@ -601,7 +601,7 @@ Estado SST: [ ]
 41. php pgsql
 Paquete: php-pgsql
 Repositorio: extra
-Versión: 8.5.12-4
+Versión: 8.5.13-1
 Arquitectura: x86_64
 Descripción: PostgreSQL modules for PHP
 Upstream: https://www.php.net/
@@ -628,7 +628,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. python jupyter server terminals
+43. python calendaring config
+Paquete: python-calendaring-config
+Repositorio: extra
+Versión: 0.5.0-1
+Arquitectura: any
+Descripción: Shared configuration file of caldav, calendaring and calendaring-jmap
+Upstream: https://github.com/python-caldav/caldav
+Licencia: Apache-2.0 OR GPL-3.0-or-later
+Dependencias: python, python-yaml
+Opcionales: python-keyring: Look secrets up in the system keyring
+Compilación: git, python-build, python-hatch-vcs, python-hatchling, python-installer, python-wheel
+Pruebas: python-keyring, python-pytest
+Proporciona: —
+Estado SST: [ ]
+
+44. python jupyter server terminals
 Paquete: python-jupyter-server-terminals
 Repositorio: extra
 Versión: 0.5.4-1
@@ -643,7 +658,7 @@ Pruebas: python-pytest-jupyter, python-pytest-timeout
 Proporciona: —
 Estado SST: [ ]
 
-44. python pbs installer
+45. python pbs installer
 Paquete: python-pbs-installer
 Repositorio: extra
 Versión: 2026.11.10-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. python py partiql parser
+46. python py partiql parser
 Paquete: python-py-partiql-parser
 Repositorio: extra
 Versión: 0.6.3-2
@@ -673,7 +688,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby async bus
+47. ruby async bus
 Paquete: ruby-async-bus
 Repositorio: extra
 Versión: 0.4.0-1
@@ -688,7 +703,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bake-test-external, ruby-bundler, ruby-
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby puppet metadata
+48. ruby puppet metadata
 Paquete: ruby-puppet_metadata
 Repositorio: extra
 Versión: 6.4.0-1
@@ -703,7 +718,7 @@ Pruebas: ruby-rake, ruby-rspec, ruby-rspec-its
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby test unit ruby core
+49. ruby test unit ruby core
 Paquete: ruby-test-unit-ruby-core
 Repositorio: extra
 Versión: 1.0.16-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. scrot
+50. scrot
 Paquete: scrot
 Repositorio: extra
 Versión: 2.0.0-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. sfizz
+51. sfizz
 Paquete: sfizz
 Repositorio: extra
 Versión: 1.2.3-15
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. solanum
+52. solanum
 Paquete: solanum
 Repositorio: extra
 Versión: 6.0.0-3
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. stow
+53. stow
 Paquete: stow
 Repositorio: extra
 Versión: 2.4.1-1
@@ -778,7 +793,7 @@ Pruebas: perl-test-output, perl-io-stringy
 Proporciona: —
 Estado SST: [ ]
 
-53. tcsh
+54. tcsh
 Paquete: tcsh
 Repositorio: extra
 Versión: 6.24.16-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. tesseract data afr
+55. tesseract data afr
 Paquete: tesseract-data-afr
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-55. tesseract data kan
+56. tesseract data kan
 Paquete: tesseract-data-kan
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-56. texlive langgerman
+57. texlive langgerman
 Paquete: texlive-langgerman
 Repositorio: extra
 Versión: 2026.1-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: texlive-apalike-german, texlive-autotype, texlive-babel-german, texlive-bibleref-german, texlive-booktabs-de, texlive-csquotes-de, texlive-dehyph, texlive-dehyph-exptl, texlive-dhua, texlive-dtk-bibliography, texlive-etdipa, texlive-etoolbox-de, texlive-fifinddo-info, texlive-fragoli, texlive-german, texlive-germbib, texlive-germkorr, texlive-hausarbeit-jura, texlive-hyphen-german, texlive-koma-script-examples, texlive-l2picfaq, texlive-l2tabu, texlive-latexcheat-de, texlive-lshort-german, texlive-lualatex-doc-de, texlive-microtype-de, texlive-milog, texlive-quran-de, texlive-r_und_s, texlive-schulmathematik, texlive-templates-fenn, texlive-templates-sommer, texlive-termcal-de, texlive-texlive-de, texlive-tipa-de, texlive-translation-arsclassica-de, texlive-translation-biblatex-de, texlive-translation-chemsym-de, texlive-translation-ecv-de, texlive-translation-enumitem-de, texlive-translation-europecv-de, texlive-translation-filecontents-de, texlive-translation-moreverb-de, texlive-udesoftec, texlive-uhrzeit, texlive-umlaute, texlive-voss-mathcol
 Estado SST: [ ]
 
-57. uwsgi plugin webdav
+58. uwsgi plugin webdav
 Paquete: uwsgi-plugin-webdav
 Repositorio: extra
 Versión: 2.0.31-5
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. vm lv2
+59. vm lv2
 Paquete: vm.lv2
 Repositorio: extra
 Versión: 0.14.0-6
@@ -868,7 +883,7 @@ Pruebas: lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-59. wdisplays
+60. wdisplays
 Paquete: wdisplays
 Repositorio: extra
 Versión: 1.3.0-1
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. xcb util xrm
+61. xcb util xrm
 Paquete: xcb-util-xrm
 Repositorio: extra
 Versión: 1.3-4
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. y crdt
+62. y crdt
 Paquete: y-crdt
 Repositorio: extra
 Versión: 1:0.27.4-1
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. yad
+63. yad
 Paquete: yad
 Repositorio: extra
 Versión: 15.0-2
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. zycore c
+64. zycore c
 Paquete: zycore-c
 Repositorio: extra
 Versión: 1.5.2-1
