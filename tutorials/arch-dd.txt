@@ -1,14 +1,14 @@
 1. chromium
 Paquete: chromium
 Repositorio: extra
-Versión: 157.0.8103.79-1
+Versión: 158.0.8127.36-1
 Arquitectura: x86_64
 Descripción: A web browser built for speed, simplicity, and security
 Upstream: https://www.chromium.org/Home
 Licencia: BSD-3-Clause
 Dependencias: alsa-lib, at-spi2-core, cairo, dbus, desktop-file-utils, expat, glib2, glibc, gtk3, hicolor-icon-theme, libcups, libffi, libgcc, libgcrypt, libpulse, libstdc++, libva, libx11, libxcb, libxcomposite, libxdamage, libxext, libxfixes, libxkbcommon, libxrandr, libxss, mesa, nspr, nss, pango, pciutils, systemd, systemd-libs, ttf-liberation, xdg-utils, zlib, fontconfig, brotli, libjpeg-turbo, openh264, simdutf, highway, dav1d, flac, libdrm, libxml2, zstd, libwebp, minizip, opus, double-conversion, harfbuzz, freetype2
 Opcionales: pipewire: WebRTC desktop sharing under Wayland, kdialog: support for native dialogs in Plasma, gtk4: for --gtk-version=4 (GTK4 IME might work better on Wayland), qt6-base: Qt support, org.freedesktop.secrets: password storage backend on GNOME, KDE and Xfce, upower: Battery Status API support
-Compilación: clang, compiler-rt, esbuild, git, gn, go, gperf, java-runtime-headless, lld, ninja, nodejs, opus, pipewire, python, qt6-base, rust, rust-bindgen, rust-src, rustc-dev, typescript, vulkan-headers
+Compilación: clang, compiler-rt, esbuild, git, gn, go, gperf, java-runtime-headless, lld, ninja, nodejs, pipewire, python, qt6-base, rust, rust-bindgen, rust-src, rustc-dev, typescript, vulkan-headers
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -226,7 +226,7 @@ Estado SST: [ ]
 16. lib32 vulkan freedreno
 Paquete: lib32-vulkan-freedreno
 Repositorio: multilib
-Versión: 1:26.3.1-1
+Versión: 1:26.3.1-2
 Arquitectura: x86_64
 Descripción: Open-source Vulkan driver for Adreno GPUs - 32-bit
 Upstream: https://www.mesa3d.org/
@@ -781,7 +781,7 @@ Estado SST: [ ]
 53. vlc plugin inflate
 Paquete: vlc-plugin-inflate
 Repositorio: extra
-Versión: 3.0.24-1
+Versión: 3.0.24-2
 Arquitectura: x86_64
 Descripción: Free and open source cross-platform multimedia player and framework - inflate plugin
 Upstream: https://www.videolan.org/vlc/

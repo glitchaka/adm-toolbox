@@ -16,12 +16,12 @@ Estado SST: [ ]
 2. dracut
 Paquete: dracut
 Repositorio: extra
-Versión: 111-1
+Versión: 112-1
 Arquitectura: x86_64
 Descripción: An event driven initramfs infrastructure
 Upstream: https://github.com/dracut-ng/dracut-ng
 Licencia: GPL-2.0-or-later
-Dependencias: bash, cpio, coreutils, filesystem, findutils, gawk, grep, kmod, pkgconf, procps-ng, sed, util-linux
+Dependencias: bash, cpio, coreutils, filesystem, findutils, gawk, glibc, grep, kmod, libgcc, pkgconf, procps-ng, sed, systemd-libs, util-linux
 Opcionales: 3cpio: cpio alternative written in rust, binutils: --uefi option support, biosdevname: BIOS network device renaming, bluez: bluetooth (keyboard), btrfs-progs: scan for Btrfs on block devices, busybox: allows use of busybox (on your own risk), bzip2: bzip2 compression, cifs-utils: support CIFS, connman: support for connman networking, cryptsetup: support for encrypted with LUKS filesystems, dash: allows use of dash (on your own risk), dbus: dbus-daemon dracut module, dbus-broker: dbus-broker dracut module, dhclient: legacy networking support, dmraid: dmraid dracut module support, e2fsprogs: ext2/3/4 filesystem support, elfutils: strip binaries to reduce initramfs size, erofs-utils: support for building an erofs initramfs, f2fs-tools: fsfs filesystem support, fuse3: live on NTFS (dmsquash-live-ntfs module), gnupg: gpg for crypto operations and smartcards, gzip: gzip compression, iproute2: legacy networking support, iputils: networking support, jq: NVMe-oF support (nvmf module), lvm2: support Logical Volume Manager, lzop: lzop compression, mdadm: support MD devices, also known as software RAID devices, memstrack: memstrack module support, multipath-tools: multipath dracut module support, nbd: support network block devices, ndctl: NVDIMM support, networkmanager: networkmanager support, nfs-utils: support NFS, ntfs-3g: live on NTFS (dmsquash-live-ntfs module), nvme-cli: NVMe-oF support (nvmf module), open-iscsi: support iSCSI (iscsi module), openssh: install ssh and scp along with config files and specified keys (ssh-client module), pigz: faster gzip compression, plymouth: plymouth boot splash, qrencode: systemd-bsod, rng-tools: enable rngd service to help generating entropy early during boot, rsyslog: enable logging with rsyslog, sbsigntools: uefi_secureboot_cert/key configuration option support, systemd: systemd system and service manager, systemd-ukify: Unified Kernel Image, squashfs-tools: support for building a squashed initramfs, tar: live tar image, tpm2-tools: tpm2 support for e.g. LUKS, xz: xz compression
 Compilación: asciidoctor, bash-completion, git, rust
 Pruebas: —
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. lib32 vulkan gfxstream
 Paquete: lib32-vulkan-gfxstream
 Repositorio: multilib
-Versión: 1:26.3.1-1
+Versión: 1:26.3.1-2
 Arquitectura: x86_64
 Descripción: Open-source Vulkan driver for Graphics Streaming Kit - 32-bit
 Upstream: https://www.mesa3d.org/
@@ -826,7 +826,7 @@ Estado SST: [ ]
 56. vlc plugin smb
 Paquete: vlc-plugin-smb
 Repositorio: extra
-Versión: 3.0.24-1
+Versión: 3.0.24-2
 Arquitectura: x86_64
 Descripción: Free and open source cross-platform multimedia player and framework - SMB plugin
 Upstream: https://www.videolan.org/vlc/
@@ -841,7 +841,7 @@ Estado SST: [ ]
 57. vlc plugin speex
 Paquete: vlc-plugin-speex
 Repositorio: extra
-Versión: 3.0.24-1
+Versión: 3.0.24-2
 Arquitectura: x86_64
 Descripción: Free and open source cross-platform multimedia player and framework - Speex plugins
 Upstream: https://www.videolan.org/vlc/

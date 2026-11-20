@@ -496,12 +496,12 @@ Estado SST: [ ]
 34. nss
 Paquete: nss
 Repositorio: core
-Versión: 3.133-1
+Versión: 3.134-1
 Arquitectura: x86_64
 Descripción: Network Security Services
 Upstream: https://firefox-source-docs.mozilla.org/security/nss/index.html
 Licencia: MPL-2.0
-Dependencias: glibc, nspr, p11-kit, sh, sqlite, zlib
+Dependencias: glibc, libgcc, libstdc++, nspr, p11-kit, sh, sqlite
 Opcionales: —
 Compilación: gyp, mercurial, perl, python
 Pruebas: —
@@ -811,7 +811,7 @@ Estado SST: [ ]
 55. vlc plugin lirc
 Paquete: vlc-plugin-lirc
 Repositorio: extra
-Versión: 3.0.24-1
+Versión: 3.0.24-2
 Arquitectura: x86_64
 Descripción: Free and open source cross-platform multimedia player and framework - Infrared remote control plugin
 Upstream: https://www.videolan.org/vlc/

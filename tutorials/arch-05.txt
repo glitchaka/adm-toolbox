@@ -271,7 +271,7 @@ Estado SST: [ ]
 19. lib32 vulkan asahi
 Paquete: lib32-vulkan-asahi
 Repositorio: multilib
-Versión: 1:26.3.1-1
+Versión: 1:26.3.1-2
 Arquitectura: x86_64
 Descripción: Open-source Vulkan driver for Apple GPUs - 32-bit
 Upstream: https://www.mesa3d.org/
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. opencv cuda
 Paquete: opencv-cuda
 Repositorio: extra
-Versión: 5.1.0-3
+Versión: 5.1.0-4
 Arquitectura: x86_64
 Descripción: Open Source Computer Vision Library (with CUDA support)
 Upstream: https://opencv.org/
@@ -646,16 +646,16 @@ Estado SST: [ ]
 44. sndio
 Paquete: sndio
 Repositorio: extra
-Versión: 1.10.0-1
+Versión: 1.11.0-1
 Arquitectura: x86_64
 Descripción: A small audio and MIDI framework
 Upstream: https://sndio.org
 Licencia: ISC
-Dependencias: alsa-lib, libbsd
+Dependencias: alsa-lib, glibc, libbsd
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: libsndio.so=7-64
+Proporciona: libsndio.so=9-64
 Estado SST: [ ]
 
 45. tt rss
