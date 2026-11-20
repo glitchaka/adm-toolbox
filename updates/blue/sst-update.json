@@ -1,30 +1,27 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.78",
+  "version": "0.1.9-blue.79",
   "channel": "blue",
-  "published_at": "2026-11-20T16:59:35.5609095+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.78/sst.exe",
-  "sha256": "1d25c1d70bb321a2c212708ab51e76050f2c02f68384bffba4e20322f9b7b700",
-  "size": 56416768,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.78/sst-updater.exe",
-  "updater_sha256": "fa9d7e766c3d18888910b15645eb5bbcdcdd2d2a474ba64b0f654a1782cf3abc",
+  "published_at": "2026-11-20T17:47:58.4356971+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.79/sst.exe",
+  "sha256": "3b4d0e15117f971da2a9e6a7d36e6cca67b60ea3d41da5bdd5a7f72e77c30a89",
+  "size": 56416256,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.79/sst-updater.exe",
+  "updater_sha256": "2b188533000cd10f8f64f7f65c1df6409dbece862c200220cd078702a2d91e40",
   "updater_size": 433664,
   "changes": [
-    "Corrige la ausencia visual del logotipo SST en la pantalla de bienvenida.",
-    "La terminal imprimía las 37 líneas originales antes de los datos de sistema y el scroll las borraba de la pantalla.",
-    "El frontend Slint muestra ahora las 37 filas y 100 columnas exactas del ASCII proporcionado por el autor en una superficie nativa escalable y transparente, independiente del desplazamiento del VT100.",
-    "Los datos de inicio conservan el formato de fetch en la terminal, sin duplicar las 37 filas ni empujar fuera de la pantalla el prompt.",
-    "El logotipo se oculta al comenzar a usar la consola; `fetch`, `neofetch` y `fastfetch` siguen mostrando el ASCII completo al invocarse manualmente.",
-    "Mantiene Gruvbox Dark, la imagen de fondo elegida por el usuario y el motor de paquetes nativos `.pkgx` de Blue.77.",
-    "La regresión de fetch distingue el renderizado manual del modo de inicio y comprueba la conexión del logotipo nativo en la interfaz.",
-    "Todas las pruebas Windows de publicación son bloqueantes."
+    "Se elimina la dependencia exclusiva del overlay Slint: toda sesión GUI ahora imprime el logo ASCII compacto SST junto a sus datos de sistema en el propio VT100, tanto en ventanas anchas como estrechas.",
+    "Se conserva la obra ASCII original de 37 líneas y 100 columnas para `fetch --full` y `fetch --plain`; el overlay GUI puede seguir mostrando el diseño completo como elemento adicional.",
+    "El overlay solo se oculta tras pulsar Enter para enviar un comando, no por el foco ni por eventos de teclado previos.",
+    "Pruebas de Windows verifican la presencia del ASCII en salidas de arranque con 58 y 100 columnas, conservan la obra completa y comprueban la conexión efectiva del arranque GUI.",
+    "No se modifican el wallpaper del usuario, los colores de fondo ni el contrato nativo `.pkgx`."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.78.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.78/SST-Setup-0.1.9-blue.78.exe",
-    "sha256": "48498df36b58f8c8925038d66556a8ce07d5104a06322ee9a0d5a30487977757",
-    "size": 57443416,
+    "name": "SST-Setup-0.1.9-blue.79.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.79/SST-Setup-0.1.9-blue.79.exe",
+    "sha256": "5c1f1a47bac7f7bd2c3ec2f0af79ea099677590887f81e4c099004a81babf357",
+    "size": 57442903,
     "single_use": true,
-    "package_id": "fbdd955e8fc387fe8a99e80f023a396e"
+    "package_id": "bdce9b5814bb4404ed0cc47ddfc38ea9"
   }
 }
