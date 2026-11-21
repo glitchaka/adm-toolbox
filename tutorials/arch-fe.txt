@@ -238,7 +238,22 @@ Pruebas: —
 Proporciona: libcurl-gnutls.so=4-32
 Estado SST: [ ]
 
-17. lib32 mesa amber
+17. lib32 libmd
+Paquete: lib32-libmd
+Repositorio: multilib
+Versión: 1.3.0-1
+Arquitectura: x86_64
+Descripción: Message Digest functions from BSD systems (32-bit)
+Upstream: https://www.hadrons.org/software/libmd/
+Licencia: BSD-3-Clause AND BSD-2-Clause AND ISC AND Beerware AND CC0-1.0
+Dependencias: lib32-glibc, libmd
+Opcionales: —
+Compilación: —
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+18. lib32 mesa amber
 Paquete: lib32-mesa-amber
 Repositorio: multilib
 Versión: 21.3.9-8
@@ -253,7 +268,7 @@ Pruebas: —
 Proporciona: lib32-mesa=21.3.9, lib32-opengl-driver
 Estado SST: [ ]
 
-18. lib32 vulkan gfxstream
+19. lib32 vulkan gfxstream
 Paquete: lib32-vulkan-gfxstream
 Repositorio: multilib
 Versión: 1:26.3.1-2
@@ -268,7 +283,7 @@ Pruebas: —
 Proporciona: lib32-vulkan-driver
 Estado SST: [ ]
 
-19. libburn
+20. libburn
 Paquete: libburn
 Repositorio: extra
 Versión: 1.5.8-1
@@ -283,7 +298,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-20. libgssglue
+21. libgssglue
 Paquete: libgssglue
 Repositorio: extra
 Versión: 0.9-2
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: libgssglue.so=1-64
 Estado SST: [ ]
 
-21. libpipeline
+22. libpipeline
 Paquete: libpipeline
 Repositorio: core
 Versión: 1.5.8-1
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. libreplaygain
+23. libreplaygain
 Paquete: libreplaygain
 Repositorio: extra
 Versión: 475-6
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. libxdg basedir
+24. libxdg basedir
 Paquete: libxdg-basedir
 Repositorio: extra
 Versión: 1.2.3-3
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. linuxconsole
+25. linuxconsole
 Paquete: linuxconsole
 Repositorio: extra
 Versión: 1.8.1-3
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: joystick, inputattach
 Estado SST: [ ]
 
-25. llvm20 libs
+26. llvm20 libs
 Paquete: llvm20-libs
 Repositorio: extra
 Versión: 20.1.8-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. lua51 luv
+27. lua51 luv
 Paquete: lua51-luv
 Repositorio: extra
 Versión: 1.53.0.1-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. mate notification daemon
+28. mate notification daemon
 Paquete: mate-notification-daemon
 Repositorio: extra
 Versión: 1.29.0-4
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. nitrocli
+29. nitrocli
 Paquete: nitrocli
 Repositorio: extra
 Versión: 0.4.1-3
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. ocaml pp
+30. ocaml pp
 Paquete: ocaml-pp
 Repositorio: extra
 Versión: 2.0.0-6
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. openbao plugin kms azure
+31. openbao plugin kms azure
 Paquete: openbao-plugin-kms-azure
 Repositorio: extra
 Versión: 0.1.0-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. openjdk11 doc
+32. openjdk11 doc
 Paquete: openjdk11-doc
 Repositorio: extra
 Versión: 11.0.33.1.u1-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: openjdk11-doc=11.0.33.1.u1-1
 Estado SST: [ ]
 
-32. p11 kit docs
+33. p11 kit docs
 Paquete: p11-kit-docs
 Repositorio: core
 Versión: 0.26.6-1
@@ -478,7 +493,7 @@ Pruebas: gnutls
 Proporciona: —
 Estado SST: [ ]
 
-33. perl extutils helpers
+34. perl extutils helpers
 Paquete: perl-extutils-helpers
 Repositorio: extra
 Versión: 0.028-3
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. perl file tail
+35. perl file tail
 Paquete: perl-file-tail
 Repositorio: extra
 Versión: 1.3-13
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. perl text diff
+36. perl text diff
 Paquete: perl-text-diff
 Repositorio: extra
 Versión: 1.46-1
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. postgresql old upgrade
+37. postgresql old upgrade
 Paquete: postgresql-old-upgrade
 Repositorio: extra
 Versión: 17.12-1
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. prometheus snmp exporter
+38. prometheus snmp exporter
 Paquete: prometheus-snmp-exporter
 Repositorio: extra
 Versión: 0.31.0-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. python immutables
+39. python immutables
 Paquete: python-immutables
 Repositorio: extra
 Versión: 0.21-1
@@ -568,7 +583,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-39. python jinxed
+40. python jinxed
 Paquete: python-jinxed
 Repositorio: extra
 Versión: 2.1.0-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python lsp server
+41. python lsp server
 Paquete: python-lsp-server
 Repositorio: extra
 Versión: 1.15.0-1
@@ -598,7 +613,7 @@ Pruebas: python-pytest, python-flaky, python-mccabe, python-pycodestyle, python-
 Proporciona: —
 Estado SST: [ ]
 
-41. python ndindex
+42. python ndindex
 Paquete: python-ndindex
 Repositorio: extra
 Versión: 1.10.1-2
@@ -613,7 +628,7 @@ Pruebas: python-hypothesis, python-pytest, python-sympy
 Proporciona: —
 Estado SST: [ ]
 
-42. python numba cuda mlir
+43. python numba cuda mlir
 Paquete: python-numba-cuda-mlir
 Repositorio: extra
 Versión: 0.6.0-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. python propcache
+44. python propcache
 Paquete: python-propcache
 Repositorio: extra
 Versión: 0.5.4-1
@@ -643,7 +658,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-44. python pytorch opt xpu
+45. python pytorch opt xpu
 Paquete: python-pytorch-opt-xpu
 Repositorio: extra
 Versión: 2.15.0-2
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: python-pytorch=2.15.0, python-pytorch-xpu=2.15.0
 Estado SST: [ ]
 
-45. python referencing
+46. python referencing
 Paquete: python-referencing
 Repositorio: extra
 Versión: 0.37.0-4
@@ -673,7 +688,7 @@ Pruebas: python-pytest, python-jsonschema
 Proporciona: —
 Estado SST: [ ]
 
-46. rapidcheck
+47. rapidcheck
 Paquete: rapidcheck
 Repositorio: extra
 Versión: r1056.ff6af6f-5
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: librapidcheck.so=librapidcheck.so-64
 Estado SST: [ ]
 
-47. ruby parallel
+48. ruby parallel
 Paquete: ruby-parallel
 Repositorio: extra
 Versión: 2.3.0-1
@@ -703,7 +718,7 @@ Pruebas: lsof, procps-ng, ruby-base64, ruby-bigdecimal, ruby-benchmark, ruby-bun
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby parallel tests
+49. ruby parallel tests
 Paquete: ruby-parallel_tests
 Repositorio: extra
 Versión: 5.9.0-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. samba
+50. samba
 Paquete: samba
 Repositorio: extra
 Versión: 2:4.25.1-1
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. switchboard plug printers
+51. switchboard plug printers
 Paquete: switchboard-plug-printers
 Repositorio: extra
 Versión: 8.0.2-2
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. texlive music
+52. texlive music
 Paquete: texlive-music
 Repositorio: extra
 Versión: 2026.1-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: texlive-abc, texlive-autosp, texlive-bagpipe, texlive-chordbars, texlive-chordbox, texlive-ddphonism, texlive-figbas, texlive-fretplot, texlive-gchords, texlive-gregoriotex, texlive-gtrcrd, texlive-guitar, texlive-guitarchordschemes, texlive-guitartabs, texlive-harmony, texlive-latex4musicians, texlive-leadsheets, texlive-liederbuch, texlive-lilyglyphs, texlive-lyluatex, texlive-m-tx, texlive-musical, texlive-musicography, texlive-musixguit, texlive-musixtex, texlive-musixtex-fonts, texlive-musixtnt, texlive-octave, texlive-piano, texlive-pmx, texlive-pmxchords, texlive-recorder-fingering, texlive-songbook, texlive-songproj, texlive-songs, texlive-undar-digitacion, texlive-xml2pmx, texlive-xpiano
 Estado SST: [ ]
 
-52. thunderbird i18n hy am
+53. thunderbird i18n hy am
 Paquete: thunderbird-i18n-hy-am
 Repositorio: extra
 Versión: 160.0-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. ttf carlito
+54. ttf carlito
 Paquete: ttf-carlito
 Repositorio: extra
 Versión: 20230509-2
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: google-crosextra-carlito-fonts
 Estado SST: [ ]
 
-54. tuning library
+55. tuning library
 Paquete: tuning-library
 Repositorio: extra
 Versión: 1.1.0-4
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. visitors
+56. visitors
 Paquete: visitors
 Repositorio: extra
 Versión: 0.7-9
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. vlc plugin smb
+57. vlc plugin smb
 Paquete: vlc-plugin-smb
 Repositorio: extra
 Versión: 3.0.24-2
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. vlc plugin speex
+58. vlc plugin speex
 Paquete: vlc-plugin-speex
 Repositorio: extra
 Versión: 3.0.24-2
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. woodpecker cli
+59. woodpecker cli
 Paquete: woodpecker-cli
 Repositorio: extra
 Versión: 3.20.1-1

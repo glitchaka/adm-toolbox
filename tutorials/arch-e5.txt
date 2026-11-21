@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. docker buildx
 Paquete: docker-buildx
 Repositorio: extra
-Versión: 0.39.0-1
+Versión: 0.39.1-1
 Arquitectura: x86_64
 Descripción: Docker CLI plugin for extended build capabilities with BuildKit
 Upstream: https://github.com/docker/buildx
@@ -271,12 +271,12 @@ Estado SST: [ ]
 19. hyprlock
 Paquete: hyprlock
 Repositorio: extra
-Versión: 0.9.7-2
+Versión: 0.9.7-3
 Arquitectura: x86_64
 Descripción: hyprland’s GPU-accelerated screen locking utility
 Upstream: https://github.com/hyprwm/hyprlock
 Licencia: BSD-3-Clause
-Dependencias: cairo, libgcc, libstdc++, glibc, hyprgraphics, libhyprgraphics.so=5-64, hyprlang, libhyprlang.so=2-64, hyprutils, libhyprutils.so=13-64, libdrm, libglvnd, libEGL.so=1-64, libxkbcommon, libxkbcommon.so=0-64, mesa, pam, libpam.so=0-64, sdbus-cpp, libsdbus-c++.so=2-64, wayland, libwayland-client.so=0-64, libwayland-egl.so=1-64, wayland-protocols
+Dependencias: cairo, libgcc, libstdc++, glibc, hyprgraphics, hyprlang, hyprutils, libdrm, libglvnd, libxkbcommon, mesa, pam, pango, sdbus-cpp, wayland, wayland-protocols, libhyprgraphics.so=5-64, libhyprlang.so=2-64, libhyprutils.so=13-64, libEGL.so=1-64, libxkbcommon.so=0-64, libpam.so=0-64, libsdbus-c++.so=2-64, libwayland-client.so=0-64, libwayland-egl.so=1-64
 Opcionales: —
 Compilación: cmake, hyprwayland-scanner
 Pruebas: —

@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. deepin image viewer
 Paquete: deepin-image-viewer
 Repositorio: extra
-Versión: 6.0.48-1
+Versión: 6.0.60-1
 Arquitectura: x86_64
 Descripción: An image viewing tool with fashion interface and smooth performance
 Upstream: https://github.com/linuxdeepin/deepin-image-viewer
@@ -511,12 +511,12 @@ Estado SST: [ ]
 35. lib32 sndio
 Paquete: lib32-sndio
 Repositorio: multilib
-Versión: 1.10.0-1
+Versión: 1.11.0-1
 Arquitectura: x86_64
 Descripción: A small audio and MIDI framework (32-bit)
 Upstream: https://sndio.org
 Licencia: ISC
-Dependencias: lib32-alsa-lib
+Dependencias: lib32-alsa-lib, lib32-glibc, lib32-libbsd, sndio=1.11.0
 Opcionales: —
 Compilación: —
 Pruebas: —

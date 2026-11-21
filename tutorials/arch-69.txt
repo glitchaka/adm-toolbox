@@ -166,7 +166,7 @@ Estado SST: [ ]
 12. fx
 Paquete: fx
 Repositorio: extra
-Versión: 40.0.1-1
+Versión: 40.0.2-1
 Arquitectura: x86_64
 Descripción: Command-line tool and terminal JSON viewer
 Upstream: https://github.com/antonmedv/fx
@@ -346,12 +346,12 @@ Estado SST: [ ]
 24. hyprpaper
 Paquete: hyprpaper
 Repositorio: extra
-Versión: 0.8.5-3
+Versión: 0.8.5-4
 Arquitectura: x86_64
 Descripción: a blazing fast wayland wallpaper utility with IPC controls
 Upstream: https://github.com/hyprwm/hyprpaper
 Licencia: BSD-3-Clause
-Dependencias: file, libmagic.so=1-64, glibc, libgcc, libgcc_s.so=1-64, libstdc++, libstdc++.so=6-64, hyprlang, libhyprlang.so=2-64, hyprtoolkit, libhyprtoolkit.so=6-64, hyprutils, libhyprutils.so=13-64, hyprwire, libhyprwire.so=3-64, libglvnd, libGLESv2.so, wayland
+Dependencias: file, glibc, libgcc, libstdc++, hyprlang, hyprtoolkit, hyprutils, hyprwire, libglvnd, wayland, libmagic.so=1-64, libgcc_s.so=1-64, libstdc++.so=6-64, libhyprlang.so=2-64, libhyprtoolkit.so=6-64, libhyprutils.so=13-64, libhyprwire.so=3-64, libGLESv2.so
 Opcionales: —
 Compilación: cmake, hyprwayland-scanner, wayland-protocols, xorgproto
 Pruebas: —

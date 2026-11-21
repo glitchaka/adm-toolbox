@@ -421,15 +421,15 @@ Estado SST: [ ]
 29. python google auth
 Paquete: python-google-auth
 Repositorio: extra
-Versión: 2.62.2-1
+Versión: 2.62.2-2
 Arquitectura: any
 Descripción: Google Authentication Library
 Upstream: https://github.com/googleapis/google-cloud-python
 Licencia: Apache-2.0
 Dependencias: python, python-cryptography, python-pyasn1-modules
-Opcionales: python-aiohttp: for async HTTP support, python-packaging: for HTTP support, python-pyjwt: for JSON Web Key support, python-pyopenssl: for TLS support, python-pyu2f: for reauthentication support, python-requests: for async HTTP support, python-rsa: for RSA support, python-urllib3: for HTTP support
+Opcionales: python-aiohttp: for async HTTP support, python-certifi: for system CA store with urllib3 and mutual TLS support, python-packaging: for HTTP support, python-pyjwt: for JSON Web Key support, python-pyopenssl: for TLS support, python-pyu2f: for reauthentication support, python-requests: for async HTTP support, python-rsa: for RSA support, python-urllib3: for HTTP support
 Compilación: python-build, python-installer, python-setuptools, python-wheel
-Pruebas: python-aiohttp, python-aioresponses, python-flask, python-freezegun, python-grpcio, python-pyjwt, python-pyopenssl, python-pytest, python-pytest-asyncio, python-pytest-localserver, python-pyu2f, python-requests, python-responses, python-urllib3
+Pruebas: python-aiohttp, python-aioresponses, python-certifi, python-flask, python-freezegun, python-grpcio, python-pyjwt, python-pyopenssl, python-pytest, python-pytest-asyncio, python-pytest-localserver, python-pyu2f, python-requests, python-responses, python-urllib3
 Proporciona: —
 Estado SST: [ ]
 

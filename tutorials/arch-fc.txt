@@ -313,7 +313,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. lib32 libva intel driver
+22. lib32 libbsd
+Paquete: lib32-libbsd
+Repositorio: multilib
+Versión: 0.12.2-2
+Arquitectura: x86_64
+Descripción: Provides useful functions commonly found on BSD systems like strlcpy() (32-bit)
+Upstream: https://libbsd.freedesktop.org
+Licencia: ISC AND MIT AND Beerware AND BSD-2-Clause AND BSD-3-Clause
+Dependencias: lib32-glibc, lib32-libmd, libbsd
+Opcionales: —
+Compilación: git
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+23. lib32 libva intel driver
 Paquete: lib32-libva-intel-driver
 Repositorio: multilib
 Versión: 2.4.5-1
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. libproxy docs
+24. libproxy docs
 Paquete: libproxy-docs
 Repositorio: extra
 Versión: 0.5.12-1
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. libxml perl
+25. libxml perl
 Paquete: libxml-perl
 Repositorio: extra
 Versión: 0.08-9
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. libzim
+26. libzim
 Paquete: libzim
 Repositorio: extra
 Versión: 9.8.1-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. mcpp
+27. mcpp
 Paquete: mcpp
 Repositorio: extra
 Versión: 2.7.2.3-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. mutter devkit
+28. mutter devkit
 Paquete: mutter-devkit
 Repositorio: extra
 Versión: 51.1-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. nemo pastebin
+29. nemo pastebin
 Paquete: nemo-pastebin
 Repositorio: extra
 Versión: 6.8.1-1
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. nemo python
+30. nemo python
 Paquete: nemo-python
 Repositorio: extra
 Versión: 6.8.1-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. nodejs nopt
+31. nodejs nopt
 Paquete: nodejs-nopt
 Repositorio: extra
 Versión: 10.0.1-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. ocaml stdio
+32. ocaml stdio
 Paquete: ocaml-stdio
 Repositorio: extra
 Versión: 0.17.0-6
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. openssh
+33. openssh
 Paquete: openssh
 Repositorio: core
 Versión: 10.6p2-1
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. pantheon photos
+34. pantheon photos
 Paquete: pantheon-photos
 Repositorio: extra
 Versión: 8.0.2-2
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. pantheon wayland
+35. pantheon wayland
 Paquete: pantheon-wayland
 Repositorio: extra
 Versión: 1.1.0-1
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. perl alien libxml2
+36. perl alien libxml2
 Paquete: perl-alien-libxml2
 Repositorio: extra
 Versión: 0.20-6
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. perl file basedir
+37. perl file basedir
 Paquete: perl-file-basedir
 Repositorio: extra
 Versión: 0.09-7
@@ -538,7 +553,7 @@ Pruebas: perl-test-pod, perl-test-pod-coverage, perl-file-which, xdg-user-dirs
 Proporciona: —
 Estado SST: [ ]
 
-37. perl io socket ssl
+38. perl io socket ssl
 Paquete: perl-io-socket-ssl
 Repositorio: extra
 Versión: 2.099-1
@@ -553,7 +568,7 @@ Pruebas: perl-io-socket-inet6
 Proporciona: —
 Estado SST: [ ]
 
-38. perl shell config generate
+39. perl shell config generate
 Paquete: perl-shell-config-generate
 Repositorio: extra
 Versión: 0.36-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. perl test perltidy
+40. perl test perltidy
 Paquete: perl-test-perltidy
 Repositorio: extra
 Versión: 20260110-1
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python argon2 cffi bindings
+41. python argon2 cffi bindings
 Paquete: python-argon2-cffi-bindings
 Repositorio: extra
 Versión: 26.1.0-1
@@ -598,7 +613,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-41. python crc32c
+42. python crc32c
 Paquete: python-crc32c
 Repositorio: extra
 Versión: 2.9.post0-1
@@ -613,7 +628,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-42. python ecos
+43. python ecos
 Paquete: python-ecos
 Repositorio: extra
 Versión: 2.0.14-3
@@ -628,7 +643,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-43. python openapi spec validator
+44. python openapi spec validator
 Paquete: python-openapi-spec-validator
 Repositorio: extra
 Versión: 0.9.0-1
@@ -643,7 +658,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-44. python pyclip
+45. python pyclip
 Paquete: python-pyclip
 Repositorio: extra
 Versión: 0.7.0-9
@@ -658,7 +673,7 @@ Pruebas: xorg-server-xvfb, xclip, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-45. python resampy
+46. python resampy
 Paquete: python-resampy
 Repositorio: extra
 Versión: 0.4.3-4
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. python tzdata
+47. python tzdata
 Paquete: python-tzdata
 Repositorio: extra
 Versión: 2026.6-1
@@ -688,7 +703,7 @@ Pruebas: python-pytest, python-pytest-subtests
 Proporciona: —
 Estado SST: [ ]
 
-47. python vcversioner
+48. python vcversioner
 Paquete: python-vcversioner
 Repositorio: extra
 Versión: 2.16.0.0-11
@@ -703,7 +718,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-48. python verlib2
+49. python verlib2
 Paquete: python-verlib2
 Repositorio: extra
 Versión: 26.2-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. python zipfile deflate64
+50. python zipfile deflate64
 Paquete: python-zipfile-deflate64
 Repositorio: extra
 Versión: 0.2.0-5
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. qt5 wayland
+51. qt5 wayland
 Paquete: qt5-wayland
 Repositorio: extra
 Versión: 5.15.19+kde+r55-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. reaper
+52. reaper
 Paquete: reaper
 Repositorio: extra
 Versión: 7.86-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: clap-host, lv2-host, vst-host, vst3-host
 Estado SST: [ ]
 
-52. rocsolver
+53. rocsolver
 Paquete: rocsolver
 Repositorio: extra
 Versión: 10.1-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. ruby async safe
+54. ruby async safe
 Paquete: ruby-async-safe
 Repositorio: extra
 Versión: 0.5.1-1
@@ -793,7 +808,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bake-test-external, ruby-bundler, ruby-
 Proporciona: —
 Estado SST: [ ]
 
-54. ruby fiber storage
+55. ruby fiber storage
 Paquete: ruby-fiber-storage
 Repositorio: extra
 Versión: 1.0.1-2
@@ -808,7 +823,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bake-test-external, ruby-bundler, ruby-
 Proporciona: —
 Estado SST: [ ]
 
-55. ruby minima
+56. ruby minima
 Paquete: ruby-minima
 Repositorio: extra
 Versión: 2.5.2-2
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. ruby prawn svg
+57. ruby prawn svg
 Paquete: ruby-prawn-svg
 Repositorio: extra
 Versión: 0.38.1-1
@@ -838,7 +853,7 @@ Pruebas: ruby-bundler, ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-57. ruby rackup
+58. ruby rackup
 Paquete: ruby-rackup
 Repositorio: extra
 Versión: 2.3.1-1
@@ -853,7 +868,7 @@ Pruebas: ruby-bundler, ruby-erb, ruby-minitest, ruby-minitest-global_expectation
 Proporciona: —
 Estado SST: [ ]
 
-58. sscg
+59. sscg
 Paquete: sscg
 Repositorio: extra
 Versión: 4.0.4-2
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. stress ng
+60. stress ng
 Paquete: stress-ng
 Repositorio: extra
 Versión: 0.22.02-1
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. sugar activity paint
+61. sugar activity paint
 Paquete: sugar-activity-paint
 Repositorio: extra
 Versión: 72-1
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. tesseract data nor
+62. tesseract data nor
 Paquete: tesseract-data-nor
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -913,7 +928,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-62. thunderbird i18n el
+63. thunderbird i18n el
 Paquete: thunderbird-i18n-el
 Repositorio: extra
 Versión: 160.0-1
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. vim spell tl
+64. vim spell tl
 Paquete: vim-spell-tl
 Repositorio: extra
 Versión: 20220628-2
@@ -943,7 +958,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. vlc plugin a52dec
+65. vlc plugin a52dec
 Paquete: vlc-plugin-a52dec
 Repositorio: extra
 Versión: 3.0.24-2
@@ -958,7 +973,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. xdg dbus proxy
+66. xdg dbus proxy
 Paquete: xdg-dbus-proxy
 Repositorio: extra
 Versión: 0.1.9-1

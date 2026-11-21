@@ -1,14 +1,14 @@
 1. appmenu gtk module
 Paquete: appmenu-gtk-module
 Repositorio: extra
-Versión: 25.04-3
+Versión: 26.11-2
 Arquitectura: x86_64
 Descripción: Application Menu GTK Module
 Upstream: https://gitlab.com/vala-panel-project/vala-panel-appmenu/
 Licencia: LGPL-3.0-only
-Dependencias: bash, dconf, gdk-pixbuf2, glib2, glibc, libgcc, gtk3
+Dependencias: at-spi2-core, bash, cairo, dconf, gdk-pixbuf2, glib2, glibc, gtk3, libgcc, wayland
 Opcionales: —
-Compilación: git, meson
+Compilación: git, glib2-devel, gobject-introspection, meson, vala, wayland-protocols
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -106,7 +106,7 @@ Estado SST: [ ]
 8. copyq
 Paquete: copyq
 Repositorio: extra
-Versión: 17.0.0-2
+Versión: 17.0.0-3
 Arquitectura: x86_64
 Descripción: Clipboard manager with searchable and editable history
 Upstream: https://github.com/hluk/copyq
