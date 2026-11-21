@@ -1,27 +1,27 @@
 {
   "schema": 1,
-  "version": "0.1.9-blue.79",
+  "version": "0.1.10-blue.1",
   "channel": "blue",
-  "published_at": "2026-11-20T17:47:58.4356971+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.79/sst.exe",
-  "sha256": "3b4d0e15117f971da2a9e6a7d36e6cca67b60ea3d41da5bdd5a7f72e77c30a89",
-  "size": 56416256,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.79/sst-updater.exe",
-  "updater_sha256": "2b188533000cd10f8f64f7f65c1df6409dbece862c200220cd078702a2d91e40",
+  "published_at": "2026-11-20T22:05:41.4045257+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.10-blue.1/sst.exe",
+  "sha256": "ac172e9e3f1ba0b7638616961ab4e386f242cdfad925fabdee1cff46888d8965",
+  "size": 56455168,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.10-blue.1/sst-updater.exe",
+  "updater_sha256": "bf37aad7be315f9efc44e8cc91db43d82aeb6f2761ad112bcb5184f827fac6fe",
   "updater_size": 433664,
   "changes": [
-    "Se elimina la dependencia exclusiva del overlay Slint: toda sesión GUI ahora imprime el logo ASCII compacto SST junto a sus datos de sistema en el propio VT100, tanto en ventanas anchas como estrechas.",
-    "Se conserva la obra ASCII original de 37 líneas y 100 columnas para `fetch --full` y `fetch --plain`; el overlay GUI puede seguir mostrando el diseño completo como elemento adicional.",
-    "El overlay solo se oculta tras pulsar Enter para enviar un comando, no por el foco ni por eventos de teclado previos.",
-    "Pruebas de Windows verifican la presencia del ASCII en salidas de arranque con 58 y 100 columnas, conservan la obra completa y comprueban la conexión efectiva del arranque GUI.",
-    "No se modifican el wallpaper del usuario, los colores de fondo ni el contrato nativo `.pkgx`."
+    "Se incorpora `keygen`: textos flotantes con colores RGB cambiantes, nombre de SST y datos de sistema de `fetch`.",
+    "Banda sonora MP3 reproducida mediante WinMM dentro de SST; controles `1`, `2`, `Espacio`, `Esc` y `q`.",
+    "Se retira el overlay duplicado que tapaba la terminal y se actualiza el tratamiento de salida ASCII.",
+    "Los archivos musicales cargan desde `assets/keygen/track01.mp3` y `track02.mp3`; los MP3 no forman parte del ejecutable ni del paquete público.",
+    "Actualización de versión menor funcional: `0.1.9-blue.79` a `0.1.10-blue.1`."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.9-blue.79.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.9-blue.79/SST-Setup-0.1.9-blue.79.exe",
-    "sha256": "5c1f1a47bac7f7bd2c3ec2f0af79ea099677590887f81e4c099004a81babf357",
-    "size": 57442903,
+    "name": "SST-Setup-0.1.10-blue.1.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.10-blue.1/SST-Setup-0.1.10-blue.1.exe",
+    "sha256": "cde9267ef387f4b4a9b21c0624090993739cd0c328229bbd991161d4eb7f4be4",
+    "size": 57481816,
     "single_use": true,
-    "package_id": "bdce9b5814bb4404ed0cc47ddfc38ea9"
+    "package_id": "9d338c586b9e529f732e34667f500be9"
   }
 }
