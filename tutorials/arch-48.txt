@@ -178,7 +178,22 @@ Pruebas: dejagnu, expect, inetutils, python-pytest, tcl
 Proporciona: gcc-fortran-multilib
 Estado SST: [ ]
 
-13. grobi
+13. gke gcloud auth plugin
+Paquete: gke-gcloud-auth-plugin
+Repositorio: extra
+Versión: 37.2.9-1
+Arquitectura: x86_64
+Descripción: Kubernetes client-go credential plugin for Google Kubernetes Engine
+Upstream: https://github.com/kubernetes/cloud-provider-gcp
+Licencia: Apache-2.0
+Dependencias: glibc
+Opcionales: google-cloud-cli: obtain tokens through gcloud (default mode)
+Compilación: git, go
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+14. grobi
 Paquete: grobi
 Repositorio: extra
 Versión: 0.6.0-4
@@ -193,7 +208,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-14. gst plugin gif
+15. gst plugin gif
 Paquete: gst-plugin-gif
 Repositorio: extra
 Versión: 0.15.4-2
@@ -208,7 +223,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-15. gtksourceview4
+16. gtksourceview4
 Paquete: gtksourceview4
 Repositorio: extra
 Versión: 4.8.4-2
@@ -223,7 +238,7 @@ Pruebas: xorg-server-xvfb
 Proporciona: libgtksourceview-4.so=0-64
 Estado SST: [ ]
 
-16. gxkb
+17. gxkb
 Paquete: gxkb
 Repositorio: extra
 Versión: 0.9.6-1
@@ -238,7 +253,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-17. happy
+18. happy
 Paquete: happy
 Repositorio: extra
 Versión: 2.1.7-1
@@ -253,7 +268,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-18. haskell asciidoc
+19. haskell asciidoc
 Paquete: haskell-asciidoc
 Repositorio: extra
 Versión: 0.1.1.1-25
@@ -268,7 +283,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-19. haskell bifunctors
+20. haskell bifunctors
 Paquete: haskell-bifunctors
 Repositorio: extra
 Versión: 5.6.3-68
@@ -283,7 +298,7 @@ Pruebas: haskell-hspec, haskell-hspec-discover, haskell-quickcheck
 Proporciona: —
 Estado SST: [ ]
 
-20. haskell boxes
+21. haskell boxes
 Paquete: haskell-boxes
 Repositorio: extra
 Versión: 0.1.5-409
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-21. haskell conversion bytestring
+22. haskell conversion bytestring
 Paquete: haskell-conversion-bytestring
 Repositorio: extra
 Versión: 1.0.1.1-6
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. haskell nothunks
+23. haskell nothunks
 Paquete: haskell-nothunks
 Repositorio: extra
 Versión: 0.2.1.1-132
@@ -328,7 +343,7 @@ Pruebas: haskell-hedgehog, haskell-random, haskell-tasty, haskell-tasty-hedgehog
 Proporciona: —
 Estado SST: [ ]
 
-23. haskell peano
+24. haskell peano
 Paquete: haskell-peano
 Repositorio: extra
 Versión: 0.1.1.0-2
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. hdapsd
+25. hdapsd
 Paquete: hdapsd
 Repositorio: extra
 Versión: 20250908-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. jupyter nbformat
+26. jupyter nbformat
 Paquete: jupyter-nbformat
 Repositorio: extra
 Versión: 5.11.1-1
@@ -373,7 +388,7 @@ Pruebas: python-pytest, python-testpath
 Proporciona: —
 Estado SST: [ ]
 
-26. kronometer
+27. kronometer
 Paquete: kronometer
 Repositorio: extra
 Versión: 2.3.0-4
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. lazydocker
+28. lazydocker
 Paquete: lazydocker
 Repositorio: extra
 Versión: 0.25.2-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. libarchive
+29. libarchive
 Paquete: libarchive
 Repositorio: core
 Versión: 3.8.11-2
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: libarchive.so=13-64
 Estado SST: [ ]
 
-29. liblphobos
+30. liblphobos
 Paquete: liblphobos
 Repositorio: extra
 Versión: 3:1.43.0-2
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: d-runtime, d-stdlib
 Estado SST: [ ]
 
-30. libreoffice fresh be
+31. libreoffice fresh be
 Paquete: libreoffice-fresh-be
 Repositorio: extra
 Versión: 26.8.3-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: libreoffice-be, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
-31. libunibreak
+32. libunibreak
 Paquete: libunibreak
 Repositorio: extra
 Versión: 7.0-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. lsp plugins lv2
+33. lsp plugins lv2
 Paquete: lsp-plugins-lv2
 Repositorio: extra
 Versión: 1.2.37-1
@@ -478,7 +493,7 @@ Pruebas: jq, lv2lint
 Proporciona: —
 Estado SST: [ ]
 
-33. man pages mk
+34. man pages mk
 Paquete: man-pages-mk
 Repositorio: extra
 Versión: 4.31.0-1
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. minisat
+35. minisat
 Paquete: minisat
 Repositorio: extra
 Versión: 2.2.1.20201216-3
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. ncompress
+36. ncompress
 Paquete: ncompress
 Repositorio: extra
 Versión: 5.0-3
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: compress
 Estado SST: [ ]
 
-36. openmpi docs
+37. openmpi docs
 Paquete: openmpi-docs
 Repositorio: extra
 Versión: 5.0.11-2
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. opensmtpd filter senderscore
+38. opensmtpd filter senderscore
 Paquete: opensmtpd-filter-senderscore
 Repositorio: extra
 Versión: 0.1.2-2
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. perl datetime format w3cdtf
+39. perl datetime format w3cdtf
 Paquete: perl-datetime-format-w3cdtf
 Repositorio: extra
 Versión: 0.09-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. perl dbd odbc
+40. perl dbd odbc
 Paquete: perl-dbd-odbc
 Repositorio: extra
 Versión: 1.61-7
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. perl filesys df
+41. perl filesys df
 Paquete: perl-filesys-df
 Repositorio: extra
 Versión: 0.92-18
@@ -598,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. perl inc latest
+42. perl inc latest
 Paquete: perl-inc-latest
 Repositorio: extra
 Versión: 0.500-15
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python django environ
+43. python django environ
 Paquete: python-django-environ
 Repositorio: extra
 Versión: 0.14.0-1
@@ -628,7 +643,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-43. python graphql relay
+44. python graphql relay
 Paquete: python-graphql-relay
 Repositorio: extra
 Versión: 3.2.0-8
@@ -643,7 +658,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python jupyterlab server
+45. python jupyterlab server
 Paquete: python-jupyterlab-server
 Repositorio: extra
 Versión: 2.28.1-1
@@ -658,7 +673,7 @@ Pruebas: python-jupyter-server-terminals, python-openapi-core, python-parse, pyt
 Proporciona: python-jupyterlab_server
 Estado SST: [ ]
 
-45. python openid
+46. python openid
 Paquete: python-openid
 Repositorio: extra
 Versión: 3.2.0-10
@@ -673,7 +688,7 @@ Pruebas: python-django, python-httplib2, python-mysqlclient, python-psycopg2, py
 Proporciona: —
 Estado SST: [ ]
 
-46. python opentelemetry semantic conventions
+47. python opentelemetry semantic conventions
 Paquete: python-opentelemetry-semantic-conventions
 Repositorio: extra
 Versión: 1.45.2-1
@@ -688,7 +703,7 @@ Pruebas: python-asgiref, python-flaky, python-googleapis-common-protos, python-g
 Proporciona: —
 Estado SST: [ ]
 
-47. python pygls
+48. python pygls
 Paquete: python-pygls
 Repositorio: extra
 Versión: 2.1.1-1
@@ -703,7 +718,7 @@ Pruebas: python-pytest-asyncio
 Proporciona: —
 Estado SST: [ ]
 
-48. python pytest asyncio
+49. python pytest asyncio
 Paquete: python-pytest-asyncio
 Repositorio: extra
 Versión: 1.5.0-1
@@ -718,7 +733,7 @@ Pruebas: python-hypothesis
 Proporciona: —
 Estado SST: [ ]
 
-49. python pyusb
+50. python pyusb
 Paquete: python-pyusb
 Repositorio: extra
 Versión: 1.3.1-2
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. rhvoice voice ondro
+51. rhvoice voice ondro
 Paquete: rhvoice-voice-ondro
 Repositorio: extra
 Versión: 1.16.5-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. root
+52. root
 Paquete: root
 Repositorio: extra
 Versión: 6.40.04-2
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: python-cppyy, python-cppyy-backend, python-cpycppyy
 Estado SST: [ ]
 
-52. rtl 433
+53. rtl 433
 Paquete: rtl_433
 Repositorio: extra
 Versión: 25.12-3
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. ruby async http cache
+54. ruby async http cache
 Paquete: ruby-async-http-cache
 Repositorio: extra
 Versión: 0.4.6-1
@@ -793,7 +808,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bake-test-external, ruby-bundler, ruby-
 Proporciona: —
 Estado SST: [ ]
 
-54. ruby kramdown parser gfm
+55. ruby kramdown parser gfm
 Paquete: ruby-kramdown-parser-gfm
 Repositorio: extra
 Versión: 1.1.0-6
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. ruby liquid 4
+56. ruby liquid 4
 Paquete: ruby-liquid-4
 Repositorio: extra
 Versión: 4.0.4-6
@@ -823,7 +838,7 @@ Pruebas: ruby-rake, ruby-minitest, ruby-stackprof
 Proporciona: ruby-liquid=4.0.4
 Estado SST: [ ]
 
-56. switchboard
+57. switchboard
 Paquete: switchboard
 Repositorio: extra
 Versión: 8.0.3-2
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: libswitchboard-3.so=0-64
 Estado SST: [ ]
 
-57. tesseract data bel
+58. tesseract data bel
 Paquete: tesseract-data-bel
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-58. thunderbird i18n cy
+59. thunderbird i18n cy
 Paquete: thunderbird-i18n-cy
 Repositorio: extra
 Versión: 160.0-1
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. ttf annotationmono nerd
+60. ttf annotationmono nerd
 Paquete: ttf-annotationmono-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -883,7 +898,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-60. typography
+61. typography
 Paquete: typography
 Repositorio: extra
 Versión: 0.3.0-2
@@ -898,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. xfce4 battery plugin
+62. xfce4 battery plugin
 Paquete: xfce4-battery-plugin
 Repositorio: extra
 Versión: 1.2.0-1
@@ -913,10 +928,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. xmobar
+63. xmobar
 Paquete: xmobar
 Repositorio: extra
-Versión: 0.51.1-62
+Versión: 0.51.1-63
 Arquitectura: x86_64
 Descripción: Minimalistic Text Based Status Bar
 Upstream: https://codeberg.org/xmobar/xmobar
@@ -928,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. xorg fonts 75dpi
+64. xorg fonts 75dpi
 Paquete: xorg-fonts-75dpi
 Repositorio: extra
 Versión: 1.0.4-2

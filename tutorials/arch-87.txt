@@ -406,14 +406,14 @@ Estado SST: [ ]
 28. lib32 harfbuzz
 Paquete: lib32-harfbuzz
 Repositorio: multilib
-Versión: 15.1.0-1
+Versión: 15.2.0-1
 Arquitectura: x86_64
 Descripción: OpenType text shaping engine - 32-bit
 Upstream: https://harfbuzz.github.io/
 Licencia: MIT
-Dependencias: harfbuzz, lib32-freetype2, libfreetype.so=6-32, lib32-gcc-libs, lib32-glib2, libglib-2.0.so=0-32, libgobject-2.0.so=0-32, lib32-glibc, lib32-libpng, libpng16.so=16-32, lib32-zlib, libz.so=1-32
+Dependencias: harfbuzz, lib32-freetype2, libfreetype.so=6-32, lib32-glib2, libglib-2.0.so=0-32, libgobject-2.0.so=0-32, lib32-glibc, lib32-libpng, libpng16.so=16-32, lib32-zlib, libz.so=1-32
 Opcionales: —
-Compilación: git, glib2-devel, harfbuzz, lib32-cairo, lib32-freetype2, lib32-gcc-libs, lib32-glib2, lib32-glibc, lib32-icu, lib32-libpng, lib32-zlib, meson, python, ragel
+Compilación: git, glib2-devel, harfbuzz, lib32-cairo, lib32-freetype2, lib32-glib2, lib32-glibc, lib32-icu, lib32-libpng, lib32-zlib, meson, python, ragel
 Pruebas: python-fonttools, python-setuptools
 Proporciona: libharfbuzz.so=0-32, libharfbuzz-subset.so=0-32, libharfbuzz-gobject.so=0-32, libharfbuzz-raster.so=0-32, libharfbuzz-vector.so=0-32
 Estado SST: [ ]
@@ -1108,22 +1108,7 @@ Pruebas: —
 Proporciona: sqlite3-doc=3.54.1
 Estado SST: [ ]
 
-75. squeak vm
-Paquete: squeak-vm
-Repositorio: extra
-Versión: 4.10.2.2614-7
-Arquitectura: x86_64
-Descripción: Full-featured implementation of the Smalltalk programming language and environment
-Upstream: http://squeakvm.org
-Licencia: custom:MIT, APACHE
-Dependencias: libgl, libpulse, libxrender, alsa-lib
-Opcionales: —
-Compilación: cmake
-Pruebas: —
-Proporciona: —
-Estado SST: [ ]
-
-76. stellarium
+75. stellarium
 Paquete: stellarium
 Repositorio: extra
 Versión: 26.3-1
@@ -1138,7 +1123,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-77. sysstat
+76. sysstat
 Paquete: sysstat
 Repositorio: extra
 Versión: 12.8.0-1
@@ -1153,7 +1138,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-78. tcc
+77. tcc
 Paquete: tcc
 Repositorio: extra
 Versión: 0.9.27.r1337.gb39cbc70-1
@@ -1168,7 +1153,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-79. tesseract data glg
+78. tesseract data glg
 Paquete: tesseract-data-glg
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -1183,7 +1168,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-80. texlive humanities
+79. texlive humanities
 Paquete: texlive-humanities
 Repositorio: extra
 Versión: 2026.1-1
@@ -1198,7 +1183,7 @@ Pruebas: —
 Proporciona: texlive-adtrees, texlive-bibleref, texlive-bibleref-lds, texlive-bibleref-mouth, texlive-bibleref-parse, texlive-covington, texlive-diadia, texlive-dramatist, texlive-dvgloss, texlive-ecltree, texlive-edfnotes, texlive-edmac, texlive-eledform, texlive-eledmac, texlive-expex, texlive-expex-glossonly, texlive-gb4e, texlive-gb4e-next, texlive-gmverse, texlive-interlinear, texlive-jura, texlive-juraabbrev, texlive-juramisc, texlive-jurarsp, texlive-langnames, texlive-ledmac, texlive-lexikon, texlive-lexref, texlive-ling-macros, texlive-linguex, texlive-linguistix, texlive-liturg, texlive-liturgy-cw, texlive-metrix, texlive-nnext, texlive-opbible, texlive-parallel, texlive-parrun, texlive-phonrule, texlive-plari, texlive-play, texlive-poemscol, texlive-poetry, texlive-poetrytex, texlive-qobitree, texlive-qtree, texlive-reledmac, texlive-rrgtrees, texlive-rtklage, texlive-screenplay, texlive-screenplay-pkg, texlive-sides, texlive-stage, texlive-textglos, texlive-thalie, texlive-theatre, texlive-tree-dvips, texlive-verse, texlive-xyling
 Estado SST: [ ]
 
-81. texlive langpolish
+80. texlive langpolish
 Paquete: texlive-langpolish
 Repositorio: extra
 Versión: 2026.1-1
@@ -1213,7 +1198,7 @@ Pruebas: —
 Proporciona: texlive-babel-polish, texlive-bredzenie, texlive-cc-pl, texlive-gustlib, texlive-gustprog, texlive-hyphen-polish, texlive-lshort-polish, texlive-mex, texlive-mwcls, texlive-pl, texlive-polski, texlive-przechlewski-book, texlive-qpxqtx, texlive-tap, texlive-tex-virtual-academy-pl, texlive-texlive-pl, texlive-utf8mex
 Estado SST: [ ]
 
-82. tlp pd
+81. tlp pd
 Paquete: tlp-pd
 Repositorio: extra
 Versión: 1.11.0-1
@@ -1228,7 +1213,7 @@ Pruebas: —
 Proporciona: power-profiles-daemon
 Estado SST: [ ]
 
-83. ttf profont nerd
+82. ttf profont nerd
 Paquete: ttf-profont-nerd
 Repositorio: extra
 Versión: 3.5.1-2
@@ -1243,7 +1228,7 @@ Pruebas: —
 Proporciona: ttf-font-nerd
 Estado SST: [ ]
 
-84. virtualbox
+83. virtualbox
 Paquete: virtualbox
 Repositorio: extra
 Versión: 7.2.22-2
@@ -1258,22 +1243,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-85. vlc plugin shout
+84. vlc plugin shout
 Paquete: vlc-plugin-shout
 Repositorio: extra
-Versión: 3.0.24-2
+Versión: 3.0.24-4
 Arquitectura: x86_64
 Descripción: Free and open source cross-platform multimedia player and framework - shoutcast plugin
 Upstream: https://www.videolan.org/vlc/
 Licencia: GPL-2.0-or-later, LGPL-2.1-or-later
 Dependencias: glibc, libshout, libvlc, libvlccore.so=9-64
 Opcionales: —
-Compilación: a52dec, aalib, abseil-cpp, alsa-lib, aom, aribb24, aribb25, avahi, bash, cairo, dav1d, dbus, faad2, ffmpeg, flac, fluidsynth, fontconfig, freetype2, fribidi, gdk-pixbuf2, git, glib2, glibc, gnutls, gst-plugins-base-libs, gtk3, harfbuzz, hicolor-icon-theme, jack, libarchive, libass, libavc1394, libbluray, libcaca, libcddb, libdc1394, libdca, libdvbpsi, libdvdcss, libdvdnav, libdvdread, libgcc, libglvnd, libgme, libgoom2, libjpeg-turbo, libkate, libmad, libmatroska, libmicrodns, libmodplug, libmpcdec, libmpeg2, libmtp, libnfs, libnotify, libogg, libpng, libproxy, libpulse, librist, librsvg, libsamplerate, libsecret, libshout, libsoxr, libssh2, libstdc++, libtheora, libtiger, libupnp, libva, libvorbis, libvpl, libvpx, libx11, libxcb, libxinerama, libxml2, libxpm, lirc, live-media, lua51, mesa, mpg123, opus, pcsclite, projectm, protobuf, qt5-base, qt5-svg, qt5-x11extras, sdl12-compat, sdl_image, smbclient, speex, speexdsp, srt, systemd-libs, taglib, twolame, wayland, wayland-protocols, x264, x265, xcb-util-keysyms, xosd, zlib, zvbi
+Compilación: a52dec, aalib, abseil-cpp, alsa-lib, aom, aribb24, aribb25, avahi, bash, cairo, dav1d, dbus, faad2, ffmpeg, flac, fluidsynth, fontconfig, freetype2, fribidi, gdk-pixbuf2, git, glib2, glibc, gnutls, gst-plugins-base-libs, gtk3, harfbuzz, hicolor-icon-theme, jack, libarchive, libass, libavc1394, libbluray, libcaca, libcddb, libdc1394, libdca, libdvbpsi, libdvdcss, libdvdnav, libdvdread, libgcc, libglvnd, libgme, libgoom2, libjpeg-turbo, libkate, libmad, libmatroska, libmicrodns, libmodplug, libmpcdec, libmpeg2, libmtp, libnfs, libnotify, libogg, libpng, libproxy, libpulse, librist, librsvg, libsamplerate, libsecret, libshout, libsoxr, libssh2, libstdc++, libtheora, libtiger, libupnp, libva, libvorbis, libvpl, libvpx, libx11, libxcb, libxinerama, libxml2, libxpm, lirc, live-media, lua51, mesa, mpg123, opus, pcsclite, projectm, protobuf, qt6-base, qt6-svg, sdl12-compat, sdl_image, smbclient, speex, speexdsp, srt, systemd-libs, taglib, twolame, wayland, wayland-protocols, x264, x265, xcb-util-keysyms, xosd, zlib, zvbi
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-86. vulkan asahi
+85. vulkan asahi
 Paquete: vulkan-asahi
 Repositorio: extra
 Versión: 1:26.3.1-2
@@ -1288,7 +1273,7 @@ Pruebas: —
 Proporciona: vulkan-driver
 Estado SST: [ ]
 
-87. whitedb
+86. whitedb
 Paquete: whitedb
 Repositorio: extra
 Versión: 0.7.3-12
@@ -1303,7 +1288,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-88. wireless tools
+87. wireless tools
 Paquete: wireless_tools
 Repositorio: extra
 Versión: 30.pre9-5
@@ -1318,7 +1303,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-89. xorg xkbprint
+88. xorg xkbprint
 Paquete: xorg-xkbprint
 Repositorio: extra
 Versión: 1.0.8-1

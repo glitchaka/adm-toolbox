@@ -376,7 +376,7 @@ Estado SST: [ ]
 26. mighttpd2
 Paquete: mighttpd2
 Repositorio: extra
-Versión: 4.0.6-75
+Versión: 4.0.6-76
 Arquitectura: x86_64
 Descripción: High performance web server on WAI/warp
 Upstream: https://kazu-yamamoto.github.io/mighttpd2/
@@ -631,14 +631,14 @@ Estado SST: [ ]
 43. python mechanize
 Paquete: python-mechanize
 Repositorio: extra
-Versión: 1:0.4.10-3
+Versión: 1:0.4.11-1
 Arquitectura: any
 Descripción: Stateful programmatic web browsing in Python
 Upstream: https://github.com/python-mechanize/mechanize
-Licencia: BSD
+Licencia: BSD-3-Clause
 Dependencias: python-html5lib
 Opcionales: python-html5-parser: faster parsing of HTML
-Compilación: python-setuptools, git
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
 Pruebas: python-zope-interface, python-twisted
 Proporciona: —
 Estado SST: [ ]
