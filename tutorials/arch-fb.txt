@@ -328,7 +328,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. libdazzle
+23. kontainer
+Paquete: kontainer
+Repositorio: extra
+Versión: 1.6.2-2
+Arquitectura: x86_64
+Descripción: KDE application for Distrobox container management
+Upstream: https://github.com/DenysMb/Kontainer
+Licencia: GPL-3.0-or-later
+Dependencias: distrobox, glibc, hicolor-icon-theme, kconfig, kcoreaddons, ki18n, kiconthemes, kio, kirigami, kirigami-addons, kservice, libstdc++, qqc2-desktop-style, qt6-base, qt6-declarative
+Opcionales: —
+Compilación: cmake, extra-cmake-modules, git, ninja
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+24. libdazzle
 Paquete: libdazzle
 Repositorio: extra
 Versión: 3.44.0-3
@@ -343,7 +358,7 @@ Pruebas: xorg-server-xvfb
 Proporciona: libdazzle-1.0.so=0-64
 Estado SST: [ ]
 
-24. libpaper
+25. libpaper
 Paquete: libpaper
 Repositorio: extra
 Versión: 2.2.8-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: paper
 Estado SST: [ ]
 
-25. libreoffice fresh ca
+26. libreoffice fresh ca
 Paquete: libreoffice-fresh-ca
 Repositorio: extra
 Versión: 26.8.3-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: libreoffice-ca, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
-26. linux api headers
+27. linux api headers
 Paquete: linux-api-headers
 Repositorio: core
 Versión: 7.3-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. lmms
+28. lmms
 Paquete: lmms
 Repositorio: extra
 Versión: 1.2.2-30
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. lua cqueues
+29. lua cqueues
 Paquete: lua-cqueues
 Repositorio: extra
 Versión: 20261006-2
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. lua54 std debug
+30. lua54 std debug
 Paquete: lua54-std-debug
 Repositorio: extra
 Versión: 1.2-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: lua-std-_debug
 Estado SST: [ ]
 
-30. lxqt panel
+31. lxqt panel
 Paquete: lxqt-panel
 Repositorio: extra
 Versión: 2.5.1-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. mold
+32. mold
 Paquete: mold
 Repositorio: extra
 Versión: 3.0.0-4
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. openbao plugin kms pkcs11
+33. openbao plugin kms pkcs11
 Paquete: openbao-plugin-kms-pkcs11
 Repositorio: extra
 Versión: 0.3.0-1
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. pcp gui
+34. pcp gui
 Paquete: pcp-gui
 Repositorio: extra
 Versión: 7.2.2-3
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. perl algorithm diff
+35. perl algorithm diff
 Paquete: perl-algorithm-diff
 Repositorio: extra
 Versión: 1:1.201-8
@@ -508,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. perl ipc run3
+36. perl ipc run3
 Paquete: perl-ipc-run3
 Repositorio: extra
 Versión: 0.049-4
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. perl variable magic
+37. perl variable magic
 Paquete: perl-variable-magic
 Repositorio: extra
 Versión: 0.65-2
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. pulumi
+38. pulumi
 Paquete: pulumi
 Repositorio: extra
 Versión: 3.276.0-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. pwndbg
+39. pwndbg
 Paquete: pwndbg
 Repositorio: extra
 Versión: 2026.10.28-1
@@ -568,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. python docstring parser
+40. python docstring parser
 Paquete: python-docstring-parser
 Repositorio: extra
 Versión: 0.18.0-1
@@ -583,7 +598,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-40. python magnumclient
+41. python magnumclient
 Paquete: python-magnumclient
 Repositorio: extra
 Versión: 5.0.0-1
@@ -598,7 +613,7 @@ Pruebas: python-openstackclient, python-oslotest, python-osprofiler, python-requ
 Proporciona: —
 Estado SST: [ ]
 
-41. python pybluez
+42. python pybluez
 Paquete: python-pybluez
 Repositorio: extra
 Versión: 0.23.r58.g4d46ce1-5
@@ -613,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. python pytorch xpu
+43. python pytorch xpu
 Paquete: python-pytorch-xpu
 Repositorio: extra
 Versión: 2.15.0-2
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: python-pytorch=2.15.0
 Estado SST: [ ]
 
-43. python spur
+44. python spur
 Paquete: python-spur
 Repositorio: extra
 Versión: 0.3.23-7
@@ -643,7 +658,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-44. qtspell
+45. qtspell
 Paquete: qtspell
 Repositorio: extra
 Versión: 1.0.2-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. ruby bake test
+46. ruby bake test
 Paquete: ruby-bake-test
 Repositorio: extra
 Versión: 0.3.0-3
@@ -673,7 +688,7 @@ Pruebas: ruby-bundler, ruby-covered, ruby-decode, ruby-sus
 Proporciona: —
 Estado SST: [ ]
 
-46. ruby connection pool
+47. ruby connection pool
 Paquete: ruby-connection_pool
 Repositorio: extra
 Versión: 3.0.3-1
@@ -688,7 +703,7 @@ Pruebas: ruby-bundler, ruby-maxitest, ruby-minitest-mock
 Proporciona: —
 Estado SST: [ ]
 
-47. ruby memory leak
+48. ruby memory leak
 Paquete: ruby-memory-leak
 Repositorio: extra
 Versión: 0.10.3-1
@@ -703,7 +718,7 @@ Pruebas: procps-ng, ruby-async, ruby-bake, ruby-bake-test, ruby-bake-test-extern
 Proporciona: —
 Estado SST: [ ]
 
-48. ruby rbs
+49. ruby rbs
 Paquete: ruby-rbs
 Repositorio: extra
 Versión: 3.9.2-1
@@ -718,7 +733,7 @@ Pruebas: ruby-abbrev, ruby-base64, ruby-bigdecimal, ruby-bundler, ruby-csv, ruby
 Proporciona: —
 Estado SST: [ ]
 
-49. threadweaver5
+50. threadweaver5
 Paquete: threadweaver5
 Repositorio: extra
 Versión: 5.116.0-2
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. tlpui
+51. tlpui
 Paquete: tlpui
 Repositorio: extra
 Versión: 2:1.10.1-2
@@ -748,7 +763,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-51. tokei
+52. tokei
 Paquete: tokei
 Repositorio: extra
 Versión: 15.0.0-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. treemd
+53. treemd
 Paquete: treemd
 Repositorio: extra
 Versión: 0.10.0-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. udisks2 docs
+54. udisks2 docs
 Paquete: udisks2-docs
 Repositorio: extra
 Versión: 2.12.0-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. vim spell ms
+55. vim spell ms
 Paquete: vim-spell-ms
 Repositorio: extra
 Versión: 20220628-2
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. wlroots0 20
+56. wlroots0 20
 Paquete: wlroots0.20
 Repositorio: extra
 Versión: 0.20.2-1
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: libwlroots-0.20.so=libwlroots-0.20.so-64
 Estado SST: [ ]
 
-56. wpewebkit docs
+57. wpewebkit docs
 Paquete: wpewebkit-docs
 Repositorio: extra
 Versión: 2.54.3-1
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. zim
+58. zim
 Paquete: zim
 Repositorio: extra
 Versión: 0.77.2-2

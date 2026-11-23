@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. python fastmcp slim
 Paquete: python-fastmcp-slim
 Repositorio: extra
-Versión: 4.2.4-1
+Versión: 4.2.5-1
 Arquitectura: any
 Descripción: FastMCP library with minimal dependencies
 Upstream: https://github.com/PrefectHQ/fastmcp
@@ -748,7 +748,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. xcursor themes
+51. winc
+Paquete: winc
+Repositorio: extra
+Versión: 0.1.857-1
+Arquitectura: x86_64
+Descripción: A lighter, faster desktop code editor
+Upstream: https://winc.si
+Licencia: Apache-2.0
+Dependencias: fontconfig, glibc, libgcc, libx11, libxcb, libxcursor, libxi, libxkbcommon, libxkbcommon-x11, libxrandr, ttf-dejavu, wayland
+Opcionales: git: Git integration, openssh: SSH remote support, polkit: run commands with elevated privileges, xdg-desktop-portal: native file dialogs, xdg-utils: open links and directories with external applications
+Compilación: cargo, git
+Pruebas: fish, noto-fonts-cjk, noto-fonts-emoji, python, zsh
+Proporciona: —
+Estado SST: [ ]
+
+52. xcursor themes
 Paquete: xcursor-themes
 Repositorio: extra
 Versión: 1.0.7-2
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. xf86 input elographics
+53. xf86 input elographics
 Paquete: xf86-input-elographics
 Repositorio: extra
 Versión: 1.4.4-2
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. xrootd
+54. xrootd
 Paquete: xrootd
 Repositorio: extra
 Versión: 6.1.1-2

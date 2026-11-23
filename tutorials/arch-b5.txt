@@ -616,15 +616,15 @@ Estado SST: [ ]
 42. python passlib
 Paquete: python-passlib
 Repositorio: extra
-Versión: 1.7.4-13
+Versión: 1.9.5-1
 Arquitectura: any
 Descripción: A password hashing library for Python
-Upstream: https://passlib.readthedocs.io/en/stable
+Upstream: https://github.com/notypecheck/passlib
 Licencia: BSD-3-Clause
 Dependencias: python
-Opcionales: python-fastpbkdf2: accelerate PBKDF2-based hashes, python-bcrypt: accelerate Bcrypt hashes, python-scrypt: accelerate SCrypt hashes
-Compilación: python-build, python-installer, python-setuptools
-Pruebas: python-pytest, python-bcrypt, python-django, python-fastpbkdf2, python-scrypt
+Opcionales: python-argon2-cffi: support Argon2 hashes, python-bcrypt: accelerate Bcrypt hashes, python-cryptography: support AES-encrypted TOTP wallet keys, python-scrypt: accelerate SCrypt hashes
+Compilación: git, python-build, python-hatchling, python-installer
+Pruebas: python-pytest, python-argon2-cffi, python-bcrypt, python-cryptography, python-django, python-scrypt
 Proporciona: —
 Estado SST: [ ]
 

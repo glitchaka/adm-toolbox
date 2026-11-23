@@ -241,7 +241,7 @@ Estado SST: [ ]
 17. haskell pandoc server
 Paquete: haskell-pandoc-server
 Repositorio: extra
-Versión: 0.1.4.3-5
+Versión: 0.1.4.3-6
 Arquitectura: x86_64
 Descripción: Pandoc document conversion as an HTTP servant-server
 Upstream: https://pandoc.org
@@ -736,7 +736,7 @@ Estado SST: [ ]
 50. python openai
 Paquete: python-openai
 Repositorio: extra
-Versión: 3.7.0-1
+Versión: 3.9.0-1
 Arquitectura: any
 Descripción: Python client library for the OpenAI API
 Upstream: https://github.com/openai/openai-python
@@ -744,7 +744,7 @@ Licencia: Apache-2.0, BSD-3-Clause
 Dependencias: python, python-anyio, python-h2, python-httpx2, python-jiter, python-pydantic, python-pydantic-core, python-sniffio, python-typing_extensions
 Opcionales: python-aiohttp: Use aiohttp as HTTP backend, python-httpx: Compatibility with legacy custom HTTP clients, python-numpy: Datalib support, python-pandas: Datalib support, python-websockets: Realtime support, python-botocore: AWS Bedrock OpenAI-compatible API support
 Compilación: git, python-build, python-hatchling, python-installer, python-wheel
-Pruebas: nodejs-lts-krypton, npm, procps-ng, python-dirty-equals, python-aiohttp, python-inline-snapshot, python-nest-asyncio, python-packaging, python-pytest, python-pytest-asyncio, python-pytest-xdist, python-rich, python-botocore, python-websockets
+Pruebas: curl, nodejs-lts-krypton, procps-ng, python-dirty-equals, python-aiohttp, python-inline-snapshot, python-nest-asyncio, python-packaging, python-pytest, python-pytest-asyncio, python-pytest-xdist, python-rich, python-botocore, python-websockets, unzip
 Proporciona: —
 Estado SST: [ ]
 

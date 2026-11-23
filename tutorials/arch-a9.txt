@@ -526,13 +526,13 @@ Estado SST: [ ]
 36. parla
 Paquete: parla
 Repositorio: extra
-Versión: 0.10.9-2
+Versión: 0.10.10-1
 Arquitectura: x86_64
 Descripción: Native Gnome DeltaChat client
 Upstream: https://github.com/trufae/parla
 Licencia: GPL-3.0-or-later
-Dependencias: deltachat-rpc-server, gdk-pixbuf2, glib2, glibc, gtk4, hicolor-icon-theme, json-glib, libgcc, libadwaita, libsoup3, pango, webkitgtk-6.0, zip
-Opcionales: python-openai-whisper: for voice message transcribing
+Dependencias: deltachat-rpc-server, gdk-pixbuf2, glib2, glibc, gtk4, hicolor-icon-theme, json-glib, libadwaita, libgcc, libseccomp, libsoup3, pango, webkitgtk-6.0
+Opcionales: python-openai-whisper: for voice message transcribing, zip: for experimental backup functionality
 Compilación: meson, vala
 Pruebas: —
 Proporciona: —
@@ -796,7 +796,7 @@ Estado SST: [ ]
 54. python urwidtrees
 Paquete: python-urwidtrees
 Repositorio: extra
-Versión: 1.1.0-1
+Versión: 1.1.1-1
 Arquitectura: any
 Descripción: Tree widgets for urwid.
 Upstream: https://github.com/pazz/urwidtrees
