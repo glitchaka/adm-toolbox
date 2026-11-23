@@ -1,27 +1,27 @@
 {
   "schema": 1,
-  "version": "0.1.10-blue.1",
+  "version": "0.1.11-blue.2",
   "channel": "blue",
-  "published_at": "2026-11-20T22:05:41.4045257+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.10-blue.1/sst.exe",
-  "sha256": "ac172e9e3f1ba0b7638616961ab4e386f242cdfad925fabdee1cff46888d8965",
-  "size": 56455168,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.10-blue.1/sst-updater.exe",
-  "updater_sha256": "bf37aad7be315f9efc44e8cc91db43d82aeb6f2761ad112bcb5184f827fac6fe",
+  "published_at": "2026-11-23T17:51:45.0778259+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.11-blue.2/sst.exe",
+  "sha256": "bbe4e6d13bf722a810c8529cef30aa9b3cb41b89f718d6bdf2a5e0ed7999283b",
+  "size": 56488448,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.11-blue.2/sst-updater.exe",
+  "updater_sha256": "fcfae4e44530638aaa22473f54143688baef22dbadbbdfe9270217d840c8a383",
   "updater_size": 433664,
   "changes": [
-    "Se incorpora `keygen`: textos flotantes con colores RGB cambiantes, nombre de SST y datos de sistema de `fetch`.",
-    "Banda sonora MP3 reproducida mediante WinMM dentro de SST; controles `1`, `2`, `Espacio`, `Esc` y `q`.",
-    "Se retira el overlay duplicado que tapaba la terminal y se actualiza el tratamiento de salida ASCII.",
-    "Los archivos musicales cargan desde `assets/keygen/track01.mp3` y `track02.mp3`; los MP3 no forman parte del ejecutable ni del paquete público.",
-    "Actualización de versión menor funcional: `0.1.9-blue.79` a `0.1.10-blue.1`."
+    "Netcheck incorpora la consulta nativa de Wired AutoConfig mediante la API Dot3 de Windows, distinguiendo un perfil 802.1X configurado de una autorización NAC realmente demostrada.",
+    "La clasificación de DNS evita declarar caída de red cuando únicamente falla el nombre de destino.",
+    "Las conclusiones ordenan primero los hallazgos críticos y luego las advertencias.",
+    "Conserva todos los diagnósticos de SST 0.1.11-blue.1: enlace físico, APIPA/DHCP, puerta de enlace, DNS, ICMP y TCP.",
+    "No cambia la configuración de la red ni expone credenciales."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.10-blue.1.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.10-blue.1/SST-Setup-0.1.10-blue.1.exe",
-    "sha256": "cde9267ef387f4b4a9b21c0624090993739cd0c328229bbd991161d4eb7f4be4",
-    "size": 57481816,
+    "name": "SST-Setup-0.1.11-blue.2.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.11-blue.2/SST-Setup-0.1.11-blue.2.exe",
+    "sha256": "3dc611e29181a74a722a70ea649fd598fd732ee68688352acb5899b28b2bc47a",
+    "size": 57516745,
     "single_use": true,
-    "package_id": "9d338c586b9e529f732e34667f500be9"
+    "package_id": "1d06c80cb093ee5dfb0128466817bd84"
   }
 }
