@@ -796,14 +796,14 @@ Estado SST: [ ]
 54. python python discovery
 Paquete: python-python-discovery
 Repositorio: extra
-Versión: 1.9.5-1
+Versión: 1.9.7-1
 Arquitectura: any
 Descripción: Python interpreter discovery
 Upstream: https://python-discovery.readthedocs.io
 Licencia: MIT
 Dependencias: python, python-filelock
 Opcionales: —
-Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs, python-hatch-fancy-pypi-readme
+Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs, python-hatch-fancy-pypi-readme, python-python-sbom
 Pruebas: python-pytest, python-pytest-mock, python-setuptools
 Proporciona: —
 Estado SST: [ ]
@@ -931,12 +931,12 @@ Estado SST: [ ]
 63. srslte avx2
 Paquete: srslte-avx2
 Repositorio: extra
-Versión: 25.10-3
+Versión: 25.10-4
 Arquitectura: x86_64
 Descripción: Open source SDR LTE software suite from Software Radio Systems (SRS) (with AVX2 extensions)
 Upstream: https://www.srslte.com
 Licencia: AGPL-3.0-or-later
-Dependencias: fftw, mbedtls3, boost-libs, lksctp-tools, libconfig, libuhd, soapysdr, bladerf, zeromq, pcsclite, srsgui
+Dependencias: glibc, libstdc++, libelf, libgcc, glibc, bash, fftw, mbedtls3, boost-libs, lksctp-tools, libconfig, libuhd, soapysdr, bladerf, zeromq, pcsclite, srsgui
 Opcionales: —
 Compilación: cmake, boost
 Pruebas: —

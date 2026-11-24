@@ -181,7 +181,7 @@ Estado SST: [ ]
 13. flex
 Paquete: flex
 Repositorio: core
-Versión: 2.7.1-1
+Versión: 2.7.6-1
 Arquitectura: x86_64
 Descripción: A tool for generating text-scanning programs
 Upstream: https://github.com/westes/flex
@@ -256,12 +256,12 @@ Estado SST: [ ]
 18. gpsd
 Paquete: gpsd
 Repositorio: extra
-Versión: 3.27.5-1
+Versión: 3.28-1
 Arquitectura: x86_64
 Descripción: GPS daemon and library to support USB/serial GPS devices
 Upstream: https://gpsd.gitlab.io/gpsd/
 Licencia: BSD
-Dependencias: dbus, gcc-libs, glibc, python, libusb, bluez-libs, pps-tools
+Dependencias: dbus, glibc, python, libgcc, libstdc++, libusb, bluez-libs, pps-tools
 Opcionales: gtk3: GUI frontends, php: generate a PHP status page for your GPS, php-gd: image support for the PHP status page, python-cairo: GUI frontends, python-gobject: GUI frontends, python-pyserial: GUI frontends, qt5-base: for Qgpsmm
 Compilación: scons, docbook-xsl, qt5-base, python-gobject, python-cairo, python-pyserial, gtk3, python-setuptools
 Pruebas: —

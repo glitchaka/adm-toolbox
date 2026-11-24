@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. firefox developer edition i18n ja
 Paquete: firefox-developer-edition-i18n-ja
 Repositorio: extra
-Versión: 161.0b5-1
+Versión: 162.0b1-1
 Arquitectura: any
 Descripción: Japanese language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b5
+Dependencias: firefox-developer-edition>=162.0b1
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -391,7 +391,7 @@ Estado SST: [ ]
 27. lmod
 Paquete: lmod
 Repositorio: extra
-Versión: 9.4.5-1
+Versión: 9.5-1
 Arquitectura: x86_64
 Descripción: An environment module system based on Lua, reads TCL modules, supports a software hierarchy
 Upstream: https://github.com/TACC/Lmod
@@ -856,12 +856,12 @@ Estado SST: [ ]
 58. soapybladerf
 Paquete: soapybladerf
 Repositorio: extra
-Versión: 0.4.1-5
+Versión: 0.4.4-1
 Arquitectura: x86_64
 Descripción: Soapy SDR plugin for the BladeRF
 Upstream: https://github.com/pothosware/SoapyBladeRF
-Licencia: GPL3
-Dependencias: soapysdr, bladerf
+Licencia: LGPL-2.1-or-later
+Dependencias: glibc, libstdc++, libgcc, soapysdr, bladerf
 Opcionales: —
 Compilación: cmake
 Pruebas: —

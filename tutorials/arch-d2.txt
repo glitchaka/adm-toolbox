@@ -76,14 +76,14 @@ Estado SST: [ ]
 6. gnuradio osmosdr
 Paquete: gnuradio-osmosdr
 Repositorio: extra
-Versión: 0.2.6-19
+Versión: 0.2.6-20
 Arquitectura: x86_64
 Descripción: Source block for Funcube Dongle, RTL-SDR, USRP, OsmoSDR, BladeRF, HackRF and AirSpy devices
 Upstream: https://osmocom.org/projects/gr-osmosdr
 Licencia: GPL-3.0-or-later
 Dependencias: airspy, bladerf, boost-libs, glibc, gnuradio, gnuradio-iqbal, hackrf, libgcc, libstdc++, libuhd, libvolk, python, python-gnuradio, python-numpy, python-pyqt5, rtl-sdr, soapysdr
 Opcionales: python-opengl: for osmocom_fft
-Compilación: boost, cmake, git, pybind11
+Compilación: boost, cmake, git, pybind11, python-six
 Pruebas: —
 Proporciona: libgnuradio-osmosdr.so=0.2.0-64
 Estado SST: [ ]
@@ -211,7 +211,7 @@ Estado SST: [ ]
 15. intel speed select
 Paquete: intel-speed-select
 Repositorio: extra
-Versión: 7.3.5-2
+Versión: 7.3.6-1
 Arquitectura: x86_64
 Descripción: Intel Speed Select
 Upstream: https://www.kernel.org
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. miller
 Paquete: miller
 Repositorio: extra
-Versión: 6.22.0-1
+Versión: 6.23.0-1
 Arquitectura: x86_64
 Descripción: Name-indexed data processing tool
 Upstream: https://github.com/johnkerl/miller
@@ -436,12 +436,12 @@ Estado SST: [ ]
 30. nginx mod passenger
 Paquete: nginx-mod-passenger
 Repositorio: extra
-Versión: 6.2.2-2
+Versión: 6.2.2-3
 Arquitectura: x86_64
 Descripción: Passenger nginx module
 Upstream: https://www.phusionpassenger.com
 Licencia: MIT
-Dependencias: passenger, nginx=1.30.7
+Dependencias: passenger, nginx=1.30.8
 Opcionales: —
 Compilación: ruby-erb, ruby-rake, ruby-rack, curl, apache, nginx, nginx-src
 Pruebas: —

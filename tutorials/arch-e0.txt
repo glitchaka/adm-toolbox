@@ -91,7 +91,7 @@ Estado SST: [ ]
 7. firefox developer edition
 Paquete: firefox-developer-edition
 Repositorio: extra
-Versión: 161.0b5-1
+Versión: 162.0b1-1
 Arquitectura: x86_64
 Descripción: Fast, Private & Safe Web Browser (Developer Edition)
 Upstream: https://www.mozilla.org/firefox/developer/
@@ -406,16 +406,16 @@ Estado SST: [ ]
 28. mariadb
 Paquete: mariadb
 Repositorio: extra
-Versión: 13.0.2-3
+Versión: 13.1.2-1
 Arquitectura: x86_64
 Descripción: Fast SQL database server, derived from MySQL
 Upstream: https://mariadb.org/
 Licencia: GPL-2.0-only
-Dependencias: mariadb-clients=13.0.2, bzip2, libbz2.so=1.0-64, coreutils, jemalloc, libxml2, libxml2.so=16-64, lz4, liblz4.so=1-64, systemd-libs, libsystemd.so=0-64, zstd, libzstd.so=1-64
+Dependencias: mariadb-clients=13.1.2, bzip2, libbz2.so=1.0-64, coreutils, jemalloc, libxml2, libxml2.so=16-64, lz4, liblz4.so=1-64, systemd-libs, libsystemd.so=0-64, zstd, libzstd.so=1-64
 Opcionales: cracklib: for cracklib plugin, curl: for ha_s3 plugin, galera: for MariaDB cluster with Galera WSREP, judy: for Open Query GRAPH (OQGraph) computation engine, mariadb-pam: for PAM authentication, perl-dbd-mariadb: for mariadb-hotcopy, mariadb-convert-table-format and mariadb-setpermission, python-mysqlclient: for myrocks_hotbackup, xz: lzma provider
 Compilación: git, boost, bzip2, cmake, cracklib, curl, jemalloc, judy, krb5, liburing, libxcrypt, libxml2, lz4, openssl, pcre2, systemd, zlib, zstd, xz
 Pruebas: —
-Proporciona: mariadb-server=13.0.2, mysql
+Proporciona: mariadb-server=13.1.2, mysql
 Estado SST: [ ]
 
 29. mediawriter

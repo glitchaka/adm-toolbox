@@ -211,12 +211,12 @@ Estado SST: [ ]
 15. dump1090 rs
 Paquete: dump1090_rs
 Repositorio: extra
-Versión: 0.8.1-1
+Versión: 0.8.1-2
 Arquitectura: x86_64
 Descripción: Demodulate ADS-B signal from a SDR device
 Upstream: https://github.com/rsadsb/dump1090_rs
 Licencia: GPL-2.0-only
-Dependencias: soapysdr
+Dependencias: glibc, libgcc, soapysdr
 Opcionales: soapyrtlsdr: RTL-SDR support
 Compilación: cargo, clang
 Pruebas: —
@@ -526,7 +526,7 @@ Estado SST: [ ]
 36. python hatch gettext
 Paquete: python-hatch-gettext
 Repositorio: extra
-Versión: 1.1.3-1
+Versión: 1.1.4-1
 Arquitectura: any
 Descripción: Hatch build hook plugin for GNU gettext
 Upstream: https://github.com/damonlynch/hatch-gettext
@@ -811,7 +811,7 @@ Estado SST: [ ]
 55. yoshimi standalone
 Paquete: yoshimi-standalone
 Repositorio: extra
-Versión: 2.3.6.5-1
+Versión: 2.3.6.6-1
 Arquitectura: x86_64
 Descripción: A sophisticated soft-synth originally forked from ZynAddSubFX - standalone
 Upstream: https://yoshimi.github.io/

@@ -946,12 +946,12 @@ Estado SST: [ ]
 64. srslte
 Paquete: srslte
 Repositorio: extra
-Versión: 25.10-3
+Versión: 25.10-4
 Arquitectura: x86_64
 Descripción: Open source SDR LTE software suite from Software Radio Systems (SRS)
 Upstream: https://www.srslte.com
 Licencia: AGPL-3.0-or-later
-Dependencias: fftw, mbedtls3, boost-libs, lksctp-tools, libconfig, libuhd, soapysdr, bladerf, zeromq, pcsclite, srsgui
+Dependencias: glibc, libstdc++, libelf, libgcc, glibc, bash, fftw, mbedtls3, boost-libs, lksctp-tools, libconfig, libuhd, soapysdr, bladerf, zeromq, pcsclite, srsgui
 Opcionales: —
 Compilación: cmake, boost
 Pruebas: —

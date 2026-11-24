@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. firefox developer edition i18n de
 Paquete: firefox-developer-edition-i18n-de
 Repositorio: extra
-Versión: 161.0b5-1
+Versión: 162.0b1-1
 Arquitectura: any
 Descripción: German language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=161.0b5
+Dependencias: firefox-developer-edition>=162.0b1
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -976,12 +976,12 @@ Estado SST: [ ]
 66. soapysdr
 Paquete: soapysdr
 Repositorio: extra
-Versión: 0.8.1-7
+Versión: 0.9.0-1
 Arquitectura: x86_64
 Descripción: Vendor and platform neutral SDR support library
 Upstream: https://github.com/pothosware/SoapySDR
-Licencia: Boost
-Dependencias: python
+Licencia: BSL-1.0
+Dependencias: glibc, libstdc++, libgcc, python
 Opcionales: soapyairspy: Airspy backend, soapyaudio: Audio devices backend, soapybladerf: BladeRF backend, soapyhackrf: HackRF backend, soapynetsdr: NetSDR backend, soapyosmo: OsmoSDR backend, soapyremote: SoapySDR remote support, soapyrtlsdr: rtl-sdr backend, soapyuhd: UHD backend
 Compilación: cmake, swig, doxygen, graphviz, python-setuptools
 Pruebas: —
