@@ -1,27 +1,26 @@
 {
   "schema": 1,
-  "version": "0.1.12-blue.9",
+  "version": "0.1.12-blue.10",
   "channel": "blue",
-  "published_at": "2026-11-25T17:26:32.1619602+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.9/sst.exe",
-  "sha256": "e3203f9930f24627f86610088b6008fe3afdd59082fed2818613afabd083851e",
-  "size": 60248064,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.9/sst-updater.exe",
-  "updater_sha256": "bd589606ca1d2013f26f1952873613292af4201727b964454ddaef7d6629baf6",
+  "published_at": "2026-11-25T17:38:32.6200390+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.10/sst.exe",
+  "sha256": "112fc4d72ca8730968c4da8beb7d7d011c586357c4e6ffe36e30a8b21cd86e38",
+  "size": 60247552,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.10/sst-updater.exe",
+  "updater_sha256": "635a84cfa988d29f79bfed43447edf0c3fcc596a7f95aaafab8809b9eb012ec6",
   "updater_size": 433664,
   "changes": [
-    "Keygen elimina el año ficticio. Los títulos recorren toda la ventana y reaparecen por el borde opuesto, sin saltos visibles.",
-    "Las ondas, los rebotes y los colores siguen los transitorios del PCM original y la posición real del reproductor. No se cambian los MP3.",
-    "Presentación a 60 Hz con atlas de texto, geometría SDL por lotes y una única copia del fotograma. Conserva la fuente y el fondo de SST.",
-    "Unban solicita una sola autenticación de AD dentro de SST, sin elevar Windows. Verifica el resultado contra el mismo controlador.",
-    "Restaura el icono original del ejecutable en la ventana y en la clase Win32, incluso tras una pérdida del icono de ventana."
+    "Unban funciona directamente sin sudo ni elevación local, con una sola autenticación AD en la terminal y verificación del resultado.",
+    "Sudo recupera su comportamiento de elevación original, sin excepciones para unban.",
+    "Conserva las correcciones de icono y keygen: tipografía SST, desplazamiento lateral, renderizado por lotes y sincronización musical.",
+    "Keygen: cada glifo tiene desplazamiento físico y retorno lateral propios. Las frases no se trasladan ni reaparecen como un bloque; el avance continúa al cambiar de pista."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.12-blue.9.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.9/SST-Setup-0.1.12-blue.9.exe",
-    "sha256": "21119e5afda3b54619114a8b6c38dff3b6553ceb524048493e6134f3b8273bb2",
-    "size": 69411152,
+    "name": "SST-Setup-0.1.12-blue.10.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.10/SST-Setup-0.1.12-blue.10.exe",
+    "sha256": "265864ca64debd197bf40461fd93a93ec2c3a3cf5e1fb231d9edddc92bd5d4ab",
+    "size": 69410357,
     "single_use": true,
-    "package_id": "1e3101ab0a3a8d401496572fcc294ac8"
+    "package_id": "8785e8b8c9692001dac0c9c6b861145c"
   }
 }
