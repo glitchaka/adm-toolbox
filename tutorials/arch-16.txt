@@ -136,7 +136,7 @@ Estado SST: [ ]
 10. firefox
 Paquete: firefox
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: x86_64
 Descripción: Fast, Private & Safe Web Browser
 Upstream: https://www.firefox.com/
@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. firefox developer edition i18n de
 Paquete: firefox-developer-edition-i18n-de
 Repositorio: extra
-Versión: 162.0b1-1
+Versión: 162.0b2-1
 Arquitectura: any
 Descripción: German language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=162.0b1
+Dependencias: firefox-developer-edition>=162.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -166,16 +166,16 @@ Estado SST: [ ]
 12. firefox i18n is
 Paquete: firefox-i18n-is
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Icelandic language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
 13. firefoxpwa
@@ -901,15 +901,15 @@ Estado SST: [ ]
 61. python platformdirs
 Paquete: python-platformdirs
 Repositorio: extra
-Versión: 4.14.5-1
+Versión: 4.14.8-1
 Arquitectura: any
 Descripción: A library to determine platform-specific system directories
 Upstream: https://github.com/tox-dev/platformdirs
 Licencia: MIT
 Dependencias: python
 Opcionales: —
-Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs, python-hatch-fancy-pypi-readme
-Pruebas: python-pytest, python-pytest-mock, python-appdirs
+Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs, python-hatch-fancy-pypi-readme, python-python-sbom
+Pruebas: python-pytest, python-pytest-mock, python-appdirs, python-coverage
 Proporciona: —
 Estado SST: [ ]
 

@@ -13,22 +13,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-2. aspnet runtime 6 0
-Paquete: aspnet-runtime-6.0
-Repositorio: extra
-Versión: 6.0.36.sdk136-4
-Arquitectura: x86_64
-Descripción: The ASP.NET Core runtime
-Upstream: https://www.microsoft.com/net/core
-Licencia: MIT
-Dependencias: dotnet-runtime-6.0
-Opcionales: bash-completion: Bash completion support
-Compilación: bash, clang19, cmake, dotnet-sdk-6.0, dotnet-source-built-artifacts-6.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm19, lttng-ust2.12, nodejs, openssl-3, patchutils, systemd, zlib
-Pruebas: —
-Proporciona: aspnet-runtime=6.0
-Estado SST: [ ]
-
-3. aspnet targeting pack 10 0
+2. aspnet targeting pack 10 0
 Paquete: aspnet-targeting-pack-10.0
 Repositorio: extra
 Versión: 10.0.14.sdk114-2
@@ -43,7 +28,7 @@ Pruebas: —
 Proporciona: aspnet-targeting-pack=10.0
 Estado SST: [ ]
 
-4. audiobookshelf
+3. audiobookshelf
 Paquete: audiobookshelf
 Repositorio: extra
 Versión: 2.38.0-1
@@ -58,7 +43,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-5. avogadro crystals
+4. avogadro crystals
 Paquete: avogadro-crystals
 Repositorio: extra
 Versión: 2.1.0-1
@@ -73,7 +58,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-6. aws c sdkutils
+5. aws c sdkutils
 Paquete: aws-c-sdkutils
 Repositorio: extra
 Versión: 1.0.0-1
@@ -88,7 +73,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-7. cdemu client
+6. cdemu client
 Paquete: cdemu-client
 Repositorio: extra
 Versión: 3.3.1-1
@@ -103,7 +88,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-8. dbxtool
+7. dbxtool
 Paquete: dbxtool
 Repositorio: extra
 Versión: 8-2
@@ -118,7 +103,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-9. ddgr
+8. ddgr
 Paquete: ddgr
 Repositorio: extra
 Versión: 2.2-2
@@ -133,22 +118,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-10. deepin system monitor
+9. deepin system monitor
 Paquete: deepin-system-monitor
 Repositorio: extra
-Versión: 6.5.49-1
+Versión: 6.5.50-1
 Arquitectura: x86_64
 Descripción: A more user-friendly system monitor
 Upstream: https://github.com/linuxdeepin/deepin-system-monitor
 Licencia: CC-BY-4.0, CC0-1.0, GPL-2.0-or-later, GPL-3.0-or-later, LGPL-3.0-or-later
-Dependencias: dtk6core, dtk6gui, dtk6widget, qt6-base, qt6-svg, icu, dconf, glib2, libxcb, xcb-util-wm, glibc, libgcc, libstdc++, libnl, libcap, libpcap, polkit-qt6, libxext, systemd-libs, deepin-service-manager
+Dependencias: dtk6core, dtk6gui, dtk6widget, dtk6declarative, qt6-base, qt6-declarative, qt6-svg, icu, dconf, glib2, libxcb, xcb-util-wm, glibc, libgcc, libstdc++, libnl, libcap, libpcap, polkit-qt6, libxext, systemd-libs, deepin-service-manager
 Opcionales: deepin-application-manager: group Linglong application processes and relaunch after crashes
 Compilación: git, cmake, deepin-gettext-tools, ninja, qt6-tools, deepin-tray-loader
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-11. dovecot23 fts elastic
+10. dovecot23 fts elastic
 Paquete: dovecot23-fts-elastic
 Repositorio: extra
 Versión: 1.1.0-1
@@ -163,7 +148,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-12. enter tex
+11. enter tex
 Paquete: enter-tex
 Repositorio: extra
 Versión: 3.51.0-1
@@ -178,22 +163,22 @@ Pruebas: —
 Proporciona: gnome-latex
 Estado SST: [ ]
 
-13. firefox i18n sat
+12. firefox i18n sat
 Paquete: firefox-i18n-sat
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Santali language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
-14. fltk
+13. fltk
 Paquete: fltk
 Repositorio: extra
 Versión: 1.4.5-2
@@ -208,7 +193,7 @@ Pruebas: —
 Proporciona: libfltk_images.so=1.4-64, libfltk_gl.so=1.4-64, libfltk_forms.so=1.4-64, libfltk.so=1.4-64
 Estado SST: [ ]
 
-15. fltk1 3
+14. fltk1 3
 Paquete: fltk1.3
 Repositorio: extra
 Versión: 1.3.11-4
@@ -223,7 +208,7 @@ Pruebas: —
 Proporciona: libfltk_images.so=1.3-64, libfltk_gl.so=1.3-64, libfltk_forms.so=1.3-64, libfltk.so=1.3-64
 Estado SST: [ ]
 
-16. fpc
+15. fpc
 Paquete: fpc
 Repositorio: extra
 Versión: 3.2.2-11
@@ -238,7 +223,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-17. git bug
+16. git bug
 Paquete: git-bug
 Repositorio: extra
 Versión: 0.12.0-1
@@ -253,7 +238,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-18. gparted
+17. gparted
 Paquete: gparted
 Repositorio: extra
 Versión: 1.8.1-2
@@ -268,7 +253,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-19. haskell expiring cache map
+18. haskell expiring cache map
 Paquete: haskell-expiring-cache-map
 Repositorio: extra
 Versión: 0.0.6.1-503
@@ -283,7 +268,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-20. haskell missingh
+19. haskell missingh
 Paquete: haskell-missingh
 Repositorio: extra
 Versión: 1.6.0.3-58
@@ -298,7 +283,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-21. haskell unixutils
+20. haskell unixutils
 Paquete: haskell-unixutils
 Repositorio: extra
 Versión: 1.54.3-212
@@ -313,7 +298,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. hunspell es do
+21. hunspell es do
 Paquete: hunspell-es_do
 Repositorio: extra
 Versión: 1:2.9-1
@@ -328,7 +313,7 @@ Pruebas: —
 Proporciona: hunspell-dictionary
 Estado SST: [ ]
 
-23. hwdetect
+22. hwdetect
 Paquete: hwdetect
 Repositorio: extra
 Versión: 2026.10.01.1149-1
@@ -343,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. informant
+23. informant
 Paquete: informant
 Repositorio: extra
 Versión: 0.6.0-3
@@ -358,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. keepassxc
+24. keepassxc
 Paquete: keepassxc
 Repositorio: extra
 Versión: 2.8.0-4
@@ -373,7 +358,7 @@ Pruebas: xclip, xorg-server-xvfb
 Proporciona: org.freedesktop.secrets
 Estado SST: [ ]
 
-26. lablgtk3
+25. lablgtk3
 Paquete: lablgtk3
 Repositorio: extra
 Versión: 3.1.5-2
@@ -388,7 +373,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. libkmahjongg
+26. libkmahjongg
 Paquete: libkmahjongg
 Repositorio: extra
 Versión: 26.08.3-1
@@ -403,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. libmythes
+27. libmythes
 Paquete: libmythes
 Repositorio: extra
 Versión: 1:1.2.7-1
@@ -418,7 +403,7 @@ Pruebas: —
 Proporciona: mythes
 Estado SST: [ ]
 
-29. libnotify docs
+28. libnotify docs
 Paquete: libnotify-docs
 Repositorio: extra
 Versión: 0.8.9-1
@@ -433,7 +418,7 @@ Pruebas: dbus, gtk4, python-dbusmock, python-gobject, xorg-server-xvfb
 Proporciona: —
 Estado SST: [ ]
 
-30. libplist
+29. libplist
 Paquete: libplist
 Repositorio: extra
 Versión: 2.7.0-3
@@ -448,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. libreoffice fresh kn
+30. libreoffice fresh kn
 Paquete: libreoffice-fresh-kn
 Repositorio: extra
 Versión: 26.8.3-1
@@ -463,7 +448,7 @@ Pruebas: —
 Proporciona: libreoffice-kn, libreoffice-fresh-i18n=26.8.3-1
 Estado SST: [ ]
 
-32. libretro dolphin
+31. libretro dolphin
 Paquete: libretro-dolphin
 Repositorio: extra
 Versión: 20261023.115053.g3aac3f052f73-1
@@ -478,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. libseccomp
+32. libseccomp
 Paquete: libseccomp
 Repositorio: core
 Versión: 2.6.2-1
@@ -493,7 +478,7 @@ Pruebas: valgrind
 Proporciona: libseccomp.so=2-64
 Estado SST: [ ]
 
-34. lidia
+33. lidia
 Paquete: lidia
 Repositorio: extra
 Versión: 2.3.0-7
@@ -508,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. lua54 lpeg patterns
+34. lua54 lpeg patterns
 Paquete: lua54-lpeg-patterns
 Repositorio: extra
 Versión: 0.5-3
@@ -523,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. maim
+35. maim
 Paquete: maim
 Repositorio: extra
 Versión: 5.8.2-1
@@ -538,7 +523,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. msr tools
+36. msr tools
 Paquete: msr-tools
 Repositorio: extra
 Versión: 1.3-6
@@ -553,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. opendkim
+37. opendkim
 Paquete: opendkim
 Repositorio: extra
 Versión: 2.11.0beta2-2
@@ -568,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. openvino intel gpu plugin
+38. openvino intel gpu plugin
 Paquete: openvino-intel-gpu-plugin
 Repositorio: extra
 Versión: 2026.4.1-2
@@ -583,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. pantheon calculator
+39. pantheon calculator
 Paquete: pantheon-calculator
 Repositorio: extra
 Versión: 9.0.0-2
@@ -598,7 +583,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-41. pixman
+40. pixman
 Paquete: pixman
 Repositorio: extra
 Versión: 0.46.4-1
@@ -613,7 +598,7 @@ Pruebas: —
 Proporciona: libpixman-1.so=0-64
 Estado SST: [ ]
 
-42. poppler
+41. poppler
 Paquete: poppler
 Repositorio: extra
 Versión: 26.11.0-1
@@ -628,7 +613,7 @@ Pruebas: noto-fonts-cjk
 Proporciona: libpoppler.so=166-64, libpoppler-cpp.so=3-64
 Estado SST: [ ]
 
-43. prometheus ipmi exporter
+42. prometheus ipmi exporter
 Paquete: prometheus-ipmi-exporter
 Repositorio: extra
 Versión: 1.10.1-3
@@ -643,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. python allpairspy
+43. python allpairspy
 Paquete: python-allpairspy
 Repositorio: extra
 Versión: 2.5.1-1
@@ -658,7 +643,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-45. python cachecontrol
+44. python cachecontrol
 Paquete: python-cachecontrol
 Repositorio: extra
 Versión: 1:0.15.0-1
@@ -673,7 +658,7 @@ Pruebas: python-cherrypy, python-cheroot, python-filelock, python-pytest, python
 Proporciona: —
 Estado SST: [ ]
 
-46. python capng
+45. python capng
 Paquete: python-capng
 Repositorio: core
 Versión: 0.9.6-1
@@ -688,7 +673,7 @@ Pruebas: —
 Proporciona: python-libcap-ng
 Estado SST: [ ]
 
-47. python database cubic hecke
+46. python database cubic hecke
 Paquete: python-database-cubic-hecke
 Repositorio: extra
 Versión: 2022.4.4-5
@@ -703,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. python html text
+47. python html text
 Paquete: python-html-text
 Repositorio: extra
 Versión: 0.7.1-1
@@ -718,7 +703,7 @@ Pruebas: python-parsel, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-49. python opentelemetry instrumentation psycopg2
+48. python opentelemetry instrumentation psycopg2
 Paquete: python-opentelemetry-instrumentation-psycopg2
 Repositorio: extra
 Versión: 0.66b2-1
@@ -733,7 +718,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-50. python ovirt engine sdk
+49. python ovirt engine sdk
 Paquete: python-ovirt-engine-sdk
 Repositorio: extra
 Versión: 4.6.3-3
@@ -748,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. python rich rst
+50. python rich rst
 Paquete: python-rich-rst
 Repositorio: extra
 Versión: 2.2.0-1
@@ -763,7 +748,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-52. python standard mailcap
+51. python standard mailcap
 Paquete: python-standard-mailcap
 Repositorio: extra
 Versión: 3.13.0-4
@@ -778,7 +763,7 @@ Pruebas: —
 Proporciona: python-standard-mailcap, python-mailcap
 Estado SST: [ ]
 
-53. python utils
+52. python utils
 Paquete: python-utils
 Repositorio: extra
 Versión: 4.2.2-1
@@ -793,7 +778,7 @@ Pruebas: python-loguru, python-pytest, python-pytest-asyncio
 Proporciona: —
 Estado SST: [ ]
 
-54. qwt
+53. qwt
 Paquete: qwt
 Repositorio: extra
 Versión: 6.3.0-2
@@ -808,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. rocdecode
+54. rocdecode
 Paquete: rocdecode
 Repositorio: extra
 Versión: 10.1-1
@@ -823,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. rpacket
+55. rpacket
 Paquete: rpacket
 Repositorio: extra
 Versión: 0.1.5-2
@@ -838,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. ruby faraday multipart
+56. ruby faraday multipart
 Paquete: ruby-faraday-multipart
 Repositorio: extra
 Versión: 1.0.4-7
@@ -853,7 +838,7 @@ Pruebas: ruby-bundler, ruby-faraday, ruby-multipart-parser, ruby-rake, ruby-rspe
 Proporciona: —
 Estado SST: [ ]
 
-58. tesseract data chi tra
+57. tesseract data chi tra
 Paquete: tesseract-data-chi_tra
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -868,7 +853,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-59. tesseract data osd
+58. tesseract data osd
 Paquete: tesseract-data-osd
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -883,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. uusi
+59. uusi
 Paquete: uusi
 Repositorio: extra
 Versión: 0.4.4.0-82
@@ -898,7 +883,7 @@ Pruebas: haskell-hunit
 Proporciona: —
 Estado SST: [ ]
 
-61. uwsgi plugin psgi
+60. uwsgi plugin psgi
 Paquete: uwsgi-plugin-psgi
 Repositorio: extra
 Versión: 2.0.31-5
@@ -913,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. vim spell hu
+61. vim spell hu
 Paquete: vim-spell-hu
 Repositorio: extra
 Versión: 20220628-2
@@ -928,7 +913,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-63. vlc plugin modplug
+62. vlc plugin modplug
 Paquete: vlc-plugin-modplug
 Repositorio: extra
 Versión: 3.0.24-4
@@ -943,7 +928,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-64. when
+63. when
 Paquete: when
 Repositorio: extra
 Versión: 1.1.45-2
@@ -958,7 +943,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-65. zita convolver
+64. zita convolver
 Paquete: zita-convolver
 Repositorio: extra
 Versión: 4.0.3-6

@@ -226,16 +226,16 @@ Estado SST: [ ]
 16. firefox i18n oc
 Paquete: firefox-i18n-oc
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Occitan language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
 17. gexiv2
@@ -586,7 +586,7 @@ Estado SST: [ ]
 40. python qiniu
 Paquete: python-qiniu
 Repositorio: extra
-Versión: 7.20.0-1
+Versión: 7.20.1-1
 Arquitectura: any
 Descripción: Qiniu Resource Storage SDK for Python
 Upstream: https://github.com/qiniu/python-sdk
@@ -643,7 +643,22 @@ Pruebas: ruby-bundler
 Proporciona: —
 Estado SST: [ ]
 
-44. skanpage
+44. rustdesk server
+Paquete: rustdesk-server
+Repositorio: extra
+Versión: 1.1.16-2
+Arquitectura: x86_64
+Descripción: Self-hosted ID and relay server for RustDesk
+Upstream: https://github.com/rustdesk/rustdesk-server
+Licencia: AGPL-3.0-only
+Dependencias: glibc, libgcc, libsodium
+Opcionales: —
+Compilación: cargo, git, zstd
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+45. skanpage
 Paquete: skanpage
 Repositorio: extra
 Versión: 26.08.3-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. stunnel
+46. stunnel
 Paquete: stunnel
 Repositorio: extra
 Versión: 5.82-2
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. texlive langcjk
+47. texlive langcjk
 Paquete: texlive-langcjk
 Repositorio: extra
 Versión: 2026.1-1
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: texlive-adobemapping, texlive-c90, texlive-cjk, texlive-cjk-gs-integrate, texlive-cjkpunct, texlive-cjkutils, texlive-dnp, texlive-evangelion-jfm, texlive-fixjfm, texlive-garuda-c90, texlive-jfmutil, texlive-norasi-c90, texlive-pxtatescale, texlive-xcjk2uni, texlive-xecjk, texlive-zitie, texlive-zxjafont
 Estado SST: [ ]
 
-47. vim ansible
+48. vim ansible
 Paquete: vim-ansible
 Repositorio: extra
 Versión: 5.0-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. vlc plugin aalib
+49. vlc plugin aalib
 Paquete: vlc-plugin-aalib
 Repositorio: extra
 Versión: 3.0.24-4
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. xf86 video ati
+50. xf86 video ati
 Paquete: xf86-video-ati
 Repositorio: extra
 Versión: 1:22.0.0-3
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. xf86 video intel
+51. xf86 video intel
 Paquete: xf86-video-intel
 Repositorio: extra
 Versión: 1:2.99.917+939+g4a64400e-1
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: xf86-video-intel-uxa, xf86-video-intel-sna
 Estado SST: [ ]
 
-51. xfwm4
+52. xfwm4
 Paquete: xfwm4
 Repositorio: extra
 Versión: 4.20.0-2
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. xorg bdftopcf
+53. xorg bdftopcf
 Paquete: xorg-bdftopcf
 Repositorio: extra
 Versión: 1.1.2-1
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. xorg setxkbmap
+54. xorg setxkbmap
 Paquete: xorg-setxkbmap
 Repositorio: extra
 Versión: 1.3.5-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. yajl
+55. yajl
 Paquete: yajl
 Repositorio: extra
 Versión: 2.1.0-7
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: libyajl.so=2-64
 Estado SST: [ ]
 
-55. yoshimi standalone
+56. yoshimi standalone
 Paquete: yoshimi-standalone
 Repositorio: extra
 Versión: 2.3.6.6-1

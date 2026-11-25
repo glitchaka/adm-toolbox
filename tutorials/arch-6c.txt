@@ -106,16 +106,16 @@ Estado SST: [ ]
 8. firefox i18n gd
 Paquete: firefox-i18n-gd
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Gaelic (Scotland) language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
 9. gambas3 gb image
@@ -361,7 +361,7 @@ Estado SST: [ ]
 25. librepo
 Paquete: librepo
 Repositorio: extra
-Versión: 1.22.0-1
+Versión: 1.22.1-1
 Arquitectura: x86_64
 Descripción: Repodata downloading library
 Upstream: https://github.com/rpm-software-management/librepo
@@ -676,7 +676,7 @@ Estado SST: [ ]
 46. qt6 canvaspainter
 Paquete: qt6-canvaspainter
 Repositorio: extra
-Versión: 6.12.0-1
+Versión: 6.12.1-1
 Arquitectura: x86_64
 Descripción: Accelerated 2D painting solution for Qt Quick and QRhi-based render targets
 Upstream: https://www.qt.io
@@ -691,12 +691,12 @@ Estado SST: [ ]
 47. rekor
 Paquete: rekor
 Repositorio: extra
-Versión: 1.5.4-1
+Versión: 1.6.5-1
 Arquitectura: x86_64
 Descripción: Signature Transparency Log -- Sigstore client and server tools
 Upstream: https://github.com/sigstore/rekor
 Licencia: Apache-2.0
-Dependencias: glibc
+Dependencias: glibc, zstd
 Opcionales: —
 Compilación: git, go
 Pruebas: openssh

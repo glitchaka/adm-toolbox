@@ -136,12 +136,12 @@ Estado SST: [ ]
 10. firefox developer edition i18n ms
 Paquete: firefox-developer-edition-i18n-ms
 Repositorio: extra
-Versión: 162.0b1-1
+Versión: 162.0b2-1
 Arquitectura: any
 Descripción: Malay language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=162.0b1
+Dependencias: firefox-developer-edition>=162.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -151,12 +151,12 @@ Estado SST: [ ]
 11. firefox developer edition i18n ru
 Paquete: firefox-developer-edition-i18n-ru
 Repositorio: extra
-Versión: 162.0b1-1
+Versión: 162.0b2-1
 Arquitectura: any
 Descripción: Russian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=162.0b1
+Dependencias: firefox-developer-edition>=162.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -586,12 +586,12 @@ Estado SST: [ ]
 40. opensearch analysis smartcn plugin
 Paquete: opensearch-analysis-smartcn-plugin
 Repositorio: extra
-Versión: 3.9.0-1
+Versión: 3.10.1-1
 Arquitectura: x86_64
 Descripción: Smart Chinese Analysis plugin integrates Lucene Smart Chinese analysis module into opensearch.
 Upstream: https://docs.opensearch.org/latest/about/
 Licencia: Apache-2.0
-Dependencias: opensearch=3.9.0
+Dependencias: opensearch=3.10.1
 Opcionales: —
 Compilación: java-environment-openjdk=21, java-environment-openjdk=11, java-environment-openjdk=17, unzip
 Pruebas: —
@@ -661,14 +661,14 @@ Estado SST: [ ]
 45. prismlauncher
 Paquete: prismlauncher
 Repositorio: extra
-Versión: 11.1.1-1
+Versión: 11.1.1-2
 Arquitectura: x86_64
 Descripción: Minecraft launcher with ability to manage multiple instances
 Upstream: https://prismlauncher.org
 Licencia: GPL-3.0-only AND LGPL-3.0-or-later AND LGPL-2.0-or-later AND Apache-2.0 AND MIT AND LicenseRef-Batch AND OFL-1.1
 Dependencias: glibc, mesa-utils, libarchive, libgl, pciutils, qrencode, qt6-base, qt6-imageformats, qt6-networkauth, qt6-svg, zlib, hicolor-icon-theme, tomlplusplus, cmark, libstdc++, libgcc
 Opcionales: glfw: to use system GLFW libraries, openal: to use system OpenAL libraries, visualvm: Profiling support, xorg-xrandr: for older minecraft versions, orca: minecraft screen reader, flite: minecraft voice narration, java-runtime: use system java versions
-Compilación: cmake, extra-cmake-modules, git, jdk17-openjdk, ninja, scdoc, gamemode, vulkan-headers
+Compilación: cmake, extra-cmake-modules, git, jdk17-openjdk, ninja, scdoc, gamemode, strip-nondeterminism, vulkan-headers
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

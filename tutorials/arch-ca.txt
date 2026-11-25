@@ -268,22 +268,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-19. dotnet sdk 9 0
-Paquete: dotnet-sdk-9.0
-Repositorio: extra
-Versión: 9.0.22.sdk123-2
-Arquitectura: x86_64
-Descripción: The .NET Core SDK
-Upstream: https://dotnet.microsoft.com
-Licencia: MIT
-Dependencias: dotnet-runtime-9.0, dotnet-targeting-pack-9.0, glibc, libgcc, libstdc++, netstandard-targeting-pack
-Opcionales: aspnet-targeting-pack: Build ASP.NET Core applications
-Compilación: bash, clang20, cmake, dotnet-sdk-9.0, dotnet-source-built-artifacts-9.0, git, icu, krb5, libgit2, libunwind, libxml2, lldb, llvm20, lttng-ust2.12, nodejs, openssl-3, systemd, zlib
-Pruebas: —
-Proporciona: dotnet-sdk=9.0
-Estado SST: [ ]
-
-20. evemu
+19. evemu
 Paquete: evemu
 Repositorio: extra
 Versión: 2.7.0-13
@@ -298,37 +283,37 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-21. firefox developer edition i18n pl
+20. firefox developer edition i18n pl
 Paquete: firefox-developer-edition-i18n-pl
 Repositorio: extra
-Versión: 162.0b1-1
+Versión: 162.0b2-1
 Arquitectura: any
 Descripción: Polish language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=162.0b1
+Dependencias: firefox-developer-edition>=162.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. firefox i18n ar
+21. firefox i18n ar
 Paquete: firefox-i18n-ar
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Arabic language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
-23. gcc m2
+22. gcc m2
 Paquete: gcc-m2
 Repositorio: core
 Versión: 16.2.1+r23+gd564253eb6c8-1
@@ -343,7 +328,7 @@ Pruebas: dejagnu, expect, inetutils, python-pytest, tcl
 Proporciona: —
 Estado SST: [ ]
 
-24. gnome tweaks
+23. gnome tweaks
 Paquete: gnome-tweaks
 Repositorio: extra
 Versión: 49.0-2
@@ -358,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-25. gprename
+24. gprename
 Paquete: gprename
 Repositorio: extra
 Versión: 20230429-2
@@ -373,10 +358,10 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. grafana
+25. grafana
 Paquete: grafana
 Repositorio: extra
-Versión: 13.3.1-1
+Versión: 13.3.2-1
 Arquitectura: x86_64
 Descripción: Gorgeous metric viz, dashboards & editors for Graphite, InfluxDB & OpenTSDB
 Upstream: https://grafana.com/
@@ -388,7 +373,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. gram
+26. gram
 Paquete: gram
 Repositorio: extra
 Versión: 3.5.2-1
@@ -403,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-28. haskell html parse
+27. haskell html parse
 Paquete: haskell-html-parse
 Repositorio: extra
 Versión: 0.2.2.0-150
@@ -418,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. haskell test framework leancheck
+28. haskell test framework leancheck
 Paquete: haskell-test-framework-leancheck
 Repositorio: extra
 Versión: 0.0.4-282
@@ -433,7 +418,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. haskell th reify many
+29. haskell th reify many
 Paquete: haskell-th-reify-many
 Repositorio: extra
 Versión: 0.1.10-278
@@ -448,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. hunspell es pa
+30. hunspell es pa
 Paquete: hunspell-es_pa
 Repositorio: extra
 Versión: 1:2.9-1
@@ -463,7 +448,7 @@ Pruebas: —
 Proporciona: hunspell-dictionary
 Estado SST: [ ]
 
-32. kcrash
+31. kcrash
 Paquete: kcrash
 Repositorio: extra
 Versión: 6.32.0-1
@@ -478,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. kiwix desktop
+32. kiwix desktop
 Paquete: kiwix-desktop
 Repositorio: extra
 Versión: 2.5.1-2
@@ -493,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. libfreexl
+33. libfreexl
 Paquete: libfreexl
 Repositorio: extra
 Versión: 2.0.0-3
@@ -508,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-35. libgsystemservice
+34. libgsystemservice
 Paquete: libgsystemservice
 Repositorio: extra
 Versión: 0.3.0-2
@@ -523,7 +508,7 @@ Pruebas: —
 Proporciona: libgsystemservice-0.so=0-64
 Estado SST: [ ]
 
-36. libreoffice still sa in
+35. libreoffice still sa in
 Paquete: libreoffice-still-sa-in
 Repositorio: extra
 Versión: 26.2.7-1
@@ -538,10 +523,10 @@ Pruebas: —
 Proporciona: libreoffice-sa-IN, libreoffice-still-i18n=26.2.7-1
 Estado SST: [ ]
 
-37. linux
+36. linux
 Paquete: linux
 Repositorio: core
-Versión: 7.3.5.arch1-1
+Versión: 7.3.6.arch1-1
 Arquitectura: x86_64
 Descripción: The Linux kernel and modules
 Upstream: https://github.com/archlinux/linux
@@ -553,22 +538,22 @@ Pruebas: —
 Proporciona: KSMBD-MODULE, NTSYNC-MODULE, VIRTUALBOX-GUEST-MODULES, WIREGUARD-MODULE
 Estado SST: [ ]
 
-38. lua53 http
+37. lua53 http
 Paquete: lua53-http
 Repositorio: extra
-Versión: 0.4-5
+Versión: 0.4-6
 Arquitectura: any
 Descripción: HTTP Library for Lua 5.3
 Upstream: https://github.com/daurnimator/lua-http
 Licencia: MIT
 Dependencias: lua53-cqueues, lua53-luaossl, lua53-basexx, lua53-binaryheap, lua53-lpeg, lua53-lpeg-patterns, lua53-fifo
 Opcionales: lua53-zlib: gzip compression, lua53-psl: public suffix list checking
-Compilación: luarocks, lua51, lua52, lua53, lua54, pandoc
+Compilación: luarocks, lua51, lua52, lua53, lua54, lua, pandoc
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-39. metasploit
+38. metasploit
 Paquete: metasploit
 Repositorio: extra
 Versión: 6.5.9-1
@@ -583,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. new session manager
+39. new session manager
 Paquete: new-session-manager
 Repositorio: extra
 Versión: 1.6.1-3
@@ -598,7 +583,7 @@ Pruebas: —
 Proporciona: non-session-manager
 Estado SST: [ ]
 
-41. nitrokey udev rules
+40. nitrokey udev rules
 Paquete: nitrokey-udev-rules
 Repositorio: extra
 Versión: 1.1.1-1
@@ -613,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-42. nng
+41. nng
 Paquete: nng
 Repositorio: extra
 Versión: 1.12.4-2
@@ -628,7 +613,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. npm check updates
+42. npm check updates
 Paquete: npm-check-updates
 Repositorio: extra
 Versión: 23.1.1-1
@@ -643,7 +628,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-44. ocaml ptmap
+43. ocaml ptmap
 Paquete: ocaml-ptmap
 Repositorio: extra
 Versión: 2.0.5-5
@@ -658,22 +643,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. opensearch mapper murmur3 plugin
+44. opensearch mapper murmur3 plugin
 Paquete: opensearch-mapper-murmur3-plugin
 Repositorio: extra
-Versión: 3.9.0-1
+Versión: 3.10.1-1
 Arquitectura: x86_64
 Descripción: The Mapper Murmur3 plugin allows to compute hashes of a field\'s values at index-time and to store them in the index.
 Upstream: https://docs.opensearch.org/latest/about/
 Licencia: Apache-2.0
-Dependencias: opensearch=3.9.0
+Dependencias: opensearch=3.10.1
 Opcionales: —
 Compilación: java-environment-openjdk=21, java-environment-openjdk=11, java-environment-openjdk=17, unzip
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. opnplug vst
+45. opnplug vst
 Paquete: opnplug-vst
 Repositorio: extra
 Versión: 1.0.2-13
@@ -688,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. orchis theme
+46. orchis theme
 Paquete: orchis-theme
 Repositorio: extra
 Versión: 2026_07_07-1
@@ -703,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-48. pdoc
+47. pdoc
 Paquete: pdoc
 Repositorio: extra
 Versión: 16.0.0-2
@@ -718,7 +703,7 @@ Pruebas: python-hypothesis, python-pdoc-pyo3-sample-library, python-pydantic, py
 Proporciona: python-pdoc
 Estado SST: [ ]
 
-49. perl mail box parser c
+48. perl mail box parser c
 Paquete: perl-mail-box-parser-c
 Repositorio: extra
 Versión: 4.01-2
@@ -733,7 +718,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. perl string util
+49. perl string util
 Paquete: perl-string-util
 Repositorio: extra
 Versión: 1.36-1
@@ -748,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. php legacy imagick
+50. php legacy imagick
 Paquete: php-legacy-imagick
 Repositorio: extra
 Versión: 3.8.1-3
@@ -763,7 +748,7 @@ Pruebas: ttf-dejavu
 Proporciona: —
 Estado SST: [ ]
 
-52. pkgconf
+51. pkgconf
 Paquete: pkgconf
 Repositorio: core
 Versión: 3.0.11-1
@@ -778,7 +763,7 @@ Pruebas: —
 Proporciona: libpkgconf.so=8-64, pkg-config, pkgconfig
 Estado SST: [ ]
 
-53. planify
+52. planify
 Paquete: planify
 Repositorio: extra
 Versión: 4.20.0-2
@@ -793,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. python art
+53. python art
 Paquete: python-art
 Repositorio: extra
 Versión: 6.5-3
@@ -808,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. python glanceclient
+54. python glanceclient
 Paquete: python-glanceclient
 Repositorio: extra
 Versión: 4.14.0-1
@@ -823,7 +808,7 @@ Pruebas: python-stestr, python-ddt, python-requests-mock, python-testscenarios
 Proporciona: —
 Estado SST: [ ]
 
-56. python pyaml
+55. python pyaml
 Paquete: python-pyaml
 Repositorio: extra
 Versión: 26.7.0-1
@@ -838,7 +823,7 @@ Pruebas: python-unidecode
 Proporciona: —
 Estado SST: [ ]
 
-57. python pylsqpack
+56. python pylsqpack
 Paquete: python-pylsqpack
 Repositorio: extra
 Versión: 0.3.24-1
@@ -853,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. python tensorflow opt cuda
+57. python tensorflow opt cuda
 Paquete: python-tensorflow-opt-cuda
 Repositorio: extra
 Versión: 2.21.0-1
@@ -868,10 +853,10 @@ Pruebas: —
 Proporciona: python-tensorflow, python-tensorflow-cuda
 Estado SST: [ ]
 
-59. qt6 graphs
+58. qt6 graphs
 Paquete: qt6-graphs
 Repositorio: extra
-Versión: 6.12.0-1
+Versión: 6.12.1-1
 Arquitectura: x86_64
 Descripción: Qt Graphs for data visualization
 Upstream: https://www.qt.io
@@ -883,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-60. rhvoice voice mikhail
+59. rhvoice voice mikhail
 Paquete: rhvoice-voice-mikhail
 Repositorio: extra
 Versión: 1.16.5-1
@@ -898,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-61. ruby liquid c
+60. ruby liquid c
 Paquete: ruby-liquid-c
 Repositorio: extra
 Versión: 4.2.0-5
@@ -913,7 +898,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-62. ruby racc
+61. ruby racc
 Paquete: ruby-racc
 Repositorio: extra
 Versión: 1.8.1-2
@@ -928,7 +913,7 @@ Pruebas: ruby-test-unit, ruby-test-unit-ruby-core
 Proporciona: —
 Estado SST: [ ]
 
-63. ruby rack session
+62. ruby rack session
 Paquete: ruby-rack-session
 Repositorio: extra
 Versión: 2.1.2-1
@@ -943,7 +928,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-minitest, ruby-minitest-global_expectatio
 Proporciona: —
 Estado SST: [ ]
 
-64. ruby sass embedded
+63. ruby sass embedded
 Paquete: ruby-sass-embedded
 Repositorio: extra
 Versión: 1.108.2-1
@@ -958,7 +943,7 @@ Pruebas: ruby-bundler, ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-65. ruby simplecov
+64. ruby simplecov
 Paquete: ruby-simplecov
 Repositorio: extra
 Versión: 1.3.2-1
@@ -973,7 +958,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-66. ruby simplecov json formatter
+65. ruby simplecov json formatter
 Paquete: ruby-simplecov_json_formatter
 Repositorio: extra
 Versión: 0.1.4-7
@@ -988,7 +973,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-rspec, ruby-simplecov
 Proporciona: —
 Estado SST: [ ]
 
-67. ruby sus fixtures console
+66. ruby sus fixtures console
 Paquete: ruby-sus-fixtures-console
 Repositorio: extra
 Versión: 0.5.0-1
@@ -1003,7 +988,7 @@ Pruebas: ruby-bake, ruby-bake-test, ruby-bundler, ruby-covered, ruby-decode, rub
 Proporciona: —
 Estado SST: [ ]
 
-68. s3rver
+67. s3rver
 Paquete: s3rver
 Repositorio: extra
 Versión: 3.7.1-2
@@ -1018,7 +1003,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-69. swhid
+68. swhid
 Paquete: swhid
 Repositorio: extra
 Versión: 0.2.2-2
@@ -1033,7 +1018,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-70. thunderbird i18n kk
+69. thunderbird i18n kk
 Paquete: thunderbird-i18n-kk
 Repositorio: extra
 Versión: 160.0-1
@@ -1048,7 +1033,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-71. ttf crimson
+70. ttf crimson
 Paquete: ttf-crimson
 Repositorio: extra
 Versión: 0.800-3
@@ -1063,7 +1048,7 @@ Pruebas: —
 Proporciona: crimson-font=0.800, ttf-crimson-text
 Estado SST: [ ]
 
-72. vcpkg
+71. vcpkg
 Paquete: vcpkg
 Repositorio: extra
 Versión: 2026.10.29-1
@@ -1078,7 +1063,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-73. vulkan panfrost
+72. vulkan panfrost
 Paquete: vulkan-panfrost
 Repositorio: extra
 Versión: 1:26.3.1-3
@@ -1093,7 +1078,7 @@ Pruebas: —
 Proporciona: vulkan-driver
 Estado SST: [ ]
 
-74. xorg xdpyinfo
+73. xorg xdpyinfo
 Paquete: xorg-xdpyinfo
 Repositorio: extra
 Versión: 1.4.0-1
@@ -1108,7 +1093,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-75. xrt plugin amdxdna
+74. xrt plugin amdxdna
 Paquete: xrt-plugin-amdxdna
 Repositorio: extra
 Versión: 1:2.21.75-2
@@ -1123,7 +1108,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-76. xviewer plugins
+75. xviewer plugins
 Paquete: xviewer-plugins
 Repositorio: extra
 Versión: 3.4.5-1
@@ -1138,7 +1123,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-77. yoga
+76. yoga
 Paquete: yoga
 Repositorio: extra
 Versión: 3.2.2-1

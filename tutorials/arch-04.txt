@@ -76,7 +76,7 @@ Estado SST: [ ]
 6. deepin tray loader
 Paquete: deepin-tray-loader
 Repositorio: extra
-Versión: 6.2.1-1
+Versión: 6.2.1-2
 Arquitectura: x86_64
 Descripción: A set of tray plugins that integrated into task bar and the tool loader which can load the plugins
 Upstream: https://github.com/linuxdeepin/dde-tray-loader
@@ -106,12 +106,12 @@ Estado SST: [ ]
 8. firefox developer edition i18n hi in
 Paquete: firefox-developer-edition-i18n-hi-in
 Repositorio: extra
-Versión: 162.0b1-1
+Versión: 162.0b2-1
 Arquitectura: any
 Descripción: Hindi (India) language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=162.0b1
+Dependencias: firefox-developer-edition>=162.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -571,15 +571,15 @@ Estado SST: [ ]
 39. python sphinx autodoc typehints
 Paquete: python-sphinx-autodoc-typehints
 Repositorio: extra
-Versión: 3.13.10-1
+Versión: 3.17.7-1
 Arquitectura: any
 Descripción: Type hints support for the Sphinx autodoc extension
 Upstream: https://github.com/tox-dev/sphinx-autodoc-typehints
 Licencia: MIT
 Dependencias: python, python-sphinx
 Opcionales: —
-Compilación: git, python-build, python-hatch-vcs, python-hatchling, python-installer
-Pruebas: python-pytest, python-sphobjinv, python-typing_extensions
+Compilación: git, python-build, python-hatch-vcs, python-hatch-fancy-pypi-readme, python-hatchling, python-installer, python-python-sbom
+Pruebas: python-pytest, python-sphobjinv, python-typing_extensions, python-annotated-doc, python-pydantic, python-numpydoc, python-sphinx-design
 Proporciona: —
 Estado SST: [ ]
 

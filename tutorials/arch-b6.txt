@@ -361,14 +361,14 @@ Estado SST: [ ]
 25. marksman
 Paquete: marksman
 Repositorio: extra
-Versión: 20260208-3
+Versión: 20260208-4
 Arquitectura: x86_64
 Descripción: Write Markdown with code assist and intelligence in the comfort of your favourite editor.
 Upstream: https://github.com/artempyanykh/marksman
 Licencia: MIT
-Dependencias: dotnet-runtime-9.0
+Dependencias: dotnet-runtime-10.0
 Opcionales: —
-Compilación: dotnet-sdk-9.0, git
+Compilación: dotnet-sdk-10.0, git
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -841,7 +841,7 @@ Estado SST: [ ]
 57. skrooge
 Paquete: skrooge
 Repositorio: extra
-Versión: 26.8.0-3
+Versión: 26.8.0-4
 Arquitectura: x86_64
 Descripción: Personal finance manager that aims at being powerful and intuitive
 Upstream: https://skrooge.org/
@@ -901,16 +901,16 @@ Estado SST: [ ]
 61. upki
 Paquete: upki
 Repositorio: extra
-Versión: 1.0.2-1
+Versión: 1.0.4-1
 Arquitectura: x86_64
 Descripción: Browser-grade certificate infrastructure to Linux
 Upstream: https://github.com/rustls/upki
 Licencia: MIT OR Apache-2.0
 Dependencias: glibc, libgcc, libgcc_s.so=1-64
 Opcionales: —
-Compilación: cargo
+Compilación: cargo, cargo-c
 Pruebas: —
-Proporciona: —
+Proporciona: libupki.so=1-64
 Estado SST: [ ]
 
 62. virt install

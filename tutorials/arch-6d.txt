@@ -136,12 +136,12 @@ Estado SST: [ ]
 10. firefox developer edition i18n hu
 Paquete: firefox-developer-edition-i18n-hu
 Repositorio: extra
-Versión: 162.0b1-1
+Versión: 162.0b2-1
 Arquitectura: any
 Descripción: Hungarian language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=162.0b1
+Dependencias: firefox-developer-edition>=162.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -406,7 +406,7 @@ Estado SST: [ ]
 28. libghostty vt
 Paquete: libghostty-vt
 Repositorio: extra
-Versión: 1.0.1-3
+Versión: 1.0.2-1
 Arquitectura: x86_64
 Descripción: A C-compatible library for embedding a fast, feature-rich terminal emulator in any 3rd party project
 Upstream: https://github.com/ghostty-org/ghostty
@@ -706,14 +706,14 @@ Estado SST: [ ]
 48. python zope annotation
 Paquete: python-zope-annotation
 Repositorio: extra
-Versión: 6.0-2
+Versión: 6.1-1
 Arquitectura: any
 Descripción: Object annotation mechanism
 Upstream: https://github.com/zopefoundation/zope.annotation
 Licencia: ZPL-2.1
-Dependencias: python, python-zope-component, python-zope-interface, python-zope-location, python-zope-proxy
+Dependencias: python, python-setuptools, python-zope-component, python-zope-interface, python-zope-location, python-zope-proxy
 Opcionales: —
-Compilación: python-build, python-installer, python-setuptools, python-wheel
+Compilación: git, python-build, python-installer, python-wheel
 Pruebas: python-zope-configuration, python-zope-testing, python-zope-testrunner
 Proporciona: —
 Estado SST: [ ]

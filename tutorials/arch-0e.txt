@@ -76,22 +76,22 @@ Estado SST: [ ]
 6. calibre
 Paquete: calibre
 Repositorio: extra
-Versión: 9.18.0-1
+Versión: 9.19.0-3
 Arquitectura: x86_64
 Descripción: Ebook management application
 Upstream: https://calibre-ebook.com
 Licencia: GPL-3.0-only
-Dependencias: espeak-ng, ffmpeg, hicolor-icon-theme, hunspell, hyphen, icu, jxrlib, libmtp, libstdc++, libstemmer, libusb, libwmf, mtdev, openssl, optipng, podofo, poppler, protobuf, python-apsw, python-beautifulsoup4, python-css-parser, python-cssselect, python-dateutil, python-dnspython, python-faust-cchardet, python-feedparser, python-html2text, python-html5-parser, python-jeepney, python-lxml, python-lxml-html-clean, python-markdown, python-html5lib, python-mechanize, python-msgpack, python-netifaces, python-pillow, python-psutil, python-py7zr, python-pychm, python-pycryptodome, python-pygments, python-pykakasi, python-pyqt6, python-pyqt6-webengine, python-regex, python-tzlocal, python-tzdata, python-unrardll, python-xxhash, python-zeroconf, python-zstandard, python, qt6-imageformats, qt6-multimedia, qt6-speech, qt6-svg, qt6-webengine, ttf-liberation, uchardet, udisks2, zstd
-Opcionales: onnxruntime: required for text-to-speech, python-fonttools: required for font subset feature in epub editor, speech-dispatcher: TTS support in the viewer
+Dependencias: espeak-ng, ffmpeg, hicolor-icon-theme, hunspell, hyphen, icu, jxrlib, libjxl, libmtp, libstdc++, libstemmer, libusb, libwebp-utils, libwmf, mtdev, openssl, optipng, podofo, poppler, protobuf, python-apsw, python-beautifulsoup4, python-css-parser, python-cssselect, python-dateutil, python-dnspython, python-faust-cchardet, python-feedparser, python-html2text, python-html5-parser, python-jeepney, python-lxml, python-lxml-html-clean, python-markdown, python-html5lib, python-mechanize, python-msgpack, python-netifaces, python-pillow, python-psutil, python-py7zr, python-pychm, python-pycryptodome, python-pygments, python-pykakasi, python-pyqt6, python-pyqt6-webengine, python-regex, python-tzlocal, python-tzdata, python-unrardll, python-xxhash, python-zeroconf, python-zstandard, python, qt6-imageformats, qt6-multimedia, qt6-speech, qt6-svg, qt6-webengine, ttf-liberation, uchardet, udisks2, zstd
+Opcionales: onnxruntime: required for text-to-speech, python-fonttools: required for font subset feature in epub editor, python-langtool: required for grammar checking, speech-dispatcher: TTS support in the viewer
 Compilación: cmake, onnxruntime, pyqt-builder, rapydscript-ng, sip, xdg-utils
-Pruebas: python-fonttools, python-pyzstd, python-sgmllib3k, speech-dispatcher, tk
+Pruebas: python-fonttools, python-langtool, python-pyzstd, python-sgmllib3k, speech-dispatcher, tk
 Proporciona: —
 Estado SST: [ ]
 
 7. clapper docs
 Paquete: clapper-docs
 Repositorio: extra
-Versión: 0.10.0-2
+Versión: 0.10.0-3
 Arquitectura: x86_64
 Descripción: Modern and user-friendly media player (documentation)
 Upstream: https://rafostar.github.io/clapper
@@ -181,31 +181,31 @@ Estado SST: [ ]
 13. firefox i18n hr
 Paquete: firefox-i18n-hr
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Croatian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
 14. firefox i18n hy am
 Paquete: firefox-i18n-hy-am
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Armenian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
 15. geoip database extra
@@ -541,12 +541,12 @@ Estado SST: [ ]
 37. opensearch analysis nori plugin
 Paquete: opensearch-analysis-nori-plugin
 Repositorio: extra
-Versión: 3.9.0-1
+Versión: 3.10.1-1
 Arquitectura: x86_64
 Descripción: The Korean (nori) Analysis plugin integrates Lucene nori analysis module into opensearch.
 Upstream: https://docs.opensearch.org/latest/about/
 Licencia: Apache-2.0
-Dependencias: opensearch=3.9.0
+Dependencias: opensearch=3.10.1
 Opcionales: —
 Compilación: java-environment-openjdk=21, java-environment-openjdk=11, java-environment-openjdk=17, unzip
 Pruebas: —
@@ -841,7 +841,7 @@ Estado SST: [ ]
 57. qt6 multimedia gstreamer
 Paquete: qt6-multimedia-gstreamer
 Repositorio: extra
-Versión: 6.12.0-1
+Versión: 6.12.1-1
 Arquitectura: x86_64
 Descripción: Gstreamer backend for qt6-multimedia
 Upstream: https://www.qt.io

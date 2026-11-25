@@ -451,12 +451,12 @@ Estado SST: [ ]
 31. opensearch repository hdfs plugin
 Paquete: opensearch-repository-hdfs-plugin
 Repositorio: extra
-Versión: 3.9.0-1
+Versión: 3.10.1-1
 Arquitectura: x86_64
 Descripción: The HDFS repository plugin adds support for Hadoop Distributed File-System (HDFS) repositories.
 Upstream: https://docs.opensearch.org/latest/about/
 Licencia: Apache-2.0
-Dependencias: opensearch=3.9.0
+Dependencias: opensearch=3.10.1
 Opcionales: —
 Compilación: java-environment-openjdk=21, java-environment-openjdk=11, java-environment-openjdk=17, unzip
 Pruebas: —
@@ -916,14 +916,14 @@ Estado SST: [ ]
 62. treeland
 Paquete: treeland
 Repositorio: extra
-Versión: 0.12.0-1
+Versión: 0.12.1-1
 Arquitectura: x86_64
 Descripción: New wayland compositer for DDE
 Upstream: https://github.com/linuxdeepin/treeland
-Licencia: Apache-2.0, CC-BY-4.0, CC0-1.0, GPL-2.0-only, GPL-3.0-only, HPND, LGPL-2.1-or-later, LGPL-3.0-only, MIT
-Dependencias: bash, ddm, dtk6core, dtk6declarative, dtk6systemsettings, glibc, libdisplay-info, libdrm, libgcc, libgl, libinput, libliftoff, libstdc++, libxau, libxcb, libxkbcommon, lcms2, mesa, mpv, pam, pixman, polkit, qt6-base, qt6-declarative, qt6-httpserver, qt6-remoteobjects, qt6-websockets, seatd, systemd-libs, vulkan-icd-loader, wayland, xcb-util-errors, xcb-util-renderutil, xcb-util-wm, xorg-xwayland, deepin-session
+Licencia: Apache-2.0, CC-BY-4.0, CC0-1.0, GPL-2.0-only, GPL-3.0-only, HPND, LGPL-3.0-only, LicenseRef-Qt-Commercial, MIT
+Dependencias: bash, ddm, dtk6core, dtk6declarative, dtk6systemsettings, glibc, libdisplay-info, libdrm, libgcc, libgl, libinput, libliftoff, libstdc++, libxau, libxcb, libxkbcommon, lcms2, mesa, mpv, pam, pixman, polkit, qt6-base, qt6-declarative, qt6-httpserver, qt6-remoteobjects, qt6-wayland, qt6-websockets, seatd, systemd-libs, vulkan-icd-loader, wayland, xcb-util-errors, xcb-util-renderutil, xcb-util-wm, xorg-xwayland, deepin-session, deepin-wlroots
 Opcionales: —
-Compilación: git, cmake, ninja, glslang, hwdata, qt6-tools, wayland-protocols, wlr-protocols, treeland-protocols, vulkan-headers
+Compilación: git, cmake, ninja, glslang, hwdata, qt6-tools, wayland-protocols, wlr-protocols, treeland-protocols, vulkan-headers, qt6-shadertools
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]

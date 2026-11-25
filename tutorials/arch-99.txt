@@ -121,12 +121,12 @@ Estado SST: [ ]
 9. firefox developer edition i18n da
 Paquete: firefox-developer-edition-i18n-da
 Repositorio: extra
-Versión: 162.0b1-1
+Versión: 162.0b2-1
 Arquitectura: any
 Descripción: Danish language pack for Firefox Developer Edition
 Upstream: https://www.mozilla.org/firefox/developer
 Licencia: MPL-2.0
-Dependencias: firefox-developer-edition>=162.0b1
+Dependencias: firefox-developer-edition>=162.0b2
 Opcionales: —
 Compilación: —
 Pruebas: —
@@ -151,7 +151,7 @@ Estado SST: [ ]
 11. gdm
 Paquete: gdm
 Repositorio: extra
-Versión: 51.1.1-1
+Versión: 51.2-1
 Arquitectura: x86_64
 Descripción: Display manager and login screen
 Upstream: https://gitlab.gnome.org/GNOME/gdm
@@ -466,15 +466,15 @@ Estado SST: [ ]
 32. perl text bibtex
 Paquete: perl-text-bibtex
 Repositorio: extra
-Versión: 1.00-1
+Versión: 1.00-2
 Arquitectura: x86_64
 Descripción: Perl interface to read and parse BibTeX files
-Upstream: https://metacpan.org/release/Text-BibTeX
+Upstream: https://metacpan.org/dist/Text-BibTeX
 Licencia: GPL-1.0-or-later OR Artistic-1.0-Perl
-Dependencias: perl
+Dependencias: glibc, perl>=5.26.0
 Opcionales: —
-Compilación: perl-module-build, perl-config-autoconf, perl-extutils-libbuilder
-Pruebas: —
+Compilación: perl-module-build>=0.4004
+Pruebas: perl-capture-tiny>=0.06
 Proporciona: —
 Estado SST: [ ]
 

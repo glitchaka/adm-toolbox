@@ -76,16 +76,16 @@ Estado SST: [ ]
 6. firefox i18n ro
 Paquete: firefox-i18n-ro
 Repositorio: extra
-Versión: 160.0.1-1
+Versión: 161.0-1
 Arquitectura: any
 Descripción: Romanian language pack for Firefox
 Upstream: https://www.mozilla.org/firefox/
 Licencia: MPL-2.0
-Dependencias: firefox>=160.0.1
+Dependencias: firefox>=161.0
 Opcionales: —
 Compilación: —
 Pruebas: —
-Proporciona: firefox-i18n=160.0.1-1
+Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
 7. flatpak xdg utils
@@ -556,14 +556,14 @@ Estado SST: [ ]
 38. python dateutil
 Paquete: python-dateutil
 Repositorio: extra
-Versión: 2.9.0-8
+Versión: 4.0.0-1
 Arquitectura: any
 Descripción: Provides powerful extensions to the standard datetime module
 Upstream: https://github.com/dateutil/dateutil
 Licencia: BSD-3-Clause, Apache-2.0
-Dependencias: python-six
+Dependencias: python
 Opcionales: —
-Compilación: python-build, python-installer, python-wheel, python-setuptools-scm, python-six, git
+Compilación: git, python-build, python-installer, python-hatchling, python-hatch-vcs, python-hatch-fancy-pypi-readme
 Pruebas: python-freezegun, python-hypothesis, python-pytest
 Proporciona: —
 Estado SST: [ ]
