@@ -1,26 +1,25 @@
 {
   "schema": 1,
-  "version": "0.1.12-blue.10",
+  "version": "0.1.12-blue.11",
   "channel": "blue",
-  "published_at": "2026-11-25T17:38:32.6200390+00:00",
-  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.10/sst.exe",
-  "sha256": "112fc4d72ca8730968c4da8beb7d7d011c586357c4e6ffe36e30a8b21cd86e38",
-  "size": 60247552,
-  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.10/sst-updater.exe",
-  "updater_sha256": "635a84cfa988d29f79bfed43447edf0c3fcc596a7f95aaafab8809b9eb012ec6",
+  "published_at": "2026-11-25T19:12:09.4024367+00:00",
+  "asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.11/sst.exe",
+  "sha256": "e639b64c7e82333e8ada89ee04ce4d824b6dd9b19e463d6c83050c8d7f57f3dc",
+  "size": 60234752,
+  "updater_asset_url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.11/sst-updater.exe",
+  "updater_sha256": "ae994c0c2a63cf29127df9a304bf2ee4846c298b66c811b4c6dc58c8e1366c26",
   "updater_size": 433664,
   "changes": [
-    "Unban funciona directamente sin sudo ni elevación local, con una sola autenticación AD en la terminal y verificación del resultado.",
-    "Sudo recupera su comportamiento de elevación original, sin excepciones para unban.",
-    "Conserva las correcciones de icono y keygen: tipografía SST, desplazamiento lateral, renderizado por lotes y sincronización musical.",
-    "Keygen: cada glifo tiene desplazamiento físico y retorno lateral propios. Las frases no se trasladan ni reaparecen como un bloque; el avance continúa al cambiar de pista."
+    "Cada letra de Keygen integra su propia posición, velocidad, inercia angular y respuesta física al audio. Sin onda ni desplazamiento común de la frase.",
+    "Restricciones suaves evitan solapamientos y separaciones excesivas sin convertir el texto en una tira rígida. Retorno por bordes individual.",
+    "Texto del sistema rasterizado a tamaño real con la fuente de SST, sin atlas ni triángulos de textura. Se conservan fondo, audio y modo integrado."
   ],
   "setup": {
-    "name": "SST-Setup-0.1.12-blue.10.exe",
-    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.10/SST-Setup-0.1.12-blue.10.exe",
-    "sha256": "265864ca64debd197bf40461fd93a93ec2c3a3cf5e1fb231d9edddc92bd5d4ab",
-    "size": 69410357,
+    "name": "SST-Setup-0.1.12-blue.11.exe",
+    "url": "https://github.com/glitchaka/sst-blueversion/releases/download/v0.1.12-blue.11/SST-Setup-0.1.12-blue.11.exe",
+    "sha256": "41972b2a4685eb9eb76493bcd53aae4a62124129a949e44b20a4a85ec8133c66",
+    "size": 69397557,
     "single_use": true,
-    "package_id": "8785e8b8c9692001dac0c9c6b861145c"
+    "package_id": "df0c864ac15711c7909d7f4ed1c32ac2"
   }
 }
