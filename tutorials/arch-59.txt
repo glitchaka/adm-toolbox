@@ -826,13 +826,13 @@ Estado SST: [ ]
 56. scx scheds
 Paquete: scx-scheds
 Repositorio: extra
-Versión: 1.1.4-2
+Versión: 1.1.5-1
 Arquitectura: x86_64
 Descripción: sched_ext schedulers and tools
 Upstream: https://github.com/sched-ext/scx
 Licencia: GPL-2.0-only
-Dependencias: bash, bpf, libgcc, glibc, jq, libseccomp, libbpf, libelf, protobuf, zlib
-Opcionales: —
+Dependencias: bash, bpf, libgcc, glibc, jq, libbpf, libelf, protobuf, zlib
+Opcionales: polkit: run scxcli and scxtui actions as a non-root user
 Compilación: clang, git, llvm, llvm-libs, python, rust
 Pruebas: —
 Proporciona: —

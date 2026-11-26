@@ -526,13 +526,13 @@ Estado SST: [ ]
 36. python fastmcp slim
 Paquete: python-fastmcp-slim
 Repositorio: extra
-Versión: 4.2.5-1
+Versión: 4.2.6-1
 Arquitectura: any
 Descripción: FastMCP library with minimal dependencies
 Upstream: https://github.com/PrefectHQ/fastmcp
 Licencia: Apache-2.0
 Dependencias: python, python-dotenv, python-email-validator, python-mcp-types, python-platformdirs, python-pydantic, python-pydantic-settings, python-rich, python-typing_extensions
-Opcionales: python-anthropic: Anthropic sampling handler, python-fastmcp-tasks: background task execution, python-google-genai: Google GenAI sampling handler, python-openai: OpenAI sampling handler, python-prefab-ui: MCP app interfaces, python-pydantic-monty: code-mode sandbox, uv: isolated environments for MCP servers, python-fastmcp: client, server and CLI support
+Opcionales: python-anthropic: Anthropic sampling handler, python-fastmcp-events: event streaming support, python-fastmcp-tasks: background task execution, python-google-genai: Google GenAI sampling handler, python-openai: OpenAI sampling handler, python-prefab-ui: MCP app interfaces, python-pydantic-monty: code-mode sandbox, uv: isolated environments for MCP servers, python-fastmcp: client, server and CLI support
 Compilación: git, python-build, python-hatchling, python-installer, python-uv-dynamic-versioning, python-wheel
 Pruebas: jq, npm, python-anthropic, python-coverage, python-cryptography, python-dirty-equals, python-fastapi, python-google-genai, python-hypothesis, python-httpx, python-inline-snapshot, python-openai, python-opentelemetry-sdk, python-prefab-ui, python-psutil, python-pydantic-monty, python-pydocket, python-pyjwt, python-pytest, python-pytest-asyncio, python-pytest-env, python-pytest-examples, python-pytest-retry, python-pytest-timeout, uv, valkey
 Proporciona: —
@@ -751,15 +751,15 @@ Estado SST: [ ]
 51. winc
 Paquete: winc
 Repositorio: extra
-Versión: 0.1.857-1
+Versión: 0.1.970-1
 Arquitectura: x86_64
 Descripción: A lighter, faster desktop code editor
 Upstream: https://winc.si
 Licencia: Apache-2.0
-Dependencias: fontconfig, glibc, libgcc, libx11, libxcb, libxcursor, libxi, libxkbcommon, libxkbcommon-x11, libxrandr, ttf-dejavu, wayland
+Dependencias: fontconfig, glibc, libgcc, libx11, libxcb, libxcursor, libxi, libxkbcommon, libxkbcommon-x11, libxrandr, ttf-font, wayland
 Opcionales: git: Git integration, openssh: SSH remote support, polkit: run commands with elevated privileges, xdg-desktop-portal: native file dialogs, xdg-utils: open links and directories with external applications
 Compilación: cargo, git
-Pruebas: fish, noto-fonts-cjk, noto-fonts-emoji, python, zsh
+Pruebas: fish, noto-fonts-cjk, noto-fonts-emoji, python, ttf-dejavu, zsh
 Proporciona: —
 Estado SST: [ ]
 

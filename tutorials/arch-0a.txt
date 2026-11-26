@@ -31,7 +31,7 @@ Estado SST: [ ]
 3. cosmic comp
 Paquete: cosmic-comp
 Repositorio: extra
-Versión: 1:1.11.0-1
+Versión: 1:1.12.0-1
 Arquitectura: x86_64
 Descripción: Compositor for the COSMIC desktop environment
 Upstream: https://github.com/pop-os/cosmic-comp
@@ -43,7 +43,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-4. dbmate
+4. cosmic theme bundles
+Paquete: cosmic-theme-bundles
+Repositorio: extra
+Versión: 0.r4.g792870f-1
+Arquitectura: any
+Descripción: Built-in theme bundles for the COSMIC desktop environment
+Upstream: https://github.com/pop-os/cosmic-theme-bundles
+Licencia: CC-BY-SA-4.0, GPL-3.0-only
+Dependencias: cosmic-icon-theme
+Opcionales: noto-fonts: Noto Sans Mono font used by the theme bundles, ttf-opensans: Open Sans font used by the theme bundles
+Compilación: git, git-lfs, just
+Pruebas: —
+Proporciona: —
+Estado SST: [ ]
+
+5. dbmate
 Paquete: dbmate
 Repositorio: extra
 Versión: 2.38.2-1
@@ -58,7 +73,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-5. deepin clipboard
+6. deepin clipboard
 Paquete: deepin-clipboard
 Repositorio: extra
 Versión: 6.1.39-1
@@ -73,7 +88,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-6. describeimage
+7. describeimage
 Paquete: describeimage
 Repositorio: extra
 Versión: 1.5.1-1
@@ -88,7 +103,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-7. dnscrypt proxy
+8. dnscrypt proxy
 Paquete: dnscrypt-proxy
 Repositorio: extra
 Versión: 2.1.20-1
@@ -103,7 +118,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-8. facter
+9. facter
 Paquete: facter
 Repositorio: extra
 Versión: 4.10.0-3
@@ -118,7 +133,7 @@ Pruebas: ruby-bundler, ruby-rake, ruby-rspec, ruby-webmock, ruby-yard
 Proporciona: —
 Estado SST: [ ]
 
-9. firefox i18n es mx
+10. firefox i18n es mx
 Paquete: firefox-i18n-es-mx
 Repositorio: extra
 Versión: 161.0-1
@@ -133,7 +148,7 @@ Pruebas: —
 Proporciona: firefox-i18n=161.0-1
 Estado SST: [ ]
 
-10. haskell hls graph
+11. haskell hls graph
 Paquete: haskell-hls-graph
 Repositorio: extra
 Versión: 2.4.0.0-49
@@ -148,7 +163,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-11. haskell typst
+12. haskell typst
 Paquete: haskell-typst
 Repositorio: extra
 Versión: 0.12.1-4
@@ -163,7 +178,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-12. haskell yesod core
+13. haskell yesod core
 Paquete: haskell-yesod-core
 Repositorio: extra
 Versión: 1.7.0.0-8
@@ -178,7 +193,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-13. hoogle
+14. hoogle
 Paquete: hoogle
 Repositorio: extra
 Versión: 5.0.18.4-416
@@ -193,7 +208,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-14. idris
+15. idris
 Paquete: idris
 Repositorio: extra
 Versión: 1.3.4-628
@@ -208,7 +223,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-15. intel media driver
+16. intel media driver
 Paquete: intel-media-driver
 Repositorio: extra
 Versión: 26.3.5-1
@@ -223,7 +238,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-16. ipython
+17. ipython
 Paquete: ipython
 Repositorio: extra
 Versión: 9.19.1-1
@@ -238,7 +253,7 @@ Pruebas: jupyter-nbformat, python-curio, python-ipykernel, python-matplotlib, py
 Proporciona: —
 Estado SST: [ ]
 
-17. kdoctools
+18. kdoctools
 Paquete: kdoctools
 Repositorio: extra
 Versión: 6.32.0-1
@@ -253,7 +268,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-18. kirigami app components
+19. kirigami app components
 Paquete: kirigami-app-components
 Repositorio: extra
 Versión: 1.1.1-1
@@ -268,7 +283,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-19. libc
+20. libc
 Paquete: libc++
 Repositorio: extra
 Versión: 23.1.5-1
@@ -283,7 +298,7 @@ Pruebas: llvm-libs
 Proporciona: —
 Estado SST: [ ]
 
-20. libgoa
+21. libgoa
 Paquete: libgoa
 Repositorio: extra
 Versión: 3.58.1-1
@@ -298,7 +313,7 @@ Pruebas: —
 Proporciona: libgoa-1.0.so=0-64
 Estado SST: [ ]
 
-21. liblangtag
+22. liblangtag
 Paquete: liblangtag
 Repositorio: extra
 Versión: 0.6.8-1
@@ -313,7 +328,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-22. lockfile progs
+23. lockfile progs
 Paquete: lockfile-progs
 Repositorio: extra
 Versión: 0.2.0-1
@@ -328,7 +343,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. log4cxx
+24. log4cxx
 Paquete: log4cxx
 Repositorio: extra
 Versión: 1.8.0-1
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-24. lua54 penlight
+25. lua54 penlight
 Paquete: lua54-penlight
 Repositorio: extra
 Versión: 1.15.0-3
@@ -358,7 +373,7 @@ Pruebas: busted, lua51-busted, lua51-filesystem, lua52-busted, lua52-filesystem,
 Proporciona: —
 Estado SST: [ ]
 
-25. mate applet dock
+26. mate applet dock
 Paquete: mate-applet-dock
 Repositorio: extra
 Versión: 21.10.0-7
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. namazu
+27. namazu
 Paquete: namazu
 Repositorio: extra
 Versión: 2.0.21-7
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-27. openjdk src
+28. openjdk src
 Paquete: openjdk-src
 Repositorio: extra
 Versión: 27.0.1.1.u4-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: openjdk27-src=27.0.1.1.u4-1
 Estado SST: [ ]
 
-28. openttd
+29. openttd
 Paquete: openttd
 Repositorio: extra
 Versión: 15.3-1
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. perl mail sendmail
+30. perl mail sendmail
 Paquete: perl-mail-sendmail
 Repositorio: extra
 Versión: 0.83-1
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. pifpaf
+31. pifpaf
 Paquete: pifpaf
 Repositorio: extra
 Versión: 3.4.0-2
@@ -448,7 +463,7 @@ Pruebas: consul, httpbin, memcached, postgresql, python-requests, python-testtoo
 Proporciona: python-pifpaf=3.4.0
 Estado SST: [ ]
 
-31. protege
+32. protege
 Paquete: protege
 Repositorio: extra
 Versión: 5.6.9-1
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. python aiogram
+33. python aiogram
 Paquete: python-aiogram
 Repositorio: extra
 Versión: 3.34.0-1
@@ -478,7 +493,7 @@ Pruebas: pifpaf, python-aiohttp-socks, python-aresponses, python-babel, python-c
 Proporciona: —
 Estado SST: [ ]
 
-33. python booleanoperations
+34. python booleanoperations
 Paquete: python-booleanoperations
 Repositorio: extra
 Versión: 0.10.0-2
@@ -493,7 +508,7 @@ Pruebas: python-defcon, python-fontpens, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-34. python gersemi
+35. python gersemi
 Paquete: python-gersemi
 Repositorio: extra
 Versión: 0.29.2-1
@@ -508,7 +523,7 @@ Pruebas: git, python-pytest, python-pytest-xdist, python-pydantic, python-lark-p
 Proporciona: —
 Estado SST: [ ]
 
-35. python j2cli
+36. python j2cli
 Paquete: python-j2cli
 Repositorio: extra
 Versión: 0.3.12b-13
@@ -523,7 +538,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-36. python jsonmerge
+37. python jsonmerge
 Paquete: python-jsonmerge
 Repositorio: extra
 Versión: 1.9.2-4
@@ -538,7 +553,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-37. python opentelemetry instrumentation jinja2
+38. python opentelemetry instrumentation jinja2
 Paquete: python-opentelemetry-instrumentation-jinja2
 Repositorio: extra
 Versión: 0.66b2-1
@@ -553,7 +568,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-38. python opentelemetry instrumentation pymongo
+39. python opentelemetry instrumentation pymongo
 Paquete: python-opentelemetry-instrumentation-pymongo
 Repositorio: extra
 Versión: 0.66b2-1
@@ -568,7 +583,7 @@ Pruebas: protobuf, python-aiobotocore, python-aiohttp, python-aiopg, python-aios
 Proporciona: —
 Estado SST: [ ]
 
-39. python pbkdf2
+40. python pbkdf2
 Paquete: python-pbkdf2
 Repositorio: extra
 Versión: 1.3-15
@@ -583,7 +598,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-40. python protobuf
+41. python protobuf
 Paquete: python-protobuf
 Repositorio: extra
 Versión: 36.1-1
@@ -598,7 +613,7 @@ Pruebas: python-pytest, python-numpy
 Proporciona: —
 Estado SST: [ ]
 
-41. python unicorn
+42. python unicorn
 Paquete: python-unicorn
 Repositorio: extra
 Versión: 2.1.4-2
@@ -613,7 +628,7 @@ Pruebas: cmocka, python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-42. rocm toolchain
+43. rocm toolchain
 Paquete: rocm-toolchain
 Repositorio: extra
 Versión: 0.5.0-1
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. ruby jekyll seo tag
+44. ruby jekyll seo tag
 Paquete: ruby-jekyll-seo-tag
 Repositorio: extra
 Versión: 2.9.1-1
@@ -643,7 +658,7 @@ Pruebas: ruby-rspec
 Proporciona: —
 Estado SST: [ ]
 
-44. ruby net dns
+45. ruby net dns
 Paquete: ruby-net-dns
 Repositorio: extra
 Versión: 0.20.0-1
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. ruby netrc
+46. ruby netrc
 Paquete: ruby-netrc
 Repositorio: extra
 Versión: 0.11.0-6
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. surge xt
+47. surge xt
 Paquete: surge-xt
 Repositorio: extra
 Versión: 1.3.4-7
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. systemd libs
+48. systemd libs
 Paquete: systemd-libs
 Repositorio: core
 Versión: 262.2-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: libsystemd, libsystemd.so=0-64, libudev.so=1-64
 Estado SST: [ ]
 
-48. tere
+49. tere
 Paquete: tere
 Repositorio: extra
 Versión: 1.6.0-2
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. tesseract data yid
+50. tesseract data yid
 Paquete: tesseract-data-yid
 Repositorio: extra
 Versión: 2:4.1.0-5
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: tessdata
 Estado SST: [ ]
 
-50. tree sitter lua
+51. tree sitter lua
 Paquete: tree-sitter-lua
 Repositorio: extra
 Versión: 0.5.0-3
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: libtree-sitter-lua.so=15.0-64
 Estado SST: [ ]
 
-51. uptimed
+52. uptimed
 Paquete: uptimed
 Repositorio: extra
 Versión: 0.4.7-2
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-52. usage
+53. usage
 Paquete: usage
 Repositorio: extra
 Versión: 7.3.0-1
@@ -778,7 +793,7 @@ Pruebas: mise, nodejs
 Proporciona: —
 Estado SST: [ ]
 
-53. usbctl
+54. usbctl
 Paquete: usbctl
 Repositorio: extra
 Versión: 1.2-3
@@ -793,7 +808,7 @@ Pruebas: shellcheck
 Proporciona: —
 Estado SST: [ ]
 
-54. usbip
+55. usbip
 Paquete: usbip
 Repositorio: extra
 Versión: 7.3.6-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. volume key
+56. volume key
 Paquete: volume_key
 Repositorio: extra
 Versión: 0.3.12-12
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. vue language server
+57. vue language server
 Paquete: vue-language-server
 Repositorio: extra
 Versión: 3.3.14-1
@@ -838,7 +853,7 @@ Pruebas: npm
 Proporciona: vue-typescript-plugin
 Estado SST: [ ]
 
-57. xorg xcalc
+58. xorg xcalc
 Paquete: xorg-xcalc
 Repositorio: extra
 Versión: 1.1.3-2

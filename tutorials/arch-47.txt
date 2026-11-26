@@ -316,15 +316,15 @@ Estado SST: [ ]
 22. libinput
 Paquete: libinput
 Repositorio: extra
-Versión: 1.32.0-1
+Versión: 1.32.0-2
 Arquitectura: x86_64
 Descripción: Input device management and event handling library
 Upstream: https://wayland.freedesktop.org/libinput/doc/latest/
 Licencia: MIT
-Dependencias: glibc, libevdev, libgcc, libwacom, lua54, mtdev, systemd-libs
+Dependencias: glibc, libevdev, libgcc, libwacom, lua, mtdev, systemd-libs
 Opcionales: libinput-tools: debug utilities
 Compilación: cairo, check, git, glib2, gtk4, libx11, meson, python, python-libevdev, python-pyudev, python-yaml, wayland, wayland-protocols
-Pruebas: python-pytest
+Pruebas: python-pytest, valgrind
 Proporciona: libinput.so=10-64
 Estado SST: [ ]
 

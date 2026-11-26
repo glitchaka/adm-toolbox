@@ -31,14 +31,14 @@ Estado SST: [ ]
 3. cairo dock plug ins
 Paquete: cairo-dock-plug-ins
 Repositorio: extra
-Versión: 3.6.2-3
+Versión: 3.6.2-4
 Arquitectura: x86_64
 Descripción: Plugins for Cairo-Dock
 Upstream: https://github.com/Cairo-Dock/cairo-dock-plug-ins
 Licencia: GPL-3.0-or-later
 Dependencias: cairo-dock, python, python-dbus, python-gobject, ruby, cairo, pango, librsvg, dbus-glib, libxml2, glib2, gtk3, gdk-pixbuf2, alsa-lib, libetpan, gnome-menus, gvfs, libxklavier, libxrandr, libx11, libxxf86vm, upower, zeitgeist, libexif, vte3, lm_sensors, curl, wget, libdbusmenu-glib, libdbusmenu-gtk3, libayatana-indicator, ayatana-ido, libical, libpulse, fftw, json-c
 Opcionales: —
-Compilación: cmake, vala
+Compilación: cmake, git, vala
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -46,12 +46,12 @@ Estado SST: [ ]
 4. cosmic settings
 Paquete: cosmic-settings
 Repositorio: extra
-Versión: 1:1.11.0-1
+Versión: 1:1.12.0-2
 Arquitectura: x86_64
 Descripción: The settings application for the COSMIC desktop environment
 Upstream: https://github.com/pop-os/cosmic-settings
 Licencia: GPL-3.0-only
-Dependencias: accountsservice, adw-gtk-theme, cosmic-icon-theme, cosmic-randr, fontconfig, libgcc, glibc, iso-codes, libinput, libpipewire, libpulse, libxkbcommon, networkmanager, nm-connection-editor, pipewire-pulse, systemd-libs, ttf-opensans, wayland
+Dependencias: accountsservice, adw-gtk-theme, cosmic-icon-theme, cosmic-theme-bundles, cosmic-randr, fontconfig, libgcc, glibc, iso-codes, libinput, libpipewire, libpulse, libxkbcommon, networkmanager, nm-connection-editor, pipewire-pulse, systemd-libs, ttf-opensans, wayland
 Opcionales: power-profiles-daemon: power profiles support
 Compilación: cargo, clang, git, just, mold
 Pruebas: —

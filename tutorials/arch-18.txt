@@ -451,7 +451,7 @@ Estado SST: [ ]
 31. libinput tools
 Paquete: libinput-tools
 Repositorio: extra
-Versión: 1.32.0-1
+Versión: 1.32.0-2
 Arquitectura: x86_64
 Descripción: Input device management and event handling library (debug utilities)
 Upstream: https://wayland.freedesktop.org/libinput/doc/latest/
@@ -459,7 +459,7 @@ Licencia: MIT
 Dependencias: cairo, glib2, glibc, gtk4, libevdev, libgcc, libinput, libx11, python, python-libevdev, python-pyudev, python-yaml, systemd-libs, wayland
 Opcionales: —
 Compilación: cairo, check, git, glib2, gtk4, libx11, meson, python, python-libevdev, python-pyudev, python-yaml, wayland, wayland-protocols
-Pruebas: python-pytest
+Pruebas: python-pytest, valgrind
 Proporciona: —
 Estado SST: [ ]
 
@@ -871,14 +871,14 @@ Estado SST: [ ]
 59. qmk
 Paquete: qmk
 Repositorio: extra
-Versión: 1.2.0-3
+Versión: 1.2.0-4
 Arquitectura: any
-Descripción: CLI tool for customizing supported mechanical keyboards.
+Descripción: CLI tool for customizing supported mechanical keyboards
 Upstream: https://github.com/qmk/qmk_cli
 Licencia: MIT
-Dependencias: python-platformdirs, python-argcomplete, python-colorama, python-milc, python-dotty-dict, python-jsonschema, git, avr-gcc, arm-none-eabi-gcc, avr-libc, arm-none-eabi-binutils, arm-none-eabi-newlib, avr-binutils, dfu-programmer, dfu-util, avrdude, python-hjson, python-pygments, python-hid, python-pyusb, python-pyserial, python-pillow, dos2unix
+Dependencias: python, python-platformdirs, python-argcomplete, python-colorama, python-milc, python-dotty-dict, python-jsonschema, git, avr-gcc, arm-none-eabi-gcc, avr-libc, arm-none-eabi-binutils, arm-none-eabi-newlib, avr-binutils, dfu-programmer, dfu-util, avrdude, python-hjson, python-pygments, python-hid, python-pyusb, python-pyserial, python-pillow, dos2unix, qmk-udev
 Opcionales: gcc, libffi, libusb-compat, clang: chibios-upgrader, zip: some distribution script, wget: some update scripts, diffutils: some update scripts
-Compilación: python-build, python-installer, python-wheel, python-setuptools
+Compilación: git, python-build, python-installer, python-setuptools, python-wheel
 Pruebas: —
 Proporciona: —
 Estado SST: [ ]
@@ -991,13 +991,13 @@ Estado SST: [ ]
 67. telegram desktop
 Paquete: telegram-desktop
 Repositorio: extra
-Versión: 7.4.6-2
+Versión: 7.4.6-3
 Arquitectura: x86_64
 Descripción: Official Telegram Desktop client
 Upstream: https://desktop.telegram.org/
 Licencia: GPL-3.0-or-later WITH OpenSSL-exception
-Dependencias: abseil-cpp, ada, cairo, ffmpeg, fontconfig, glib2, glibc, hicolor-icon-theme, hunspell, kcoreaddons, libavif, libfido2, libgcc, libheif, libjpeg-turbo, libjxl, libpipewire, libsrtp, libstdc++, libvpx, libx11, libxcb, libxcomposite, libxdamage, libxext, libxfixes, libxkbcommon, libxrandr, libxtst, lz4, minizip, openal, openh264, openssl, opus, pango, pipewire, qt6-base, qt6-declarative, qt6-imageformats, qt6-svg, qt6-wayland, rnnoise, tlottie, xxhash, zlib
-Opcionales: geoclue: geoinformation support, crow-translate: translation provider, webkit2gtk-4.1: embedded browser features provided by webkit2gtk-4.1 (gtk3), webkitgtk-6.0: embedded browser features provided by webkitgtk-6.0 (gtk4), xdg-desktop-portal: desktop integration
+Dependencias: abseil-cpp, cairo, ffmpeg, fontconfig, glib2, glibc, hicolor-icon-theme, hunspell, kcoreaddons, libavif, libfido2, libgcc, libheif, libjpeg-turbo, libjxl, libpipewire, libsrtp, libstdc++, libvpx, libx11, libxcb, libxcomposite, libxdamage, libxext, libxfixes, libxkbcommon, libxrandr, libxtst, lz4, minizip, openal, openh264, openssl, opus, pango, pipewire, qt6-base, qt6-declarative, qt6-imageformats, qt6-svg, qt6-wayland, rnnoise, tlottie, xxhash, zlib
+Opcionales: crow-translate: translation provider, enchant: system spellcheck dictionaries support, geoclue: geoinformation support, webkit2gtk-4.1: embedded browser features provided by webkit2gtk-4.1 (gtk3), webkitgtk-6.0: embedded browser features provided by webkitgtk-6.0 (gtk4), xdg-desktop-portal: desktop integration
 Compilación: boost, boost-libs, cargo, cmake, git, glib2-devel, gobject-introspection, just, qt6-shadertools, gperf, libtg_owt, microsoft-gsl, ninja, python, range-v3, tl-expected, vulkan-headers
 Pruebas: —
 Proporciona: —
