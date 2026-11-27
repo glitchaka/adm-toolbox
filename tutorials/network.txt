@@ -8,60 +8,26 @@ Comando principal:
 Alias completo:
   net SUBCOMANDO ...
 
-Compatibilidad estilo netsh:
-  notsh wlan
-  notsh wlan show interfaces
-  notsh wifi
-  notsh wifi show interfaces
-  notsh wireless
-  notsh wireless show interfaces
-  notsh lan
-  notsh lan show interfaces
-  notsh ethernet
-  notsh ethernet show interfaces
-  notsh show interfaces
+Compatibilidad de contextos Windows:
+  notsh lan show interfaces       estado físico/IP y datos Dot3 disponibles; no certifica autorización NAC
+  notsh lan show profiles         perfiles de Wired AutoConfig
+  notsh wlan show interfaces      estado Wi-Fi/SSID/autenticación mediante API WLAN
+  notsh wlan show profiles        perfiles WLAN
+  notsh wlan show networks        redes WLAN observadas
+  notsh interface ipv4 show interfaces
+  notsh interface ipv6 show interfaces
 
-Compatibilidad tipo Unix/SST:
-  notsh link                -> interfaces
-  notsh addr                -> interfaces
-  notsh route               -> routes
-  notsh neigh               -> neighbors
-  notsh neighbor            -> neighbors
-  notsh ss                  -> connections
-  notsh socket              -> connections
-  notsh sockets             -> connections
-  notsh resolve ...         -> dns ...
+Los contextos NOTSH usan las API nativas correspondientes (IP Helper, Dot3, WLAN, WinHTTP, Winsock, Firewall y HTTP.sys). Las operaciones avanzadas no implementadas devuelven error; no se ofrece lan show settings como función disponible.
 
-Sin subcomando:
-  notsh
-  net
+Sin argumentos:
+  notsh     muestra el índice de comandos
+  net       mismo índice (alias)
 
-Ambos ejecutan `interfaces`.
-
-2. Interfaces
-
-Todas:
-  net interfaces
-  notsh show interfaces
-  notsh link
-  notsh addr
-
-Wi-Fi solamente:
-  notsh wlan
-  notsh wlan show interfaces
-  notsh wifi
-  notsh wifi show interfaces
-  notsh wireless
-  notsh wireless show interfaces
-
-Ethernet/cableado solamente:
-  notsh lan
-  notsh lan show interfaces
-  notsh ethernet
-  notsh ethernet show interfaces
-
-La vista Wi-Fi usa la sonda de interfaces de SST basada en IP Helper y evita consultar SSID/BSSID cuando no es necesario, para no depender de permisos de ubicación de Windows.
-
+2. Interfaces nativas de SST
+  notsh interfaces       todos los adaptadores IP Helper
+  notsh show interfaces  vista general propia de SST
+  notsh link             interfaces y enlace
+  notsh addr             interfaces y dirección IP
 3. Conexiones
 
   net connections
@@ -558,17 +524,94 @@ Temas:
   net help neighbors
   net help arp
 
-19. Relación con otras herramientas SST
+19. notsh test — diagnóstico integral, medidas y tráfico
+
+  notsh test
+    Ejecuta el diagnóstico general, medición de tráfico real en interfaces,
+    pérdida ICMP contra el gateway predeterminado y breve observación ETW.
+
+  notsh test full HOST
+    Realiza pruebas de enlace, IP/APIPA, gateway, NAC/802.1X, DNS, ICMP, TCP,
+    velocidad de NIC, pérdida, jitter y tráfico por proceso sobre ese destino.
+
+  notsh test HOST [--port PUERTO]
+    Inspección rápida de conectividad y servicio TCP. No mide velocidad.
+
+  notsh test loss [HOST] --count 20 --interval 400 --timeout 800
+    Prueba repetida ICMP IPv4 (gateway por defecto cuando se omite HOST).
+    Informa enviados, recibidos, pérdidas %, RTT mínimo/medio/máximo,
+    variación de RTT y racha máxima de fallos. Errores de API se separan.
+
+  notsh test stability [HOST] --seconds 20 --interval 1000
+    Mide disponibilidad y oscilaciones de RTT a lo largo del tiempo.
+    Con --tcp PUERTO evalúa disponibilidad TCP (no pérdida de paquetes IP).
+
+  notsh test speed --passive --seconds 4
+    Mide con IP Helper los contadores de bytes reales RX/TX de NIC Ethernet
+    y Wi-Fi físicas, velocidad de enlace negociado y errores/descartes.
+    No equivale a velocidad máxima hacia Internet.
+
+  notsh test speed --download https://SERVIDOR/archivo.bin --seconds 10 --max-mib 64
+    Prueba activa de DESCARGA HTTPS con WinHTTP, sin curl.exe ni otros
+    ejecutables. Usa un endpoint elegido por el operador, hasta el tiempo
+    y volumen máximos indicados, sin guardar los datos descargados.
+    El modo activo mide descarga y subida HTTPS con datos sintéticos. Por defecto usa Cloudflare; --download y --upload permiten indicar endpoints compatibles. Los resultados corresponden a los destinos medidos. --passive evita las transferencias de prueba.
+
+  notsh test traffic --seconds 5 [--pid PID] [--top N]
+    Captura eventos de red ETW y presenta bytes por segundo TX/RX por proceso,
+    nombre de proceso, PID, conexiones activas TCP/UDP, destinos y servicios
+    Windows relacionados con ese PID según Service Control Manager.
+    Si el proceso aloja múltiples servicios, NO se atribuyen los bytes a uno
+    individual: sólo se indica que comparten el proceso.
+
+  notsh test inspect --seconds 5 --pid PID
+    Misma observación ETW filtrada al PID, con conexiones y servicios.
+
+  notsh test packets --seconds 5 [--pid PID]
+    Muestra eventos individuales de red ETW con dirección TX/RX, bytes,
+    PID y código de evento, con cola acotada a 1024 observaciones.
+    NO es un sniffer de tramas NDIS ni inspecciona el contenido del payload.
+
+  notsh test capture --interface IPV4_LOCAL --seconds 5 --limit 100
+    Captura real de paquetes IPv4 mediante Winsock SOCK_RAW + SIO_RCVALL,
+    únicamente para la IPv4 indicada en una interfaz local, sin procesos
+    externos, y muestra IP origen/destino, puertos TCP/UDP, flags TCP, bytes,
+    dirección TX/RX y servicio probable (inferido del puerto).
+    Requiere permiso de Administrador y adaptador/política compatible.
+    Sólo recibe tráfico IPv4 hacia/desde la IP de interfaz elegida.
+
+  notsh test capture --interface IPV4_LOCAL --seconds 5 --payload-bytes 32
+    Añade el prefijo hexadecimal de hasta 32 bytes de carga útil por paquete
+    si el operador lo solicita expresamente. El contenido puede ser sensible.
+    El límite es de 64 bytes y nunca se muestra por defecto.
+    HTTPS/TLS sigue cifrado. No se reconstruyen sesiones, archivos, imágenes
+    ni datos de aplicación; el nombre de servicio inferido no es garantía.
+
+  notsh test --help
+    Ayuda de todas las modalidades.
+
+Limitaciones explícitas:
+  - Un ICMP perdido puede obedecer a un firewall, no necesariamente a una
+    interrupción real del enlace. La ausencia de ICMPv6 se informa.
+  - Los contadores de velocidad pasiva indican tráfico actual, no capacidad
+    total. La descarga HTTP sí genera tráfico pero sólo al destino elegido.
+  - ETW permite contar tráfico por proceso, pero no leer texto, documentos,
+    payload ni tráfico TLS descifrado. Para captura real de contenido se
+    necesita un controlador NDIS/WFP con autorización; SST no lo suplanta
+    ni presenta datos inexistentes.
+  - No se modifica la configuración de red ni se exportan credenciales.
+
+20. Relación con otras herramientas SST
 
   device            inventario persistente
   switch            MAC -> switch/puerto
   wol               Wake-on-LAN
-  diag network      diagnóstico compuesto
-  diag dns          DNS rápido
+  notsh test        diagnóstico compuesto
+  notsh dns HOST    resolución DNS
   sys printers      puede ayudar con impresoras/red
   sys domain / domain
                     dominio local/consulta remota
 
-20. Regla de exactitud
+21. Regla de exactitud
 
 No se debe inferir soporte por semejanza con netsh/ip/ss. Solo las opciones enumeradas aquí están implementadas por la superficie pública actual de `notsh`/`net`.
