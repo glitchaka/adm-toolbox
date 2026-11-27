@@ -1,64 +1,51 @@
-SST — Gestor de paquetes: instp
+SST — Gestor de paquetes nativos: instp
 
-Catálogo interactivo:
+SST-PACKAGE/1 es el estándar de integración y .pkgx es la extensión
+del contenedor TAR + GZIP. Solo se instalan módulos adaptados a SST.
+No se descargan herramientas externas como ejecutables independientes.
+
+Consultar:
   instp
-  instp browse
-  instp catalog               alias de browse
-
-Ayuda:
   instp help
-  instp -h
-  instp --help
-
-Búsqueda:
-  instp search
-  instp search TEXTO
-
-Información:
+  instp search [TEXTO]
   instp info PAQUETE
-  instp show PAQUETE          alias
-
-Instalar:
-  instp install PAQUETE
-  instp add PAQUETE           alias
-
-Eliminar:
-  instp remove PAQUETE
-  instp rm PAQUETE
-  instp uninstall PAQUETE
-
-Listar instalados:
   instp list
-  instp ls
+  instp PAQUETE
 
-Actualizar índices de repositorios:
-  instp update
+Instalar desde catálogo o archivo local:
+  instp install powershell
+  instp install powershell -p
+  instp install RUTA\\MODULO.pkgx --persistent
 
-Localizar qué paquete instaló un comando:
-  instp which COMANDO
+Quitar y actualizar:
+  instp remove PAQUETE
+  instp upgrade [PAQUETE]      actualiza módulos ya instalados
+  instp update                refresca solo índices de repositorios
+  instp check sst             consulta la versión de SST
+  instp upgrade sst           prepara actualización del núcleo y la aplica al cerrar
+  instp sst                   versión y canal de actualización
 
-Repositorios:
-  instp repo                 equivale a repo list
+Gestionar repositorios de paquetes SST:
   instp repo list
-  instp repo add NOMBRE URL
-  instp repo add NOMBRE URL PRIORIDAD
+  instp repo add NOMBRE URL [PRIORIDAD]
   instp repo remove NOMBRE
-  instp repo rm NOMBRE
   instp repo update
-
-PRIORIDAD debe ser entero; default=50.
-
-Caché:
   instp cache clean
-
-Diagnóstico:
   instp doctor
 
-Modelo de aislamiento:
-  - herramientas portables se instalan bajo el espacio SST
-  - SST añade rutas al PATH de su propio proceso, no al PATH global de Windows
-  - tras instalar/eliminar comandos expuestos puede ser necesario reiniciar SST para refrescar la sesión
-  - `info` muestra categoría, portabilidad, fuente, método de instalación y comandos expuestos
-  - fuentes pueden provenir de GitHub Releases o URL según descriptor
+Interfaz de catálogo:
+  sigsour                     consulta e instala módulos mediante instp
 
-No confundir `instp update` (repositorios de paquetes) con `update` (actualización de SST).
+Seguridad:
+  - paquetes .pkgx con manifiesto, hashes SHA-256 y rutas verificadas
+  - despliegue transaccional en packages/win/modules o árbol nativo apropiado
+  - solo módulos registrados se cargan en la consola
+  - no añadir .exe externos ni ejecutar instaladores de otros sistemas
+  - paquetes temporales caducan con la generación funcional; -p persiste
+
+Arch Linux:
+  Su listado de paquetes es una referencia para adaptar capacidades a SST.
+  No es un entorno instalable desde instp y no se utiliza WSL2.
+  Cada adaptación requiere código propio y su propio .pkgx.
+
+No confundir instp update (índices) con instp upgrade sst (núcleo).
