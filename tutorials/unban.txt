@@ -1,0 +1,15 @@
+UNBAN — desbloquear una cuenta de Active Directory (SST nativo)
+
+Uso: unban NOMBRE_DE_USUARIO
+
+1. No requiere sudo ni elevación local. El controlador de dominio verifica las credenciales y los permisos de la operación; no se modifica el token de Windows.
+2. Localiza un controlador AD escribible y obtiene el nombre DNS del dominio real mediante DsGetDcNameW (sin deducirlo a partir del FQDN del controlador).
+3. Solicita una sola vez dentro de la terminal integrada de SST las credenciales de una cuenta AD con derechos de desbloqueo. Acepta DOMINIO\usuario, usuario@dominio y nombres sin dominio (en este último caso usa el dominio descubierto).
+4. Abre LDAP al puerto 389 y autentica mediante SSPI Negotiate con firma y cifrado LDAP habilitados. No hace un bind LDAP simple sin protección.
+5. Tras autenticar, consulta RootDSE, localiza por sAMAccountName exactamente una cuenta y solicita únicamente la modificación lockoutTime=0.
+6. Verifica lockoutTime=0 leyendo la cuenta en el mismo controlador antes de anunciar éxito. Si falla el bind, no se desbloquea ninguna cuenta; LDAP 49 es un rechazo de autenticación, no una prueba de falta de permisos de desbloqueo. Cuando el DC aporta el subcódigo diagnóstico, SST muestra la causa interpretada sin imprimir la contraseña.
+7. No admite contraseñas por argumentos. Los búferes de credenciales se limpian al finalizar el intento.
+
+Requisitos: equipo Windows con acceso al DC, credenciales AD válidas, derecho delegado para modificar lockoutTime en la cuenta solicitada y soporte del controlador para autenticación Negotiate firmada y cifrada.
+
+Nota: esta guía describe el comportamiento implementado, no certifica la autenticación contra un dominio real. La verificación operativa exige ejecutar la compilación publicada contra un controlador de dominio autorizado.
