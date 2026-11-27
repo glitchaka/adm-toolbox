@@ -1,0 +1,25 @@
+SST — Guide y autocompletado por niveles
+
+  guide                     abre el índice interactivo
+  guide search TEXTO        busca un tema
+  guide sys                 ayuda del sistema
+  guide notsh test          diagnóstico de red
+  guide tools office diagnose
+  guide config
+  guide demo graficos
+
+Tab completa comandos, subcomandos y opciones del contexto actual. Ejemplos:
+  sys serv<Tab>                         services
+  sys services --r<Tab>                 --running
+  notsh lan sh<Tab>                     show
+  notsh interface ipv4 show int<Tab>    interfaces
+  tools office auth r<Tab>              repair
+  tools office diagnose --d<Tab>        --detail
+  instp upgrade s<Tab>                  sst
+  config palette sun<Tab>               sunset
+  triage 123 --p<Tab>                   --plan
+  guide tools office d<Tab>             diagnose
+
+En la ventana nativa, una coincidencia completa el token y añade un espacio al final de la línea. Con varias coincidencias, Tab amplía el prefijo común o muestra las alternativas. No ejecuta el comando. Los nombres de archivo conservan su mecanismo de completado. Los valores libres (usuario AD, PID, host, URL, secreto) no se inventan ni se consultan al pulsar Tab.
+
+Guide da prioridad a las fichas incluidas en SST; los temas complementarios pueden proceder del catálogo upstream. El índice local incluye los comandos públicos vigentes. Las pruebas de regresión comprueban el catálogo y la ruta real del intérprete.
