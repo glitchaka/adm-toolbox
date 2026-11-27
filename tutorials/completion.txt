@@ -22,4 +22,4 @@ Tab completa comandos, subcomandos y opciones del contexto actual. Ejemplos:
 
 En la ventana nativa, una coincidencia completa el token y añade un espacio al final de la línea. Con varias coincidencias, Tab amplía el prefijo común o muestra las alternativas. No ejecuta el comando. Los nombres de archivo conservan su mecanismo de completado. Los valores libres (usuario AD, PID, host, URL, secreto) no se inventan ni se consultan al pulsar Tab.
 
-Guide da prioridad a las fichas incluidas en SST; los temas complementarios pueden proceder del catálogo upstream. El índice local incluye los comandos públicos vigentes. Las pruebas de regresión comprueban el catálogo y la ruta real del intérprete.
+El repositorio de Guide es independiente del canal de SST. La próxima revisión del lector consultará el catálogo al abrirse y las fichas al seleccionarlas; sin red utilizará la última copia válida o la documentación local.
