@@ -823,7 +823,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-56. visitors
+56. varlink http bridge
+Paquete: varlink-http-bridge
+Repositorio: extra
+Versión: 0.1.0-1
+Arquitectura: x86_64
+Descripción: HTTP bridge to make local varlink services available remotely
+Upstream: https://github.com/systemd/varlink-http-bridge
+Licencia: LGPL-2.1-or-later
+Dependencias: glibc
+Opcionales: —
+Compilación: cargo, openssl, just, git
+Pruebas: openssh
+Proporciona: —
+Estado SST: [ ]
+
+57. visitors
 Paquete: visitors
 Repositorio: extra
 Versión: 0.7-9
@@ -838,7 +853,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-57. vlc plugin smb
+58. vlc plugin smb
 Paquete: vlc-plugin-smb
 Repositorio: extra
 Versión: 3.0.24-4
@@ -853,7 +868,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-58. vlc plugin speex
+59. vlc plugin speex
 Paquete: vlc-plugin-speex
 Repositorio: extra
 Versión: 3.0.24-4
@@ -868,7 +883,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-59. woodpecker cli
+60. woodpecker cli
 Paquete: woodpecker-cli
 Repositorio: extra
 Versión: 3.21.0-1

@@ -61,7 +61,7 @@ Estado SST: [ ]
 5. dhall docs
 Paquete: dhall-docs
 Repositorio: extra
-Versión: 1.0.12-281
+Versión: 1.0.12-282
 Arquitectura: x86_64
 Descripción: Generate HTML docs from a dhall package
 Upstream: https://github.com/dhall-lang/dhall-haskell/tree/master/dhall-docs
@@ -256,7 +256,7 @@ Estado SST: [ ]
 18. haskell hls gadt plugin
 Paquete: haskell-hls-gadt-plugin
 Repositorio: extra
-Versión: 2.4.0.0-55
+Versión: 2.4.0.0-56
 Arquitectura: x86_64
 Descripción: Convert to GADT syntax plugin
 Upstream: https://github.com/haskell/haskell-language-server.git
@@ -376,12 +376,12 @@ Estado SST: [ ]
 26. lib32 pipewire jack
 Paquete: lib32-pipewire-jack
 Repositorio: multilib
-Versión: 1:1.6.11-1
+Versión: 1:1.6.12-1
 Arquitectura: x86_64
 Descripción: Low-latency audio/video router and processor - 32-bit - JACK support
 Upstream: https://pipewire.org
 Licencia: MIT, GPL-2.0-only, LGPL-2.1-or-later
-Dependencias: lib32-libpipewire=1:1.6.11-1, libpipewire-0.3.so=0-32, lib32-pipewire=1:1.6.11-1, lib32-glibc, pipewire-jack
+Dependencias: lib32-libpipewire=1:1.6.12-1, libpipewire-0.3.so=0-32, lib32-pipewire=1:1.6.12-1, lib32-glibc, pipewire-jack
 Opcionales: —
 Compilación: git, lib32-alsa-lib, lib32-dbus, lib32-glib2, lib32-opus, lib32-systemd, meson, systemd
 Pruebas: —

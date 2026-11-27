@@ -301,7 +301,7 @@ Estado SST: [ ]
 21. haskell yesod static
 Paquete: haskell-yesod-static
 Repositorio: extra
-Versión: 1.6.1.3-86
+Versión: 1.6.1.3-87
 Arquitectura: x86_64
 Descripción: Static file serving subsite for Yesod Web Framework.
 Upstream: http://www.yesodweb.com/
@@ -328,7 +328,22 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-23. liboggz
+23. libcrypto awslc
+Paquete: libcrypto-awslc
+Repositorio: extra
+Versión: 5.15.0-1
+Arquitectura: x86_64
+Descripción: General-purpose cryptographic library maintained by the AWS Cryptography team
+Upstream: https://github.com/aws/aws-lc
+Licencia: Apache-2.0 OR ISC
+Dependencias: glibc
+Opcionales: —
+Compilación: cmake, go, libunwind, ninja, perl, rust-bindgen
+Pruebas: —
+Proporciona: aws-lc, libcrypto-awslc.so=1-64
+Estado SST: [ ]
+
+24. liboggz
 Paquete: liboggz
 Repositorio: extra
 Versión: 1.1.3-1
@@ -343,7 +358,7 @@ Pruebas: —
 Proporciona: liboggz.so=2-64
 Estado SST: [ ]
 
-24. libplacebo
+25. libplacebo
 Paquete: libplacebo
 Repositorio: extra
 Versión: 7.387.0-1
@@ -358,7 +373,7 @@ Pruebas: —
 Proporciona: libplacebo.so=387-64
 Estado SST: [ ]
 
-25. librevenge
+26. librevenge
 Paquete: librevenge
 Repositorio: extra
 Versión: 0.0.6-1
@@ -373,7 +388,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-26. libsidplayfp
+27. libsidplayfp
 Paquete: libsidplayfp
 Repositorio: extra
 Versión: 3.1.2-1
@@ -388,7 +403,7 @@ Pruebas: —
 Proporciona: libsidplayfp.so=7-64, libstilview.so=0-64
 Estado SST: [ ]
 
-27. llm manager
+28. llm manager
 Paquete: llm-manager
 Repositorio: extra
 Versión: 1.2.1-1
@@ -403,7 +418,7 @@ Pruebas: —
 Proporciona: ollama-environment
 Estado SST: [ ]
 
-28. lv2lint
+29. lv2lint
 Paquete: lv2lint
 Repositorio: extra
 Versión: 0.16.2-3
@@ -418,7 +433,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-29. lxterminal
+30. lxterminal
 Paquete: lxterminal
 Repositorio: extra
 Versión: 0.4.1-2
@@ -433,7 +448,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-30. pastel
+31. pastel
 Paquete: pastel
 Repositorio: extra
 Versión: 0.12.0-1
@@ -448,7 +463,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-31. perl algorithm annotate
+32. perl algorithm annotate
 Paquete: perl-algorithm-annotate
 Repositorio: extra
 Versión: 0.10-18
@@ -463,7 +478,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-32. perl inline
+33. perl inline
 Paquete: perl-inline
 Repositorio: extra
 Versión: 0.87-1
@@ -478,7 +493,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-33. perl sort naturally
+34. perl sort naturally
 Paquete: perl-sort-naturally
 Repositorio: extra
 Versión: 1.03-13
@@ -493,7 +508,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-34. python astor
+35. python astor
 Paquete: python-astor
 Repositorio: extra
 Versión: 0.8.1-10
@@ -508,7 +523,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-35. python bluepy
+36. python bluepy
 Paquete: python-bluepy
 Repositorio: extra
 Versión: 1.3.0-12
@@ -523,7 +538,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-36. python hatch gettext
+37. python hatch gettext
 Paquete: python-hatch-gettext
 Repositorio: extra
 Versión: 1.1.4-1
@@ -538,7 +553,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-37. python mdx gh links
+38. python mdx gh links
 Paquete: python-mdx-gh-links
 Repositorio: extra
 Versión: 0.4-1
@@ -553,7 +568,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-38. python openapi core
+39. python openapi core
 Paquete: python-openapi-core
 Repositorio: extra
 Versión: 0.23.1-1
@@ -568,7 +583,7 @@ Pruebas: python-aiohttp, python-aioitertools, python-django, python-django-rest-
 Proporciona: —
 Estado SST: [ ]
 
-39. python pysmbc
+40. python pysmbc
 Paquete: python-pysmbc
 Repositorio: extra
 Versión: 1.0.25.1-6
@@ -583,7 +598,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-40. python qiniu
+41. python qiniu
 Paquete: python-qiniu
 Repositorio: extra
 Versión: 7.20.1-1
@@ -598,7 +613,7 @@ Pruebas: python-pytest, python-freezegun
 Proporciona: —
 Estado SST: [ ]
 
-41. python sentinels
+42. python sentinels
 Paquete: python-sentinels
 Repositorio: extra
 Versión: 1.1.1-2
@@ -613,7 +628,7 @@ Pruebas: python-pytest
 Proporciona: —
 Estado SST: [ ]
 
-42. python validate email
+43. python validate email
 Paquete: python-validate-email
 Repositorio: extra
 Versión: 1.3-14
@@ -628,7 +643,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-43. ruby get process mem
+44. ruby get process mem
 Paquete: ruby-get_process_mem
 Repositorio: extra
 Versión: 1.0.0-1
@@ -643,7 +658,7 @@ Pruebas: ruby-bundler
 Proporciona: —
 Estado SST: [ ]
 
-44. rustdesk server
+45. rustdesk server
 Paquete: rustdesk-server
 Repositorio: extra
 Versión: 1.1.16-2
@@ -658,7 +673,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-45. skanpage
+46. skanpage
 Paquete: skanpage
 Repositorio: extra
 Versión: 26.08.3-1
@@ -673,7 +688,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-46. stunnel
+47. stunnel
 Paquete: stunnel
 Repositorio: extra
 Versión: 5.82-2
@@ -688,7 +703,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-47. texlive langcjk
+48. texlive langcjk
 Paquete: texlive-langcjk
 Repositorio: extra
 Versión: 2026.1-1
@@ -703,7 +718,7 @@ Pruebas: —
 Proporciona: texlive-adobemapping, texlive-c90, texlive-cjk, texlive-cjk-gs-integrate, texlive-cjkpunct, texlive-cjkutils, texlive-dnp, texlive-evangelion-jfm, texlive-fixjfm, texlive-garuda-c90, texlive-jfmutil, texlive-norasi-c90, texlive-pxtatescale, texlive-xcjk2uni, texlive-xecjk, texlive-zitie, texlive-zxjafont
 Estado SST: [ ]
 
-48. vim ansible
+49. vim ansible
 Paquete: vim-ansible
 Repositorio: extra
 Versión: 5.0-1
@@ -718,7 +733,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-49. vlc plugin aalib
+50. vlc plugin aalib
 Paquete: vlc-plugin-aalib
 Repositorio: extra
 Versión: 3.0.24-4
@@ -733,7 +748,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-50. xf86 video ati
+51. xf86 video ati
 Paquete: xf86-video-ati
 Repositorio: extra
 Versión: 1:22.0.0-3
@@ -748,7 +763,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-51. xf86 video intel
+52. xf86 video intel
 Paquete: xf86-video-intel
 Repositorio: extra
 Versión: 1:2.99.917+939+g4a64400e-1
@@ -763,7 +778,7 @@ Pruebas: —
 Proporciona: xf86-video-intel-uxa, xf86-video-intel-sna
 Estado SST: [ ]
 
-52. xfwm4
+53. xfwm4
 Paquete: xfwm4
 Repositorio: extra
 Versión: 4.20.0-2
@@ -778,7 +793,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-53. xorg bdftopcf
+54. xorg bdftopcf
 Paquete: xorg-bdftopcf
 Repositorio: extra
 Versión: 1.1.2-1
@@ -793,7 +808,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-54. xorg setxkbmap
+55. xorg setxkbmap
 Paquete: xorg-setxkbmap
 Repositorio: extra
 Versión: 1.3.5-1
@@ -808,7 +823,7 @@ Pruebas: —
 Proporciona: —
 Estado SST: [ ]
 
-55. yajl
+56. yajl
 Paquete: yajl
 Repositorio: extra
 Versión: 2.1.0-7
@@ -823,7 +838,7 @@ Pruebas: —
 Proporciona: libyajl.so=2-64
 Estado SST: [ ]
 
-56. yoshimi standalone
+57. yoshimi standalone
 Paquete: yoshimi-standalone
 Repositorio: extra
 Versión: 2.3.6.6-1
