@@ -20,6 +20,6 @@ Tab completa comandos, subcomandos y opciones del contexto actual. Ejemplos:
   triage 123 --p<Tab>                   --plan
   guide tools office d<Tab>             diagnose
 
-En la ventana nativa, una coincidencia completa el token y añade un espacio al final de la línea. Con varias coincidencias, Tab amplía el prefijo común o muestra las alternativas. No ejecuta el comando. Los nombres de archivo conservan su mecanismo de completado. Los valores libres (usuario AD, PID, host, URL, secreto) no se inventan ni se consultan al pulsar Tab.
+En la ventana nativa, una coincidencia completa el token y añade un espacio al final de la línea. Con varias coincidencias, Tab amplía el prefijo común o muestra las alternativas. No ejecuta el comando. En la próxima revisión de SST, al aceptar una paleta válida en config palette NOMBRE o sst-config palette NOMBRE, Enter aplica el tema inmediatamente, sin una segunda pulsación. Los nombres de archivo conservan su mecanismo de completado. Los valores libres (usuario AD, PID, host, URL, secreto) no se inventan ni se consultan al pulsar Tab.
 
 El repositorio de Guide es independiente del canal de SST. La próxima revisión del lector consultará el catálogo al abrirse y las fichas al seleccionarlas; sin red utilizará la última copia válida o la documentación local.
