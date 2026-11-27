@@ -1,0 +1,65 @@
+SST — Catálogo nativo de elementos gráficos
+
+Uso: demo graficos
+
+36 muestras aisladas en seis familias, visibles simultáneamente por grupos de seis. No son informes, portadas ni imágenes. Cada elemento tiene una etiqueta y se dibuja a escala de control dentro de la ventana SST. La cuadrícula se adapta a dos o tres columnas.
+
+1. Estructura y recortes
+  01 Cabecera asimétrica
+  02 Divisor escalonado
+  03 Marco recortado
+  04 Agrupador de campos
+  05 Pestaña de metadatos
+  06 Riel y folio
+
+2. Foco y controles
+  07 Marcas de registro
+  08 Foco de teclado
+  09 Fila activa
+  10 Selector angular
+  11 Acciones
+  12 Expansión
+
+3. Instrumentación
+  13 Indicador radial / 20
+  14 Anillo segmentado / 8
+  15 Escala lineal
+  16 Umbral y desviación
+  17 Lectura proporcional
+  18 Escala de actividad
+
+4. Transferencia y señal
+  19 Transferencia angular
+  20 Progreso segmentado
+  21 Espera indeterminada
+  22 Continuidad y pérdidas
+  23 Ruta / bifurcación
+  24 Trama / transferencia
+
+5. Estados y evidencia
+  25 Correcto
+  26 Advertencia
+  27 Fallo
+  28 Sin datos
+  29 Evidencia
+  30 Estado dinámico
+
+6. Tipografía y navegación
+  31 Título compacto
+  32 Folio numérico
+  33 Microtipografía
+  34 Entrada y cursor
+  35 Sugerencias
+  36 Jerarquía de dato
+
+Controles: ←/→ familia, 1–6 acceso directo, PgUp/PgDn ±3, Inicio/Fin extremos, Tab/↑/↓ foco, Mayús+Tab anterior, Enter prueba interacción, Espacio pausa/reanuda, R reinicia, Esc/q sale.
+Los datos y acciones son simulados. No se modifica el equipo, el formatter, el logo ni las paletas de la consola habitual. No se cargan ilustraciones o archivos de imagen.
+
+El catálogo hereda el esquema activo de config palette (gruvbox, sunset o golden). Los colores de los componentes se derivan de los roles de texto del formatter; los fondos del usuario y el logotipo no cambian. El agrupador de campos sustituye al pórtico decorativo.
+
+El catálogo sigue el selector de los 18 esquemas. Consulta config palette list o guide config.
+
+Dentro de `demo graficos`, pulsa P para la paleta siguiente y O para la anterior. El nombre del esquema aparece en la cabecera. Las 18 paletas se recorren circularmente; el cambio conserva la familia, foco y animación. Al salir se conserva la configuración original de `config palette`. Para fijar un esquema de forma permanente, usa `config palette NOMBRE` fuera de la demo.
+
+
+La presentación de informes, métricas, tablas y estados utiliza la paleta activa. Tab muestra las sugerencias; flechas o Tab recorren las alternativas, Enter acepta y Esc cancela. F2 expande o contrae las sugerencias. Aceptar una sugerencia no ejecuta el comando.
