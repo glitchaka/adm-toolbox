@@ -22,22 +22,29 @@ Aliases públicos directos:
 
 2. Información
 
-  sys info                   resumen host/OS/kernel/uptime/CPU/memoria
-  sys processes              alias interno: sys ps; alias global: ps
-  sys top                    TUI de procesos
+  sys info                   resumen del equipo; en la próxima revisión, inventario ampliado con sesión, CPU, RAM, discos y cuentas locales
+  sys processes [NOMBRE]     filtra por nombre y descendientes; alias sys ps / ps
+  sys top [NOMBRE]           monitor en vivo de CPU y RAM, filtrable
   sys disks                  alias interno: sys df; alias global: df
   sys memory                 alias interno: sys free; alias global: free
   sys uptime                 alias global: uptime
   sys hostname               consulta nombre actual
   hostname                   consulta nombre actual
   sys whoami                 alias global: whoami
-  sys uname
-  sys uname -a               alias global uname admite lo mismo
+  sys uname                  sistema operativo, equipo, kernel y arquitectura del ejecutable
+  sys uname -a               salida compacta; alias global uname admite lo mismo
 
 Top TUI:
-  c                         ordenar hermanos por CPU
+  c                         ordenar todos los procesos por CPU
   m                         ordenar por memoria
+  t                         alternar lista global y árbol
+  flechas/PgUp/PgDown        seleccionar/desplazar
+  Enter                     abrir/cerrar detalle del proceso seleccionado
+  clic en DETALLE           abrir/cerrar el mismo panel (ventana nativa)
   q o Esc                   salir
+
+Búsqueda: `sys processes outlook` y `sys top outlook` incluyen olk.exe y sus descendientes WebView2; no confunden otros WebView2 de Teams o Copilot.
+`sys inspect PID` detalla un proceso y `sys kill PID --tree` lo cierra, con posible pérdida de cambios sin guardar.
 
 3. Fetch
 
@@ -102,7 +109,7 @@ Por nombre termina coincidencias del nombre de proceso. --tree/-t incluye descen
   sys drivers --pnp
   sys drivers --devices
 
---pnp enumera paquetes con pnputil; --devices enumera dispositivos conectados; las otras vistas usan driverquery.
+--pnp enumera paquetes con pnputil; --devices enumera dispositivos conectados; las otras vistas capturan CSV completo de driverquery para evitar el recorte de nombres.
 
 9. Eventos
 
@@ -198,3 +205,7 @@ Véanse domain.txt, hostname.txt y autologon.txt para opciones completas y adver
   sys --help
 
 La ayuda corta del propio sys no enumera toda la semántica avanzada; este manual es la referencia extensa.
+
+Startup organiza el registro por alcance y tipo de inicio. Services consulta SCM mediante API Unicode y muestra estado y PID; el nombre permite consultar detalles. La compilación y las pruebas automatizadas de Windows no sustituyen la comprobación operativa en cada equipo.
+
+Tab: sys <Tab> lista subcomandos; sys services --r<Tab> completa --running; sys domain <Tab> lista las operaciones de dominio.
